@@ -1,13 +1,13 @@
 ﻿:root {
   color-scheme: dark;
-  --bg: #101923;
-  --surface: rgba(27, 43, 55, 0.72);
-  --surface-2: rgba(35, 55, 68, 0.74);
-  --surface-3: rgba(19, 32, 43, 0.84);
-  --text: #edf7f6;
-  --muted: #abc0c5;
-  --line: rgba(155, 219, 226, 0.2);
-  --line-strong: rgba(151, 235, 224, 0.34);
+  --bg: #172735;
+  --surface: rgba(39, 61, 76, 0.72);
+  --surface-2: rgba(48, 74, 88, 0.76);
+  --surface-3: rgba(27, 45, 58, 0.84);
+  --text: #f3fbfa;
+  --muted: #bfd2d6;
+  --line: rgba(167, 225, 231, 0.24);
+  --line-strong: rgba(151, 235, 224, 0.42);
   --accent: #78e1d4;
   --accent-2: #a08bff;
   --accent-3: #c9e78b;
@@ -37,7 +37,7 @@ body {
     radial-gradient(ellipse at 30% 0%, rgba(95, 155, 190, 0.24), transparent 42%),
     radial-gradient(ellipse at 82% 28%, rgba(136, 114, 216, 0.16), transparent 38%),
     radial-gradient(ellipse at 50% 100%, rgba(77, 126, 126, 0.12), transparent 48%),
-    linear-gradient(135deg, #101923 0%, #142232 48%, #0c141d 100%);
+    linear-gradient(135deg, #172735 0%, #1d3141 48%, #13212d 100%);
   display: grid;
   grid-template-columns: 296px minmax(0, 1fr);
   letter-spacing: 0;
@@ -225,7 +225,7 @@ textarea {
   height: 100dvh;
   padding: 24px;
   z-index: 2;
-  background: linear-gradient(180deg, rgba(18, 34, 46, 0.8), rgba(12, 23, 32, 0.72));
+  background: linear-gradient(180deg, rgba(28, 49, 63, 0.82), rgba(19, 34, 46, 0.74));
   border-right: 1px solid rgba(150, 230, 220, 0.14);
   backdrop-filter: var(--glass);
   color: #f5f7f2;
@@ -420,7 +420,7 @@ textarea {
   grid-template-columns: minmax(220px, 1fr) 170px 160px 180px;
   gap: 12px;
   padding: 18px 24px;
-  background: rgba(18, 31, 42, 0.68);
+  background: rgba(28, 45, 58, 0.7);
   backdrop-filter: var(--glass);
   border-bottom: 1px solid var(--line);
 }
@@ -2005,6 +2005,288 @@ textarea {
   filter: drop-shadow(0 0 14px rgba(160, 139, 255, 0.22));
 }
 
+.sound-lab-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.sound-family-rail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sound-family-rail .material-select-button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  text-align: left;
+}
+
+.sound-family-rail .material-select-button span {
+  color: var(--accent);
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.sound-lab-workbench {
+  display: grid;
+  gap: 16px;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(156, 238, 230, 0.16), transparent 42%),
+    radial-gradient(ellipse at 88% 12%, rgba(160, 139, 255, 0.12), transparent 44%),
+    linear-gradient(135deg, rgba(45, 72, 88, 0.82), rgba(20, 34, 46, 0.76));
+  border-color: rgba(174, 233, 236, 0.28);
+}
+
+.sound-lab-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.sound-lab-head h3 {
+  font-size: 26px;
+}
+
+.sound-lab-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 148px;
+}
+
+.sound-lab-actions .secondary-button,
+.sound-lab-actions .audition-button {
+  width: 100%;
+  margin-top: 0;
+}
+
+.sound-lab-stage {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.18fr) minmax(360px, 0.82fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.spectrum-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 290px;
+  border: 1px solid rgba(174, 233, 236, 0.2);
+  border-radius: var(--radius);
+  padding: 16px;
+  background:
+    linear-gradient(180deg, rgba(9, 22, 32, 0.44), rgba(15, 30, 42, 0.76)),
+    repeating-linear-gradient(90deg, rgba(183, 236, 238, 0.05) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(0deg, rgba(183, 236, 238, 0.04) 0 1px, transparent 1px 32px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.spectrum-stage::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 58%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(120, 225, 212, 0.48), rgba(201, 231, 139, 0.24), transparent);
+  box-shadow: 0 0 22px rgba(120, 225, 212, 0.18);
+  animation: hero-scan 7s ease-in-out infinite alternate;
+}
+
+.spectrum-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.spectrum-bars {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 70px;
+  height: 148px;
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  gap: 7px;
+  align-items: end;
+}
+
+.spectrum-bars span {
+  min-height: 12px;
+  height: var(--bar);
+  border-radius: 4px 4px 1px 1px;
+  background: linear-gradient(180deg, rgba(234, 255, 248, 0.9), rgba(120, 225, 212, 0.78), rgba(160, 139, 255, 0.24));
+  box-shadow: 0 0 18px rgba(120, 225, 212, 0.14);
+  transform-origin: bottom;
+  animation: meter-breathe 4.8s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -110ms);
+}
+
+.material-axis {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.material-axis span {
+  border: 1px solid rgba(174, 233, 236, 0.18);
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(8, 20, 30, 0.42);
+  color: #dffdf8;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.macro-bank {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.macro-knob {
+  position: relative;
+  min-height: 132px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  border: 1px solid rgba(174, 233, 236, 0.18);
+  border-radius: var(--radius);
+  padding: 12px 12px 12px 82px;
+  background: linear-gradient(180deg, rgba(16, 33, 45, 0.7), rgba(9, 19, 30, 0.52));
+  overflow: hidden;
+}
+
+.macro-knob input {
+  position: absolute;
+  inset: auto 10px 10px;
+  min-height: 22px;
+  padding: 0;
+  opacity: 0.72;
+}
+
+.macro-knob strong {
+  color: #f6fffd;
+  line-height: 1.25;
+}
+
+.macro-knob small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.knob-face {
+  position: absolute;
+  left: 14px;
+  top: 18px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.34), transparent 19%),
+    conic-gradient(from -130deg, rgba(120, 225, 212, 0.9) 0 var(--knob-value), rgba(13, 29, 40, 0.78) var(--knob-value) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 24px rgba(120, 225, 212, 0.1);
+}
+
+.knob-face i {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(27, 49, 63, 0.98), rgba(11, 21, 32, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.sound-lab-meter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sound-lab-meter-grid > div {
+  border: 1px solid rgba(174, 233, 236, 0.15);
+  border-radius: 6px;
+  padding: 10px;
+  background: rgba(7, 18, 28, 0.36);
+}
+
+.sound-lab-meter-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sound-lab-meter-grid strong {
+  display: block;
+  margin: 5px 0 8px;
+  font-size: 20px;
+}
+
+.sound-lab-meter-grid i {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) var(--meter), rgba(255, 255, 255, 0.08) var(--meter));
+}
+
+.sound-lab-practice,
+.sound-lab-export {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sound-lab-practice > div,
+.sound-lab-export > div {
+  border: 1px solid rgba(174, 233, 236, 0.13);
+  border-radius: 6px;
+  padding: 12px;
+  background: rgba(5, 15, 24, 0.34);
+}
+
+.sound-lab-export {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sound-lab-export pre {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  color: #d9f6f2;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.sound-preset-card {
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.sound-preset-card strong {
+  display: block;
+  margin: 4px 0 8px;
+  font-size: 17px;
+}
+
+.sound-preset-card small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .technique-grid {
   align-items: start;
 }
@@ -2491,6 +2773,14 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .sound-family-rail,
+  .sound-lab-stage,
+  .sound-lab-head,
+  .sound-lab-practice,
+  .sound-lab-export {
+    grid-template-columns: 1fr;
+  }
+
   .deep-practice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2504,7 +2794,8 @@ textarea {
   }
 
   .macro-button-row,
-  .integration-status-grid {
+  .integration-status-grid,
+  .sound-lab-meter-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2587,6 +2878,66 @@ textarea {
 
   .macro-button-row {
     grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(148px, 72vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+  }
+
+  .tab {
+    scroll-snap-align: start;
+  }
+
+  .sidebar {
+    position: static;
+    z-index: 12;
+    gap: 14px;
+    background: rgba(24, 43, 57, 0.86);
+    width: 100%;
+    min-width: 0;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .workspace,
+  .content,
+  .toolbar {
+    width: 100%;
+    min-width: 0;
+    max-width: 100vw;
+  }
+
+  .toolbar {
+    position: static;
+  }
+
+  .brand p {
+    margin-top: 4px;
+  }
+
+  .brand,
+  .tabs {
+    min-width: 0;
+    max-width: calc(100vw - 32px);
+  }
+
+  .sound-lab-stage,
+  .macro-bank,
+  .sound-lab-practice,
+  .sound-lab-export,
+  .sound-family-rail,
+  .sound-lab-meter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spectrum-stage {
+    min-height: 250px;
   }
 }
 

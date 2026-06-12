@@ -29,10 +29,13 @@ import {
   renderMicroLessonCard,
   renderMicroTrackPanel,
   renderSoundChallenge,
+  renderSoundLabWorkbench,
   renderMaterialLab,
   renderTechniqueTipCard,
   renderDeepDiveModuleCard,
 } from '../src/render.js';
+import { soundLabFamilies } from '../src/content.js';
+import { SOUND_LAB_MACROS, buildSoundLabViewModel } from '../src/sound-lab-model.js';
 
 test('renderSourceCard includes title, platform, credibility, and link', () => {
   const html = renderSourceCard(sources[0]);
@@ -148,6 +151,27 @@ test('renderSoundChallenge includes playable A/B controls and answer buttons', (
   assert.match(html, /data-challenge-answer/);
   assert.match(html, /答对/);
   assert.match(html, new RegExp(challenge.promptZh.slice(0, 8)));
+});
+
+test('renderSoundLabWorkbench exposes AudioWorklet controls, A/B comparison, and REAPER export', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS);
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    workletReady: true,
+    isPlaying: true,
+  });
+
+  assert.match(html, /sound-lab-workbench/);
+  assert.match(html, /data-sound-lab-play/);
+  assert.match(html, /data-sound-lab-ab="a"/);
+  assert.match(html, /data-sound-lab-ab="b"/);
+  assert.match(html, /data-sound-lab-control="brightness"/);
+  assert.match(html, /data-sound-lab-control="material"/);
+  assert.match(html, /AudioWorklet/);
+  assert.match(html, /频谱/);
+  assert.match(html, /REAPER/);
+  assert.match(html, /来源依据/);
 });
 
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {

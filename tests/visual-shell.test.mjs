@@ -60,12 +60,37 @@ test('visual shell uses a brighter premium glass tone and view transition motion
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /--bg:\s*#101923/);
+  assert.match(css, /--bg:\s*#172735/);
   assert.doesNotMatch(css, /--bg:\s*#050910/);
   assert.match(css, /\.content\.is-view-switching/);
   assert.match(css, /@keyframes view-soft-swap/);
   assert.match(appJs, /synth:view-transition/);
   assert.match(appJs, /is-view-switching/);
+});
+
+test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /data-view="soundlab"/);
+  assert.match(appJs, /renderSoundLabView/);
+  assert.match(appJs, /data-sound-lab-play/);
+  assert.match(appJs, /data-sound-lab-control/);
+  assert.match(audioPlayerJs, /AudioWorklet/);
+  assert.match(audioPlayerJs, /sound-lab-processor\.js/);
+  assert.match(css, /\.sound-lab-workbench/);
+  assert.match(css, /\.macro-knob/);
+  assert.match(css, /\.spectrum-stage/);
+});
+
+test('mobile navigation uses a compact horizontal rail instead of a full-height wall', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.tabs[\s\S]*grid-auto-flow:\s*column/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*overflow-x:\s*auto/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*scroll-snap-type:\s*x/);
 });
 
 test('integration view exposes browser-native sound quality and control hooks', () => {

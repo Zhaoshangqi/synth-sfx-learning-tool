@@ -1,4 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
+import { buildWorkletMessage } from './sound-lab-model.js';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -176,6 +177,8 @@ export class LabAudioPlayer {
     this.current = null;
     this.onLevel = null;
     this.playing = false;
+    this.workletReady = false;
+    this.workletLoadAttempted = false;
   }
 
   async ensureContext() {
@@ -221,6 +224,50 @@ export class LabAudioPlayer {
     this.schedulePatch(patch);
     this.startMeter();
     this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 420, 420, 3600));
+  }
+
+  async ensureSoundLabWorklet() {
+    await this.ensureContext();
+    if (this.workletReady) return true;
+    if (this.workletLoadAttempted) return false;
+    this.workletLoadAttempted = true;
+
+    if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
+
+    try {
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js');
+      this.workletReady = true;
+      return true;
+    } catch {
+      this.workletReady = false;
+      return false;
+    }
+  }
+
+  async playSoundLabPatch(patch, { onLevel } = {}) {
+    await this.ensureContext();
+    this.stop();
+    this.playing = true;
+    this.current = null;
+    this.onLevel = onLevel;
+
+    const canUseWorklet = await this.ensureSoundLabWorklet();
+    if (canUseWorklet) {
+      const node = new AudioWorkletNode(this.context, 'sound-lab-processor', {
+        numberOfInputs: 0,
+        numberOfOutputs: 1,
+        outputChannelCount: [2],
+      });
+      node.connect(this.master);
+      node.port.postMessage(buildWorkletMessage(patch));
+      this.activeNodes.add(node);
+    } else {
+      this.scheduleSoundLabFallback(patch);
+    }
+
+    this.startMeter();
+    this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 520, 520, 4200));
+    return { workletReady: canUseWorklet };
   }
 
   update(lab, state, waveform) {
@@ -302,6 +349,111 @@ export class LabAudioPlayer {
     carrier.start(now);
     carrier.stop(stopAt + 0.04);
     carrier.addEventListener('ended', () => {
+      for (const node of nodes) {
+        this.activeNodes.delete(node);
+        try {
+          node.disconnect();
+        } catch {
+          // Node may already be disconnected by stop().
+        }
+      }
+    });
+  }
+
+  scheduleSoundLabFallback(patch) {
+    if (!this.context || !this.master || !patch || !this.playing) return;
+
+    const now = this.context.currentTime + 0.01;
+    const stopAt = now + patch.durationSeconds;
+    const nodes = [];
+    const sourceGain = this.context.createGain();
+    const bodyGain = this.context.createGain();
+    const filter = this.context.createBiquadFilter();
+    const shaper = this.context.createWaveShaper();
+    const patchDsp = patch.dsp;
+
+    sourceGain.gain.setValueAtTime(0.0001, now);
+    sourceGain.gain.linearRampToValueAtTime(patchDsp.safety.outputGain * 0.42, now + patchDsp.transient.attackMs / 1000);
+    sourceGain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+    bodyGain.gain.value = 0.78;
+    filter.type = patchDsp.filter.type === 'highpass' ? 'highpass' : patchDsp.filter.type === 'lowpass' ? 'lowpass' : 'bandpass';
+    filter.frequency.setValueAtTime(clamp(patchDsp.filter.frequency, 120, 16000), now);
+    filter.Q.setValueAtTime(clamp(patchDsp.filter.q, 0.4, 12), now);
+    if (patchDsp.filter.sweep) {
+      filter.frequency.linearRampToValueAtTime(
+        clamp(patchDsp.filter.frequency * (1 + patchDsp.filter.sweep), 120, 16000),
+        now + patch.durationSeconds * 0.72,
+      );
+    }
+    shaper.curve = createDistortionCurve(patchDsp.waveshaper.drive);
+    shaper.oversample = '2x';
+
+    const oscillator = this.context.createOscillator();
+    oscillator.type = patchDsp.oscillator.shape;
+    oscillator.frequency.setValueAtTime(patchDsp.oscillator.baseFrequency, now);
+    oscillator.frequency.linearRampToValueAtTime(
+      patchDsp.oscillator.baseFrequency * (1 + Math.abs(patchDsp.filter.sweep || 0) * 0.6),
+      now + patch.durationSeconds * 0.48,
+    );
+    oscillator.connect(sourceGain);
+    oscillator.start(now);
+    oscillator.stop(stopAt + 0.04);
+    nodes.push(oscillator);
+
+    if (patchDsp.noise.gain > 0) {
+      const noise = this.context.createBufferSource();
+      const noiseAmp = this.context.createGain();
+      noise.buffer = createNoiseBuffer(this.context, patch.durationSeconds + 0.08);
+      noiseAmp.gain.setValueAtTime(clamp(patchDsp.noise.gain * 0.12, 0, 0.12), now);
+      noiseAmp.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+      noise.connect(noiseAmp);
+      noiseAmp.connect(sourceGain);
+      noise.start(now);
+      noise.stop(stopAt + 0.04);
+      nodes.push(noise, noiseAmp);
+    }
+
+    sourceGain.connect(filter);
+    filter.connect(shaper);
+    shaper.connect(bodyGain);
+    bodyGain.connect(this.master);
+    nodes.push(sourceGain, bodyGain, filter, shaper);
+
+    patchDsp.resonators.forEach((resonator) => {
+      const resonatorFilter = this.context.createBiquadFilter();
+      const resonatorGain = this.context.createGain();
+      resonatorFilter.type = 'bandpass';
+      resonatorFilter.frequency.value = clamp(patchDsp.oscillator.baseFrequency * resonator.ratio, 80, 14000);
+      resonatorFilter.Q.value = clamp(8 + patchDsp.filter.q * 2, 2, 28);
+      resonatorGain.gain.setValueAtTime(clamp(resonator.gain * 0.18, 0.01, 0.24), now);
+      resonatorGain.gain.exponentialRampToValueAtTime(0.0001, now + resonator.decay);
+      sourceGain.connect(resonatorFilter);
+      resonatorFilter.connect(resonatorGain);
+      resonatorGain.connect(this.master);
+      nodes.push(resonatorFilter, resonatorGain);
+    });
+
+    scheduleTransientClick(this.context, this.master, {
+      transient: {
+        clickGain: patchDsp.transient.clickGain,
+        brightness: patch.macros.brightness / 100,
+        bandHz: patchDsp.filter.frequency,
+      },
+    }, now, stopAt, nodes);
+
+    if (patchDsp.space.mix > 0) {
+      const convolver = this.context.createConvolver();
+      const wet = this.context.createGain();
+      convolver.buffer = createSpaceBuffer(this.context, patchDsp.space.decaySeconds);
+      wet.gain.value = patchDsp.space.mix;
+      bodyGain.connect(convolver);
+      convolver.connect(wet);
+      wet.connect(this.master);
+      nodes.push(convolver, wet);
+    }
+
+    for (const node of nodes) this.activeNodes.add(node);
+    oscillator.addEventListener('ended', () => {
       for (const node of nodes) {
         this.activeNodes.delete(node);
         try {

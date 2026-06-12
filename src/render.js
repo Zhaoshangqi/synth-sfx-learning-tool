@@ -817,3 +817,91 @@ export function renderMaterialLab(material, visualModel, state = {}, options = {
     </article>
   `;
 }
+
+export function renderSoundLabWorkbench(family, model, options = {}) {
+  const workletReady = Boolean(options.workletReady);
+  const isPlaying = Boolean(options.isPlaying);
+  return `
+    <article class="card sound-lab-workbench ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
+      <div class="sound-lab-head">
+        <div>
+          <div class="card-kicker">Sound Lab · AudioWorklet ${workletReady ? 'ready' : 'fallback'}</div>
+          <h3>${escapeHtml(family.titleZh)}</h3>
+          <p>${escapeHtml(family.summaryZh)}</p>
+        </div>
+        <div class="sound-lab-actions">
+          <button class="audition-button ${isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play>
+            <span class="audition-dot" aria-hidden="true"></span>
+            ${isPlaying ? '播放中' : '试听'}
+          </button>
+          <button class="secondary-button" type="button" data-sound-lab-ab="a">A 干声</button>
+          <button class="secondary-button" type="button" data-sound-lab-ab="b">B 完整</button>
+        </div>
+      </div>
+      <section class="sound-lab-stage">
+        <div class="spectrum-stage" aria-label="频谱和共振预览">
+          <div class="spectrum-header">
+            <span>频谱 / 共振</span>
+            <strong>${escapeHtml(model.patch.workletName)}</strong>
+          </div>
+          <div class="spectrum-bars" aria-hidden="true">
+            ${model.spectrumBars.map((bar, index) => `<span style="--bar:${formatNumber(bar)}%; --i:${index}"></span>`).join('')}
+          </div>
+          <div class="material-axis">
+            ${family.materialAxis.map((axis) => `<span>${escapeHtml(axis)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="macro-bank" aria-label="Sound Lab 宏控制">
+          ${model.macros.map((macro) => `
+            <label class="macro-knob" style="--knob-value:${formatNumber(macro.percent)}%">
+              <span class="knob-face" aria-hidden="true"><i></i></span>
+              <strong>${escapeHtml(macro.labelZh)}</strong>
+              <small>${escapeHtml(macro.percent < 50 ? macro.lowZh : macro.highZh)}</small>
+              <input
+                type="range"
+                data-sound-lab-control="${escapeHtml(macro.id)}"
+                min="0"
+                max="100"
+                step="1"
+                value="${escapeHtml(macro.value)}"
+              />
+            </label>
+          `).join('')}
+        </div>
+      </section>
+      <section class="sound-lab-meter-grid">
+        ${model.meters.map((meter) => `
+          <div>
+            <span>${escapeHtml(meter.labelZh)}</span>
+            <strong>${formatNumber(meter.value)}</strong>
+            <i style="--meter:${formatNumber(meter.value)}%"></i>
+          </div>
+        `).join('')}
+      </section>
+      <section class="sound-lab-practice">
+        <div>
+          <h4>练习步骤</h4>
+          <ol>${listItems(family.practiceSteps)}</ol>
+        </div>
+        <div>
+          <h4>REAPER 导出</h4>
+          <ol>${listItems(family.reaperExport)}</ol>
+        </div>
+        <div>
+          <h4>来源依据</h4>
+          <div class="source-evidence">${family.sourceIds.map((sourceId) => `<span class="source-pill">${escapeHtml(sourceId)}</span>`).join('')}</div>
+        </div>
+      </section>
+      <section class="sound-lab-export">
+        <div>
+          <h4>Patch JSON</h4>
+          <pre>${escapeHtml(model.patchJson)}</pre>
+        </div>
+        <div>
+          <h4>REAPER Notes</h4>
+          <pre>${escapeHtml(model.reaperNotes)}</pre>
+        </div>
+      </section>
+    </article>
+  `;
+}

@@ -16,6 +16,7 @@
   techniqueTips,
   deepDiveModules,
   externalIntegrations,
+  soundLabFamilies,
 } from './content.js';
 import {
   applyLabMacro,
@@ -35,6 +36,12 @@ import {
   updateMaterialControl,
 } from './challenge-model.js';
 import { BASIC_WAVEFORMS, buildLabAudioPatch } from './audio-model.js';
+import {
+  SOUND_LAB_MACROS,
+  buildSoundLabPatch,
+  buildSoundLabViewModel,
+  getSoundLabFamily,
+} from './sound-lab-model.js';
 import { createLabAudioPlayer } from './audio-player.js';
 import { collectTags, filterItems, normalizeText } from './search.js';
 import { buildDashboardStats, getNextLesson, groupByStage } from './view-model.js';
@@ -48,6 +55,7 @@ import {
   renderInteractiveLab,
   renderRecipeCard,
   renderSoundChallenge,
+  renderSoundLabWorkbench,
   renderSourceCard,
   renderTechniqueTipCard,
   renderDeepDiveModuleCard,
@@ -76,10 +84,14 @@ const state = {
   challengeAnswers: {},
   activeMaterialId: materialLabs[0]?.id,
   activeDeepDiveId: deepDiveModules[0]?.id,
+  activeSoundFamilyId: soundLabFamilies[0]?.id,
+  soundLabMacros: { ...SOUND_LAB_MACROS },
   materialStates: Object.fromEntries(materialLabs.map((material) => [material.id, buildDefaultMaterialState(material)])),
   activeWaveform: BASIC_WAVEFORMS[0].id,
   isAuditioning: false,
   isPatchPlaying: false,
+  isSoundLabPlaying: false,
+  soundLabWorkletReady: false,
   audioError: '',
   draggingAdsrHandle: null,
   integrationStatus: 'idle',
@@ -204,6 +216,7 @@ function renderDashboard() {
           <span class="status-chip">WebAudio 实时试听</span>
         </div>
         <div class="dashboard-actions">
+          <button class="primary-button" type="button" data-dashboard-view="soundlab">打开 Sound Lab</button>
           <button class="primary-button" type="button" data-dashboard-view="interactive">开始互动实验</button>
           <button class="secondary-button" type="button" data-dashboard-view="deep">进入深度解析</button>
           <button class="secondary-button" type="button" data-dashboard-view="challenges">做声音挑战</button>
@@ -379,6 +392,50 @@ function renderInteractiveView() {
         activeWaveform: state.activeWaveform,
         isAuditioning: state.isAuditioning,
       })}
+    </section>
+  `;
+}
+
+function getActiveSoundFamily() {
+  return getSoundLabFamily(soundLabFamilies, state.activeSoundFamilyId);
+}
+
+function getSoundLabModel(overrides = {}) {
+  return buildSoundLabViewModel(getActiveSoundFamily(), { ...state.soundLabMacros, ...overrides });
+}
+
+function renderSoundLabView() {
+  const family = getActiveSoundFamily();
+  const model = getSoundLabModel();
+  return `
+    ${header('Sound Lab 工作台', '把网页从“看课程”推进到“能听、能调、能 A/B、能导出记录”。AudioWorklet 可用时使用自定义 DSP；不可用时自动回退 WebAudio。', `${soundLabFamilies.length} 个声音族`)}
+    <section class="sound-lab-shell">
+      <div class="sound-family-rail" role="list" aria-label="声音族选择">
+        ${soundLabFamilies.map((item, index) => `
+          <button
+            class="material-select-button ${item.id === family.id ? 'is-active' : ''}"
+            type="button"
+            data-sound-family-id="${escapeHtml(item.id)}"
+          >
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            ${escapeHtml(item.titleZh.split('：')[0])}
+          </button>
+        `).join('')}
+      </div>
+      ${renderSoundLabWorkbench(family, model, {
+        selectedFamilyId: family.id,
+        workletReady: state.soundLabWorkletReady,
+        isPlaying: state.isSoundLabPlaying,
+      })}
+      <section class="grid two sound-lab-preset-grid">
+        ${family.presets.map((preset) => `
+          <button class="card sound-preset-card" type="button" data-sound-lab-preset="${escapeHtml(preset.id)}">
+            <span class="card-kicker">Preset</span>
+            <strong>${escapeHtml(preset.labelZh)}</strong>
+            <small>${Object.entries(preset.values).map(([key, value]) => `${key} ${value}`).join(' / ')}</small>
+          </button>
+        `).join('')}
+      </section>
     </section>
   `;
 }
@@ -680,6 +737,7 @@ function render() {
     sources: renderSourcesView,
     cards: renderCardsView,
     interactive: renderInteractiveView,
+    soundlab: renderSoundLabView,
     micro: renderMicroView,
     challenges: renderChallengesView,
     techniques: renderTechniquesView,
@@ -711,6 +769,10 @@ function switchView(nextView) {
   globalThis.setTimeout(() => app.classList.remove('is-view-switching'), 460);
   state.view = nextView;
   render();
+  globalThis.requestAnimationFrame(() => {
+    const top = Math.max(0, app.getBoundingClientRect().top + globalThis.scrollY - 12);
+    globalThis.scrollTo({ top, behavior: 'auto' });
+  });
 }
 
 function rangePercentFromInput(input) {
@@ -870,6 +932,7 @@ function bindDynamicForms() {
   bindDashboardControls();
   bindSourceForm();
   bindInteractiveLabControls();
+  bindSoundLabControls();
   bindMicroRouteControls();
   bindChallengeControls();
   bindMaterialControls();
@@ -995,6 +1058,77 @@ function bindInteractiveLabControls() {
       };
       refreshAuditionPatch();
       render();
+    });
+  });
+}
+
+function updateSoundLabControl(controlId, value) {
+  if (!(controlId in state.soundLabMacros)) return;
+  state.soundLabMacros = {
+    ...state.soundLabMacros,
+    [controlId]: Math.max(0, Math.min(100, Number(value))),
+  };
+}
+
+async function playSoundLabPatch(overrides = {}) {
+  const family = getActiveSoundFamily();
+  const model = getSoundLabModel(overrides);
+  const patch = buildSoundLabPatch(family, model.patch.macros);
+  state.isSoundLabPlaying = true;
+  state.isAuditioning = false;
+  render();
+
+  try {
+    const result = await audioPlayer.playSoundLabPatch(patch, {
+      onLevel: (level) => updateSurfaceMeter('.sound-lab-workbench', level),
+    });
+    state.soundLabWorkletReady = Boolean(result?.workletReady);
+    state.audioError = '';
+  } catch (error) {
+    state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
+  }
+
+  globalThis.clearTimeout(patchPlayingTimer);
+  patchPlayingTimer = globalThis.setTimeout(() => {
+    state.isSoundLabPlaying = false;
+    render();
+  }, Math.max(520, patch.durationSeconds * 1000 + 520));
+}
+
+function bindSoundLabControls() {
+  document.querySelectorAll('[data-sound-family-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeSoundFamilyId = button.dataset.soundFamilyId;
+      const family = getActiveSoundFamily();
+      state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}) };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-control]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      updateSoundLabControl(rangeInput.dataset.soundLabControl, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const family = getActiveSoundFamily();
+      const preset = family.presets.find((item) => item.id === button.dataset.soundLabPreset);
+      if (!preset) return;
+      state.soundLabMacros = { ...state.soundLabMacros, ...preset.values };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-play]').forEach((button) => {
+    button.addEventListener('click', () => playSoundLabPatch());
+  });
+
+  document.querySelectorAll('[data-sound-lab-ab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.soundLabAb;
+      playSoundLabPatch(mode === 'a' ? { space: 0, variation: 0 } : {});
     });
   });
 }
@@ -1178,7 +1312,7 @@ function bindIntegrationControls() {
 }
 
 function populateTagFilter() {
-  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...deepDiveModules])) {
+  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...deepDiveModules, ...soundLabFamilies])) {
     const option = document.createElement('option');
     option.value = tag;
     option.textContent = tag;
