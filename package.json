@@ -6,5 +6,12 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "start": "python server.py 5177"
+  },
+  "vendorDependencies": {
+    "tone": {
+      "version": "15.1.22",
+      "license": "MIT",
+      "source": "https://unpkg.com/tone@15.1.22/build/Tone.js"
+    }
   }
 }

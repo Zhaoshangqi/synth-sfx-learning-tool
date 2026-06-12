@@ -179,6 +179,9 @@ export class LabAudioPlayer {
     this.playing = false;
     this.workletReady = false;
     this.workletLoadAttempted = false;
+    this.toneReady = false;
+    this.toneLoadAttempted = false;
+    this.toneNodes = [];
   }
 
   async ensureContext() {
@@ -244,6 +247,180 @@ export class LabAudioPlayer {
     }
   }
 
+  async loadToneRuntime() {
+    await this.ensureContext();
+    if (this.toneReady && globalThis.Tone) return globalThis.Tone;
+    this.toneLoadAttempted = true;
+
+    let Tone = globalThis.Tone;
+    if (!Tone && globalThis.document) {
+      try {
+        await new Promise((resolve, reject) => {
+          const existing = globalThis.document.querySelector('#tone-runtime-script');
+          if (existing) {
+            existing.remove();
+          }
+          const script = globalThis.document.createElement('script');
+          script.id = 'tone-runtime-script';
+          script.src = './vendor/tone/Tone.js';
+          script.async = true;
+          script.addEventListener('load', resolve, { once: true });
+          script.addEventListener('error', reject, { once: true });
+          globalThis.document.head.append(script);
+        });
+        Tone = globalThis.Tone;
+      } catch {
+        Tone = null;
+      }
+    }
+
+    if (!Tone) return null;
+
+    try {
+      await Tone.start?.();
+      this.toneReady = true;
+      return Tone;
+    } catch {
+      this.toneReady = false;
+      return null;
+    }
+  }
+
+  disposeToneNodes() {
+    for (const node of this.toneNodes) {
+      try {
+        if (typeof node.triggerRelease === 'function') node.triggerRelease();
+      } catch {
+        // Tone node may already be released.
+      }
+      try {
+        node.dispose?.();
+      } catch {
+        // Tone node may already be disposed.
+      }
+    }
+    this.toneNodes = [];
+  }
+
+  connectToneFxRack(Tone, source, patch) {
+    const fxRack = patch.fxRack ?? patch.toneGraph?.effects ?? [];
+    const nodes = [];
+    let current = source;
+
+    const addNode = (node) => {
+      if (!node) return;
+      current.connect(node);
+      current = node;
+      nodes.push(node);
+    };
+
+    for (const effect of fxRack) {
+      if (effect.type === 'drive' && Tone.Distortion) {
+        addNode(new Tone.Distortion(clamp(effect.amount ?? 0.12, 0, 0.9)));
+      }
+      if (effect.type === 'filter' && Tone.Filter) {
+        addNode(new Tone.Filter(clamp(effect.targetHz ?? patch.dsp?.filter?.frequency ?? 2200, 80, 16000), patch.dsp?.filter?.type ?? 'lowpass'));
+      }
+      if (effect.type === 'chorus' && Tone.Chorus && (effect.amount ?? 0) > 0.04) {
+        const chorus = new Tone.Chorus(1.4 + effect.amount * 3.2, 1.8 + effect.amount * 2.8, clamp(effect.amount, 0, 0.7));
+        chorus.start?.();
+        addNode(chorus);
+      }
+      if (effect.type === 'delay' && Tone.FeedbackDelay && (effect.amount ?? 0) > 0.04) {
+        addNode(new Tone.FeedbackDelay('8n', clamp(effect.amount, 0, 0.46)));
+      }
+      if (effect.type === 'reverb' && Tone.Reverb && (effect.amount ?? 0) > 0.03) {
+        addNode(new Tone.Reverb({ decay: clamp(effect.decaySeconds ?? 0.8, 0.1, 4), wet: clamp(effect.amount, 0, 0.62) }));
+      }
+    }
+
+    current.toDestination();
+    this.toneNodes.push(...nodes);
+  }
+
+  createToneInstrument(Tone, patch) {
+    const graph = patch.toneGraph ?? {};
+    const macros = patch.macros ?? {};
+    const envelope = graph.envelope ?? {};
+    const familyId = patch.familyId;
+    const velocity = clamp(patch.performance?.velocity ?? 72, 0, 127) / 127;
+    const base = {
+      volume: -10 + velocity * 5,
+      envelope: {
+        attack: clamp(envelope.attack ?? 0.006, 0.001, 0.4),
+        decay: clamp(envelope.decay ?? 0.24, 0.02, 1.8),
+        sustain: clamp(envelope.sustain ?? 0.08, 0, 0.9),
+        release: clamp(envelope.release ?? 0.32, 0.02, 2.2),
+      },
+    };
+
+    if ((familyId === 'air-whoosh' || familyId === 'electric-crackle') && Tone.NoiseSynth) {
+      return new Tone.NoiseSynth({
+        volume: base.volume - 4,
+        noise: { type: familyId === 'air-whoosh' ? 'brown' : 'white' },
+        envelope: {
+          attack: familyId === 'air-whoosh' ? 0.18 : 0.004,
+          decay: base.envelope.decay,
+          sustain: familyId === 'air-whoosh' ? 0.32 : 0.04,
+          release: base.envelope.release,
+        },
+      });
+    }
+
+    if (familyId === 'metal-impact' && Tone.MetalSynth) {
+      return new Tone.MetalSynth({
+        volume: base.volume - 8,
+        frequency: 180,
+        envelope: base.envelope,
+        harmonicity: 4.1,
+        modulationIndex: clamp(8 + macros.material * 0.16, 2, 24),
+        resonance: clamp(1600 + macros.brightness * 70, 400, 9000),
+        octaves: 1.8,
+      });
+    }
+
+    if (Tone.FMSynth) {
+      return new Tone.FMSynth({
+        ...base,
+        harmonicity: clamp(0.75 + (macros.material ?? 60) / 26, 0.25, 5.8),
+        modulationIndex: clamp(3 + (macros.material ?? 60) / 5.2, 1, 28),
+        oscillator: { type: familyId === 'energy-charge' ? 'sawtooth' : 'sine' },
+        modulation: { type: familyId === 'servo-tick' ? 'square' : 'sine' },
+        modulationEnvelope: {
+          attack: 0.002,
+          decay: clamp(0.08 + (macros.motion ?? 50) / 160, 0.04, 0.8),
+          sustain: 0.12,
+          release: base.envelope.release,
+        },
+      });
+    }
+
+    return new Tone.Synth(base);
+  }
+
+  async playToneSoundLabPatch(patch) {
+    if (patch?.engineMode !== 'hq') return false;
+    const Tone = await this.loadToneRuntime();
+    if (!Tone) return false;
+
+    const instrument = this.createToneInstrument(Tone, patch);
+    this.toneNodes.push(instrument);
+    this.connectToneFxRack(Tone, instrument, patch);
+
+    const note = patch.performance?.note ?? patch.toneGraph?.note ?? 'C3';
+    const duration = clamp(patch.toneGraph?.durationSeconds ?? patch.durationSeconds ?? 0.8, 0.08, 4.2);
+    const velocity = clamp(patch.performance?.velocity ?? 72, 0, 127) / 127;
+    const now = Tone.now?.() ?? 0;
+
+    if (patch.familyId === 'air-whoosh' || patch.familyId === 'electric-crackle') {
+      instrument.triggerAttackRelease(duration, now, velocity);
+    } else {
+      instrument.triggerAttackRelease(note, duration, now, velocity);
+    }
+
+    return true;
+  }
+
   async playSoundLabPatch(patch, { onLevel } = {}) {
     await this.ensureContext();
     this.stop();
@@ -251,8 +428,21 @@ export class LabAudioPlayer {
     this.current = null;
     this.onLevel = onLevel;
 
-    const canUseWorklet = await this.ensureSoundLabWorklet();
-    if (canUseWorklet) {
+    const fallbackChain = patch?.fallbackChain ?? ['worklet', 'webaudio'];
+    let engineUsed = 'webaudio';
+    let canUseWorklet = false;
+    let usedTone = false;
+
+    if (fallbackChain.includes('tone')) {
+      usedTone = await this.playToneSoundLabPatch(patch);
+      if (usedTone) engineUsed = 'tone';
+    }
+
+    if (!usedTone && fallbackChain.includes('worklet')) {
+      canUseWorklet = await this.ensureSoundLabWorklet();
+    }
+
+    if (!usedTone && canUseWorklet) {
       const node = new AudioWorkletNode(this.context, 'sound-lab-processor', {
         numberOfInputs: 0,
         numberOfOutputs: 1,
@@ -261,13 +451,14 @@ export class LabAudioPlayer {
       node.connect(this.master);
       node.port.postMessage(buildWorkletMessage(patch));
       this.activeNodes.add(node);
-    } else {
+      engineUsed = 'worklet';
+    } else if (!usedTone) {
       this.scheduleSoundLabFallback(patch);
     }
 
     this.startMeter();
     this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 520, 520, 4200));
-    return { workletReady: canUseWorklet };
+    return { workletReady: canUseWorklet, toneReady: this.toneReady, engineUsed, fallbackChain };
   }
 
   update(lab, state, waveform) {
@@ -649,6 +840,7 @@ export class LabAudioPlayer {
     if (this.raf) globalThis.cancelAnimationFrame(this.raf);
     this.raf = null;
     this.onLevel?.(0);
+    this.disposeToneNodes();
 
     for (const node of this.activeNodes) {
       try {

@@ -40,6 +40,7 @@ import { BASIC_WAVEFORMS, buildLabAudioPatch } from './audio-model.js';
 import {
   SOUND_LAB_LAYER_MIX,
   SOUND_LAB_MACROS,
+  SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
 } from './sound-lab-model.js';
@@ -97,6 +98,10 @@ const state = {
   soundLabQualityMode: 'balanced',
   soundLabLayerMix: { ...SOUND_LAB_LAYER_MIX },
   soundLabSampleMix: 0.58,
+  soundLabEngineMode: 'hq',
+  soundLabPerformance: { ...SOUND_LAB_PERFORMANCE_DEFAULTS },
+  soundLabToneReady: false,
+  soundLabEngineUsed: 'worklet',
   soundLabMacros: { ...SOUND_LAB_MACROS, ...(getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.macroHints ?? {}) },
   materialStates: Object.fromEntries(materialLabs.map((material) => [material.id, buildDefaultMaterialState(material)])),
   activeWaveform: BASIC_WAVEFORMS[0].id,
@@ -418,6 +423,8 @@ function getSoundLabOptions(optionOverrides = {}) {
     qualityMode: state.soundLabQualityMode,
     sampleMix: state.soundLabSampleMix,
     layerMix: state.soundLabLayerMix,
+    engineMode: state.soundLabEngineMode,
+    performance: state.soundLabPerformance,
     ...optionOverrides,
   };
 }
@@ -450,6 +457,9 @@ function renderSoundLabView() {
       </div>
       ${renderSoundLabWorkbench(family, model, {
         selectedFamilyId: family.id,
+        engineMode: state.soundLabEngineMode,
+        engineUsed: state.soundLabEngineUsed,
+        toneReady: state.soundLabToneReady,
         workletReady: state.soundLabWorkletReady,
         isPlaying: state.isSoundLabPlaying,
       })}
@@ -1150,10 +1160,14 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
       onLevel: (level) => updateSurfaceMeter('.sound-lab-workbench', level),
     });
     state.soundLabWorkletReady = Boolean(result?.workletReady);
+    state.soundLabToneReady = Boolean(result?.toneReady);
+    state.soundLabEngineUsed = result?.engineUsed ?? state.soundLabEngineMode;
     state.audioError = '';
   } catch (error) {
     state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
   }
+
+  render();
 
   globalThis.clearTimeout(patchPlayingTimer);
   patchPlayingTimer = globalThis.setTimeout(() => {
@@ -1170,6 +1184,15 @@ function bindSoundLabControls() {
       const presetDna = getPresetDnaForFamily(family.id)[0];
       state.activeSoundPresetDnaId = presetDna?.id;
       state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
+      state.soundLabPerformance = { ...SOUND_LAB_PERFORMANCE_DEFAULTS };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-engine]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.soundLabEngineMode = button.dataset.soundLabEngine;
+      state.soundLabEngineUsed = button.dataset.soundLabEngine;
       render();
     });
   });
@@ -1206,6 +1229,37 @@ function bindSoundLabControls() {
     });
   });
 
+  document.querySelectorAll('[data-performance-control]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      const controlId = rangeInput.dataset.performanceControl;
+      const numericValue = Number(rangeInput.value);
+      state.soundLabPerformance = {
+        ...state.soundLabPerformance,
+        [controlId]: Number.isFinite(numericValue) ? numericValue : state.soundLabPerformance[controlId],
+      };
+    });
+  });
+
+  document.querySelectorAll('[data-performance-hold]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.soundLabPerformance = {
+        ...state.soundLabPerformance,
+        hold: !state.soundLabPerformance.hold,
+      };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-key]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.soundLabPerformance = {
+        ...state.soundLabPerformance,
+        note: button.dataset.soundLabKey,
+      };
+      playSoundLabPatch({}, { performance: state.soundLabPerformance });
+    });
+  });
+
   document.querySelectorAll('[data-sound-lab-preset]').forEach((button) => {
     button.addEventListener('click', () => {
       const family = getActiveSoundFamily();
@@ -1223,9 +1277,15 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-sound-lab-ab]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.soundLabAb;
+      if (mode === 'tone') {
+        playSoundLabPatch({}, { engineMode: 'hq', qualityMode: 'studio' });
+        return;
+      }
       playSoundLabPatch(
         mode === 'a' ? { space: 0, variation: 0 } : {},
-        mode === 'a' ? { qualityMode: 'draft', layerMix: { ...state.soundLabLayerMix, texture: 0, tail: 0 } } : {},
+        mode === 'a'
+          ? { engineMode: 'webaudio', qualityMode: 'draft', layerMix: { ...state.soundLabLayerMix, texture: 0, tail: 0 } }
+          : { engineMode: state.soundLabEngineMode },
       );
     });
   });

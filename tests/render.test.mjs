@@ -274,3 +274,31 @@ test('renderSoundLabWorkbench exposes preset DNA, quality mode, layer mixer, and
   assert.match(html, /Layer Mixer/);
   assert.match(html, /License/);
 });
+
+test('renderSoundLabWorkbench exposes HQ engine, playable keyboard, and FX rack controls', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'energy-charge');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    engineMode: 'hq',
+    performance: { note: 'C3', velocity: 76, glide: 18, hold: false, octave: 0 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    engineMode: 'hq',
+    engineUsed: 'tone',
+    toneReady: true,
+    workletReady: true,
+    isPlaying: false,
+  });
+
+  assert.match(html, /data-sound-lab-engine="hq"/);
+  assert.match(html, /data-sound-lab-engine="worklet"/);
+  assert.match(html, /data-sound-lab-engine="webaudio"/);
+  assert.match(html, /Tone\.js/);
+  assert.match(html, /data-sound-lab-key="C3"/);
+  assert.match(html, /data-sound-lab-key="B3"/);
+  assert.match(html, /data-performance-control="velocity"/);
+  assert.match(html, /data-performance-control="glide"/);
+  assert.match(html, /data-performance-hold/);
+  assert.match(html, /fx-rack-panel/);
+  assert.match(html, /data-sound-lab-ab="tone"/);
+});

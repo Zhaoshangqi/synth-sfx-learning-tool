@@ -115,3 +115,43 @@ test('buildWorkletMessage sends layered DSP data without dropping the legacy con
   assert.ok(message.payload.layers.some((layer) => layer.engine === 'sampleGrain'));
   assert.ok(message.payload.layers.some((layer) => layer.engine === 'modalResonator'));
 });
+
+test('buildSoundLabPatch exposes HQ synth engine graph and playable performance controls', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'energy-charge');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 84,
+    motion: 78,
+    material: 62,
+    space: 54,
+    variation: 46,
+  }, {
+    engineMode: 'hq',
+    presetId: 'vital-energy-charge-rise',
+    qualityMode: 'studio',
+    performance: { note: 'G3', velocity: 82, glide: 28, hold: true, octave: 0 },
+  });
+
+  assert.equal(patch.engineMode, 'hq');
+  assert.equal(patch.toneGraph.engine, 'Tone.js');
+  assert.match(patch.toneGraph.instrument, /Synth|Noise|Metal|FM|AM/);
+  assert.ok(patch.toneGraph.nodes.length >= 4, 'HQ graph should describe instrument, filter, movement, and output stages');
+  assert.ok(patch.toneGraph.effects.some((effect) => effect.type === 'reverb'));
+  assert.ok(patch.toneGraph.effects.some((effect) => effect.type === 'drive'));
+  assert.equal(patch.performance.note, 'G3');
+  assert.equal(patch.performance.hold, true);
+  assert.ok(patch.macroModulation.some((route) => route.source === 'motion' && route.target.includes('filter')));
+  assert.equal(patch.fallbackChain.join(' > '), 'tone > worklet > webaudio');
+});
+
+test('buildSoundLabViewModel exposes HQ engine modes, FX rack, and performance UI data', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'air-whoosh');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, { engineMode: 'hq' });
+
+  assert.ok(model.engineModes.some((mode) => mode.id === 'hq' && mode.labelZh.includes('HQ')));
+  assert.equal(model.activeEngineMode, 'hq');
+  assert.ok(model.performanceControls.some((control) => control.id === 'velocity'));
+  assert.ok(model.performanceControls.some((control) => control.id === 'glide'));
+  assert.ok(model.keyboardNotes.length >= 12);
+  assert.ok(model.fxRack.some((effect) => effect.id === 'reverb'));
+  assert.match(model.patchJson, /"toneGraph"/);
+});
