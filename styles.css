@@ -2956,3 +2956,150 @@ textarea {
     display: none;
   }
 }
+
+
+.sound-lab-dna-panel,
+.sound-lab-control-console,
+.sound-lab-source-drawer {
+  border: 1px solid rgba(174, 233, 236, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(15, 32, 42, 0.32));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.sound-lab-dna-panel,
+.sound-lab-source-drawer {
+  padding: 14px;
+}
+
+.panel-heading-row,
+.sound-lab-source-drawer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.panel-heading-row h4,
+.quality-mode-panel h4,
+.layer-mixer-panel h4,
+.sound-lab-source-drawer h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.panel-heading-row p,
+.sound-lab-source-drawer p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.panel-heading-row > span {
+  border: 1px solid rgba(120, 225, 212, 0.24);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #e8fffb;
+  background: rgba(120, 225, 212, 0.08);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dna-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dna-card,
+.quality-mode-button {
+  border: 1px solid rgba(174, 233, 236, 0.18);
+  border-radius: 8px;
+  background: rgba(7, 18, 28, 0.34);
+  color: var(--text);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.dna-card:hover,
+.dna-card:focus-visible,
+.quality-mode-button:hover,
+.quality-mode-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(120, 225, 212, 0.42);
+  background: rgba(120, 225, 212, 0.08);
+}
+
+.dna-card.is-active,
+.quality-mode-button.is-active {
+  border-color: rgba(120, 225, 212, 0.58);
+  background: linear-gradient(135deg, rgba(120, 225, 212, 0.14), rgba(160, 139, 255, 0.08));
+  box-shadow: 0 0 30px rgba(120, 225, 212, 0.08);
+}
+
+.dna-card strong,
+.dna-card small,
+.dna-card span,
+.quality-mode-button strong,
+.quality-mode-button span {
+  display: block;
+}
+
+.dna-card small,
+.dna-card span,
+.quality-mode-button span,
+.layer-control small {
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.sound-lab-control-console {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.quality-mode-row {
+  display: grid;
+  gap: 8px;
+}
+
+.layer-mixer-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.layer-control {
+  border: 1px solid rgba(174, 233, 236, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(8, 19, 28, 0.28);
+}
+
+.layer-control .range-shell {
+  margin-top: 8px;
+}
+
+.sound-lab-source-drawer .source-link {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.dna-card:active,
+.quality-mode-button:active {
+  transform: translateY(1px) scale(0.992);
+}
+
+@media (max-width: 980px) {
+  .sound-lab-control-console,
+  .panel-heading-row,
+  .sound-lab-source-drawer,
+  .dna-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -818,6 +818,31 @@ export function renderMaterialLab(material, visualModel, state = {}, options = {
   `;
 }
 
+
+function renderSoundLabDnaControls(model = {}) {
+  const patch = model.patch ?? {};
+  const activeDnaId = patch.presetDna?.id ?? '';
+  const dnaCards = (model.presetDnaOptions ?? []).map((dna) => {
+    const shapes = (dna.parameters?.oscillators ?? []).map((osc) => osc.shape).join(' + ');
+    return '<button class="dna-card ' + (dna.id === activeDnaId ? 'is-active' : '') + '" type="button" data-sound-lab-dna="' + escapeHtml(dna.id) + '">' +
+      '<strong>' + escapeHtml(dna.titleZh) + '</strong>' +
+      '<small>' + escapeHtml(dna.source?.name ?? '') + '</small>' +
+      '<span>' + escapeHtml(shapes) + '</span>' +
+    '</button>';
+  }).join('');
+  const qualityButtons = (model.qualityModes ?? []).map((mode) => '<button class="quality-mode-button ' + (mode.id === patch.qualityMode ? 'is-active' : '') + '" type="button" data-sound-lab-quality="' + escapeHtml(mode.id) + '"><strong>' + escapeHtml(mode.labelZh) + '</strong><span>' + escapeHtml(mode.noteZh) + '</span></button>').join('');
+  const layerControls = (model.layerMixer ?? []).map((layer) => '<label class="lab-control layer-control"><span><strong>' + escapeHtml(layer.labelZh) + '</strong><output>' + escapeHtml(layer.value) + '%</output></span><small>' + escapeHtml(layer.activeEngines.join(' / ')) + '</small><span class="range-shell" style="--range-value: ' + formatNumber(layer.percent) + '%"><input type="range" data-sound-lab-layer="' + escapeHtml(layer.id) + '" data-control-unit="%" min="0" max="100" step="1" value="' + escapeHtml(layer.value) + '" /></span></label>').join('');
+  const drawer = model.sourceDrawer ?? {};
+  return '<section class="sound-lab-dna-panel" aria-label="Preset DNA">' +
+    '<div class="panel-heading-row"><div><h4>Preset DNA</h4><p>Free/public preset observations translated into playable layer recipes.</p></div><span>' + escapeHtml(patch.presetDna?.titleEn ?? '') + '</span></div>' +
+    '<div class="dna-card-grid">' + dnaCards + '</div>' +
+    '</section>' +
+    '<section class="sound-lab-control-console"><div class="quality-mode-panel" aria-label="Quality Mode"><h4>Quality Mode</h4><div class="quality-mode-row">' + qualityButtons + '</div></div>' +
+    '<div class="layer-mixer-panel" aria-label="Layer Mixer"><h4>Layer Mixer</h4>' + layerControls + '</div></section>' +
+    '<section class="sound-lab-source-drawer" data-sound-lab-source-drawer><div><h4>Source & License</h4><p>' + escapeHtml(drawer.extractionZh ?? '') + '</p><p><strong>License:</strong> ' + escapeHtml(drawer.licenseLabel ?? '') + '</p></div>' +
+    '<a class="source-link" href="' + escapeHtml(drawer.sourceUrl ?? '#') + '" target="_blank" rel="noreferrer">Open Source</a></section>';
+}
+
 export function renderSoundLabWorkbench(family, model, options = {}) {
   const workletReady = Boolean(options.workletReady);
   const isPlaying = Boolean(options.isPlaying);
@@ -869,6 +894,7 @@ export function renderSoundLabWorkbench(family, model, options = {}) {
           `).join('')}
         </div>
       </section>
+      ${renderSoundLabDnaControls(model)}
       <section class="sound-lab-meter-grid">
         ${model.meters.map((meter) => `
           <div>

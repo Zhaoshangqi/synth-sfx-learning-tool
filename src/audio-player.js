@@ -360,7 +360,158 @@ export class LabAudioPlayer {
     });
   }
 
+
+  rampLayerGain(gainParam, now, layer, durationSeconds) {
+    const envelope = layer.envelope ?? {};
+    const attack = Math.max(0.001, (envelope.attackMs ?? 2) / 1000);
+    const decay = Math.max(0.012, (envelope.decayMs ?? durationSeconds * 420) / 1000);
+    const sustain = clamp(envelope.sustain ?? 0.04, 0.0001, 1);
+    const release = Math.max(0.018, (envelope.releaseMs ?? 80) / 1000);
+    const peak = clamp(layer.gain ?? 0.3, 0, 1.2);
+    const releaseStart = Math.max(now + attack + decay, now + durationSeconds - release);
+    const stopAt = releaseStart + release;
+    gainParam.cancelScheduledValues(now);
+    gainParam.setValueAtTime(0.0001, now);
+    gainParam.linearRampToValueAtTime(Math.max(0.0001, peak), now + attack);
+    gainParam.exponentialRampToValueAtTime(Math.max(0.0001, peak * sustain), now + attack + decay);
+    gainParam.setValueAtTime(Math.max(0.0001, peak * sustain), releaseStart);
+    gainParam.exponentialRampToValueAtTime(0.0001, stopAt);
+    return stopAt;
+  }
+
+  scheduleLayeredSoundLabFallback(patch) {
+    if (!this.context || !this.master || !patch?.layers?.length || !this.playing) return;
+
+    const now = this.context.currentTime + 0.01;
+    const stopAt = now + patch.durationSeconds;
+    const nodes = [];
+    const bus = this.context.createGain();
+    const shaper = this.context.createWaveShaper();
+    const outputGain = this.context.createGain();
+    const globalFx = patch.globalFx ?? {};
+    bus.gain.value = 0.72;
+    shaper.curve = createDistortionCurve(globalFx.dynamics?.drive ?? patch.dsp?.waveshaper?.drive ?? 0.28);
+    shaper.oversample = '2x';
+    outputGain.gain.value = clamp(globalFx.softLimiter?.ceiling ?? 0.9, 0.4, 0.98);
+    bus.connect(shaper);
+    shaper.connect(outputGain);
+    outputGain.connect(this.master);
+    nodes.push(bus, shaper, outputGain);
+
+    for (const layer of patch.layers) {
+      if (layer.engine === 'modalResonator') {
+        for (const resonator of layer.resonators ?? []) {
+          const oscillator = this.context.createOscillator();
+          const amp = this.context.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(clamp((layer.baseFrequency ?? 180) * resonator.ratio, 30, 16000), now);
+          this.rampLayerGain(amp.gain, now, { ...layer, gain: layer.gain * resonator.gain }, patch.durationSeconds);
+          oscillator.connect(amp);
+          amp.connect(bus);
+          oscillator.start(now);
+          oscillator.stop(stopAt + 0.08);
+          nodes.push(oscillator, amp);
+        }
+        continue;
+      }
+
+      if (layer.engine === 'fmBurst') {
+        const carrier = this.context.createOscillator();
+        const modulator = this.context.createOscillator();
+        const modGain = this.context.createGain();
+        const amp = this.context.createGain();
+        const osc = layer.oscillator ?? {};
+        const frequency = clamp(osc.frequency ?? 220, 30, 6000);
+        carrier.type = osc.shape === 'square' || osc.shape === 'sawtooth' ? osc.shape : 'sine';
+        carrier.frequency.setValueAtTime(frequency, now);
+        carrier.frequency.linearRampToValueAtTime(clamp(frequency * (1 + Math.abs(osc.sweep ?? 0) * 0.24), 30, 8000), now + patch.durationSeconds * 0.7);
+        modulator.frequency.value = frequency * clamp(osc.fmRatio ?? 1.7, 0.25, 10);
+        modGain.gain.value = clamp(osc.fmDepth ?? 0, 0, 1200);
+        this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+        modulator.connect(modGain);
+        modGain.connect(carrier.frequency);
+        carrier.connect(amp);
+        amp.connect(bus);
+        modulator.start(now);
+        carrier.start(now);
+        modulator.stop(stopAt + 0.08);
+        carrier.stop(stopAt + 0.08);
+        nodes.push(carrier, modulator, modGain, amp);
+        continue;
+      }
+
+      if (layer.engine === 'combDelay') {
+        const source = this.context.createOscillator();
+        const delay = this.context.createDelay(0.08);
+        const feedback = this.context.createGain();
+        const amp = this.context.createGain();
+        source.type = 'sawtooth';
+        source.frequency.value = clamp(layer.sourceFrequency ?? 900, 40, 6000);
+        delay.delayTime.value = clamp((layer.delayMs ?? 8) / 1000, 0.001, 0.06);
+        feedback.gain.value = clamp(layer.feedback ?? 0.35, 0, 0.82);
+        this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+        source.connect(delay);
+        delay.connect(feedback);
+        feedback.connect(delay);
+        delay.connect(amp);
+        source.connect(amp);
+        amp.connect(bus);
+        source.start(now);
+        source.stop(stopAt + 0.08);
+        nodes.push(source, delay, feedback, amp);
+        continue;
+      }
+
+      const noise = this.context.createBufferSource();
+      const filter = this.context.createBiquadFilter();
+      const amp = this.context.createGain();
+      const filterData = layer.filter ?? {};
+      noise.buffer = createNoiseBuffer(this.context, patch.durationSeconds + 0.12);
+      filter.type = filterData.type === 'lowpass' ? 'lowpass' : filterData.type === 'highpass' ? 'highpass' : 'bandpass';
+      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? filterData.frequency ?? 3200, 120, 16000), now);
+      filter.Q.value = clamp(filterData.q ?? 1.2, 0.2, 16);
+      if (filterData.sweep) {
+        filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), now + patch.durationSeconds * 0.75);
+      }
+      this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+      noise.connect(filter);
+      filter.connect(amp);
+      amp.connect(bus);
+      noise.start(now);
+      noise.stop(stopAt + 0.08);
+      nodes.push(noise, filter, amp);
+    }
+
+    if (globalFx.space?.mix > 0) {
+      const convolver = this.context.createConvolver();
+      const wet = this.context.createGain();
+      convolver.buffer = createSpaceBuffer(this.context, globalFx.space.decaySeconds);
+      wet.gain.value = clamp(globalFx.space.mix, 0, 0.46);
+      bus.connect(convolver);
+      convolver.connect(wet);
+      wet.connect(this.master);
+      nodes.push(convolver, wet);
+    }
+
+    for (const node of nodes) this.activeNodes.add(node);
+    globalThis.setTimeout(() => {
+      for (const node of nodes) {
+        this.activeNodes.delete(node);
+        try {
+          node.disconnect();
+        } catch {
+          // Node may already be disconnected by stop().
+        }
+      }
+    }, Math.max(120, patch.durationSeconds * 1000 + 180));
+  }
+
   scheduleSoundLabFallback(patch) {
+    if (patch?.layers?.length) {
+      this.scheduleLayeredSoundLabFallback(patch);
+      return;
+    }
+
     if (!this.context || !this.master || !patch || !this.playing) return;
 
     const now = this.context.currentTime + 0.01;
