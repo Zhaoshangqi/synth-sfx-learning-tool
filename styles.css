@@ -2958,6 +2958,7 @@ textarea {
 }
 
 
+.sound-lab-engine-panel,
 .sound-lab-dna-panel,
 .sound-lab-control-console,
 .sound-lab-source-drawer {
@@ -2967,6 +2968,7 @@ textarea {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
+.sound-lab-engine-panel,
 .sound-lab-dna-panel,
 .sound-lab-source-drawer {
   padding: 14px;
@@ -3012,6 +3014,7 @@ textarea {
   margin-top: 12px;
 }
 
+.engine-mode-button,
 .dna-card,
 .quality-mode-button {
   border: 1px solid rgba(174, 233, 236, 0.18);
@@ -3024,6 +3027,8 @@ textarea {
   transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
+.engine-mode-button:hover,
+.engine-mode-button:focus-visible,
 .dna-card:hover,
 .dna-card:focus-visible,
 .quality-mode-button:hover,
@@ -3033,6 +3038,7 @@ textarea {
   background: rgba(120, 225, 212, 0.08);
 }
 
+.engine-mode-button.is-active,
 .dna-card.is-active,
 .quality-mode-button.is-active {
   border-color: rgba(120, 225, 212, 0.58);
@@ -3040,6 +3046,8 @@ textarea {
   box-shadow: 0 0 30px rgba(120, 225, 212, 0.08);
 }
 
+.engine-mode-button strong,
+.engine-mode-button span,
 .dna-card strong,
 .dna-card small,
 .dna-card span,
@@ -3048,6 +3056,7 @@ textarea {
   display: block;
 }
 
+.engine-mode-button span,
 .dna-card small,
 .dna-card span,
 .quality-mode-button span,
@@ -3055,6 +3064,123 @@ textarea {
   color: var(--muted);
   margin-top: 6px;
   line-height: 1.45;
+}
+
+.engine-mode-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.performance-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(240px, 1fr) minmax(220px, 0.8fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.keyboard-panel,
+.performance-panel,
+.fx-rack-panel {
+  border: 1px solid rgba(174, 233, 236, 0.14);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(8, 19, 28, 0.28);
+}
+
+.keyboard-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.keyboard-head strong,
+.fx-rack-panel h4 {
+  color: var(--text);
+  margin: 0;
+}
+
+.sound-lab-keyboard {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(22px, 1fr));
+  gap: 4px;
+  min-height: 86px;
+  align-items: end;
+}
+
+.sound-lab-key {
+  min-height: 78px;
+  border: 1px solid rgba(174, 233, 236, 0.22);
+  border-radius: 0 0 7px 7px;
+  background: linear-gradient(180deg, rgba(246, 255, 253, 0.9), rgba(182, 226, 223, 0.82));
+  color: #17313b;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.sound-lab-key.is-black {
+  min-height: 52px;
+  background: linear-gradient(180deg, rgba(36, 52, 69, 0.96), rgba(8, 17, 28, 0.95));
+  color: #ddfffa;
+}
+
+.sound-lab-key:hover,
+.sound-lab-key:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(120, 225, 212, 0.12);
+  filter: brightness(1.06);
+}
+
+.sound-lab-key:active {
+  transform: translateY(1px) scale(0.992);
+}
+
+.hold-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.hold-button.is-active {
+  border-color: rgba(120, 225, 212, 0.58);
+  background: rgba(120, 225, 212, 0.12);
+}
+
+.performance-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.performance-control {
+  border: 1px solid rgba(174, 233, 236, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.fx-rack-panel {
+  display: grid;
+  gap: 9px;
+}
+
+.fx-rack-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.fx-rack-item i {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(120, 225, 212, 0.85) 0 var(--meter), rgba(174, 233, 236, 0.12) var(--meter) 100%);
 }
 
 .sound-lab-control-console {
@@ -3090,12 +3216,15 @@ textarea {
   white-space: nowrap;
 }
 
+.engine-mode-button:active,
 .dna-card:active,
 .quality-mode-button:active {
   transform: translateY(1px) scale(0.992);
 }
 
 @media (max-width: 980px) {
+  .engine-mode-row,
+  .performance-grid,
   .sound-lab-control-console,
   .panel-heading-row,
   .sound-lab-source-drawer,

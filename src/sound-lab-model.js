@@ -26,6 +26,20 @@ export const SOUND_LAB_QUALITY_MODES = [
   { id: 'studio', labelZh: 'Studio', noteZh: '更多细节层和更柔和限制器，音质优先。', layerScale: 1.14, fxScale: 1.18 },
 ];
 
+export const SOUND_LAB_ENGINE_MODES = [
+  { id: 'hq', labelZh: 'HQ Tone.js', noteZh: '成熟合成模块、调度和 FX，优先用于真实试听。' },
+  { id: 'worklet', labelZh: 'Native Worklet', noteZh: '自研 AudioWorklet DSP，离线稳定、响应快。' },
+  { id: 'webaudio', labelZh: 'WebAudio Safe', noteZh: '浏览器基础节点回退，保证可播放。' },
+];
+
+export const SOUND_LAB_PERFORMANCE_DEFAULTS = {
+  note: 'C3',
+  velocity: 72,
+  glide: 12,
+  hold: false,
+  octave: 0,
+};
+
 export const SOUND_LAB_LAYER_MIX = {
   transient: 74,
   body: 72,
@@ -100,8 +114,86 @@ function getQualityMode(modeId = 'balanced') {
   return SOUND_LAB_QUALITY_MODES.find((mode) => mode.id === modeId) ?? SOUND_LAB_QUALITY_MODES[1];
 }
 
+function getEngineMode(modeId = 'worklet') {
+  return SOUND_LAB_ENGINE_MODES.some((mode) => mode.id === modeId) ? modeId : 'worklet';
+}
+
+function performanceValues(performance = {}) {
+  return {
+    note: String(performance.note ?? SOUND_LAB_PERFORMANCE_DEFAULTS.note),
+    velocity: clamp(performance.velocity ?? SOUND_LAB_PERFORMANCE_DEFAULTS.velocity, 0, 127),
+    glide: clamp(performance.glide ?? SOUND_LAB_PERFORMANCE_DEFAULTS.glide, 0, 100),
+    hold: Boolean(performance.hold ?? SOUND_LAB_PERFORMANCE_DEFAULTS.hold),
+    octave: clamp(performance.octave ?? SOUND_LAB_PERFORMANCE_DEFAULTS.octave, -2, 2),
+  };
+}
+
 export function getSoundLabFamily(families, familyId) {
   return families.find((family) => family.id === familyId) ?? families[0];
+}
+
+function buildFxRack(values, dsp, quality) {
+  const brightness = normalize(values.brightness);
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const space = normalize(values.space);
+  const variation = normalize(values.variation);
+  return [
+    { id: 'drive', type: 'drive', labelZh: 'Drive / Saturation', amount: clamp(dsp.waveshaper.drive * quality.fxScale + material * 0.28, 0, 1) },
+    { id: 'filter', type: 'filter', labelZh: 'Filter Movement', amount: clamp(brightness * 0.62 + motion * 0.38, 0, 1), targetHz: dsp.filter.frequency },
+    { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
+    { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
+    { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
+  ];
+}
+
+function buildToneGraph(family, values, dsp, quality, performance) {
+  const familyId = family?.id ?? 'metal-impact';
+  const instrumentByFamily = {
+    'metal-impact': 'MetalSynth + FMSynth',
+    'glass-ping': 'FMSynth + Synth partial stack',
+    'electric-crackle': 'NoiseSynth + FMSynth sparks',
+    'air-whoosh': 'NoiseSynth + AutoFilter',
+    'servo-tick': 'Synth pulse + PitchShift',
+    'energy-charge': 'FMSynth + AMSynth + PolySynth',
+  };
+  const fxRack = buildFxRack(values, dsp, quality);
+  const brightness = normalize(values.brightness);
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const space = normalize(values.space);
+
+  return {
+    engine: 'Tone.js',
+    version: '15.1.22',
+    instrument: instrumentByFamily[familyId] ?? 'FMSynth',
+    note: performance.note,
+    velocity: performance.velocity / 127,
+    durationSeconds: performance.hold ? clamp(dsp.space.decaySeconds + 1.4, 1.2, 4.2) : clamp(dsp.space.decaySeconds + 0.24, 0.18, 3.4),
+    nodes: [
+      { type: 'instrument', name: instrumentByFamily[familyId] ?? 'FMSynth', harmonicity: clamp(0.75 + material * 5.5, 0.25, 8) },
+      { type: 'filter', frequency: clamp(dsp.filter.frequency * (0.72 + brightness * 0.46), 120, 17000), q: clamp(dsp.filter.q * 0.85, 0.4, 9.5) },
+      { type: 'modulation', target: 'filter.frequency / modulationIndex / width', depth: clamp(0.18 + motion * 0.72, 0.1, 0.96) },
+      { type: 'output', limiter: quality.id === 'studio' ? 0.94 : 0.91 },
+    ],
+    effects: fxRack,
+    envelope: {
+      attack: clamp(dsp.transient.attackMs / 1000, 0.001, 0.18),
+      decay: clamp((familyId === 'air-whoosh' ? 0.65 : 0.12) + space * 0.65, 0.04, 1.4),
+      sustain: performance.hold ? clamp(0.24 + space * 0.34, 0.08, 0.78) : clamp(0.02 + space * 0.14, 0, 0.28),
+      release: clamp(0.08 + space * 1.1, 0.04, 1.6),
+    },
+  };
+}
+
+function buildMacroModulation(values) {
+  return [
+    { source: 'brightness', target: 'filter.frequency + oscillator partial brightness', amount: normalize(values.brightness) },
+    { source: 'motion', target: 'filter.frequency sweep + pan movement + trigger timing', amount: normalize(values.motion) },
+    { source: 'material', target: 'modulationIndex + drive + resonator Q', amount: normalize(values.material) },
+    { source: 'space', target: 'reverb wet + delay feedback + stereo width', amount: normalize(values.space) },
+    { source: 'variation', target: 'detune drift + random trigger seed + grain jitter', amount: normalize(values.variation) },
+  ];
 }
 
 function roleGain(role, mix, quality, recipeGain = 1) {
@@ -286,6 +378,10 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const { seed, durationSeconds, dsp } = buildLegacyDsp(family, base, values);
   const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options, presetDna });
   const quality = getQualityMode(layerData.qualityMode);
+  const engineMode = getEngineMode(options.engineMode);
+  const performance = performanceValues(options.performance);
+  const toneGraph = buildToneGraph(family, values, dsp, quality, performance);
+  const macroModulation = buildMacroModulation(values);
   const space = normalize(values.space);
   const material = normalize(values.material);
 
@@ -293,8 +389,10 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     id: `${family?.id ?? 'sound'}-${presetDna.id}-${seed}`,
     familyId: family?.id ?? 'metal-impact',
     workletName: family?.workletName ?? 'modal-metal',
+    engineMode,
     durationSeconds,
     macros: values,
+    performance,
     presetDna,
     qualityMode: layerData.qualityMode,
     sampleMix: layerData.sampleMix,
@@ -315,6 +413,10 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         releaseMs: layerData.qualityMode === 'draft' ? 55 : 90,
       },
     },
+    toneGraph,
+    fxRack: toneGraph.effects,
+    macroModulation,
+    fallbackChain: engineMode === 'hq' ? ['tone', 'worklet', 'webaudio'] : engineMode === 'worklet' ? ['worklet', 'webaudio'] : ['webaudio'],
     licenseNotice: `${presetDna.source.name}: ${presetDna.source.license.label}; sample sweeteners are procedural/generated in app. PresetShare public domain terms are used only for source qualification, not raw file bundling.`,
     sampleAssets: SOUND_LAB_SAMPLE_ASSETS,
     dsp,
@@ -344,6 +446,12 @@ export function buildWorkletMessage(patch) {
       sampleMix: patch.sampleMix,
       layers: patch.layers,
       globalFx: patch.globalFx,
+      engineMode: patch.engineMode,
+      performance: patch.performance,
+      toneGraph: patch.toneGraph,
+      fxRack: patch.fxRack,
+      macroModulation: patch.macroModulation,
+      fallbackChain: patch.fallbackChain,
     },
   };
 }
@@ -375,6 +483,25 @@ function buildLayerMixer(patch) {
   }));
 }
 
+function buildPerformanceControls(patch) {
+  return [
+    { id: 'velocity', labelZh: 'Velocity 力度', value: patch.performance.velocity, min: 0, max: 127, step: 1, unit: '', lowZh: '轻触，瞬态和驱动更少。', highZh: '重触，瞬态、亮度和饱和更强。' },
+    { id: 'glide', labelZh: 'Glide 滑音', value: patch.performance.glide, min: 0, max: 100, step: 1, unit: '%', lowZh: '立即到音高。', highZh: '更像可演奏合成器的滑音/上扬。' },
+    { id: 'octave', labelZh: 'Octave 八度', value: patch.performance.octave, min: -2, max: 2, step: 1, unit: '', lowZh: '更低、更重。', highZh: '更亮、更轻。' },
+  ];
+}
+
+function buildKeyboardNotes(baseOctave = 3) {
+  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  return names.map((name, index) => ({
+    id: `${name}${baseOctave}`,
+    label: name,
+    note: `${name}${baseOctave}`,
+    isBlack: name.includes('#'),
+    index,
+  }));
+}
+
 export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, options = {}) {
   const patch = buildSoundLabPatch(family, macros, options);
   const macroList = SOUND_LAB_MACRO_DEFS.map((macro) => {
@@ -388,12 +515,18 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
   const presetDnaOptions = getPresetDnaForFamily(family?.id);
   const patchJson = JSON.stringify({
     familyId: patch.familyId,
+    engineMode: patch.engineMode,
     qualityMode: patch.qualityMode,
     presetDnaId: patch.presetDna.id,
+    performance: patch.performance,
     macros: patch.macros,
     layerMix: patch.layerMix,
     layers: patch.layers.map((layer) => ({ id: layer.id, role: layer.role, engine: layer.engine, gain: layer.gain })),
     globalFx: patch.globalFx,
+    toneGraph: patch.toneGraph,
+    fxRack: patch.fxRack,
+    macroModulation: patch.macroModulation,
+    fallbackChain: patch.fallbackChain,
     dsp: patch.dsp,
   }, null, 2);
   const reaperNotes = [
@@ -415,6 +548,11 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     reaperNotes,
     presetDnaOptions,
     qualityModes: SOUND_LAB_QUALITY_MODES,
+    engineModes: SOUND_LAB_ENGINE_MODES,
+    activeEngineMode: patch.engineMode,
+    performanceControls: buildPerformanceControls(patch),
+    keyboardNotes: buildKeyboardNotes(3 + patch.performance.octave),
+    fxRack: patch.fxRack,
     layerMixer: buildLayerMixer(patch),
     sampleAssets: SOUND_LAB_SAMPLE_ASSETS,
     sourceDrawer: {

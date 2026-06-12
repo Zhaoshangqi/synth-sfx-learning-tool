@@ -210,3 +210,31 @@ test('styles include preset DNA cards, quality buttons, and layer mixer feedback
   assert.match(css, /.layer-mixer-panel/);
   assert.match(css, /.sound-lab-source-drawer/);
 });
+
+test('sound lab app wires HQ Tone engine controls with native fallback telemetry', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(html, /vendor\/tone\/Tone\.js/);
+  assert.match(audioPlayerJs, /loadToneRuntime/);
+  assert.match(audioPlayerJs, /playToneSoundLabPatch/);
+  assert.match(audioPlayerJs, /engineUsed/);
+  assert.match(audioPlayerJs, /fallbackChain/);
+  assert.match(appJs, /soundLabEngineMode/);
+  assert.match(appJs, /soundLabPerformance/);
+  assert.match(appJs, /data-sound-lab-engine/);
+  assert.match(appJs, /data-performance-control/);
+  assert.match(appJs, /data-sound-lab-key/);
+});
+
+test('native sound lab processor includes virtual analog oscillators, stereo FX, and safer limiting', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /polyBlep/);
+  assert.match(processorJs, /renderVirtualAnalogOscillator/);
+  assert.match(processorJs, /renderAllpassSpace/);
+  assert.match(processorJs, /colorNoise/);
+  assert.match(processorJs, /dcBlock/);
+  assert.match(processorJs, /onePole/);
+});

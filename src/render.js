@@ -949,14 +949,44 @@ function renderSoundLabDnaControls(model = {}) {
     '<a class="source-link" href="' + escapeHtml(drawer.sourceUrl ?? '#') + '" target="_blank" rel="noreferrer">Open Source</a></section>';
 }
 
+function renderSoundLabEngineControls(model = {}, options = {}) {
+  const activeEngine = options.engineMode ?? model.activeEngineMode ?? model.patch?.engineMode ?? 'worklet';
+  const engineUsed = options.engineUsed ?? activeEngine;
+  const engineButtons = (model.engineModes ?? []).map((mode) => (
+    '<button class="engine-mode-button ' + (mode.id === activeEngine ? 'is-active' : '') + '" type="button" data-sound-lab-engine="' + escapeHtml(mode.id) + '">' +
+      '<strong>' + escapeHtml(mode.labelZh) + '</strong>' +
+      '<span>' + escapeHtml(mode.noteZh) + '</span>' +
+    '</button>'
+  )).join('');
+  const performanceControls = (model.performanceControls ?? []).map((control) => (
+    '<label class="lab-control performance-control"><span><strong>' + escapeHtml(control.labelZh) + '</strong><output>' + escapeHtml(control.value) + escapeHtml(control.unit) + '</output></span>' +
+      '<small>' + escapeHtml(control.value < (control.max + control.min) / 2 ? control.lowZh : control.highZh) + '</small>' +
+      '<span class="range-shell" style="--range-value: ' + formatNumber(((control.value - control.min) / Math.max(1, control.max - control.min)) * 100) + '%">' +
+        '<input type="range" data-performance-control="' + escapeHtml(control.id) + '" data-control-unit="' + escapeHtml(control.unit) + '" min="' + escapeHtml(control.min) + '" max="' + escapeHtml(control.max) + '" step="' + escapeHtml(control.step) + '" value="' + escapeHtml(control.value) + '" />' +
+      '</span></label>'
+  )).join('');
+  const keys = (model.keyboardNotes ?? []).map((note) => '<button class="sound-lab-key ' + (note.isBlack ? 'is-black' : '') + '" type="button" data-sound-lab-key="' + escapeHtml(note.note) + '"><span>' + escapeHtml(note.label) + '</span></button>').join('');
+  const fx = (model.fxRack ?? []).map((effect) => '<div class="fx-rack-item"><span>' + escapeHtml(effect.labelZh) + '</span><strong>' + formatNumber((effect.amount ?? 0) * 100) + '%</strong><i style="--meter:' + formatNumber((effect.amount ?? 0) * 100) + '%"></i></div>').join('');
+
+  return '<section class="sound-lab-engine-panel">' +
+    '<div class="panel-heading-row"><div><h4>HQ Engine</h4><p>Tone.js gives mature synth modules; native engines stay ready as fallback.</p></div><span>' + escapeHtml(engineUsed) + '</span></div>' +
+    '<div class="engine-mode-row">' + engineButtons + '</div>' +
+    '<div class="performance-grid"><div class="keyboard-panel" aria-label="Playable keyboard"><div class="keyboard-head"><strong>Playable Synth</strong><span>Tone.js / Native</span></div><div class="sound-lab-keyboard">' + keys + '</div><button class="secondary-button hold-button ' + (model.patch?.performance?.hold ? 'is-active' : '') + '" type="button" data-performance-hold>Hold Loop</button></div>' +
+    '<div class="performance-panel" aria-label="Performance controls">' + performanceControls + '</div>' +
+    '<div class="fx-rack-panel" aria-label="FX Rack"><h4>FX Rack</h4>' + fx + '</div></div>' +
+    '</section>';
+}
+
 export function renderSoundLabWorkbench(family, model, options = {}) {
   const workletReady = Boolean(options.workletReady);
+  const toneReady = Boolean(options.toneReady);
   const isPlaying = Boolean(options.isPlaying);
+  const engineLabel = options.engineUsed ? options.engineUsed : model.activeEngineMode;
   return `
     <article class="card sound-lab-workbench ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
       <div class="sound-lab-head">
         <div>
-          <div class="card-kicker">Sound Lab · AudioWorklet ${workletReady ? 'ready' : 'fallback'}</div>
+          <div class="card-kicker">Sound Lab · Tone.js ${toneReady ? 'ready' : 'fallback'} · AudioWorklet ${workletReady ? 'ready' : 'fallback'} · ${escapeHtml(engineLabel)}</div>
           <h3>${escapeHtml(family.titleZh)}</h3>
           <p>${escapeHtml(family.summaryZh)}</p>
         </div>
@@ -967,8 +997,10 @@ export function renderSoundLabWorkbench(family, model, options = {}) {
           </button>
           <button class="secondary-button" type="button" data-sound-lab-ab="a">A 干声</button>
           <button class="secondary-button" type="button" data-sound-lab-ab="b">B 完整</button>
+          <button class="secondary-button" type="button" data-sound-lab-ab="tone">Tone.js</button>
         </div>
       </div>
+      ${renderSoundLabEngineControls(model, options)}
       <section class="sound-lab-stage">
         <div class="spectrum-stage" aria-label="频谱和共振预览">
           <div class="spectrum-header">

@@ -7,12 +7,28 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     this.frame = 0;
     this.seed = 1;
     this.layerStates = [];
+    this.spaceState = this.createSpaceState();
+    this.outputDcLeft = { x: 0, y: 0 };
+    this.outputDcRight = { x: 0, y: 0 };
     this.port.onmessage = (event) => {
       if (event.data?.type !== 'sound-lab:play') return;
       this.patch = event.data.payload;
       this.frame = 0;
       this.seed = Math.max(1, Math.floor(this.patch.seed || 1));
       this.layerStates = (this.patch.layers || []).map((layer) => this.createLayerState(layer));
+      this.spaceState = this.createSpaceState();
+      this.outputDcLeft = { x: 0, y: 0 };
+      this.outputDcRight = { x: 0, y: 0 };
+    };
+  }
+
+  createSpaceState() {
+    const length = Math.max(32, Math.floor(sampleRate * 0.037));
+    return {
+      left: new Float32Array(length),
+      right: new Float32Array(Math.max(32, Math.floor(sampleRate * 0.043))),
+      indexLeft: 0,
+      indexRight: 0,
     };
   }
 
@@ -23,6 +39,10 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       modPhase: 0,
       filter: 0,
       filter2: 0,
+      filter3: 0,
+      pink: 0,
+      brown: 0,
+      dc: { x: 0, y: 0 },
       combIndex: 0,
       combBuffer: new Float32Array(Math.max(8, Math.floor(sampleRate * delayMs / 1000))),
     };
@@ -68,14 +88,80 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return Math.sin(phase * Math.PI * 2);
   }
 
+  polyBlep(phase, phaseInc) {
+    if (phase < phaseInc) {
+      const t = phase / phaseInc;
+      return t + t - t * t - 1;
+    }
+    if (phase > 1 - phaseInc) {
+      const t = (phase - 1) / phaseInc;
+      return t * t + t + t + 1;
+    }
+    return 0;
+  }
+
+  onePole(current, input, coeff) {
+    return current + (input - current) * clamp(coeff, 0.0005, 0.98);
+  }
+
+  colorNoise(state, color = 'white') {
+    const white = this.random() * 2 - 1;
+    state.pink = this.onePole(state.pink, white, 0.08);
+    state.brown = clamp(this.onePole(state.brown, white * 0.18, 0.018), -1, 1);
+    if (color === 'brown') return state.brown * 1.8;
+    if (color === 'pink') return state.pink * 2.4;
+    if (color === 'bright') return white - state.pink * 0.72;
+    return white;
+  }
+
+  dcBlock(state, sample) {
+    const output = sample - state.x + state.y * 0.995;
+    state.x = sample;
+    state.y = output;
+    return output;
+  }
+
+  renderVirtualAnalogOscillator(layer, state, frequency, shape = 'sine') {
+    const phaseInc = clamp(frequency / sampleRate, 0.00001, 0.45);
+    state.phase = (state.phase + phaseInc) % 1;
+    const phase = state.phase;
+    if (shape === 'sawtooth') return 1 - phase * 2 - this.polyBlep(phase, phaseInc);
+    if (shape === 'square') {
+      const pulse = phase < 0.5 ? 1 : -1;
+      return pulse + this.polyBlep(phase, phaseInc) - this.polyBlep((phase + 0.5) % 1, phaseInc);
+    }
+    if (shape === 'triangle') {
+      const square = phase < 0.5 ? 1 : -1;
+      state.filter3 = this.onePole(state.filter3, square, phaseInc * 4);
+      return clamp(state.filter3 * 2.4, -1, 1);
+    }
+    return Math.sin(phase * Math.PI * 2);
+  }
+
+  renderAllpassSpace(input, channel = 'left') {
+    const state = this.spaceState;
+    const buffer = channel === 'left' ? state.left : state.right;
+    const indexKey = channel === 'left' ? 'indexLeft' : 'indexRight';
+    const index = state[indexKey];
+    const delayed = buffer[index] || 0;
+    const feedback = channel === 'left' ? 0.42 : 0.37;
+    const output = -feedback * input + delayed;
+    buffer[index] = input + delayed * feedback;
+    state[indexKey] = (index + 1) % buffer.length;
+    return output;
+  }
+
   renderSampleGrain(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
     const bandHz = clamp(layer.bandHz || layer.generator?.bandHz || 4800, 120, 15000);
     const density = clamp(layer.density || 18, 1, 120);
+    const generatorType = layer.generator?.type || 'spark-grains';
     const gate = Math.sin(t * Math.PI * 2 * density + (this.seed % 13)) > (0.18 + clamp(layer.jitter || 0.2, 0, 1) * 0.52) ? 1 : 0;
-    const noise = (this.random() * 2 - 1) * gate;
+    const color = generatorType.includes('air') ? 'brown' : generatorType.includes('metal') || generatorType.includes('electric') ? 'bright' : 'pink';
+    const noise = this.colorNoise(state, color) * gate;
     const tone = Math.sin(t * Math.PI * 2 * bandHz) * 0.35 + Math.sin(t * Math.PI * 2 * bandHz * 1.91) * 0.18;
-    return (noise * 0.72 + tone) * env * layer.gain;
+    const shaped = generatorType.includes('shimmer') ? tone * 0.72 + noise * 0.22 : noise * 0.72 + tone;
+    return this.dcBlock(state.dc, shaped * env * layer.gain);
   }
 
   renderFmBurst(layer, state, t, duration) {
@@ -84,9 +170,10 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const frequency = clamp(osc.frequency || 220, 20, 6000) * (1 + clamp(osc.sweep || 0, -2, 2) * t / Math.max(0.05, duration) * 0.18);
     const fmRatio = clamp(osc.fmRatio || 1.7, 0.25, 12);
     const fmDepth = clamp(osc.fmDepth || 0, 0, 2000) / 900;
-    const mod = Math.sin(t * Math.PI * 2 * frequency * fmRatio) * fmDepth;
-    const carrier = Math.sin(t * Math.PI * 2 * frequency + mod);
-    return carrier * env * layer.gain;
+    state.modPhase = (state.modPhase + clamp((frequency * fmRatio) / sampleRate, 0.00001, 0.45)) % 1;
+    const mod = Math.sin(state.modPhase * Math.PI * 2) * fmDepth;
+    const carrier = this.renderVirtualAnalogOscillator(layer, state, frequency * (1 + mod * 0.018), osc.shape);
+    return this.dcBlock(state.dc, carrier * env * layer.gain);
   }
 
   renderModalResonator(layer, state, t, duration) {
@@ -106,30 +193,31 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   renderFilteredNoise(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
-    const noise = (this.random() * 2 - 1) * clamp(layer.noise?.gain || 0.5, 0, 1);
+    const noiseColor = layer.filter?.type === 'lowpass' ? 'brown' : layer.filter?.type === 'highpass' ? 'bright' : 'pink';
+    const noise = this.colorNoise(state, noiseColor) * clamp(layer.noise?.gain || 0.5, 0, 1);
     const gateRate = clamp(layer.noise?.gateRate || 8, 0.5, 120);
     const gate = this.random() > gateRate / 150 ? 1 : 0.42;
     const cutoff = clamp((layer.filter?.frequency || 2600) * (1 + (layer.filter?.sweep || 0) * t / Math.max(0.05, duration)), 80, 16000);
     const coeff = clamp(cutoff / sampleRate, 0.002, 0.48);
-    state.filter += (noise - state.filter) * coeff;
-    state.filter2 += (state.filter - state.filter2) * coeff;
+    state.filter = this.onePole(state.filter, noise, coeff);
+    state.filter2 = this.onePole(state.filter2, state.filter, coeff);
     const band = state.filter - state.filter2;
     const type = layer.filter?.type || 'bandpass';
     const filtered = type === 'lowpass' ? state.filter2 : type === 'highpass' ? noise - state.filter2 : band * 3.2;
-    return filtered * gate * env * layer.gain;
+    return this.dcBlock(state.dc, filtered * gate * env * layer.gain);
   }
 
   renderCombDelay(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
     const frequency = clamp(layer.sourceFrequency || 800, 30, 8000);
-    const excite = (Math.sin(t * Math.PI * 2 * frequency) * 0.55 + (this.random() * 2 - 1) * 0.25) * env;
+    const excite = (this.renderVirtualAnalogOscillator(layer, state, frequency, 'sawtooth') * 0.45 + this.colorNoise(state, 'pink') * 0.18) * env;
     const delayed = state.combBuffer[state.combIndex] || 0;
     const feedback = clamp(layer.feedback || 0.35, 0, 0.9);
     const damping = clamp(layer.damping || 0.6, 0.05, 0.96);
     const next = (excite + delayed * feedback) * damping;
     state.combBuffer[state.combIndex] = next;
     state.combIndex = (state.combIndex + 1) % state.combBuffer.length;
-    return (delayed + excite * 0.38) * layer.gain;
+    return this.dcBlock(state.dc, (delayed + excite * 0.38) * layer.gain);
   }
 
   renderLayer(layer, state, t, duration) {
@@ -221,8 +309,13 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       }
 
       const tailMotion = Math.sin(t * Math.PI * 2 * (0.13 + width * 0.24)) * width * 0.05;
-      left[index] = this.softLimiter(mixedLeft * (1 - tailMotion));
-      right[index] = this.softLimiter(mixedRight * (1 + tailMotion));
+      const spaceMix = clamp(this.patch.globalFx?.space?.mix ?? this.patch.space?.mix ?? 0, 0, 0.62);
+      const spacedLeft = this.renderAllpassSpace(mixedLeft, 'left');
+      const spacedRight = this.renderAllpassSpace(mixedRight, 'right');
+      const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width;
+      const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width;
+      left[index] = this.softLimiter(this.dcBlock(this.outputDcLeft, finalLeft * (1 - tailMotion)));
+      right[index] = this.softLimiter(this.dcBlock(this.outputDcRight, finalRight * (1 + tailMotion)));
     }
 
     this.frame += left.length;
