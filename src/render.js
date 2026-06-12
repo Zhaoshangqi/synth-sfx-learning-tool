@@ -596,6 +596,112 @@ export function renderTechniqueTipCard(tip, sources = []) {
   `;
 }
 
+function renderCommunityControl(control, value) {
+  const current = Number(value ?? control.default ?? control.min ?? 0);
+  const min = Number(control.min ?? 0);
+  const max = Number(control.max ?? 100);
+  const percent = ((current - min) / Math.max(1, max - min)) * 100;
+  return `
+    <label class="community-control">
+      <span><strong>${escapeHtml(control.labelZh)}</strong><output>${escapeHtml(current)}${escapeHtml(control.unit ?? '')}</output></span>
+      <small>${escapeHtml(control.descriptionZh)}</small>
+      <span class="range-shell" style="--range-value: ${formatNumber(percent)}%">
+        <input type="range" data-community-control="${escapeHtml(control.id)}" min="${escapeHtml(min)}" max="${escapeHtml(max)}" step="1" value="${escapeHtml(current)}" />
+      </span>
+    </label>
+  `;
+}
+
+function renderCommunitySteps(steps = []) {
+  return steps.map((step, index) => `
+    <li>
+      <span>${String(index + 1).padStart(2, '0')}</span>
+      <div>
+        <strong>${escapeHtml(step.titleZh)}</strong>
+        <p>${escapeHtml(step.detailZh)}</p>
+        <small>${escapeHtml(step.whyZh)}</small>
+      </div>
+    </li>
+  `).join('');
+}
+
+export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
+  const controlValues = options.controlValues ?? {};
+  const activeClass = options.isActive ? 'is-active' : '';
+  const mappingRows = Object.entries(lab.interactiveMappings ?? {}).map(([key, moves]) => `
+    <div>
+      <strong>${escapeHtml(key)}</strong>
+      <ul>${listItems(moves)}</ul>
+    </div>
+  `).join('');
+
+  return `
+    <article class="card community-technique-card ${activeClass}" data-community-technique="${escapeHtml(lab.id)}">
+      <div class="card-kicker">非官方博主技巧 · ${escapeHtml(lab.platformFocusZh)} · ${escapeHtml(lab.difficulty)} · ${badgeList(lab.tags)}</div>
+      <header class="community-technique-heading">
+        <div>
+          <h3>${escapeHtml(lab.titleZh)}</h3>
+          <p>${escapeHtml(lab.principleZh)}</p>
+        </div>
+        <aside class="creator-source-pill">
+          <span>Creator</span>
+          <strong>${escapeHtml(lab.creatorZh)}</strong>
+        </aside>
+      </header>
+      <section class="community-watch-task">
+        <h4>观看任务</h4>
+        <p>${escapeHtml(lab.watchTaskZh)}</p>
+      </section>
+      <section>
+        <h4>详细方法</h4>
+        <ol class="community-method-list">${renderCommunitySteps(lab.methodSteps)}</ol>
+      </section>
+      <section class="community-control-panel" aria-label="交互练习">
+        <div>
+          <h4>交互练习</h4>
+          <p>调这些听感参数，再把配方加载到 Sound Lab 试听。这里调整的是网页练习配方，不会伪装成原视频的逐帧参数。</p>
+        </div>
+        <div class="community-control-grid">
+          ${(lab.controls ?? []).map((control) => renderCommunityControl(control, controlValues[control.id])).join('')}
+        </div>
+        <div class="community-mapping-grid">
+          ${mappingRows}
+        </div>
+        <button class="primary-button community-load-button" type="button" data-community-load-soundlab="${escapeHtml(lab.id)}">加载到 Sound Lab</button>
+      </section>
+      <section>
+        <h4>Serum / Phase Plant / Vital</h4>
+        ${renderSynthMappings(lab.synthMappings)}
+      </section>
+      <section>
+        <h4>REAPER</h4>
+        <ol>${listItems(lab.reaperDrill)}</ol>
+      </section>
+      <section class="technique-validation">
+        <h4>正确度验证</h4>
+        <div class="technique-validation-grid">
+          <div>
+            <h5>听感检查</h5>
+            <ul>${listItems(lab.verification?.listeningChecks)}</ul>
+          </div>
+          <div>
+            <h5>参数边界</h5>
+            <ul>${listItems(lab.verification?.parameterBoundaries)}</ul>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h4>常见误区</h4>
+        <ul>${listItems(lab.commonMistakes)}</ul>
+      </section>
+      <section>
+        <h4>来源依据</h4>
+        <div class="source-evidence">${renderSourceEvidence(lab.sourceIds, sources)}</div>
+      </section>
+    </article>
+  `;
+}
+
 function renderSignalFlow(flow = []) {
   return flow.map((step, index) => `
     <li>
