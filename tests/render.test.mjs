@@ -226,3 +226,28 @@ test('renderDeepDiveModuleCard exposes deep analysis, practice stages, and evide
   assert.match(html, /故障诊断/);
   assert.match(html, /来源依据/);
 });
+
+test('renderSoundLabWorkbench exposes preset DNA, quality mode, layer mixer, and source license controls', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    layerMix: { transient: 72, body: 70, texture: 45, tail: 32 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    workletReady: true,
+    isPlaying: false,
+  });
+
+  assert.match(html, /data-sound-lab-dna="vital-metal-modal-hit"/);
+  assert.match(html, /data-sound-lab-quality="studio"/);
+  assert.match(html, /data-sound-lab-layer="transient"/);
+  assert.match(html, /data-sound-lab-layer="body"/);
+  assert.match(html, /data-sound-lab-layer="texture"/);
+  assert.match(html, /data-sound-lab-layer="tail"/);
+  assert.match(html, /data-sound-lab-source-drawer/);
+  assert.match(html, /Preset DNA/);
+  assert.match(html, /Layer Mixer/);
+  assert.match(html, /License/);
+});

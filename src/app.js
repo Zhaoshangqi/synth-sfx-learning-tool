@@ -37,11 +37,12 @@ import {
 } from './challenge-model.js';
 import { BASIC_WAVEFORMS, buildLabAudioPatch } from './audio-model.js';
 import {
+  SOUND_LAB_LAYER_MIX,
   SOUND_LAB_MACROS,
-  buildSoundLabPatch,
   buildSoundLabViewModel,
   getSoundLabFamily,
 } from './sound-lab-model.js';
+import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
 import { createLabAudioPlayer } from './audio-player.js';
 import { collectTags, filterItems, normalizeText } from './search.js';
 import { buildDashboardStats, getNextLesson, groupByStage } from './view-model.js';
@@ -85,7 +86,11 @@ const state = {
   activeMaterialId: materialLabs[0]?.id,
   activeDeepDiveId: deepDiveModules[0]?.id,
   activeSoundFamilyId: soundLabFamilies[0]?.id,
-  soundLabMacros: { ...SOUND_LAB_MACROS },
+  activeSoundPresetDnaId: getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.id,
+  soundLabQualityMode: 'balanced',
+  soundLabLayerMix: { ...SOUND_LAB_LAYER_MIX },
+  soundLabSampleMix: 0.58,
+  soundLabMacros: { ...SOUND_LAB_MACROS, ...(getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.macroHints ?? {}) },
   materialStates: Object.fromEntries(materialLabs.map((material) => [material.id, buildDefaultMaterialState(material)])),
   activeWaveform: BASIC_WAVEFORMS[0].id,
   isAuditioning: false,
@@ -400,8 +405,22 @@ function getActiveSoundFamily() {
   return getSoundLabFamily(soundLabFamilies, state.activeSoundFamilyId);
 }
 
-function getSoundLabModel(overrides = {}) {
-  return buildSoundLabViewModel(getActiveSoundFamily(), { ...state.soundLabMacros, ...overrides });
+function getSoundLabOptions(optionOverrides = {}) {
+  return {
+    presetId: state.activeSoundPresetDnaId,
+    qualityMode: state.soundLabQualityMode,
+    sampleMix: state.soundLabSampleMix,
+    layerMix: state.soundLabLayerMix,
+    ...optionOverrides,
+  };
+}
+
+function getSoundLabModel(macroOverrides = {}, optionOverrides = {}) {
+  return buildSoundLabViewModel(
+    getActiveSoundFamily(),
+    { ...state.soundLabMacros, ...macroOverrides },
+    getSoundLabOptions(optionOverrides),
+  );
 }
 
 function renderSoundLabView() {
@@ -1070,10 +1089,9 @@ function updateSoundLabControl(controlId, value) {
   };
 }
 
-async function playSoundLabPatch(overrides = {}) {
-  const family = getActiveSoundFamily();
-  const model = getSoundLabModel(overrides);
-  const patch = buildSoundLabPatch(family, model.patch.macros);
+async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
+  const model = getSoundLabModel(macroOverrides, optionOverrides);
+  const patch = model.patch;
   state.isSoundLabPlaying = true;
   state.isAuditioning = false;
   render();
@@ -1100,7 +1118,9 @@ function bindSoundLabControls() {
     button.addEventListener('click', () => {
       state.activeSoundFamilyId = button.dataset.soundFamilyId;
       const family = getActiveSoundFamily();
-      state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}) };
+      const presetDna = getPresetDnaForFamily(family.id)[0];
+      state.activeSoundPresetDnaId = presetDna?.id;
+      state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
       render();
     });
   });
@@ -1108,6 +1128,32 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-sound-lab-control]').forEach((input) => {
     bindSmoothRangeInput(input, (rangeInput) => {
       updateSoundLabControl(rangeInput.dataset.soundLabControl, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-dna]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const presetDna = getPresetDnaById(button.dataset.soundLabDna, getActiveSoundFamily().id);
+      state.activeSoundPresetDnaId = presetDna.id;
+      state.soundLabMacros = { ...state.soundLabMacros, ...presetDna.macroHints };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-quality]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.soundLabQualityMode = button.dataset.soundLabQuality;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-sound-lab-layer]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      const layerId = rangeInput.dataset.soundLabLayer;
+      state.soundLabLayerMix = {
+        ...state.soundLabLayerMix,
+        [layerId]: Math.max(0, Math.min(100, Number(rangeInput.value))),
+      };
     });
   });
 
@@ -1128,7 +1174,10 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-sound-lab-ab]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.soundLabAb;
-      playSoundLabPatch(mode === 'a' ? { space: 0, variation: 0 } : {});
+      playSoundLabPatch(
+        mode === 'a' ? { space: 0, variation: 0 } : {},
+        mode === 'a' ? { qualityMode: 'draft', layerMix: { ...state.soundLabLayerMix, texture: 0, tail: 0 } } : {},
+      );
     });
   });
 }

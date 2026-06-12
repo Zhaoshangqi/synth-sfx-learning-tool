@@ -144,3 +144,47 @@ test('interaction effects add pointer and keyboard tactile feedback hooks', () =
   assert.match(js, /tap-spark/);
   assert.match(js, /prefers-reduced-motion/);
 });
+
+
+test('sound lab app wires preset DNA, quality mode, and layer mixer interactions', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /activeSoundPresetDnaId/);
+  assert.match(appJs, /soundLabQualityMode/);
+  assert.match(appJs, /soundLabLayerMix/);
+  assert.match(appJs, /data-sound-lab-dna/);
+  assert.match(appJs, /data-sound-lab-quality/);
+  assert.match(appJs, /data-sound-lab-layer/);
+  assert.match(appJs, /presetDna.macroHints/);
+});
+
+test('sound lab processor renders layered engines with global soft limiter', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /renderLayer/);
+  assert.match(processorJs, /sampleGrain/);
+  assert.match(processorJs, /modalResonator/);
+  assert.match(processorJs, /combDelay/);
+  assert.match(processorJs, /globalFx/);
+  assert.match(processorJs, /softLimiter/);
+});
+
+test('audio player fallback schedules layered sound lab patches when AudioWorklet is unavailable', () => {
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(audioPlayerJs, /scheduleLayeredSoundLabFallback/);
+  assert.match(audioPlayerJs, /patch.layers/);
+  assert.match(audioPlayerJs, /layer.engine/);
+  assert.match(audioPlayerJs, /modalResonator/);
+  assert.match(audioPlayerJs, /combDelay/);
+});
+
+test('styles include preset DNA cards, quality buttons, and layer mixer feedback', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /.sound-lab-dna-panel/);
+  assert.match(css, /.dna-card/);
+  assert.match(css, /.quality-mode-button/);
+  assert.match(css, /.layer-mixer-panel/);
+  assert.match(css, /.sound-lab-source-drawer/);
+});

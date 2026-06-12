@@ -65,3 +65,53 @@ test('buildSoundLabViewModel exposes meters, macro labels, evidence, and export 
   assert.match(model.patchJson, /"familyId"/);
   assert.match(model.reaperNotes, /REAPER/);
 });
+
+test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 82,
+    motion: 44,
+    material: 88,
+    space: 38,
+    variation: 57,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    sampleMix: 0.64,
+    layerMix: {
+      transient: 86,
+      body: 78,
+      texture: 52,
+      tail: 34,
+    },
+  });
+
+  assert.equal(patch.presetDna.id, 'vital-metal-modal-hit');
+  assert.equal(patch.qualityMode, 'studio');
+  assert.equal(patch.sampleMix, 0.64);
+  assert.ok(patch.layers.length >= 5);
+  assert.ok(patch.layers.some((layer) => layer.role === 'transient' && layer.engine === 'sampleGrain'));
+  assert.ok(patch.layers.some((layer) => layer.engine === 'modalResonator'));
+  assert.ok(patch.layers.some((layer) => layer.engine === 'combDelay'));
+  assert.ok(patch.layers.every((layer) => layer.envelope && Number.isFinite(layer.gain)));
+  assert.ok(patch.globalFx.softLimiter.ceiling <= 0.96);
+  assert.ok(patch.globalFx.space.decaySeconds > 0.1);
+  assert.match(patch.licenseNotice, /PresetShare|public domain|procedural/i);
+});
+
+test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
+  const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    layerMix: { transient: 70, body: 70, texture: 40, tail: 30 },
+  });
+  const message = buildWorkletMessage(patch);
+
+  assert.ok(Array.isArray(message.payload.resonators));
+  assert.ok(Array.isArray(message.payload.layers));
+  assert.ok(message.payload.layers.length >= 5);
+  assert.equal(message.payload.qualityMode, 'studio');
+  assert.ok(message.payload.globalFx.softLimiter);
+  assert.ok(message.payload.layers.some((layer) => layer.engine === 'sampleGrain'));
+  assert.ok(message.payload.layers.some((layer) => layer.engine === 'modalResonator'));
+});
