@@ -1,0 +1,121 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+test('document shell includes premium audio-space background layers', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(html, /class="audio-space"/);
+  assert.match(html, /id="particle-canvas"/);
+  assert.match(html, /class="signal-field"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js"/);
+  assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
+});
+
+test('styles include premium button feel and custom range rails', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /touch-action:\s*manipulation/);
+  assert.match(css, /:active/);
+  assert.match(css, /\.range-shell/);
+  assert.match(css, /--range-value/);
+  assert.match(css, /::-webkit-slider-thumb/);
+  assert.match(css, /::-moz-range-thumb/);
+  assert.match(css, /linear-gradient\(90deg/);
+  assert.match(css, /\.tap-spark/);
+  assert.match(css, /\.is-pressing/);
+  assert.match(css, /@keyframes tap-spark/);
+  assert.match(css, /\.deep-dive-card/);
+  assert.match(css, /\.deep-module-button/);
+  assert.match(css, /\.deep-signal-flow/);
+});
+
+test('audio-space script includes layered signal particles and pointer-reactive rings', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(js, /signalParticles/);
+  assert.match(js, /transitionBursts/);
+  assert.match(js, /drawSignalParticles/);
+  assert.match(js, /drawTransitionParticles/);
+  assert.match(js, /synth:view-transition/);
+  assert.match(js, /drawRippleField/);
+  assert.match(js, /pointer\.screenX/);
+  assert.match(js, /mouseInfluence/);
+});
+
+test('range controls use smooth drag state and animation-frame chrome updates', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /scheduleRangeChromeUpdate/);
+  assert.match(appJs, /requestAnimationFrame/);
+  assert.match(appJs, /bindSmoothRangeInput/);
+  assert.match(appJs, /is-dragging/);
+  assert.match(css, /@property --range-value/);
+  assert.match(css, /\.range-shell\.is-dragging/);
+  assert.match(css, /cursor:\s*grabbing/);
+});
+
+test('visual shell uses a brighter premium glass tone and view transition motion', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /--bg:\s*#101923/);
+  assert.doesNotMatch(css, /--bg:\s*#050910/);
+  assert.match(css, /\.content\.is-view-switching/);
+  assert.match(css, /@keyframes view-soft-swap/);
+  assert.match(appJs, /synth:view-transition/);
+  assert.match(appJs, /is-view-switching/);
+});
+
+test('integration view exposes browser-native sound quality and control hooks', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /renderIntegrationsView/);
+  assert.match(appJs, /data-integration-action="midi"/);
+  assert.match(appJs, /requestMIDIAccess/);
+  assert.match(appJs, /data-integration-action="copy-patch"/);
+  assert.match(appJs, /data-integration-action="copy-reaper"/);
+});
+
+test('audio player includes transient and master dynamics stages for better web sound quality', () => {
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(audioPlayerJs, /createDynamicsCompressor/);
+  assert.match(audioPlayerJs, /scheduleTransientClick/);
+  assert.match(audioPlayerJs, /patch\.transient/);
+});
+
+test('dashboard has product-design control console and learning flow shell', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /dashboard-hero/);
+  assert.match(appJs, /今日练习控制台/);
+  assert.match(appJs, /learning-flow/);
+  assert.match(appJs, /质量守门/);
+  assert.match(appJs, /data-dashboard-view/);
+  assert.match(css, /\.dashboard-hero/);
+  assert.match(css, /\.learning-flow/);
+  assert.match(css, /\.signal-node/);
+  assert.match(css, /\.quality-panel/);
+});
+
+test('navigation includes compact numbered labels for dense product UI', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /class="nav-index"/);
+  assert.match(html, /class="nav-label"/);
+  assert.match(css, /\.nav-index/);
+  assert.match(css, /\.nav-label/);
+});
+
+test('interaction effects add pointer and keyboard tactile feedback hooks', () => {
+  const js = readFileSync(new URL('../src/interaction-effects.js', import.meta.url), 'utf8');
+
+  assert.match(js, /pointerdown/);
+  assert.match(js, /keydown/);
+  assert.match(js, /tap-spark/);
+  assert.match(js, /prefers-reduced-motion/);
+});

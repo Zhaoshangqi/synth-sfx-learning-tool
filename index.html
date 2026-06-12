@@ -1,0 +1,89 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>合成器音效学习工具</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="audio-space" aria-hidden="true">
+      <canvas id="particle-canvas"></canvas>
+      <div class="space-glow glow-a"></div>
+      <div class="space-glow glow-b"></div>
+      <div class="signal-field">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="space-noise"></div>
+    </div>
+    <a class="skip-link" href="#app">跳到内容</a>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">SFX</span>
+        <div>
+          <h1>合成器音效学习工具</h1>
+          <p>英文来源，中文学习，REAPER 实战</p>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="主导航">
+        <button class="tab is-active" type="button" data-view="dashboard"><span class="nav-index" aria-hidden="true">01</span><span class="nav-label">总览</span></button>
+        <button class="tab" type="button" data-view="sources"><span class="nav-index" aria-hidden="true">02</span><span class="nav-label">资料库</span></button>
+        <button class="tab" type="button" data-view="cards"><span class="nav-index" aria-hidden="true">03</span><span class="nav-label">知识卡片</span></button>
+        <button class="tab" type="button" data-view="interactive"><span class="nav-index" aria-hidden="true">04</span><span class="nav-label">互动课程</span></button>
+        <button class="tab" type="button" data-view="micro"><span class="nav-index" aria-hidden="true">05</span><span class="nav-label">微课路线</span></button>
+        <button class="tab" type="button" data-view="challenges"><span class="nav-index" aria-hidden="true">06</span><span class="nav-label">声音挑战</span></button>
+        <button class="tab" type="button" data-view="techniques"><span class="nav-index" aria-hidden="true">07</span><span class="nav-label">技巧库</span></button>
+        <button class="tab" type="button" data-view="deep"><span class="nav-index" aria-hidden="true">08</span><span class="nav-label">深度解析</span></button>
+        <button class="tab" type="button" data-view="roadmap"><span class="nav-index" aria-hidden="true">09</span><span class="nav-label">路线</span></button>
+        <button class="tab" type="button" data-view="diagrams"><span class="nav-index" aria-hidden="true">10</span><span class="nav-label">原理图</span></button>
+        <button class="tab" type="button" data-view="recipes"><span class="nav-index" aria-hidden="true">11</span><span class="nav-label">配方</span></button>
+        <button class="tab" type="button" data-view="practice"><span class="nav-index" aria-hidden="true">12</span><span class="nav-label">REAPER</span></button>
+        <button class="tab" type="button" data-view="integrations"><span class="nav-index" aria-hidden="true">13</span><span class="nav-label">集成</span></button>
+      </nav>
+    </aside>
+    <main class="workspace">
+      <section class="toolbar" aria-label="筛选">
+        <label class="field field-wide" for="query">
+          <span>搜索</span>
+          <input id="query" type="search" placeholder="金属、FM、Serum、whoosh..." />
+        </label>
+        <label class="field" for="synth-filter">
+          <span>合成器</span>
+          <select id="synth-filter">
+            <option value="all">全部</option>
+            <option value="Serum">Serum</option>
+            <option value="Phase Plant">Phase Plant</option>
+            <option value="Vital">Vital</option>
+          </select>
+        </label>
+        <label class="field" for="difficulty-filter">
+          <span>难度</span>
+          <select id="difficulty-filter">
+            <option value="all">全部</option>
+            <option value="foundation">基础</option>
+            <option value="beginner">初级</option>
+            <option value="intermediate">中级</option>
+            <option value="advanced">高级</option>
+            <option value="creative">创意</option>
+          </select>
+        </label>
+        <label class="field" for="tag-filter">
+          <span>标签</span>
+          <select id="tag-filter">
+            <option value="all">全部</option>
+          </select>
+        </label>
+      </section>
+      <section id="app" class="content" aria-live="polite"></section>
+    </main>
+    <script type="module" src="./src/visual-space.js"></script>
+    <script type="module" src="./src/interaction-effects.js"></script>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
