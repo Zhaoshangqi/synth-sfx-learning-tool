@@ -16,6 +16,7 @@ import {
   soundChallenges,
   materialLabs,
   techniqueTips,
+  communityTechniqueLabs,
   deepDiveModules,
   externalIntegrations,
 } from '../src/content.js';
@@ -34,6 +35,7 @@ test('seed content includes the first-version learning surface', () => {
   assert.ok(soundChallenges.length >= 5, 'expected ear-training and reverse-engineering sound challenges');
   assert.ok(materialLabs.length >= 8, 'expected material-focused sound labs');
   assert.ok(techniqueTips.length >= 12, 'expected a practical SFX technique library');
+  assert.ok(communityTechniqueLabs.length >= 6, 'expected community creator technique labs');
   assert.ok(deepDiveModules.length >= 8, 'expected deep practical analysis modules');
   assert.ok(externalIntegrations.length >= 5, 'expected external integration options for browser sound quality');
   assert.ok(principleDiagrams.length >= 5, 'expected visual principle diagrams');
@@ -213,6 +215,34 @@ test('technique tips are sourced, practical, and mapped to synth plus REAPER wor
     assert.ok(tip.verification.parameterBoundaries.length >= 3, `${tip.id} needs parameter boundaries`);
     assert.ok(tip.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${tip.id} has unknown source`);
     assert.ok(tip.synthMappings.serum || tip.synthMappings.phasePlant || tip.synthMappings.vital);
+  }
+});
+
+test('community creator technique labs connect non-official videos to interactive sound lab recipes', () => {
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const communitySources = sources.filter((source) => source.type === 'community');
+
+  assert.ok(communitySources.some((source) => source.platform === 'YouTube'), 'needs YouTube creator videos');
+  assert.ok(communitySources.some((source) => source.platform === 'Bilibili'), 'needs Bilibili creator videos');
+  assert.ok(sourceIds.has('youtube-negativist-serum-metallic'), 'needs a concrete Serum metallic creator source');
+  assert.ok(sourceIds.has('bilibili-serum-weapon-whoosh'), 'needs a concrete Bilibili Serum whoosh source');
+
+  for (const lab of communityTechniqueLabs) {
+    assert.match(lab.id, /^[a-z0-9-]+$/);
+    assert.ok(lab.titleZh.length > 8, `${lab.id} needs a readable Chinese title`);
+    assert.ok(lab.creatorZh.length > 1, `${lab.id} needs creator attribution`);
+    assert.ok(lab.watchTaskZh.length > 30, `${lab.id} needs a concrete viewing task`);
+    assert.ok(lab.principleZh.length > 80, `${lab.id} needs a detailed principle`);
+    assert.ok(lab.methodSteps.length >= 4, `${lab.id} needs detailed method steps`);
+    assert.ok(lab.controls.length >= 4, `${lab.id} needs interactive controls`);
+    assert.ok(lab.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${lab.id} has an unknown source`);
+    assert.ok(lab.soundLabRecipe.familyId, `${lab.id} needs a Sound Lab family`);
+    assert.ok(lab.soundLabRecipe.presetDnaId, `${lab.id} needs a Sound Lab preset DNA`);
+    assert.ok(Object.keys(lab.soundLabRecipe.macros).length >= 4, `${lab.id} needs macro recipe values`);
+    assert.ok(Object.keys(lab.soundLabRecipe.layerMix).length >= 4, `${lab.id} needs layer mix recipe values`);
+    assert.ok(lab.synthMappings.serum || lab.synthMappings.phasePlant || lab.synthMappings.vital);
+    assert.ok(lab.verification.listeningChecks.length >= 3, `${lab.id} needs listening checks`);
+    assert.ok(lab.commonMistakes.length >= 2, `${lab.id} needs common mistakes`);
   }
 });
 

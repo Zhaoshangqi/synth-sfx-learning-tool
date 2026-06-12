@@ -14,6 +14,7 @@
   soundChallenges,
   materialLabs,
   techniqueTips,
+  communityTechniqueLabs,
   deepDiveModules,
   externalIntegrations,
   soundLabFamilies,
@@ -59,6 +60,7 @@ import {
   renderSoundLabWorkbench,
   renderSourceCard,
   renderTechniqueTipCard,
+  renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
 } from './render.js';
 
@@ -84,6 +86,11 @@ const state = {
   activeChallengeId: soundChallenges[0]?.id,
   challengeAnswers: {},
   activeMaterialId: materialLabs[0]?.id,
+  activeCommunityTechniqueId: communityTechniqueLabs[0]?.id,
+  communityControlStates: Object.fromEntries(communityTechniqueLabs.map((lab) => [
+    lab.id,
+    Object.fromEntries(lab.controls.map((control) => [control.id, control.default])),
+  ])),
   activeDeepDiveId: deepDiveModules[0]?.id,
   activeSoundFamilyId: soundLabFamilies[0]?.id,
   activeSoundPresetDnaId: getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.id,
@@ -544,6 +551,46 @@ function renderTechniquesView() {
   `;
 }
 
+function getActiveCommunityTechnique(filtered = communityTechniqueLabs) {
+  return filtered.find((lab) => lab.id === state.activeCommunityTechniqueId)
+    ?? filtered[0]
+    ?? communityTechniqueLabs[0];
+}
+
+function getCommunityControlValues(lab) {
+  return state.communityControlStates[lab.id]
+    ?? Object.fromEntries(lab.controls.map((control) => [control.id, control.default]));
+}
+
+function renderCommunityTechniquesView() {
+  const allSources = [...userSources, ...sources];
+  const filtered = filterItems(communityTechniqueLabs, currentFilters());
+  const activeLab = getActiveCommunityTechnique(filtered);
+
+  return `
+    ${header('博主技巧实验室', '把 YouTube 和 B 站非官方博主的合成技巧拆成中文方法、参数边界、REAPER 练习，并可一键加载到 Sound Lab 试听。', `${filtered.length} 个技巧实验`)}
+    <section class="community-lab-shell">
+      <div class="community-lab-rail" role="list" aria-label="社区技巧选择">
+        ${filtered.map((lab, index) => `
+          <button
+            class="community-lab-button ${lab.id === activeLab.id ? 'is-active' : ''}"
+            type="button"
+            data-community-technique="${escapeHtml(lab.id)}"
+          >
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(lab.titleZh)}</strong>
+            <small>${escapeHtml(lab.creatorZh)} · ${escapeHtml(lab.difficulty)}</small>
+          </button>
+        `).join('') || '<div class="empty-state">没有匹配的博主技巧。</div>'}
+      </div>
+      ${activeLab ? renderCommunityTechniqueLab(activeLab, allSources, {
+        isActive: true,
+        controlValues: getCommunityControlValues(activeLab),
+      }) : ''}
+    </section>
+  `;
+}
+
 function renderDeepDiveView() {
   const allSources = [...userSources, ...sources];
   const filtered = filterItems(deepDiveModules, currentFilters());
@@ -760,6 +807,7 @@ function render() {
     micro: renderMicroView,
     challenges: renderChallengesView,
     techniques: renderTechniquesView,
+    community: renderCommunityTechniquesView,
     deep: renderDeepDiveView,
     roadmap: renderRoadmapView,
     diagrams: renderDiagramsView,
@@ -955,6 +1003,7 @@ function bindDynamicForms() {
   bindMicroRouteControls();
   bindChallengeControls();
   bindMaterialControls();
+  bindCommunityTechniqueControls();
   bindDeepDiveControls();
   bindIntegrationControls();
 }
@@ -1286,6 +1335,97 @@ function bindMaterialControls() {
   });
 }
 
+function updateCommunityControl(labId, controlId, value) {
+  const lab = communityTechniqueLabs.find((item) => item.id === labId);
+  const control = lab?.controls.find((item) => item.id === controlId);
+  if (!lab || !control) return;
+  const nextValue = Math.max(control.min, Math.min(control.max, Number(value)));
+  state.communityControlStates = {
+    ...state.communityControlStates,
+    [lab.id]: {
+      ...getCommunityControlValues(lab),
+      [control.id]: nextValue,
+    },
+  };
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Number(value)));
+}
+
+function buildCommunitySoundLabRecipe(lab) {
+  const base = lab.soundLabRecipe;
+  const values = getCommunityControlValues(lab);
+  const valueList = Object.values(values).map(Number).filter(Number.isFinite);
+  const average = valueList.length ? valueList.reduce((sum, value) => sum + value, 0) / valueList.length : 50;
+  const pick = (ids, fallback = average) => {
+    const hit = ids.map((id) => values[id]).find((value) => Number.isFinite(Number(value)));
+    return Number.isFinite(Number(hit)) ? Number(hit) : fallback;
+  };
+
+  const bright = pick(['brightness', 'sparkle', 'spark', 'presence', 'rise'], base.macros.brightness);
+  const motion = pick(['speed', 'direction', 'urgency', 'rise', 'grain'], base.macros.motion);
+  const material = pick(['edge', 'resonance', 'grain', 'techCore', 'density'], base.macros.material);
+  const space = pick(['space', 'release', 'wetness', 'dragLength'], base.macros.space);
+  const variation = pick(['variation', 'loopSafety', 'grain', 'density'], base.macros.variation);
+  const dryFocus = pick(['dryFocus', 'anchor', 'techCore', 'loopSafety'], base.layerMix.body);
+
+  return {
+    ...base,
+    macros: {
+      ...base.macros,
+      brightness: clampPercent((base.macros.brightness + bright) / 2),
+      motion: clampPercent((base.macros.motion + motion) / 2),
+      material: clampPercent((base.macros.material + material) / 2),
+      space: clampPercent((base.macros.space + space) / 2),
+      variation: clampPercent((base.macros.variation + variation) / 2),
+    },
+    layerMix: {
+      ...base.layerMix,
+      transient: clampPercent((base.layerMix.transient + pick(['spark', 'presence', 'urgency'], base.layerMix.transient)) / 2),
+      body: clampPercent((base.layerMix.body + dryFocus) / 2),
+      texture: clampPercent((base.layerMix.texture + pick(['edge', 'grain', 'wetness', 'density', 'sparkle'], base.layerMix.texture)) / 2),
+      tail: clampPercent((base.layerMix.tail + space) / 2),
+    },
+  };
+}
+
+function loadCommunityTechniqueToSoundLab(lab) {
+  const recipe = buildCommunitySoundLabRecipe(lab);
+  state.activeSoundFamilyId = recipe.familyId;
+  state.activeSoundPresetDnaId = recipe.presetDnaId;
+  state.soundLabQualityMode = recipe.qualityMode ?? 'studio';
+  state.soundLabMacros = { ...SOUND_LAB_MACROS, ...recipe.macros };
+  state.soundLabLayerMix = { ...SOUND_LAB_LAYER_MIX, ...recipe.layerMix };
+  state.isSoundLabPlaying = false;
+  switchView('soundlab');
+}
+
+function bindCommunityTechniqueControls() {
+  document.querySelectorAll('button[data-community-technique]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeCommunityTechniqueId = button.dataset.communityTechnique;
+      render();
+    });
+  });
+
+  const activeLab = communityTechniqueLabs.find((lab) => lab.id === state.activeCommunityTechniqueId) ?? communityTechniqueLabs[0];
+  document.querySelectorAll('[data-community-control]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      updateCommunityControl(activeLab.id, rangeInput.dataset.communityControl, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-community-load-soundlab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const lab = communityTechniqueLabs.find((item) => item.id === button.dataset.communityLoadSoundlab);
+      if (!lab) return;
+      state.activeCommunityTechniqueId = lab.id;
+      loadCommunityTechniqueToSoundLab(lab);
+    });
+  });
+}
+
 function bindDeepDiveControls() {
   document.querySelectorAll('[data-deep-id]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -1361,7 +1501,7 @@ function bindIntegrationControls() {
 }
 
 function populateTagFilter() {
-  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...deepDiveModules, ...soundLabFamilies])) {
+  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...communityTechniqueLabs, ...deepDiveModules, ...soundLabFamilies])) {
     const option = document.createElement('option');
     option.value = tag;
     option.textContent = tag;

@@ -158,6 +158,28 @@ test('sound lab app wires preset DNA, quality mode, and layer mixer interactions
   assert.match(appJs, /presetDna.macroHints/);
 });
 
+test('app wires community creator technique labs into navigation and Sound Lab loading', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(appJs, /communityTechniqueLabs/);
+  assert.match(appJs, /activeCommunityTechniqueId/);
+  assert.match(appJs, /data-community-technique/);
+  assert.match(appJs, /data-community-control/);
+  assert.match(appJs, /data-community-load-soundlab/);
+  assert.match(appJs, /soundLabRecipe/);
+  assert.match(indexHtml, /data-view="community"/);
+});
+
+test('styles include community technique interactive controls', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.community-lab-shell/);
+  assert.match(css, /\.community-technique-card/);
+  assert.match(css, /\.community-control-panel/);
+  assert.match(css, /\.creator-source-pill/);
+});
+
 test('sound lab processor renders layered engines with global soft limiter', () => {
   const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
 

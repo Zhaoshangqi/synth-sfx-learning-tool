@@ -13,6 +13,7 @@ import {
   soundChallenges,
   materialLabs,
   techniqueTips,
+  communityTechniqueLabs,
   deepDiveModules,
 } from '../src/content.js';
 import { buildDefaultLabState, buildLabVisualModel } from '../src/lab-engine.js';
@@ -32,6 +33,7 @@ import {
   renderSoundLabWorkbench,
   renderMaterialLab,
   renderTechniqueTipCard,
+  renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
 } from '../src/render.js';
 import { soundLabFamilies } from '../src/content.js';
@@ -204,6 +206,27 @@ test('renderTechniqueTipCard includes principle, effect chain, synth mappings, a
   assert.match(html, /听感检查/);
   assert.match(html, /参数边界/);
   assert.match(html, /常见误区/);
+  assert.match(html, /来源依据/);
+});
+
+test('renderCommunityTechniqueLab exposes source-backed interactive creator practice controls', () => {
+  const lab = communityTechniqueLabs[0];
+  const html = renderCommunityTechniqueLab(lab, sources, {
+    isActive: true,
+    controlValues: Object.fromEntries(lab.controls.map((control) => [control.id, control.default])),
+  });
+
+  assert.match(html, new RegExp(lab.titleZh));
+  assert.match(html, /非官方博主技巧/);
+  assert.match(html, /观看任务/);
+  assert.match(html, /详细方法/);
+  assert.match(html, /交互练习/);
+  assert.match(html, /data-community-technique/);
+  assert.match(html, /data-community-control/);
+  assert.match(html, /data-community-load-soundlab/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
   assert.match(html, /来源依据/);
 });
 
