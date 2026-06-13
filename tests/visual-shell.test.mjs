@@ -230,6 +230,8 @@ test('app wires community creator technique labs into navigation and Sound Lab l
   assert.match(appJs, /getCommunityFocusPresets/);
   assert.match(appJs, /data-community-load-soundlab/);
   assert.match(appJs, /soundLabRecipe/);
+  assert.match(appJs, /'interval'/);
+  assert.match(appJs, /'cleanup'/);
   assert.match(renderJs, /renderCommunityBlueprint/);
   assert.match(renderJs, /data-community-focus-preset/);
   assert.match(indexHtml, /data-view="community"/);
@@ -433,6 +435,23 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*#ffffff/);
   assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(23,\s*167,\s*163/);
   assert.match(css, /\.professional-control-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
+test('sound lab workbench has a clear usage guide and section hierarchy', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderWorkbenchUsageGuide/);
+  assert.match(renderJs, /workbench-usage-panel/);
+  assert.match(renderJs, /focus-controls/);
+  assert.match(renderJs, /focus-coach/);
+  assert.match(renderJs, /workbench-zone-title/);
+  assert.match(appJs, /focus-controls/);
+  assert.match(appJs, /focus-coach/);
+  assert.match(css, /\.workbench-usage-panel\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.workbench-zone-title\s*\{[\s\S]*background:\s*linear-gradient/);
+  assert.match(css, /\.workbench-zone-title strong\s*\{[\s\S]*color:\s*#203442/);
 });
 
 test('sound lab module coach is interactive and visually separated from the workbench controls', () => {
