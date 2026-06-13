@@ -444,6 +444,10 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
 
   assert.match(renderJs, /renderWorkbenchUsageGuide/);
   assert.match(renderJs, /workbench-usage-panel/);
+  assert.match(renderJs, /renderWorkbenchModuleMap/);
+  assert.match(renderJs, /workbench-module-map/);
+  assert.match(renderJs, /data-workbench-module-jump/);
+  assert.match(renderJs, /currentByAdvancedModule/);
   assert.match(renderJs, /focus-controls/);
   assert.match(renderJs, /focus-coach/);
   assert.match(renderJs, /workbench-zone-title/);
@@ -454,10 +458,15 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
   assert.match(renderJs, /data-community-practice-scene/);
   assert.match(appJs, /focus-controls/);
   assert.match(appJs, /focus-coach/);
+  assert.match(appJs, /data-workbench-module-jump/);
+  assert.match(appJs, /handleWorkbenchModuleJump/);
+  assert.match(appJs, /activeWorkbenchModuleMapId/);
   assert.match(appJs, /activeCommunitySynthRoute/);
   assert.match(appJs, /data-community-synth-route/);
   assert.match(appJs, /data-community-practice-scene/);
   assert.match(css, /\.workbench-usage-panel\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.workbench-module-map\s*\{/);
+  assert.match(css, /\.module-map-card\s*\{[\s\S]*cursor:\s*pointer/);
   assert.match(css, /\.community-module-guide\s*\{/);
   assert.match(css, /\.community-synth-route-map\s*\{/);
   assert.match(css, /\.community-practice-scenes\s*\{/);

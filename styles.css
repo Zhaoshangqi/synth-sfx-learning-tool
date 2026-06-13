@@ -4612,6 +4612,158 @@ textarea {
   line-height: 1.45;
 }
 
+.workbench-module-map {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(23, 167, 163, 0.18);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(242, 250, 251, 0.92)),
+    radial-gradient(circle at 12% 0%, rgba(23, 167, 163, 0.1), transparent 38%),
+    radial-gradient(circle at 92% 12%, rgba(72, 130, 217, 0.08), transparent 36%);
+  padding: 12px;
+  box-shadow: 0 18px 38px rgba(42, 76, 104, 0.08);
+}
+
+.module-map-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.module-map-head span {
+  padding: 5px 9px;
+  border: 1px solid rgba(23, 167, 163, 0.2);
+  border-radius: 999px;
+  background: #e9fbf9;
+  color: #0d7774;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.module-map-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #203442;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-map-head small {
+  color: #6a7d8e;
+  font-size: 11px;
+  text-align: right;
+}
+
+.module-map-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.module-map-card {
+  appearance: none;
+  position: relative;
+  overflow: hidden;
+  min-height: 156px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 8px;
+  align-content: start;
+  border: 1px solid #dce8ef;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #405566;
+  padding: 10px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 24px rgba(42, 76, 104, 0.05);
+  transition: transform 150ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.module-map-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px 9px 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(23, 167, 163, 0.72), rgba(72, 130, 217, 0.42), transparent);
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 160ms ease, transform 180ms ease;
+}
+
+.module-map-card span {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #edf7f8;
+  color: #0d7774;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.module-map-card strong {
+  min-width: 0;
+  align-self: center;
+  color: #203442;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.module-map-card em {
+  grid-column: 1 / -1;
+  width: max-content;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1fbfa;
+  color: #0d7774;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.module-map-card p,
+.module-map-card small {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #536879;
+  font-size: 11px;
+  line-height: 1.42;
+}
+
+.module-map-card small {
+  color: #738797;
+}
+
+.module-map-card:hover,
+.module-map-card:focus-visible,
+.module-map-card.is-current {
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.42);
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(23, 167, 163, 0.11);
+}
+
+.module-map-card:hover::after,
+.module-map-card:focus-visible::after,
+.module-map-card.is-current::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.module-map-card:active {
+  transform: translateY(1px) scale(0.992);
+}
+
 .workbench-usage-panel {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -6654,10 +6806,15 @@ textarea {
   }
 
   .workflow-context-strip,
+  .workbench-module-map,
   .workbench-usage-panel,
   .advanced-overview-grid,
   .envelope-focus-grid {
     grid-template-columns: 1fr;
+  }
+
+  .module-map-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .workbench-usage-panel {
@@ -6751,10 +6908,20 @@ textarea {
     min-height: 76px;
   }
 
+  .module-map-head,
+  .module-map-grid,
   .workbench-usage-panel,
   .usage-panel-head,
   .workbench-zone-title {
     grid-template-columns: 1fr;
+  }
+
+  .module-map-head small {
+    text-align: left;
+  }
+
+  .module-map-card {
+    min-height: 0;
   }
 
   .usage-card {
