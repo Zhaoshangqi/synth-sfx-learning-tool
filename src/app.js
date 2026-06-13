@@ -848,8 +848,7 @@ function switchView(nextView) {
   state.view = nextView;
   render();
   globalThis.requestAnimationFrame(() => {
-    const top = Math.max(0, app.getBoundingClientRect().top + globalThis.scrollY - 12);
-    globalThis.scrollTo({ top, behavior: 'auto' });
+    globalThis.scrollTo({ top: 0, behavior: 'auto' });
   });
 }
 

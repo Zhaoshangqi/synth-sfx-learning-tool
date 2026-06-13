@@ -68,6 +68,13 @@ test('visual shell uses a brighter premium glass tone and view transition motion
   assert.match(appJs, /is-view-switching/);
 });
 
+test('view switching keeps content below the sticky toolbar', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /scrollTo\(\{\s*top:\s*0,\s*behavior:\s*'auto'\s*\}\)/);
+  assert.doesNotMatch(appJs, /getBoundingClientRect\(\)\.top \+ globalThis\.scrollY/);
+});
+
 test('styles include the light synth workstation layout from the reference image', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
