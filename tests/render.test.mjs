@@ -176,6 +176,46 @@ test('renderSoundLabWorkbench exposes AudioWorklet controls, A/B comparison, and
   assert.match(html, /来源依据/);
 });
 
+test('renderSoundLabWorkbench matches the light synth workstation reference modules', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    workletReady: true,
+    toneReady: true,
+    engineMode: 'hq',
+    engineUsed: 'tone',
+    isPlaying: false,
+  });
+
+  assert.match(html, /synth-workbench-layout/);
+  assert.match(html, /workbench-main-grid/);
+  assert.match(html, /workbench-core/);
+  assert.match(html, /workbench-right-rail/);
+  assert.match(html, /source-inspector-panel/);
+  assert.match(html, /learning-step-panel/);
+  assert.match(html, /reaper-export-panel/);
+  assert.match(html, /route-progress-panel/);
+  assert.match(html, /quick-entry-panel/);
+  assert.match(html, /data-synth-tab="serum"/);
+  assert.match(html, /data-synth-tab="phase-plant"/);
+  assert.match(html, /data-synth-tab="vital"/);
+  assert.match(html, /data-module-tab="envelope"/);
+  assert.match(html, /data-workbench-action="save-patch"/);
+  assert.match(html, /data-workbench-action="export-preset"/);
+  assert.match(html, /ADSR 包络/);
+  assert.match(html, /来源快照/);
+  assert.match(html, /学习步骤/);
+  assert.match(html, /REAPER 导出清单/);
+  assert.match(html, /学习路线进度/);
+  assert.match(html, /快速入口/);
+  assert.match(html, /输出电平/);
+  assert.match(html, /材质选择/);
+});
+
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {
   const material = materialLabs[0];
   const materialState = buildDefaultMaterialState(material);

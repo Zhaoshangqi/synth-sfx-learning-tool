@@ -99,6 +99,7 @@ const state = {
   soundLabLayerMix: { ...SOUND_LAB_LAYER_MIX },
   soundLabSampleMix: 0.58,
   soundLabEngineMode: 'hq',
+  activeWorkbenchModule: 'envelope',
   soundLabPerformance: { ...SOUND_LAB_PERFORMANCE_DEFAULTS },
   soundLabToneReady: false,
   soundLabEngineUsed: 'worklet',
@@ -441,7 +442,6 @@ function renderSoundLabView() {
   const family = getActiveSoundFamily();
   const model = getSoundLabModel();
   return `
-    ${header('Sound Lab 工作台', '把网页从“看课程”推进到“能听、能调、能 A/B、能导出记录”。AudioWorklet 可用时使用自定义 DSP；不可用时自动回退 WebAudio。', `${soundLabFamilies.length} 个声音族`)}
     <section class="sound-lab-shell">
       <div class="sound-family-rail" role="list" aria-label="声音族选择">
         ${soundLabFamilies.map((item, index) => `
@@ -462,6 +462,7 @@ function renderSoundLabView() {
         toneReady: state.soundLabToneReady,
         workletReady: state.soundLabWorkletReady,
         isPlaying: state.isSoundLabPlaying,
+        activeWorkbenchModule: state.activeWorkbenchModule,
       })}
       <section class="grid two sound-lab-preset-grid">
         ${family.presets.map((preset) => `
@@ -1289,6 +1290,40 @@ function bindSoundLabControls() {
       );
     });
   });
+
+  document.querySelectorAll('[data-module-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeWorkbenchModule = button.dataset.moduleTab;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-workbench-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const action = button.dataset.workbenchAction;
+      if (action === 'save-patch' || action === 'export-preset') {
+        const text = action === 'save-patch' ? buildPatchExportJson() : buildReaperExportText();
+        const copied = await copyText(text).catch(() => false);
+        const original = button.textContent;
+        button.textContent = copied ? '已复制' : '复制受限';
+        button.classList.add('is-confirmed');
+        globalThis.setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove('is-confirmed');
+        }, 1200);
+        return;
+      }
+      if (action === 'open-reaper-template') switchView('practice');
+      if (action === 'open-library' || action === 'import-serum') switchView('integrations');
+      if (action === 'start-ab') switchView('challenges');
+      if (action === 'start-parameter') switchView('interactive');
+      if (action === 'start-signal') switchView('deep');
+      if (action === 'new-experiment' || action === 'analyze-patch') {
+        button.classList.add('is-confirmed');
+        globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
+      }
+    });
+  });
 }
 
 function bindMicroRouteControls() {
@@ -1572,6 +1607,12 @@ function populateTagFilter() {
 tabs.forEach((tab) => {
   tab.addEventListener('click', () => {
     switchView(tab.dataset.view);
+  });
+});
+
+document.querySelectorAll('.daily-suggestion-card [data-view]').forEach((button) => {
+  button.addEventListener('click', () => {
+    switchView(button.dataset.view);
   });
 });
 

@@ -23,26 +23,39 @@
         <span class="brand-mark" aria-hidden="true">SFX</span>
         <div>
           <h1>合成器音效学习工具</h1>
-          <p>英文来源，中文学习，REAPER 实战</p>
+          <p>v2.0 工作台</p>
         </div>
       </div>
       <nav class="tabs" aria-label="主导航">
         <button class="tab is-active" type="button" data-view="dashboard"><span class="nav-index" aria-hidden="true">01</span><span class="nav-label">总览</span></button>
-        <button class="tab" type="button" data-view="sources"><span class="nav-index" aria-hidden="true">02</span><span class="nav-label">资料库</span></button>
-        <button class="tab" type="button" data-view="cards"><span class="nav-index" aria-hidden="true">03</span><span class="nav-label">知识卡片</span></button>
-        <button class="tab" type="button" data-view="interactive"><span class="nav-index" aria-hidden="true">04</span><span class="nav-label">互动课程</span></button>
-        <button class="tab" type="button" data-view="soundlab"><span class="nav-index" aria-hidden="true">05</span><span class="nav-label">Sound Lab</span></button>
+        <button class="tab" type="button" data-view="soundlab"><span class="nav-index" aria-hidden="true">02</span><span class="nav-label">工作台</span></button>
+        <button class="tab" type="button" data-view="sources"><span class="nav-index" aria-hidden="true">03</span><span class="nav-label">资料库</span></button>
+        <button class="tab" type="button" data-view="cards"><span class="nav-index" aria-hidden="true">04</span><span class="nav-label">知识卡片</span></button>
+        <button class="tab" type="button" data-view="interactive"><span class="nav-index" aria-hidden="true">05</span><span class="nav-label">互动课程</span></button>
         <button class="tab" type="button" data-view="micro"><span class="nav-index" aria-hidden="true">06</span><span class="nav-label">微课路线</span></button>
-        <button class="tab" type="button" data-view="challenges"><span class="nav-index" aria-hidden="true">07</span><span class="nav-label">声音挑战</span></button>
-        <button class="tab" type="button" data-view="techniques"><span class="nav-index" aria-hidden="true">08</span><span class="nav-label">技巧库</span></button>
-        <button class="tab" type="button" data-view="community"><span class="nav-index" aria-hidden="true">09</span><span class="nav-label">博主技巧</span></button>
-        <button class="tab" type="button" data-view="deep"><span class="nav-index" aria-hidden="true">10</span><span class="nav-label">深度解析</span></button>
-        <button class="tab" type="button" data-view="roadmap"><span class="nav-index" aria-hidden="true">11</span><span class="nav-label">路线</span></button>
+        <button class="tab" type="button" data-view="recipes"><span class="nav-index" aria-hidden="true">07</span><span class="nav-label">音效配方</span></button>
+        <button class="tab" type="button" data-view="challenges"><span class="nav-index" aria-hidden="true">08</span><span class="nav-label">声音挑战</span></button>
+        <button class="tab" type="button" data-view="techniques"><span class="nav-index" aria-hidden="true">09</span><span class="nav-label">技巧库</span></button>
+        <button class="tab" type="button" data-view="community"><span class="nav-index" aria-hidden="true">10</span><span class="nav-label">博主技巧</span></button>
+        <button class="tab" type="button" data-view="deep"><span class="nav-index" aria-hidden="true">11</span><span class="nav-label">深度解析</span></button>
         <button class="tab" type="button" data-view="diagrams"><span class="nav-index" aria-hidden="true">12</span><span class="nav-label">原理图</span></button>
-        <button class="tab" type="button" data-view="recipes"><span class="nav-index" aria-hidden="true">13</span><span class="nav-label">配方</span></button>
-        <button class="tab" type="button" data-view="practice"><span class="nav-index" aria-hidden="true">14</span><span class="nav-label">REAPER</span></button>
-        <button class="tab" type="button" data-view="integrations"><span class="nav-index" aria-hidden="true">15</span><span class="nav-label">集成</span></button>
+        <button class="tab" type="button" data-view="practice"><span class="nav-index" aria-hidden="true">13</span><span class="nav-label">REAPER 练习</span></button>
+        <button class="tab" type="button" data-view="integrations"><span class="nav-index" aria-hidden="true">14</span><span class="nav-label">外部集成</span></button>
       </nav>
+      <section class="sidebar-progress-card" aria-label="学习进度">
+        <div class="user-avatar">Z</div>
+        <div>
+          <strong>Zhaoshangqi</strong>
+          <span>学习进度 62%</span>
+        </div>
+        <i aria-hidden="true"></i>
+      </section>
+      <section class="daily-suggestion-card" aria-label="今日学习建议">
+        <span>今日学习建议</span>
+        <strong>继续学习：金属音色 · FM 与频谱</strong>
+        <small>实验进度 2/5</small>
+        <button type="button" data-view="soundlab">继续实验</button>
+      </section>
     </aside>
     <main class="workspace">
       <section class="toolbar" aria-label="筛选">
@@ -76,6 +89,7 @@
             <option value="all">全部</option>
           </select>
         </label>
+        <button class="notification-button" type="button" aria-label="通知"><span>3</span></button>
       </section>
       <section id="app" class="content" aria-live="polite"></section>
     </main>
