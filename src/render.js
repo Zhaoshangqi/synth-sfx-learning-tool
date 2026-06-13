@@ -1228,6 +1228,11 @@ function renderWorkbenchMaterialPanel(family = {}) {
         <strong>${escapeHtml(family.titleEn ?? family.titleZh)}</strong>
         <span>${escapeHtml(family.summaryZh ?? '')}</span>
       </div>
+      <div class="material-workflow-hint">
+        <span>下一步</span>
+        <strong>选材质 → 按播放 → 调 Macro → A/B 对比</strong>
+        <small>材料决定频率关系和瞬态边缘，播放控制负责验证 dry / full / Tone.js 三种听感。</small>
+      </div>
     </section>
   `;
 }
@@ -1235,11 +1240,12 @@ function renderWorkbenchMaterialPanel(family = {}) {
 function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
   const familyName = (family.titleZh ?? '').split('：')[0] || 'Sound Lab';
   const steps = [
-    ['source', '01', '选目标', familyName],
-    ['shape', '02', '调声音', '包络 / 宏 / 调制'],
-    ['compare', '03', '试听对比', 'A / B / Tone.js'],
-    ['deliver', '04', '导出交付', 'Patch / REAPER'],
+    ['source', '01', '选目标', familyName, '先选材质家族，再确认声源角色。'],
+    ['shape', '02', '调声音', '包络 / 宏 / 调制', '用 ADSR、Macro 和 Mod Matrix 把听感变化做出来。'],
+    ['compare', '03', '试听对比', 'A / B / Tone.js', '用干声、完整链路和高质量引擎排除错觉。'],
+    ['deliver', '04', '导出交付', 'Patch / REAPER', '保存 Patch、记录命名并检查 REAPER 交付项。'],
   ];
+  const current = steps.find(([id]) => id === activeStep) ?? steps[0];
   return `
     <section class="workbench-flow-map" aria-label="Sound Lab workflow">
       ${steps.map(([id, index, label, note]) => `
@@ -1249,11 +1255,16 @@ function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
           <small>${escapeHtml(note)}</small>
         </button>
       `).join('')}
+      <div class="workflow-context-strip">
+        <span>当前步骤 ${escapeHtml(current[1])}</span>
+        <strong>${escapeHtml(current[2])}</strong>
+        <p>${escapeHtml(current[4])}</p>
+      </div>
     </section>
   `;
 }
 
-function renderWorkbenchCoach(guides = [], activeGuideId) {
+function renderWorkbenchCoach(guides = [], activeGuideId, activeSynth = 'serum') {
   const activeGuide = guides.find((guide) => guide.id === activeGuideId) ?? guides[0];
   if (!activeGuide) return '';
   const synthLabels = {
@@ -1261,6 +1272,10 @@ function renderWorkbenchCoach(guides = [], activeGuideId) {
     phasePlant: 'Phase Plant',
     vital: 'Vital',
   };
+  const synthOrder = ['serum', 'phasePlant', 'vital'];
+  const activeSynthKey = synthOrder.includes(activeSynth) ? activeSynth : 'serum';
+  const activeSynthSteps = activeGuide.synthSteps?.[activeSynthKey] ?? [];
+  const activeRoute = activeGuide.synthRoutes?.[activeSynthKey] ?? activeGuide.diagramNodes ?? [];
   return `
     <section class="workbench-coach-panel" aria-label="模块使用教练">
       <div class="coach-nav" role="list" aria-label="选择学习模块">
@@ -1295,15 +1310,43 @@ function renderWorkbenchCoach(guides = [], activeGuideId) {
           `).join('')}
         </div>
       </div>
-      <div class="coach-synth-grid">
-        ${Object.entries(activeGuide.synthSteps ?? {}).map(([synth, steps]) => `
-          <article>
-            <strong>${escapeHtml(synthLabels[synth] ?? synth)}</strong>
-            <ol>
-              ${(steps ?? []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
-            </ol>
-          </article>
+      <div class="coach-synth-switch" role="tablist" aria-label="选择合成器操作视角">
+        ${synthOrder.map((synth) => `
+          <button class="${synth === activeSynthKey ? 'is-active' : ''}" type="button" data-coach-synth="${escapeHtml(synth)}" aria-pressed="${synth === activeSynthKey ? 'true' : 'false'}">
+            ${escapeHtml(synthLabels[synth])}
+          </button>
         `).join('')}
+      </div>
+      <div class="coach-route-panel">
+        <div class="coach-route-head">
+          <strong>${escapeHtml(synthLabels[activeSynthKey])} 路由图</strong>
+          <span>按这个顺序检查：源头、调制、目标、听感结果。</span>
+        </div>
+        <div class="coach-route-diagram" aria-label="${escapeHtml(synthLabels[activeSynthKey])} routing diagram">
+          ${activeRoute.map((node, index) => `
+            <div class="coach-route-node">
+              <span>${String(index + 1).padStart(2, '0')}</span>
+              <strong>${escapeHtml(node)}</strong>
+            </div>
+            ${index < activeRoute.length - 1 ? '<i aria-hidden="true"></i>' : ''}
+          `).join('')}
+        </div>
+      </div>
+      <div class="coach-synth-grid">
+        <article class="coach-synth-focus">
+          <strong>${escapeHtml(synthLabels[activeSynthKey])} 具体怎么调</strong>
+          <ol>
+            ${activeSynthSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+          </ol>
+        </article>
+        <div class="coach-synth-compare">
+          ${synthOrder.filter((synth) => synth !== activeSynthKey).map((synth) => `
+            <button type="button" data-coach-synth="${escapeHtml(synth)}">
+              <strong>${escapeHtml(synthLabels[synth])}</strong>
+              <span>${escapeHtml((activeGuide.synthSteps?.[synth] ?? [])[0] ?? '切换查看这套合成器的做法')}</span>
+            </button>
+          `).join('')}
+        </div>
       </div>
       <div class="coach-bottom-row">
         <div><strong>重点参数</strong><span>${escapeHtml((activeGuide.controlFocus ?? []).join(' / '))}</span></div>
@@ -1350,7 +1393,7 @@ function renderWorkbenchQuality(model = {}) {
   `;
 }
 
-function renderAdvancedModuleDock(model = {}, activeAdvancedModule = 'advanced-panel') {
+function renderAdvancedModuleDock(model = {}, activeAdvancedModule = 'advanced') {
   return `
     <section class="advanced-module-dock" aria-label="Advanced Sound Lab modules">
       ${(model.advancedModules ?? []).map((module) => `
@@ -1359,6 +1402,41 @@ function renderAdvancedModuleDock(model = {}, activeAdvancedModule = 'advanced-p
           <span>${escapeHtml(module.noteZh)}</span>
         </button>
       `).join('')}
+    </section>
+  `;
+}
+
+function renderAdvancedOverviewPanel(model = {}) {
+  const patch = model.patch ?? {};
+  const layerCount = patch.layers?.length ?? 0;
+  const fallback = patch.fallbackChain?.join(' → ') ?? 'hq → worklet → webaudio';
+  return `
+    <section class="workbench-panel professional-module-panel advanced-overview-panel" data-advanced-panel="advanced" aria-label="Advanced Panel">
+      <div class="mini-panel-head"><strong>Advanced Panel</strong><span>engine / quality / safety</span></div>
+      <div class="advanced-overview-grid">
+        <div><span>Engine</span><strong>${escapeHtml(patch.engineMode ?? model.activeEngineMode ?? 'hq')}</strong><small>${escapeHtml(fallback)}</small></div>
+        <div><span>Quality</span><strong>${escapeHtml(patch.qualityMode ?? 'balanced')}</strong><small>层级、FX 和 limiter 同步调整</small></div>
+        <div><span>Layers</span><strong>${escapeHtml(layerCount)}</strong><small>transient / body / texture / tail</small></div>
+      </div>
+    </section>
+  `;
+}
+
+function renderEnvelopeEditorFocusPanel(model = {}) {
+  const envelope = model.envelopeEditor ?? {};
+  const controls = envelope.controls ?? [];
+  return `
+    <section class="workbench-panel professional-module-panel envelope-focus-panel" data-advanced-panel="envelope-editor" aria-label="Envelope Editor">
+      <div class="mini-panel-head"><strong>Envelope Editor</strong><span>ADSR drives function</span></div>
+      <div class="envelope-focus-grid">
+        ${controls.map((control) => `
+          <div>
+            <span>${escapeHtml(control.labelZh)}</span>
+            <strong>${escapeHtml(control.value)}${escapeHtml(control.unit ?? '')}</strong>
+          </div>
+        `).join('')}
+      </div>
+      <p>下方 ADSR 曲线和四个纵向推子会实时改当前 Patch；先让时间形状决定 click、pluck、hit、swell 或 tail。</p>
     </section>
   `;
 }
@@ -1446,14 +1524,22 @@ function renderAbComparePanel(model = {}) {
   `;
 }
 
-function renderLibrarySyncPanel(model = {}) {
+function renderLibrarySyncPanel(model = {}, activeModule = 'project-library') {
   const library = model.library ?? {};
   const gitSync = library.gitSync ?? {};
   const patchKey = model.patch?.libraryKey ?? model.patch?.id ?? '';
   const isFavorite = (library.favorites ?? []).some((favorite) => favorite.patchId === patchKey && favorite.active);
+  const titles = {
+    favorites: ['Favorites', '收藏当前声音，方便反复 A/B。'],
+    'project-library': ['Project Library', '把当前 Patch 存到项目库。'],
+    'cloud-sync': ['Git Sync', '用 GitHub 仓库同步预设 JSON。'],
+    'midi-input': ['MIDI Input', '进入 MIDI Learn，把硬件 CC 映射到宏。'],
+    'batch-export': ['Batch Export', '设置命名规则，方便 REAPER 批量交付。'],
+  };
+  const [title, note] = titles[activeModule] ?? ['Project Library / Git sync', `${gitSync.owner ?? ''}/${gitSync.repo ?? ''}`];
   return `
-    <section class="workbench-panel professional-module-panel library-sync-panel" data-advanced-panel="library-sync" aria-label="Project library and sync">
-      <div class="mini-panel-head"><strong>Project library / Git sync</strong><span>${escapeHtml(gitSync.owner ?? '')}/${escapeHtml(gitSync.repo ?? '')}</span></div>
+    <section class="workbench-panel professional-module-panel library-sync-panel" data-advanced-panel="${escapeHtml(activeModule)}" aria-label="Project library and sync">
+      <div class="mini-panel-head"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(note)}</span></div>
       <div class="library-sync-grid">
         <button class="${isFavorite ? 'is-active' : ''}" type="button" data-favorite-patch="${escapeHtml(patchKey)}">${isFavorite ? 'Favorited' : 'Favorite'}</button>
         <button type="button" data-project-library-action="save">Save to project</button>
@@ -1470,14 +1556,22 @@ function renderLibrarySyncPanel(model = {}) {
   `;
 }
 
-function renderProfessionalControlGrid(model = {}) {
+function renderProfessionalControlGrid(model = {}, activeAdvancedModule = 'advanced') {
+  const activeModule = activeAdvancedModule === 'advanced-panel' ? 'advanced' : activeAdvancedModule;
+  const libraryModules = new Set(['favorites', 'project-library', 'cloud-sync', 'midi-input', 'batch-export']);
+  const panelHtml = (() => {
+    if (activeModule === 'advanced') return renderAdvancedOverviewPanel(model);
+    if (activeModule === 'mod-matrix') return renderProfessionalModMatrix(model);
+    if (activeModule === 'envelope-editor') return renderEnvelopeEditorFocusPanel(model);
+    if (activeModule === 'fx-chain') return renderFxChainEditor(model);
+    if (activeModule === 'xy-pad' || activeModule === 'macro-morph') return renderXYMacroPanel(model);
+    if (activeModule === 'ab-compare') return renderAbComparePanel(model);
+    if (libraryModules.has(activeModule)) return renderLibrarySyncPanel(model, activeModule);
+    return renderAdvancedOverviewPanel(model);
+  })();
   return `
-    <div class="professional-control-grid">
-      ${renderProfessionalModMatrix(model)}
-      ${renderFxChainEditor(model)}
-      ${renderXYMacroPanel(model)}
-      ${renderAbComparePanel(model)}
-      ${renderLibrarySyncPanel(model)}
+    <div class="professional-control-grid" data-active-advanced-panel="${escapeHtml(activeModule)}">
+      ${panelHtml}
     </div>
   `;
 }
@@ -1593,7 +1687,6 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}
-      ${renderWorkbenchCoach(options.modulationGuides, options.activeModulationGuideId)}
       <div class="workbench-main-grid">
         <div class="workbench-core">
           <div class="analyzer-row">
@@ -1603,6 +1696,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
           </div>
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
+          ${renderProfessionalControlGrid(model, options.activeAdvancedModule)}
           ${renderWorkbenchEnvelope(model)}
           <div class="control-lower-grid">
             ${renderWorkbenchMacroPanel(model)}
@@ -1613,11 +1707,11 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
             ${renderWorkbenchPlayback(model, isPlaying)}
             ${renderWorkbenchQuality(model)}
           </div>
-          ${renderProfessionalControlGrid(model)}
           <div class="advanced-engine-grid">
             ${renderSoundLabEngineControls(model, options)}
             ${renderSoundLabDnaControls(model)}
           </div>
+          ${renderWorkbenchCoach(options.modulationGuides, options.activeModulationGuideId, options.activeCoachSynth)}
         </div>
         ${renderWorkbenchRightRail(family, model)}
       </div>

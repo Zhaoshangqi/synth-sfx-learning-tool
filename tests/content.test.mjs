@@ -268,6 +268,9 @@ test('workstation modulation guides explain concrete Serum Phase Plant and Vital
     assert.ok(guide.questionZh.length > 20, `${guide.id} needs a clear usage question`);
     assert.ok(guide.listenForZh.length > 40, `${guide.id} needs listening guidance`);
     assert.ok(guide.diagramNodes.length >= 4, `${guide.id} needs diagram nodes`);
+    assert.ok(guide.synthRoutes.serum.length >= 4, `${guide.id} needs Serum routing diagram`);
+    assert.ok(guide.synthRoutes.phasePlant.length >= 4, `${guide.id} needs Phase Plant routing diagram`);
+    assert.ok(guide.synthRoutes.vital.length >= 4, `${guide.id} needs Vital routing diagram`);
     assert.ok(guide.controlFocus.length >= 4, `${guide.id} needs focused controls`);
     assert.ok(guide.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${guide.id} has unknown source`);
     assert.ok(guide.synthSteps.serum.length >= 3, `${guide.id} needs Serum steps`);

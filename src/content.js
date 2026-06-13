@@ -753,6 +753,10 @@ function mapping(serum, phasePlant, vital) {
   return { serum, phasePlant, vital };
 }
 
+function synthRoutes(serum, phasePlant, vital) {
+  return { serum, phasePlant, vital };
+}
+
 export const synthModulationGuides = [
   {
     id: 'mod-coach-source',
@@ -762,6 +766,11 @@ export const synthModulationGuides = [
     questionZh: '这个声音的主体到底是 tonal、noise、sample/grain，还是三者叠层？',
     listenForZh: '先听 attack 是否有触点、body 是否有音高、tail 是否有空间。不要一上来开失真或混响。',
     diagramNodes: ['触点 click', '主体 body', '纹理 texture', '尾巴 tail'],
+    synthRoutes: synthRoutes(
+      ['Osc A / Sub', 'Noise 或 Sample', 'Mixer 分层', 'Dry 声源可听'],
+      ['Generator Group', 'Analog / WT / Noise', 'Stack 顺序', '角色分层清楚'],
+      ['Osc 1 / Noise', 'WT Frame / Warp', 'Filter 入口', '可视反馈一致'],
+    ),
     controlFocus: ['Wave / WT Pos', 'Noise Level', 'Pitch / Root', 'Amp Env'],
     sourceIds: ['xfer-serum-2-official', 'kilohearts-phase-plant-docs', 'vital-official'],
     synthSteps: mapping(
@@ -794,6 +803,11 @@ export const synthModulationGuides = [
     questionZh: '它是 click、pluck、hit、whoosh、riser，还是 atmosphere？先让 ADSR 说清楚。',
     listenForZh: 'Attack 决定是否有触发感，Decay 决定动作重量，Sustain 决定是否持续，Release 决定尾巴是否可交付。',
     diagramNodes: ['Attack 触发', 'Decay 重量', 'Sustain 保持', 'Release 尾巴'],
+    synthRoutes: synthRoutes(
+      ['Env 1', 'Amp / Filter', 'Pitch / FM depth', 'click / pluck / hit'],
+      ['Envelope lane', 'Mod knob', 'Cutoff / Level', '时间功能明确'],
+      ['Env 1 / Env 2', '拖到目标', 'Cutoff / Warp', '形状跟动画一致'],
+    ),
     controlFocus: ['Amp Env', 'Filter Env', 'Pitch Env', 'Macro length'],
     sourceIds: ['xfer-serum-2-official', 'kilohearts-modulation-docs', 'vital-official'],
     synthSteps: mapping(
@@ -826,6 +840,11 @@ export const synthModulationGuides = [
     questionZh: '这条调制是在改变亮度、运动、材质、空间，还是变体？说不清就先关掉。',
     listenForZh: '慢速 LFO 负责运动，随机负责生命感，宏负责可控变化，audio-rate 才负责 FM/AM/Ring 这类音色本体。',
     diagramNodes: ['Source', 'Amount', 'Target', 'Ear result'],
+    synthRoutes: synthRoutes(
+      ['LFO / Macro', 'Matrix Amount', 'WT / Filter / FX', '运动或变体'],
+      ['LFO / Random / Curve', 'orange / green mod', 'Pitch / Phase / Snapin', 'control-rate 或 audio-rate'],
+      ['LFO / Random / Perlin', 'Drag amount', 'Filter / Warp / Pan', '可视化运动'],
+    ),
     controlFocus: ['LFO Rate', 'Depth', 'Target', 'Curve / Remap'],
     sourceIds: ['kilohearts-modulation-docs', 'vital-official', 'xfer-serum-2-official'],
     synthSteps: mapping(
@@ -858,6 +877,11 @@ export const synthModulationGuides = [
     questionZh: '材质来自频率关系、瞬态、共振和微动作；你现在改的是哪一个？',
     listenForZh: '金属要非谐波和短共振；玻璃要清亮 partial；电流要随机门控；空气要滤波方向；能量要密度上升。',
     diagramNodes: ['频率关系', '瞬态形状', '共振边界', '微动作'],
+    synthRoutes: synthRoutes(
+      ['Osc B 静音', 'FM from B', 'Filter / Comb', '金属或玻璃边缘'],
+      ['Two sine generators', 'audio-rate FM/PM', 'Comb / Room', '非谐波腔体'],
+      ['Osc FM / Warp', 'Env 控深度', 'Random 微动', '材质有生命感'],
+    ),
     controlFocus: ['FM / Ring', 'Comb / Resonator', 'Random Gate', 'Filter Sweep'],
     sourceIds: ['ddx7-paper', 'kilohearts-modulation-docs', 'soundonsound-synth-secrets-fm'],
     synthSteps: mapping(
@@ -890,6 +914,11 @@ export const synthModulationGuides = [
     questionZh: '这个声音能不能导出 dry、full、tail-only，并在 REAPER 里复盘？',
     listenForZh: '先匹配瞬态和主体，再判断空间；响度不匹配时不要相信“更好听”的直觉。关闭尾巴、关闭失真、关闭 texture 后都要能说出声音还剩什么功能。',
     diagramNodes: ['Dry', 'Full', 'Tail', 'REAPER A/B'],
+    synthRoutes: synthRoutes(
+      ['Patch Note', 'Macro 角色', 'FX 顺序', 'dry/full/tail'],
+      ['Group 命名', 'Snapin lane bypass', 'Macro 记录', '可复盘 patch'],
+      ['Mod list 检查', '删无效路由', '导出变体', '版本可追踪'],
+    ),
     controlFocus: ['A/B Slot', 'FX Order', 'LUFS', 'Export Name'],
     sourceIds: ['reaper-official-videos', 'serumrnn-paper', 'webaudio-api'],
     synthSteps: mapping(
