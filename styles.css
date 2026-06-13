@@ -578,6 +578,10 @@ textarea {
   margin-top: 18px;
 }
 
+.dashboard-actions {
+  margin-top: 10px;
+}
+
 .status-chip {
   min-height: 30px;
   display: inline-flex;
@@ -591,6 +595,33 @@ textarea {
   font-weight: 700;
 }
 
+.dashboard-action-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #536879;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dashboard-action-label span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid rgba(23, 167, 163, 0.24);
+  border-radius: 999px;
+  background: #e9fbf9;
+  color: #0d7774;
+  font-weight: 900;
+}
+
+.dashboard-action-label small {
+  color: #64798a;
+  font-weight: 700;
+}
+
 .dashboard-actions .primary-button,
 .dashboard-actions .secondary-button {
   margin-top: 0;
@@ -601,10 +632,28 @@ textarea {
   min-width: 164px;
   min-height: 58px;
   display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 4px;
   align-content: center;
   text-align: left;
   font-weight: 850;
+}
+
+.dashboard-actions button em {
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: currentColor;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 .dashboard-actions button span,
@@ -2885,6 +2934,20 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .sound-lab-keyboard {
+    grid-template-columns: repeat(12, minmax(42px, 42px));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: 8px;
+  }
+
+  .sound-lab-key {
+    min-width: 42px;
+    scroll-snap-align: start;
+  }
+
   .deep-practice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2940,6 +3003,20 @@ textarea {
   .dashboard-actions .primary-button,
   .dashboard-actions .secondary-button {
     width: 100%;
+  }
+
+  .sound-lab-keyboard {
+    grid-template-columns: repeat(12, minmax(42px, 42px));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: 8px;
+  }
+
+  .sound-lab-key {
+    min-width: 42px;
+    scroll-snap-align: start;
   }
 
   .view-header {
@@ -3833,6 +3910,148 @@ textarea {
   display: none;
 }
 
+.community-parameter-translator {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(23, 167, 163, 0.18);
+  border-radius: 10px;
+  padding: 13px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 251, 252, 0.94)),
+    radial-gradient(ellipse at 12% 0%, rgba(23, 167, 163, 0.1), transparent 44%),
+    radial-gradient(ellipse at 100% 16%, rgba(72, 130, 217, 0.08), transparent 42%);
+  box-shadow: 0 14px 28px rgba(42, 76, 104, 0.06);
+}
+
+.community-parameter-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.community-parameter-head h4,
+.community-parameter-head p {
+  margin: 0;
+}
+
+.community-parameter-head h4 {
+  color: #203442;
+}
+
+.community-parameter-head p {
+  margin-top: 4px;
+  color: #64798a;
+  line-height: 1.5;
+}
+
+.community-parameter-head span {
+  border: 1px solid rgba(23, 167, 163, 0.2);
+  border-radius: 999px;
+  background: #e9fbf8;
+  color: #0d7774;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.community-parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.community-parameter-grid article {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-height: 212px;
+  border: 1px solid #dfe9f0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 11px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.community-parameter-grid article > span {
+  width: max-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: #e8fbf8;
+  color: #0d7774;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.community-parameter-grid strong {
+  color: #203442;
+  font-size: 12px;
+  line-height: 1.38;
+}
+
+.community-parameter-grid p {
+  margin: 0;
+  color: #536879;
+  font-size: 12px;
+  line-height: 1.48;
+}
+
+.community-parameter-grid .parameter-action-list {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #edf3f6;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 8px;
+}
+
+.parameter-action-list b {
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.parameter-action-list ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 17px;
+}
+
+.parameter-action-list li {
+  color: #405566;
+  font-size: 11px;
+  line-height: 1.42;
+}
+
+.community-parameter-grid dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.community-parameter-grid div {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid #edf3f6;
+  padding-top: 7px;
+}
+
+.community-parameter-grid dt {
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.community-parameter-grid dd {
+  margin: 0;
+  color: #66798a;
+  font-size: 11px;
+  line-height: 1.42;
+}
+
 .community-practice-scenes {
   display: grid;
   gap: 12px;
@@ -4039,8 +4258,19 @@ textarea {
   .community-practice-scene-grid,
   .community-route-head,
   .community-route-lane,
+  .community-parameter-head,
+  .community-parameter-grid,
   .community-synth-procedure-grid {
     grid-template-columns: 1fr;
+  }
+
+  .community-parameter-head span {
+    justify-self: start;
+    white-space: normal;
+  }
+
+  .community-parameter-grid article {
+    min-height: 0;
   }
 
   .community-route-tabs {
@@ -6969,6 +7199,20 @@ textarea {
   .professional-module-panel {
     min-width: 0;
     max-width: 100%;
+  }
+
+  .synth-workbench-layout .sound-lab-keyboard {
+    grid-template-columns: repeat(12, minmax(42px, 42px));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: 8px;
+  }
+
+  .synth-workbench-layout .sound-lab-key {
+    min-width: 42px;
+    scroll-snap-align: start;
   }
 
   .advanced-module-pill,

@@ -289,20 +289,28 @@ function renderDashboard() {
           <span class="status-chip">四基础波形</span>
           <span class="status-chip">WebAudio 实时试听</span>
         </div>
-        <div class="dashboard-actions">
-          <button class="primary-button" type="button" data-dashboard-view="soundlab">
+        <div class="dashboard-action-label">
+          <span>主入口</span>
+          <small>先从可试听工作台或互动实验开始，再进入解析和挑战。</small>
+        </div>
+        <div class="dashboard-actions" aria-label="主入口">
+          <button class="primary-button" type="button" data-dashboard-primary-view="soundlab">
+            <em>01</em>
             <span>打开 Sound Lab</span>
             <small>进入可试听工作台</small>
           </button>
-          <button class="primary-button" type="button" data-dashboard-view="interactive">
+          <button class="primary-button" type="button" data-dashboard-primary-view="interactive">
+            <em>02</em>
             <span>开始互动实验</span>
             <small>先练波形 / ADSR / FM</small>
           </button>
-          <button class="secondary-button" type="button" data-dashboard-view="deep">
+          <button class="secondary-button" type="button" data-dashboard-primary-view="deep">
+            <em>03</em>
             <span>进入深度解析</span>
             <small>拆 transient / body / tail</small>
           </button>
-          <button class="secondary-button" type="button" data-dashboard-view="challenges">
+          <button class="secondary-button" type="button" data-dashboard-primary-view="challenges">
+            <em>04</em>
             <span>做声音挑战</span>
             <small>A/B 听辨和参数反推</small>
           </button>
@@ -341,7 +349,7 @@ function renderDashboard() {
       </div>
       <div class="flow-nodes">
         ${flowNodes.map((node) => `
-          <button class="signal-node" type="button" data-dashboard-view="${escapeHtml(node.view)}">
+          <button class="signal-node" type="button" data-dashboard-flow-view="${escapeHtml(node.view)}">
             <span class="node-index">${escapeHtml(node.index)}</span>
             <strong>${escapeHtml(node.title)}</strong>
             <p>${escapeHtml(node.description)}</p>
@@ -1430,9 +1438,10 @@ function bindDynamicForms() {
 }
 
 function bindDashboardControls() {
-  document.querySelectorAll('[data-dashboard-view]').forEach((button) => {
+  document.querySelectorAll('[data-dashboard-primary-view], [data-dashboard-flow-view]').forEach((button) => {
     button.addEventListener('click', () => {
-      switchView(button.dataset.dashboardView);
+      const dashboardTarget = button.dataset.dashboardPrimaryView ?? button.dataset.dashboardFlowView;
+      if (dashboardTarget) switchView(dashboardTarget);
     });
   });
 }

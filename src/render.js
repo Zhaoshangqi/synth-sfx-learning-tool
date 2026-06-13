@@ -723,6 +723,84 @@ function renderCommunitySynthRouteMap(lab = {}, activeSynth = 'serum') {
   `;
 }
 
+function getCommunityParameterCards(lab = {}, activeSynth = 'serum') {
+  const fallbackBySynth = {
+    serum: [
+      ['01 声源', 'Osc A / B / Sub / Noise', '先做 dry 主体，再分配 Macro 或 LFO。', '调制深度从 10%-35% 起步。', '关闭 FX 后仍能听出主体。'],
+      ['02 调制', 'Matrix / Macro / LFO', '把一个控制源映射到 filter、WT Pos、pitch 或 FM。', '一次只推一个听感问题。', '变化应该是材质或运动，不只是音量变化。'],
+      ['03 效果', 'FX Rack / post filter', '失真、短延迟、滤波和空间按角色排列。', 'drive 后必须整理高频刺点。', '更大但不糊，主体不丢。'],
+      ['04 导出', 'Preset note + REAPER render', '记录宏值并导 dry / full / tail。', '响度匹配后比较。', '版本之间功能清楚。'],
+    ],
+    phasePlant: [
+      ['01 分组', 'Generator Group', '按 body / edge / tail 建组。', '每组先 solo，留足 headroom。', '不用 FX 也能分清角色。'],
+      ['02 调制', 'LFO / Curve / Remap', '拖到 pitch、filter、gain 或 snapin 参数。', '用 Remap 限制过大范围。', '运动跟声音功能一致。'],
+      ['03 Snapin', 'Group lane / global lane', '组内先塑材质，全局再整理响度。', 'feedback 和 drive 少量起步。', '更硬或更大，但不破坏分组。'],
+      ['04 变体', 'Macro + REAPER naming', '导 low / medium / high 三档。', '每个宏只命名一个职责。', '像同一家族的三个变体。'],
+    ],
+    vital: [
+      ['01 主体', 'Osc / Noise / WT Frame', '先固定 frame 和 root，再加 warp。', 'noise 高通后低混入。', '波形可视反馈和听感一致。'],
+      ['02 调制', 'LFO / MSEG / Random', '拖到 frame、cutoff、pitch 或 warp。', '慢调制 0.05-0.4Hz 起步。', '运动可感但不晕。'],
+      ['03 FX', 'Warp / Filter / Distortion', '先做身份，再用 filter 整理。', 'distortion 后收刺点。', '中心音或暗度没有被吞掉。'],
+      ['04 循环', 'Envelope / loop / tail render', '检查循环点和尾巴低频。', 'tail-only 低频要清理。', '循环三遍没有 click。'],
+    ],
+  };
+  const cards = lab.synthDialPlan?.[activeSynth];
+  if (cards?.length) return cards.slice(0, 6);
+  return (fallbackBySynth[activeSynth] ?? fallbackBySynth.serum).map(([stageZh, whereZh, targetZh, rangeZh, listenZh]) => ({
+    stageZh,
+    whereZh,
+    targetZh,
+    rangeZh,
+    listenZh,
+  }));
+}
+
+function renderCommunityParameterTranslator(lab = {}, activeSynth = 'serum') {
+  const synthLabels = {
+    serum: 'Serum 2',
+    phasePlant: 'Phase Plant',
+    vital: 'Vital',
+  };
+  const activeLabel = synthLabels[activeSynth] ?? 'Serum 2';
+  const cards = getCommunityParameterCards(lab, activeSynth);
+  return `
+    <section class="community-parameter-translator" aria-label="参数翻译台">
+      <div class="community-parameter-head">
+        <div>
+          <h4>参数翻译台</h4>
+          <p>当前：${escapeHtml(activeLabel)}。把视频技巧翻译成“在哪里调、调什么、范围多大、听什么”。</p>
+        </div>
+        <span>不要逐帧抄参数，先复刻可听逻辑</span>
+      </div>
+      <div class="community-parameter-grid">
+        ${cards.map((card, index) => `
+          <article data-community-parameter-card="${escapeHtml(String(index + 1).padStart(2, '0'))}">
+            <span>${escapeHtml(card.stageZh)}</span>
+            <strong>${escapeHtml(card.whereZh)}</strong>
+            <p>${escapeHtml(card.targetZh)}</p>
+            <div class="parameter-action-list">
+              <b>操作步骤 · 一步一步复刻</b>
+              <ol>
+                ${(card.actions ?? []).map((action) => `<li>${escapeHtml(action)}</li>`).join('')}
+              </ol>
+            </div>
+            <dl>
+              <div>
+                <dt>建议范围</dt>
+                <dd>${escapeHtml(card.rangeZh)}</dd>
+              </div>
+              <div>
+                <dt>听感检查</dt>
+                <dd>${escapeHtml(card.listenZh)}</dd>
+              </div>
+            </dl>
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderCommunitySynthProcedure(lab = {}, activeSynth = 'serum') {
   const mappings = lab.synthParameterSteps ?? lab.synthMappings ?? {};
   const synthOrder = [
@@ -750,6 +828,7 @@ function renderCommunitySynthProcedure(lab = {}, activeSynth = 'serum') {
         }).join('')}
       </div>
       ${renderCommunitySynthRouteMap(lab, activeSynth)}
+      ${renderCommunityParameterTranslator(lab, activeSynth)}
     </section>
   `;
 }
