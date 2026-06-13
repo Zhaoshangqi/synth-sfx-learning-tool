@@ -144,6 +144,7 @@ state.soundLabMidiMappings = Array.isArray(savedSoundLabLibrary.midiMappings) ? 
 let patchPlayingTimer = null;
 let rangeRenderTimer = null;
 let rangeChromeFrame = 0;
+let soundLabPatchFrame = 0;
 let activeRangeInput = null;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
@@ -913,10 +914,25 @@ function rangePercentFromInput(input) {
 function updateRangeChrome(input) {
   if (!input?.isConnected) return;
   const shell = input.closest('.range-shell');
-  const control = input.closest('.lab-control');
-  const output = control?.querySelector('output');
+  const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
+  const output = control?.querySelector('output') ?? input.closest('label')?.querySelector('output');
   shell?.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
   if (output) output.textContent = `${input.value}${input.dataset.controlUnit ?? ''}`;
+}
+
+function applyImmediateControlFeedback(input) {
+  if (!input?.isConnected) return;
+  updateRangeChrome(input);
+  const unit = input.dataset.controlUnit ?? '';
+  const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
+  control?.setAttribute('data-live-value', `${input.value}${unit}`);
+  control?.classList.add('is-live-editing');
+  globalThis.clearTimeout(control?._liveEditingTimer);
+  if (control) {
+    control._liveEditingTimer = globalThis.setTimeout(() => {
+      control.classList.remove('is-live-editing');
+    }, 160);
+  }
 }
 
 function scheduleRangeChromeUpdate(input) {
@@ -948,21 +964,28 @@ function finishSmoothRangeInput(input = activeRangeInput) {
   setRangeDragging(input, false);
   activeRangeInput = null;
   globalThis.clearTimeout(rangeRenderTimer);
-  rangeRenderTimer = null;
-  render();
+  rangeRenderTimer = globalThis.setTimeout(() => {
+    rangeRenderTimer = null;
+    render();
+  }, 70);
 }
 
 function bindSmoothRangeInput(input, onValue) {
   input.addEventListener('pointerdown', () => {
     activeRangeInput = input;
     setRangeDragging(input, true);
+    applyImmediateControlFeedback(input);
   });
 
   input.addEventListener('input', () => {
+    applyImmediateControlFeedback(input);
     scheduleRangeChromeUpdate(input);
     onValue(input);
     if (!activeRangeInput) scheduleRangeCommitRender();
   });
+
+  input.addEventListener('pointerup', () => finishSmoothRangeInput(input));
+  input.addEventListener('pointercancel', () => finishSmoothRangeInput(input));
 
   input.addEventListener('change', () => {
     finishSmoothRangeInput(input);
@@ -1066,6 +1089,15 @@ function syncActiveSoundLabPatch() {
   if (!state.isSoundLabPlaying) return;
   const patch = getSoundLabModel().patch;
   audioPlayer.updateSoundLabPatch?.(patch);
+}
+
+function syncSoundLabPatchSoon() {
+  if (!state.isSoundLabPlaying) return;
+  if (soundLabPatchFrame) return;
+  soundLabPatchFrame = globalThis.requestAnimationFrame(() => {
+    soundLabPatchFrame = 0;
+    syncActiveSoundLabPatch();
+  });
 }
 
 function refreshAuditionPatch() {
@@ -1261,7 +1293,7 @@ function updateSoundLabControl(controlId, value) {
     ...state.soundLabMacros,
     [controlId]: Math.max(0, Math.min(100, Number(value))),
   };
-  syncActiveSoundLabPatch();
+  syncSoundLabPatchSoon();
 }
 
 function updateSoundLabEnvelope(controlId, value) {
@@ -1273,7 +1305,7 @@ function updateSoundLabEnvelope(controlId, value) {
   if (controlId === 'decay') next.decay = Math.max(10, Math.min(3200, numericValue)) / 1000;
   if (controlId === 'release') next.release = Math.max(10, Math.min(4200, numericValue)) / 1000;
   state.soundLabEnvelope = next;
-  syncActiveSoundLabPatch();
+  syncSoundLabPatchSoon();
 }
 
 function updateSoundLabModRoute(routeId, value) {
@@ -1282,7 +1314,7 @@ function updateSoundLabModRoute(routeId, value) {
   state.soundLabModMatrix = routes.map((route) => (
     route.id === routeId ? { ...route, amount: Math.max(-100, Math.min(100, Number(value))) } : route
   ));
-  syncActiveSoundLabPatch();
+  syncSoundLabPatchSoon();
 }
 
 function moveFxSlot(slotId, direction) {
@@ -1305,7 +1337,7 @@ function updateXyPadFromPointer(pad, event) {
   state.soundLabXyPad = { ...state.soundLabXyPad, x, y };
   pad.style.setProperty('--xy-x', `${x.toFixed(2)}%`);
   pad.style.setProperty('--xy-y', `${y.toFixed(2)}%`);
-  syncActiveSoundLabPatch();
+  syncSoundLabPatchSoon();
 }
 
 function updateMacroMorph(value) {
@@ -1313,7 +1345,7 @@ function updateMacroMorph(value) {
   state.soundLabMacroMorph = amount;
   const morphed = getSoundLabModel({}, { macroMorph: amount }).macroMorph.morphed;
   state.soundLabMacros = { ...state.soundLabMacros, ...morphed };
-  syncActiveSoundLabPatch();
+  syncSoundLabPatchSoon();
 }
 
 function setAbSlot(slot) {
@@ -1513,6 +1545,7 @@ function bindSoundLabControls() {
         ...state.soundLabLayerMix,
         [layerId]: Math.max(0, Math.min(100, Number(rangeInput.value))),
       };
+      syncSoundLabPatchSoon();
     });
   });
 
@@ -1524,7 +1557,7 @@ function bindSoundLabControls() {
         ...state.soundLabPerformance,
         [controlId]: Number.isFinite(numericValue) ? numericValue : state.soundLabPerformance[controlId],
       };
-      syncActiveSoundLabPatch();
+      syncSoundLabPatchSoon();
     });
   });
 
