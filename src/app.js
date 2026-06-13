@@ -109,6 +109,10 @@ const state = {
   soundLabXyPad: { x: 50, y: 50 },
   soundLabMacroMorph: 0,
   soundLabAbSlot: 'a',
+  soundLabWorkflowStep: 'source',
+  soundLabAnalyzerMode: 'live',
+  soundLabMoreOpen: false,
+  activeAdvancedModule: 'advanced-panel',
   soundLabFavorites: [],
   soundLabProjects: [],
   soundLabGitSync: {
@@ -459,6 +463,26 @@ function getActiveSoundFamily() {
   return getSoundLabFamily(soundLabFamilies, state.activeSoundFamilyId);
 }
 
+function selectSoundLabFamily(familyId, shouldRender = true) {
+  const family = getSoundLabFamily(soundLabFamilies, familyId);
+  const presetDna = getPresetDnaForFamily(family.id)[0];
+  state.activeSoundFamilyId = family.id;
+  state.activeSoundPresetDnaId = presetDna?.id;
+  state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
+  state.soundLabPerformance = { ...SOUND_LAB_PERFORMANCE_DEFAULTS };
+  state.soundLabEnvelope = {};
+  state.soundLabFxOrder = [...SOUND_LAB_FX_ORDER];
+  state.soundLabModMatrix = [];
+  state.soundLabXyPad = { x: 50, y: 50 };
+  state.soundLabMacroMorph = 0;
+  state.soundLabAbSlot = 'a';
+  state.soundLabWorkflowStep = 'source';
+  state.activeAdvancedModule = 'advanced-panel';
+  state.activeWorkbenchModule = 'envelope';
+  syncSoundLabPatchSoon();
+  if (shouldRender) render();
+}
+
 function getSoundLabOptions(optionOverrides = {}) {
   return {
     presetId: state.activeSoundPresetDnaId,
@@ -477,6 +501,10 @@ function getSoundLabOptions(optionOverrides = {}) {
     projects: state.soundLabProjects,
     gitSync: state.soundLabGitSync,
     midiMappings: state.soundLabMidiMappings,
+    activeWorkflowStep: state.soundLabWorkflowStep,
+    analyzerMode: state.soundLabAnalyzerMode,
+    moreOpen: state.soundLabMoreOpen,
+    activeAdvancedModule: state.activeAdvancedModule,
     ...optionOverrides,
   };
 }
@@ -514,6 +542,10 @@ function renderSoundLabView() {
         workletReady: state.soundLabWorkletReady,
         isPlaying: state.isSoundLabPlaying,
         activeWorkbenchModule: state.activeWorkbenchModule,
+        activeWorkflowStep: state.soundLabWorkflowStep,
+        analyzerMode: state.soundLabAnalyzerMode,
+        moreOpen: state.soundLabMoreOpen,
+        activeAdvancedModule: state.activeAdvancedModule,
       })}
       <section class="grid two sound-lab-preset-grid">
         ${family.presets.map((preset) => `
@@ -1122,6 +1154,7 @@ function drawCanvasSpectrum(canvas, frequency) {
 }
 
 function drawSoundLabAnalyserFrame(frame) {
+  if (state.soundLabAnalyzerMode === 'freeze') return;
   const level = Math.max(0, Math.min(1, frame?.level ?? 0));
   const workbench = document.querySelector('.sound-lab-workbench');
   if (!workbench) return;
@@ -1146,6 +1179,62 @@ function syncSoundLabPatchSoon() {
     soundLabPatchFrame = 0;
     syncActiveSoundLabPatch();
   });
+}
+
+function scrollSoundLabIntoView(selector) {
+  globalThis.requestAnimationFrame?.(() => {
+    document.querySelector(selector)?.scrollIntoView({ block: 'center', inline: 'nearest' });
+  });
+}
+
+function selectAdvancedModule(moduleId, shouldRender = true) {
+  const workflowByModule = {
+    'advanced-panel': 'shape',
+    'mod-matrix': 'shape',
+    'envelope-editor': 'shape',
+    'fx-chain': 'shape',
+    'xy-pad': 'shape',
+    'macro-morph': 'shape',
+    'ab-compare': 'compare',
+    favorites: 'deliver',
+    'project-library': 'deliver',
+    'cloud-sync': 'deliver',
+    'midi-input': 'deliver',
+    'batch-export': 'deliver',
+  };
+  state.activeAdvancedModule = moduleId;
+  state.soundLabWorkflowStep = workflowByModule[moduleId] ?? state.soundLabWorkflowStep;
+  if (moduleId === 'ab-compare') state.activeWorkbenchModule = 'macro';
+  if (moduleId === 'fx-chain') state.activeWorkbenchModule = 'effects';
+  if (moduleId === 'mod-matrix') state.activeWorkbenchModule = 'modulation';
+  if (moduleId === 'envelope-editor') state.activeWorkbenchModule = 'envelope';
+  if (shouldRender) render();
+}
+
+function handleWorkbenchStep(step) {
+  const moduleByStep = {
+    source: 'generator',
+    shape: 'envelope',
+    compare: 'macro',
+    deliver: 'effects',
+  };
+  const advancedByStep = {
+    source: 'advanced-panel',
+    shape: 'envelope-editor',
+    compare: 'ab-compare',
+    deliver: 'batch-export',
+  };
+  const scrollByStep = {
+    source: '.sound-family-rail',
+    shape: '.workbench-module-tabs',
+    compare: '.advanced-module-dock',
+    deliver: '.sound-lab-export',
+  };
+  state.soundLabWorkflowStep = step;
+  state.activeWorkbenchModule = moduleByStep[step] ?? state.activeWorkbenchModule;
+  state.activeAdvancedModule = advancedByStep[step] ?? state.activeAdvancedModule;
+  render();
+  scrollSoundLabIntoView(scrollByStep[step] ?? '.sound-lab-workbench');
 }
 
 function refreshAuditionPatch() {
@@ -1540,19 +1629,13 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
 function bindSoundLabControls() {
   document.querySelectorAll('[data-sound-family-id]').forEach((button) => {
     button.addEventListener('click', () => {
-      state.activeSoundFamilyId = button.dataset.soundFamilyId;
-      const family = getActiveSoundFamily();
-      const presetDna = getPresetDnaForFamily(family.id)[0];
-      state.activeSoundPresetDnaId = presetDna?.id;
-      state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
-      state.soundLabPerformance = { ...SOUND_LAB_PERFORMANCE_DEFAULTS };
-      state.soundLabEnvelope = {};
-      state.soundLabFxOrder = [...SOUND_LAB_FX_ORDER];
-      state.soundLabModMatrix = [];
-      state.soundLabXyPad = { x: 50, y: 50 };
-      state.soundLabMacroMorph = 0;
-      state.soundLabAbSlot = 'a';
-      render();
+      selectSoundLabFamily(button.dataset.soundFamilyId);
+    });
+  });
+
+  document.querySelectorAll('[data-workbench-family]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectSoundLabFamily(button.dataset.workbenchFamily);
     });
   });
 
@@ -1733,7 +1816,27 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-module-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeWorkbenchModule = button.dataset.moduleTab;
+      state.soundLabWorkflowStep = 'shape';
       render();
+    });
+  });
+
+  document.querySelectorAll('[data-workflow-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+      handleWorkbenchStep(button.dataset.workflowStep);
+    });
+  });
+
+  document.querySelectorAll('[data-analyzer-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.soundLabAnalyzerMode = button.dataset.analyzerMode;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-advanced-module]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectAdvancedModule(button.dataset.advancedModule);
     });
   });
 
@@ -1752,12 +1855,27 @@ function bindSoundLabControls() {
         }, 1200);
         return;
       }
+      if (action === 'compare-view') {
+        handleWorkbenchStep('compare');
+        return;
+      }
+      if (action === 'toggle-more') {
+        state.soundLabMoreOpen = !state.soundLabMoreOpen;
+        render();
+        return;
+      }
       if (action === 'open-reaper-template') switchView('practice');
       if (action === 'open-library' || action === 'import-serum') switchView('integrations');
       if (action === 'start-ab') switchView('challenges');
       if (action === 'start-parameter') switchView('interactive');
       if (action === 'start-signal') switchView('deep');
-      if (action === 'new-experiment' || action === 'analyze-patch') {
+      if (action === 'analyze-patch') {
+        state.soundLabAnalyzerMode = 'log';
+        state.soundLabWorkflowStep = 'shape';
+        render();
+        return;
+      }
+      if (action === 'new-experiment') {
         button.classList.add('is-confirmed');
         globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
       }

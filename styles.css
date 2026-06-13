@@ -596,6 +596,40 @@ textarea {
   margin-top: 0;
 }
 
+.dashboard-actions button {
+  pointer-events: auto;
+  min-width: 132px;
+  min-height: 46px;
+  font-weight: 850;
+}
+
+.dashboard-actions .primary-button {
+  background: linear-gradient(180deg, #17a7a3, #0d817e);
+  border-color: rgba(13, 119, 116, 0.42);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(23, 167, 163, 0.2);
+}
+
+.dashboard-actions .secondary-button {
+  background: #ffffff;
+  border-color: #cfe0e9;
+  color: #243846;
+  box-shadow: 0 10px 22px rgba(42, 76, 104, 0.08);
+}
+
+.dashboard-actions .primary-button:hover,
+.dashboard-actions .primary-button:focus-visible {
+  background: linear-gradient(180deg, #1db7b2, #0b7572);
+  border-color: rgba(13, 119, 116, 0.58);
+}
+
+.dashboard-actions .secondary-button:hover,
+.dashboard-actions .secondary-button:focus-visible {
+  background: #f8fcff;
+  border-color: rgba(23, 167, 163, 0.34);
+  color: #0d7774;
+}
+
 .quality-panel {
   align-self: stretch;
   min-height: 100%;
@@ -3880,6 +3914,7 @@ textarea {
 }
 
 .workbench-actions {
+  position: relative;
   gap: 8px;
 }
 
@@ -3931,10 +3966,108 @@ textarea {
   transform: translateY(1px) scale(0.992);
 }
 
+.workbench-flow-map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workflow-step {
+  appearance: none;
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 9px;
+  align-content: center;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 10px;
+  color: #536879;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.workflow-step span {
+  grid-row: span 2;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #edf6f8;
+  color: #0d7774;
+  font-size: 11px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.workflow-step strong {
+  color: #243846;
+  font-size: 13px;
+}
+
+.workflow-step small {
+  min-width: 0;
+  overflow: hidden;
+  color: #6a7d8e;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-step.is-active {
+  border-color: rgba(23, 167, 163, 0.36);
+  background: linear-gradient(180deg, #e9fbf9, #ffffff);
+  box-shadow: 0 12px 26px rgba(23, 167, 163, 0.11);
+}
+
+.workflow-step:hover,
+.workflow-step:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.44);
+  box-shadow: 0 14px 28px rgba(23, 167, 163, 0.12);
+}
+
 .icon-more-button {
   width: 34px;
   padding: 0 !important;
   font-size: 18px !important;
+}
+
+.workbench-more-tray {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 218px;
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 8px;
+  box-shadow: 0 18px 38px rgba(42, 76, 104, 0.16);
+}
+
+.workbench-more-tray span {
+  color: #6a7d8e;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.workbench-more-tray button {
+  min-height: 32px;
+  padding: 5px 8px;
 }
 
 .synth-tab-row {
@@ -4111,7 +4244,7 @@ textarea {
   border-left: 0;
 }
 
-.segmented-mini .is-active {
+.segmented-mini button.is-active {
   background: #ffffff;
   color: #0d7774;
 }
@@ -4270,6 +4403,16 @@ textarea {
   border-color: rgba(23, 167, 163, 0.42);
   background: #ffffff;
   box-shadow: 0 12px 28px rgba(23, 167, 163, 0.1);
+}
+
+.advanced-module-pill.is-active {
+  border-color: rgba(23, 167, 163, 0.46);
+  background: linear-gradient(180deg, #e9fbf9, #ffffff);
+  box-shadow: 0 12px 28px rgba(23, 167, 163, 0.13);
+}
+
+.advanced-module-pill.is-active strong {
+  color: #0d7774;
 }
 
 .envelope-panel {
@@ -4528,18 +4671,27 @@ textarea {
 
 .control-bottom-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.46fr) minmax(180px, 0.22fr) minmax(230px, 0.32fr);
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.44fr);
   gap: 10px;
+}
+
+.material-selector-grid {
+  grid-column: 1 / -1;
+  min-height: 0;
 }
 
 .material-token-row {
   display: grid;
-  grid-template-columns: repeat(7, minmax(52px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
   gap: 8px;
 }
 
 .material-token-row button {
-  min-height: 58px;
+  min-height: 68px;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  justify-items: center;
   border: 1px solid #dce8ef;
   border-radius: 7px;
   background: #fbfdff;
@@ -4547,6 +4699,7 @@ textarea {
   font-size: 11px;
   font-weight: 750;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .material-token-row button span {
@@ -4568,6 +4721,47 @@ textarea {
 .material-token-row .is-active span {
   border-color: rgba(255, 255, 255, 0.46);
   background: radial-gradient(circle, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.22));
+}
+
+.material-token-row button strong {
+  color: inherit;
+  font-size: 12px;
+}
+
+.material-token-row button small {
+  color: #738696;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.material-token-row .is-active small {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.material-current-brief {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid #dfe9f0;
+  border-radius: 7px;
+  background: #f8fbfd;
+}
+
+.material-current-brief strong {
+  color: #0d7774;
+  font-size: 12px;
+}
+
+.material-current-brief span {
+  min-width: 0;
+  overflow: hidden;
+  color: #536879;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .playback-grid {
@@ -5433,6 +5627,14 @@ textarea {
   .quality-knob-row,
   .route-timeline {
     grid-template-columns: 1fr;
+  }
+
+  .workbench-flow-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-step {
+    min-height: 76px;
   }
 
   .sound-lab-workbench,

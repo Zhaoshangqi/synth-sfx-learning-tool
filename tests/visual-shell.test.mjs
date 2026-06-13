@@ -356,3 +356,51 @@ test('app maps vertical envelope pointer movement to real Sound Lab parameter up
   assert.match(appJs, /setPointerCapture/);
   assert.match(appJs, /querySelector\('output, strong'\)/);
 });
+
+test('dashboard CTA buttons use clear high-contrast clickable states', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*background:\s*linear-gradient\(180deg,\s*#17a7a3/);
+  assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*color:\s*#ffffff/);
+  assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*background:\s*#ffffff/);
+  assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*color:\s*#243846/);
+  assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*pointer-events:\s*auto/);
+});
+
+test('sound lab exposes a guided workflow map and real material family switching', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /workbench-flow-map/);
+  assert.match(renderJs, /data-workflow-step/);
+  assert.match(renderJs, /\['source',\s*'01'/);
+  assert.match(renderJs, /data-workbench-family/);
+  assert.match(renderJs, /\['metal-impact',\s*'金属'/);
+  assert.match(renderJs, /material-current-brief/);
+  assert.match(appJs, /data-workbench-family/);
+  assert.match(appJs, /selectSoundLabFamily/);
+  assert.match(css, /\.control-bottom-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(250px,\s*0\.44fr\)/);
+  assert.match(css, /\.material-selector-grid\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+  assert.match(css, /\.material-token-row\s*\{[\s\S]*repeat\(auto-fit,\s*minmax\(74px,\s*1fr\)\)/);
+});
+
+test('sound lab workstation utility controls have real stateful handlers', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-analyzer-mode/);
+  assert.match(renderJs, /data-workflow-step/);
+  assert.match(renderJs, /data-workbench-action="toggle-more"/);
+  assert.match(appJs, /soundLabAnalyzerMode/);
+  assert.match(appJs, /soundLabWorkflowStep/);
+  assert.match(appJs, /activeAdvancedModule/);
+  assert.match(appJs, /handleWorkbenchStep/);
+  assert.match(appJs, /data-analyzer-mode/);
+  assert.match(appJs, /data-advanced-module/);
+  assert.match(appJs, /toggle-more/);
+  assert.match(css, /\.workflow-step\s*\{[\s\S]*cursor:\s*pointer/);
+  assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*#ffffff/);
+  assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(23,\s*167,\s*163/);
+});
