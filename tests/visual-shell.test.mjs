@@ -312,3 +312,47 @@ test('sound lab app wires advanced controls and live analyzer drawing', () => {
   assert.match(audioPlayerJs, /getByteFrequencyData/);
   assert.match(audioPlayerJs, /getByteTimeDomainData/);
 });
+
+test('sound lab envelope sliders stay inside their panel and keep real pointer targets', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.envelope-panel\s*\{[\s\S]*overflow:\s*hidden/);
+  assert.match(css, /\.vertical-slider-stack\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(56px,\s*1fr\)\)/);
+  assert.match(css, /\.vertical-slider\s*\{[\s\S]*overflow:\s*hidden/);
+  assert.match(css, /\.vertical-slider input\s*\{[\s\S]*writing-mode:\s*vertical-lr/);
+  assert.match(css, /\.vertical-slider input\s*\{[\s\S]*touch-action:\s*none/);
+  assert.doesNotMatch(css, /\.vertical-slider input\s*\{[\s\S]*transform:\s*rotate\(-90deg\)/);
+});
+
+test('dashboard overview uses readable light workstation panels instead of dark washed text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.88\)/);
+  assert.match(css, /\.hero-copy p\s*\{[\s\S]*color:\s*#4f6476/);
+  assert.match(css, /\.quality-panel\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.92\)/);
+  assert.match(css, /\.metric-row strong\s*\{[\s\S]*color:\s*#243846/);
+  assert.match(css, /\.learning-flow\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.88\)/);
+  assert.match(css, /\.signal-node\s*\{[\s\S]*background:\s*#fbfdff/);
+  assert.match(css, /\.signal-node p\s*\{[\s\S]*color:\s*#536879/);
+});
+
+test('interactive course controls keep light readable surfaces and explicit click hit areas', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.lab-select-button,[\s\S]*\.preset-button\s*\{[\s\S]*background:\s*#ffffff/);
+  assert.match(css, /\.lab-select-button,[\s\S]*\.preset-button\s*\{[\s\S]*pointer-events:\s*auto/);
+  assert.match(css, /\.lab-select-button\.is-active\s*\{[\s\S]*color:\s*#0d7774/);
+  assert.match(css, /\.interactive-lab-card\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.92\)/);
+  assert.match(css, /\.lab-goal\s*\{[\s\S]*color:\s*#385064/);
+  assert.match(css, /\.audition-button\s*\{[\s\S]*pointer-events:\s*auto/);
+});
+
+test('app maps vertical envelope pointer movement to real Sound Lab parameter updates', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /function updateVerticalRangeFromPointer/);
+  assert.match(appJs, /closest\('\.vertical-slider'\)/);
+  assert.match(appJs, /rect\.bottom - event\.clientY/);
+  assert.match(appJs, /setPointerCapture/);
+  assert.match(appJs, /querySelector\('output, strong'\)/);
+});

@@ -1144,6 +1144,8 @@ function renderWorkbenchEnvelope(model = {}) {
               <input
                 type="range"
                 data-envelope-control="${escapeHtml(slider.id)}"
+                data-control-unit="${escapeHtml(slider.unit)}"
+                aria-orientation="vertical"
                 min="${escapeHtml(slider.min)}"
                 max="${escapeHtml(slider.max)}"
                 step="1"
