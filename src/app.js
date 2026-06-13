@@ -113,8 +113,9 @@ const state = {
   soundLabWorkflowStep: 'source',
   soundLabAnalyzerMode: 'live',
   soundLabMoreOpen: false,
-  activeAdvancedModule: 'advanced-panel',
+  activeAdvancedModule: 'advanced',
   activeSynthModGuideId: synthModulationGuides[0]?.id,
+  activeCoachSynth: 'serum',
   soundLabFavorites: [],
   soundLabProjects: [],
   soundLabGitSync: {
@@ -281,10 +282,22 @@ function renderDashboard() {
           <span class="status-chip">WebAudio 实时试听</span>
         </div>
         <div class="dashboard-actions">
-          <button class="primary-button" type="button" data-dashboard-view="soundlab">打开 Sound Lab</button>
-          <button class="primary-button" type="button" data-dashboard-view="interactive">开始互动实验</button>
-          <button class="secondary-button" type="button" data-dashboard-view="deep">进入深度解析</button>
-          <button class="secondary-button" type="button" data-dashboard-view="challenges">做声音挑战</button>
+          <button class="primary-button" type="button" data-dashboard-view="soundlab">
+            <span>打开 Sound Lab</span>
+            <small>进入可试听工作台</small>
+          </button>
+          <button class="primary-button" type="button" data-dashboard-view="interactive">
+            <span>开始互动实验</span>
+            <small>先练波形 / ADSR / FM</small>
+          </button>
+          <button class="secondary-button" type="button" data-dashboard-view="deep">
+            <span>进入深度解析</span>
+            <small>拆 transient / body / tail</small>
+          </button>
+          <button class="secondary-button" type="button" data-dashboard-view="challenges">
+            <span>做声音挑战</span>
+            <small>A/B 听辨和参数反推</small>
+          </button>
         </div>
       </div>
       <aside class="quality-panel" aria-label="质量守门">
@@ -479,7 +492,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabMacroMorph = 0;
   state.soundLabAbSlot = 'a';
   state.soundLabWorkflowStep = 'source';
-  state.activeAdvancedModule = 'advanced-panel';
+  state.activeAdvancedModule = 'advanced';
   state.activeWorkbenchModule = 'envelope';
   syncSoundLabPatchSoon();
   if (shouldRender) render();
@@ -509,6 +522,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     activeAdvancedModule: state.activeAdvancedModule,
     modulationGuides: synthModulationGuides,
     activeModulationGuideId: state.activeSynthModGuideId,
+    activeCoachSynth: state.activeCoachSynth,
     ...optionOverrides,
   };
 }
@@ -552,6 +566,7 @@ function renderSoundLabView() {
         activeAdvancedModule: state.activeAdvancedModule,
         modulationGuides: synthModulationGuides,
         activeModulationGuideId: state.activeSynthModGuideId,
+        activeCoachSynth: state.activeCoachSynth,
       })}
       <section class="grid two sound-lab-preset-grid">
         ${family.presets.map((preset) => `
@@ -1195,7 +1210,7 @@ function scrollSoundLabIntoView(selector) {
 
 function selectAdvancedModule(moduleId, shouldRender = true) {
   const workflowByModule = {
-    'advanced-panel': 'shape',
+    advanced: 'source',
     'mod-matrix': 'shape',
     'envelope-editor': 'shape',
     'fx-chain': 'shape',
@@ -1210,6 +1225,7 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
   };
   state.activeAdvancedModule = moduleId;
   state.soundLabWorkflowStep = workflowByModule[moduleId] ?? state.soundLabWorkflowStep;
+  if (moduleId === 'advanced') state.activeWorkbenchModule = 'generator';
   if (moduleId === 'ab-compare') state.activeWorkbenchModule = 'macro';
   if (moduleId === 'fx-chain') state.activeWorkbenchModule = 'effects';
   if (moduleId === 'mod-matrix') state.activeWorkbenchModule = 'modulation';
@@ -1225,7 +1241,7 @@ function handleWorkbenchStep(step) {
     deliver: 'effects',
   };
   const advancedByStep = {
-    source: 'advanced-panel',
+    source: 'advanced',
     shape: 'envelope-editor',
     compare: 'ab-compare',
     deliver: 'batch-export',
@@ -1868,6 +1884,14 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-mod-guide]').forEach((button) => {
     button.addEventListener('click', () => {
       applySynthModGuide(button.dataset.modGuide);
+    });
+  });
+
+  document.querySelectorAll('[data-coach-synth]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeCoachSynth = button.dataset.coachSynth;
+      render();
+      scrollSoundLabIntoView('.workbench-coach-panel');
     });
   });
 

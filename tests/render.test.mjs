@@ -385,10 +385,19 @@ test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvase
   assert.match(html, /data-advanced-module="mod-matrix"/);
   assert.match(html, /data-advanced-module="envelope-editor"/);
   assert.match(html, /data-advanced-module="fx-chain"/);
-  assert.match(html, /data-xy-pad/);
-  assert.match(html, /data-macro-morph/);
-  assert.match(html, /data-fx-chain-slot="filter"/);
-  assert.match(html, /data-git-sync-action="pull"/);
-  assert.match(html, /data-midi-learn/);
-  assert.match(html, /data-export-name-pattern/);
+  assert.match(html, /data-active-advanced-panel="advanced"/);
+  assert.match(html, /Advanced Panel/);
+
+  const matrixHtml = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, activeAdvancedModule: 'mod-matrix' });
+  const fxHtml = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, activeAdvancedModule: 'fx-chain' });
+  const xyHtml = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, activeAdvancedModule: 'xy-pad' });
+  const libraryHtml = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, activeAdvancedModule: 'batch-export' });
+
+  assert.match(matrixHtml, /data-mod-route-amount/);
+  assert.match(fxHtml, /data-fx-chain-slot="filter"/);
+  assert.match(xyHtml, /data-xy-pad/);
+  assert.match(xyHtml, /data-macro-morph/);
+  assert.match(libraryHtml, /data-git-sync-action="pull"/);
+  assert.match(libraryHtml, /data-midi-learn/);
+  assert.match(libraryHtml, /data-export-name-pattern/);
 });

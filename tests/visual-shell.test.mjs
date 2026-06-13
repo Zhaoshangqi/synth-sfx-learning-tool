@@ -359,12 +359,16 @@ test('app maps vertical envelope pointer movement to real Sound Lab parameter up
 
 test('dashboard CTA buttons use clear high-contrast clickable states', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
+  assert.match(appJs, /进入可试听工作台/);
+  assert.match(appJs, /先练波形 \/ ADSR \/ FM/);
   assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*background:\s*linear-gradient\(180deg,\s*#17a7a3/);
   assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*color:\s*#ffffff/);
   assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*background:\s*#ffffff/);
   assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*color:\s*#243846/);
   assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*pointer-events:\s*auto/);
+  assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*min-height:\s*58px/);
 });
 
 test('sound lab exposes a guided workflow map and real material family switching', () => {
@@ -373,16 +377,21 @@ test('sound lab exposes a guided workflow map and real material family switching
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(renderJs, /workbench-flow-map/);
+  assert.match(renderJs, /workflow-context-strip/);
   assert.match(renderJs, /data-workflow-step/);
   assert.match(renderJs, /\['source',\s*'01'/);
   assert.match(renderJs, /data-workbench-family/);
   assert.match(renderJs, /\['metal-impact',\s*'金属'/);
   assert.match(renderJs, /material-current-brief/);
+  assert.match(renderJs, /material-workflow-hint/);
   assert.match(appJs, /data-workbench-family/);
   assert.match(appJs, /selectSoundLabFamily/);
+  assert.match(appJs, /activeAdvancedModule:\s*'advanced'/);
   assert.match(css, /\.control-bottom-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(250px,\s*0\.44fr\)/);
   assert.match(css, /\.material-selector-grid\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
   assert.match(css, /\.material-token-row\s*\{[\s\S]*repeat\(auto-fit,\s*minmax\(74px,\s*1fr\)\)/);
+  assert.match(css, /\.workflow-context-strip\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+  assert.match(css, /\.material-workflow-hint\s*\{[\s\S]*background:\s*linear-gradient/);
 });
 
 test('sound lab workstation utility controls have real stateful handlers', () => {
@@ -393,6 +402,9 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(renderJs, /data-analyzer-mode/);
   assert.match(renderJs, /data-workflow-step/);
   assert.match(renderJs, /data-workbench-action="toggle-more"/);
+  assert.match(renderJs, /data-active-advanced-panel/);
+  assert.match(renderJs, /renderProfessionalControlGrid\(model,\s*options\.activeAdvancedModule\)/);
+  assert.match(renderJs, /renderAdvancedOverviewPanel/);
   assert.match(appJs, /soundLabAnalyzerMode/);
   assert.match(appJs, /soundLabWorkflowStep/);
   assert.match(appJs, /activeAdvancedModule/);
@@ -403,6 +415,7 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(css, /\.workflow-step\s*\{[\s\S]*cursor:\s*pointer/);
   assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*#ffffff/);
   assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(23,\s*167,\s*163/);
+  assert.match(css, /\.professional-control-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
 test('sound lab module coach is interactive and visually separated from the workbench controls', () => {
@@ -419,8 +432,10 @@ test('sound lab module coach is interactive and visually separated from the work
   assert.match(appJs, /modulationGuides:\s*synthModulationGuides/);
   assert.match(appJs, /activeModulationGuideId:\s*state\.activeSynthModGuideId/);
   assert.match(renderJs, /workbench-coach-panel/);
+  assert.match(renderJs, /coach-route-panel/);
+  assert.match(renderJs, /data-coach-synth/);
   assert.match(renderJs, /coach-synth-grid/);
   assert.match(renderJs, /data-guide-preview/);
   assert.match(css, /\.workbench-coach-panel\s*\{[\s\S]*background:\s*linear-gradient/);
-  assert.match(css, /\.coach-synth-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3/);
+  assert.match(css, /\.coach-synth-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(260px,\s*0\.58fr\)/);
 });
