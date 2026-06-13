@@ -1043,16 +1043,21 @@ function renderWorkbenchWaveform(model = {}) {
   `;
 }
 
-function renderWorkbenchSpectrum(model = {}) {
+function renderWorkbenchSpectrum(model = {}, analyzerMode = 'live') {
   const bars = model.spectrumBars ?? [];
+  const modes = [
+    ['live', '实时'],
+    ['freeze', '冻结'],
+    ['log', '对数'],
+  ];
   return `
     <section class="workbench-panel spectrum-panel spectrum-stage" aria-label="频谱分析">
       <div class="mini-panel-head">
         <strong>频谱分析</strong>
         <div class="segmented-mini" aria-label="频谱模式">
-          <button class="is-active" type="button">实时</button>
-          <button type="button">冻结</button>
-          <button type="button">对数</button>
+          ${modes.map(([id, label]) => `
+            <button class="${id === analyzerMode ? 'is-active' : ''}" type="button" data-analyzer-mode="${escapeHtml(id)}" aria-pressed="${id === analyzerMode ? 'true' : 'false'}">${escapeHtml(label)}</button>
+          `).join('')}
         </div>
       </div>
       <div class="spectrum-canvas">
@@ -1200,26 +1205,50 @@ function renderWorkbenchModulation(model = {}) {
 
 function renderWorkbenchMaterialPanel(family = {}) {
   const materials = [
-    ['metal', '金属'],
-    ['glass', '玻璃'],
-    ['electric', '电流'],
-    ['machine', '机械'],
-    ['air', '空气'],
-    ['magic', '魔法'],
-    ['custom', '自定义'],
+    ['metal-impact', '金属', '非谐波 / 短共振'],
+    ['glass-ping', '玻璃', '清亮 partial'],
+    ['electric-crackle', '电流', '随机 gate'],
+    ['servo-tick', '机械', '短脉冲'],
+    ['air-whoosh', '空气', '滤波运动'],
+    ['energy-charge', '魔法', '持续上升'],
   ];
-  const familyText = family.titleZh ?? '';
   return `
     <section class="workbench-panel material-selector-grid" aria-label="材质选择">
       <div class="mini-panel-head"><strong>材质选择</strong><span>${escapeHtml((family.materialAxis ?? []).join(' / '))}</span></div>
       <div class="material-token-row">
-        ${materials.map(([id, label]) => `
-          <button class="${familyText.includes(label) || (id === 'metal' && familyText.includes('金属')) ? 'is-active' : ''}" type="button" data-workbench-material="${escapeHtml(id)}">
+        ${materials.map(([familyId, label, note]) => `
+          <button class="${family.id === familyId ? 'is-active' : ''}" type="button" data-workbench-family="${escapeHtml(familyId)}">
             <span aria-hidden="true"></span>
-            ${escapeHtml(label)}
+            <strong>${escapeHtml(label)}</strong>
+            <small>${escapeHtml(note)}</small>
           </button>
         `).join('')}
       </div>
+      <div class="material-current-brief">
+        <strong>${escapeHtml(family.titleEn ?? family.titleZh)}</strong>
+        <span>${escapeHtml(family.summaryZh ?? '')}</span>
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
+  const familyName = (family.titleZh ?? '').split('：')[0] || 'Sound Lab';
+  const steps = [
+    ['source', '01', '选目标', familyName],
+    ['shape', '02', '调声音', '包络 / 宏 / 调制'],
+    ['compare', '03', '试听对比', 'A / B / Tone.js'],
+    ['deliver', '04', '导出交付', 'Patch / REAPER'],
+  ];
+  return `
+    <section class="workbench-flow-map" aria-label="Sound Lab workflow">
+      ${steps.map(([id, index, label, note]) => `
+        <button class="workflow-step ${id === activeStep ? 'is-active' : ''}" type="button" data-workflow-step="${escapeHtml(id)}" aria-pressed="${id === activeStep ? 'true' : 'false'}">
+          <span>${escapeHtml(index)}</span>
+          <strong>${escapeHtml(label)}</strong>
+          <small>${escapeHtml(note)}</small>
+        </button>
+      `).join('')}
     </section>
   `;
 }
@@ -1261,11 +1290,11 @@ function renderWorkbenchQuality(model = {}) {
   `;
 }
 
-function renderAdvancedModuleDock(model = {}) {
+function renderAdvancedModuleDock(model = {}, activeAdvancedModule = 'advanced-panel') {
   return `
     <section class="advanced-module-dock" aria-label="Advanced Sound Lab modules">
       ${(model.advancedModules ?? []).map((module) => `
-        <button class="advanced-module-pill" type="button" data-advanced-module="${escapeHtml(module.id)}">
+        <button class="advanced-module-pill ${module.id === activeAdvancedModule ? 'is-active' : ''}" type="button" data-advanced-module="${escapeHtml(module.id)}" aria-pressed="${module.id === activeAdvancedModule ? 'true' : 'false'}">
           <strong>${escapeHtml(module.labelZh)}</strong>
           <span>${escapeHtml(module.noteZh)}</span>
         </button>
@@ -1488,22 +1517,31 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         <div class="workbench-actions">
           <button type="button" data-workbench-action="save-patch">保存 Patch</button>
           <button type="button" data-workbench-action="export-preset">导出 Preset</button>
-          <button class="icon-more-button" type="button" aria-label="更多">⋮</button>
+          <button class="icon-more-button ${options.moreOpen ? 'is-active' : ''}" type="button" data-workbench-action="toggle-more" aria-label="更多" aria-pressed="${options.moreOpen ? 'true' : 'false'}">⋮</button>
+          ${options.moreOpen ? `
+            <div class="workbench-more-tray" role="status">
+              <span>Quick</span>
+              <button type="button" data-workbench-action="open-library">预设库</button>
+              <button type="button" data-workbench-action="open-reaper-template">REAPER</button>
+              <button type="button" data-workbench-action="analyze-patch">分析</button>
+            </div>
+          ` : ''}
         </div>
       </header>
       <div class="synth-tab-row">
         ${renderWorkbenchSynthTabs()}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
+      ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}
       <div class="workbench-main-grid">
         <div class="workbench-core">
           <div class="analyzer-row">
             ${renderWorkbenchWaveform(model)}
-            ${renderWorkbenchSpectrum(model)}
+            ${renderWorkbenchSpectrum(model, options.analyzerMode)}
             ${renderWorkbenchOutputMeter(model)}
           </div>
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
-          ${renderAdvancedModuleDock(model)}
+          ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
           ${renderWorkbenchEnvelope(model)}
           <div class="control-lower-grid">
             ${renderWorkbenchMacroPanel(model)}
