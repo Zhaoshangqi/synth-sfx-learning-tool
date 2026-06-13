@@ -11,15 +11,33 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     this.outputDcLeft = { x: 0, y: 0 };
     this.outputDcRight = { x: 0, y: 0 };
     this.port.onmessage = (event) => {
-      if (event.data?.type !== 'sound-lab:play') return;
-      this.patch = event.data.payload;
+      if (event.data?.type === 'sound-lab:play') {
+        this.loadPatch(event.data.payload, true);
+      }
+      if (event.data?.type === 'sound-lab:update') {
+        this.loadPatch(event.data.payload, false);
+      }
+    };
+  }
+
+  loadPatch(payload, reset) {
+    const previousLayers = this.patch?.layers || [];
+    this.patch = payload;
+    this.seed = Math.max(1, Math.floor(this.patch.seed || 1));
+
+    if (reset) {
       this.frame = 0;
-      this.seed = Math.max(1, Math.floor(this.patch.seed || 1));
       this.layerStates = (this.patch.layers || []).map((layer) => this.createLayerState(layer));
       this.spaceState = this.createSpaceState();
       this.outputDcLeft = { x: 0, y: 0 };
       this.outputDcRight = { x: 0, y: 0 };
-    };
+      return;
+    }
+
+    const layers = this.patch.layers || [];
+    if (layers.length !== previousLayers.length) {
+      this.layerStates = layers.map((layer) => this.createLayerState(layer));
+    }
   }
 
   createSpaceState() {

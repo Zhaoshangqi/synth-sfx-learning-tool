@@ -342,3 +342,33 @@ test('renderSoundLabWorkbench exposes HQ engine, playable keyboard, and FX rack 
   assert.match(html, /fx-rack-panel/);
   assert.match(html, /data-sound-lab-ab="tone"/);
 });
+
+test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvases', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    engineMode: 'hq',
+    xyPad: { x: 64, y: 38 },
+    macroMorph: 52,
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    engineMode: 'hq',
+    engineUsed: 'tone',
+    toneReady: true,
+    workletReady: true,
+    isPlaying: false,
+  });
+
+  assert.match(html, /data-analyzer-waveform/);
+  assert.match(html, /data-analyzer-spectrum/);
+  assert.match(html, /data-analyzer-meter/);
+  assert.match(html, /data-advanced-module="mod-matrix"/);
+  assert.match(html, /data-advanced-module="envelope-editor"/);
+  assert.match(html, /data-advanced-module="fx-chain"/);
+  assert.match(html, /data-xy-pad/);
+  assert.match(html, /data-macro-morph/);
+  assert.match(html, /data-fx-chain-slot="filter"/);
+  assert.match(html, /data-git-sync-action="pull"/);
+  assert.match(html, /data-midi-learn/);
+  assert.match(html, /data-export-name-pattern/);
+});

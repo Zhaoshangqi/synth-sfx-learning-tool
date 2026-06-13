@@ -173,15 +173,19 @@ export class LabAudioPlayer {
     this.timer = null;
     this.oneShotTimer = null;
     this.raf = null;
+    this.meterTimer = null;
     this.activeNodes = new Set();
     this.current = null;
     this.onLevel = null;
+    this.onAnalyserFrame = null;
     this.playing = false;
     this.workletReady = false;
     this.workletLoadAttempted = false;
     this.toneReady = false;
     this.toneLoadAttempted = false;
     this.toneNodes = [];
+    this.activeSoundLabNode = null;
+    this.currentSoundLabPatch = null;
   }
 
   async ensureContext() {
@@ -193,7 +197,8 @@ export class LabAudioPlayer {
       this.master = this.context.createGain();
       this.compressor = this.context.createDynamicsCompressor();
       this.analyser = this.context.createAnalyser();
-      this.analyser.fftSize = 256;
+      this.analyser.fftSize = 1024;
+      this.analyser.smoothingTimeConstant = 0.72;
       this.master.gain.value = 0.72;
       this.compressor.threshold.value = -18;
       this.compressor.knee.value = 18;
@@ -205,25 +210,32 @@ export class LabAudioPlayer {
       this.analyser.connect(this.context.destination);
     }
 
-    if (this.context.state === 'suspended') await this.context.resume();
+    if (this.context.state === 'suspended') {
+      await Promise.race([
+        this.context.resume().catch(() => undefined),
+        new Promise((resolve) => globalThis.setTimeout(resolve, 220)),
+      ]);
+    }
   }
 
-  async start(lab, state, waveform, { onLevel } = {}) {
+  async start(lab, state, waveform, { onLevel, onAnalyserFrame } = {}) {
     await this.ensureContext();
     this.current = { lab, state, waveform };
     this.onLevel = onLevel;
+    this.onAnalyserFrame = onAnalyserFrame;
     this.playing = true;
     this.scheduleNote();
     this.timer = globalThis.setInterval(() => this.scheduleNote(), this.getIntervalMs());
     this.startMeter();
   }
 
-  async playPatch(patch, { onLevel } = {}) {
+  async playPatch(patch, { onLevel, onAnalyserFrame } = {}) {
     await this.ensureContext();
     this.stop();
     this.playing = true;
     this.current = null;
     this.onLevel = onLevel;
+    this.onAnalyserFrame = onAnalyserFrame;
     this.schedulePatch(patch);
     this.startMeter();
     this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 420, 420, 3600));
@@ -277,6 +289,13 @@ export class LabAudioPlayer {
     if (!Tone) return null;
 
     try {
+      if (Tone.setContext && Tone.Context && this.context) {
+        try {
+          Tone.setContext(new Tone.Context(this.context));
+        } catch {
+          // Tone can keep its own context if the shared context bridge is not available.
+        }
+      }
       await Tone.start?.();
       this.toneReady = true;
       return Tone;
@@ -334,7 +353,11 @@ export class LabAudioPlayer {
       }
     }
 
-    current.toDestination();
+    try {
+      current.connect(this.master);
+    } catch {
+      current.toDestination();
+    }
     this.toneNodes.push(...nodes);
   }
 
@@ -421,12 +444,14 @@ export class LabAudioPlayer {
     return true;
   }
 
-  async playSoundLabPatch(patch, { onLevel } = {}) {
+  async playSoundLabPatch(patch, { onLevel, onAnalyserFrame } = {}) {
     await this.ensureContext();
     this.stop();
     this.playing = true;
     this.current = null;
     this.onLevel = onLevel;
+    this.onAnalyserFrame = onAnalyserFrame;
+    this.currentSoundLabPatch = patch;
 
     const fallbackChain = patch?.fallbackChain ?? ['worklet', 'webaudio'];
     let engineUsed = 'webaudio';
@@ -451,6 +476,7 @@ export class LabAudioPlayer {
       node.connect(this.master);
       node.port.postMessage(buildWorkletMessage(patch));
       this.activeNodes.add(node);
+      this.activeSoundLabNode = node;
       engineUsed = 'worklet';
     } else if (!usedTone) {
       this.scheduleSoundLabFallback(patch);
@@ -459,6 +485,18 @@ export class LabAudioPlayer {
     this.startMeter();
     this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 520, 520, 4200));
     return { workletReady: canUseWorklet, toneReady: this.toneReady, engineUsed, fallbackChain };
+  }
+
+  updateSoundLabPatch(patch) {
+    this.currentSoundLabPatch = patch;
+    if (!this.playing || !this.activeSoundLabNode) return false;
+    try {
+      const message = buildWorkletMessage(patch);
+      this.activeSoundLabNode.port.postMessage({ ...message, type: 'sound-lab:update' });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   update(lab, state, waveform) {
@@ -810,25 +848,40 @@ export class LabAudioPlayer {
   startMeter() {
     if (!this.analyser || this.raf) return;
 
-    const data = new Uint8Array(this.analyser.fftSize);
+    const timeData = new Uint8Array(this.analyser.fftSize);
+    const frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
     const tick = () => {
       if (!this.playing || !this.analyser) {
         this.raf = null;
+        this.meterTimer = null;
         return;
       }
 
-      this.analyser.getByteTimeDomainData(data);
+      this.analyser.getByteTimeDomainData(timeData);
+      this.analyser.getByteFrequencyData(frequencyData);
       let sum = 0;
-      for (const value of data) {
+      for (const value of timeData) {
         const centered = (value - 128) / 128;
         sum += centered * centered;
       }
-      const rms = Math.sqrt(sum / data.length);
-      this.onLevel?.(clamp(rms * 3.2, 0, 1));
-      this.raf = globalThis.requestAnimationFrame(tick);
+      const rms = Math.sqrt(sum / timeData.length);
+      const level = clamp(rms * 3.2, 0, 1);
+      globalThis.__soundLabMeterFrames = (globalThis.__soundLabMeterFrames ?? 0) + 1;
+      globalThis.__soundLabLastLevel = level;
+      try {
+        this.onLevel?.(level);
+        this.onAnalyserFrame?.({ timeDomain: timeData, frequency: frequencyData, level });
+      } catch {
+        // Meter callbacks are visual-only and should never interrupt audio scheduling.
+      }
+      if (globalThis.requestAnimationFrame) {
+        this.raf = globalThis.requestAnimationFrame(tick);
+      } else {
+        this.meterTimer = globalThis.setTimeout(tick, 33);
+      }
     };
 
-    this.raf = globalThis.requestAnimationFrame(tick);
+    tick();
   }
 
   stop() {
@@ -839,8 +892,13 @@ export class LabAudioPlayer {
     this.oneShotTimer = null;
     if (this.raf) globalThis.cancelAnimationFrame(this.raf);
     this.raf = null;
+    globalThis.clearTimeout(this.meterTimer);
+    this.meterTimer = null;
     this.onLevel?.(0);
+    this.onAnalyserFrame?.({ timeDomain: null, frequency: null, level: 0 });
     this.disposeToneNodes();
+    this.activeSoundLabNode = null;
+    this.currentSoundLabPatch = null;
 
     for (const node of this.activeNodes) {
       try {

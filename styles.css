@@ -3977,6 +3977,7 @@ textarea {
   width: 100%;
   height: 104px;
   display: block;
+  position: relative;
   border: 1px solid #e5edf3;
   border-radius: 6px;
   background:
@@ -3991,6 +3992,27 @@ textarea {
   stroke: url("#workbenchWaveLine");
   stroke-width: 2;
   filter: drop-shadow(0 3px 6px rgba(23, 167, 163, 0.18));
+}
+
+.waveform-panel {
+  position: relative;
+}
+
+.live-analyzer-canvas {
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+.waveform-analyzer-canvas {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 42px;
+  width: calc(100% - 20px);
+  height: 104px;
+  opacity: 0.92;
+  mix-blend-mode: multiply;
 }
 
 .osc-param-row,
@@ -4047,6 +4069,14 @@ textarea {
   background: linear-gradient(180deg, #fbfdff, #f4f8fb);
 }
 
+.spectrum-analyzer-canvas {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  opacity: 0.95;
+  z-index: 1;
+}
+
 .spectrum-grid {
   position: absolute;
   inset: 0;
@@ -4066,6 +4096,8 @@ textarea {
   height: auto;
   border: 0;
   background: transparent;
+  opacity: 0.32;
+  z-index: 2;
 }
 
 .spectrum-panel .spectrum-bars span {
@@ -4140,6 +4172,48 @@ textarea {
   background: #e9fbf9;
   color: #0d7774;
   font-weight: 800;
+}
+
+.advanced-module-dock {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.advanced-module-pill {
+  min-height: 54px;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 253, 0.94));
+  color: #314758;
+  text-align: left;
+  padding: 8px 9px;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.advanced-module-pill strong,
+.advanced-module-pill span {
+  display: block;
+}
+
+.advanced-module-pill strong {
+  font-size: 11px;
+}
+
+.advanced-module-pill span {
+  margin-top: 3px;
+  color: #6c7f8f;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.advanced-module-pill:hover,
+.advanced-module-pill:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.42);
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(23, 167, 163, 0.1);
 }
 
 .envelope-panel {
@@ -4491,6 +4565,283 @@ textarea {
   font-size: 10px;
 }
 
+.professional-control-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.95fr) minmax(230px, 0.72fr) minmax(220px, 0.64fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.professional-module-panel {
+  min-height: 150px;
+  min-width: 0;
+}
+
+.mod-matrix-panel {
+  grid-row: span 2;
+}
+
+.library-sync-panel {
+  grid-column: span 2;
+}
+
+.mod-matrix-table {
+  display: grid;
+  gap: 6px;
+}
+
+.mod-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(64px, 0.8fr) 18px minmax(78px, 1fr) minmax(120px, 0.85fr);
+  gap: 7px;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 6px;
+  border: 1px solid #e4edf3;
+  border-radius: 7px;
+  background: #fbfdff;
+  color: #526879;
+  font-size: 10px;
+}
+
+.mod-matrix-row i {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(23, 167, 163, 0.1), rgba(23, 167, 163, 0.75), rgba(116, 103, 214, 0.28));
+}
+
+.mod-matrix-row label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.mod-matrix-row input {
+  width: 100%;
+  accent-color: #17a7a3;
+}
+
+.mod-matrix-row output {
+  color: #0d7774;
+  font-weight: 850;
+  text-align: right;
+}
+
+.fx-chain-list {
+  display: grid;
+  gap: 7px;
+}
+
+.fx-chain-slot {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 42px 26px 26px;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 6px;
+  border: 1px solid #dfe9f0;
+  border-radius: 7px;
+  background: #fbfdff;
+  color: #536879;
+  cursor: grab;
+}
+
+.fx-chain-slot span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9fbf9;
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.fx-chain-slot strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #263a49;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fx-chain-slot small {
+  color: #7467d6;
+  font-size: 10px;
+  text-align: right;
+}
+
+.fx-chain-slot button,
+.library-sync-grid button,
+.ab-compare-grid button {
+  min-height: 26px;
+  border: 1px solid #dfe9f0;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #0d7774;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.fx-chain-slot button:active,
+.library-sync-grid button:active,
+.ab-compare-grid button:active {
+  transform: scale(0.97);
+}
+
+.library-sync-grid button.is-active {
+  border-color: rgba(38, 166, 154, 0.42);
+  background: linear-gradient(180deg, #e8fbf7 0%, #ffffff 100%);
+  color: #0a6b68;
+  box-shadow: 0 8px 20px rgba(38, 166, 154, 0.14);
+}
+
+.xy-macro-grid {
+  display: grid;
+  grid-template-columns: minmax(112px, 1fr) minmax(96px, 0.72fr);
+  gap: 10px;
+}
+
+.xy-pad {
+  position: relative;
+  min-height: 142px;
+  overflow: hidden;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at var(--xy-x) var(--xy-y), rgba(23, 167, 163, 0.26), transparent 22%),
+    linear-gradient(90deg, rgba(47, 84, 116, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(47, 84, 116, 0.06) 1px, transparent 1px),
+    #fbfdff;
+  background-size: auto, 25% 100%, 100% 25%, auto;
+  cursor: crosshair;
+}
+
+.xy-handle {
+  position: absolute;
+  left: var(--xy-x);
+  top: var(--xy-y);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #17a7a3;
+  box-shadow: 0 0 0 1px rgba(23, 167, 163, 0.35), 0 10px 22px rgba(23, 167, 163, 0.24);
+  transform: translate(-50%, -50%);
+}
+
+.xy-pad span {
+  position: absolute;
+  left: 8px;
+  color: #657787;
+  font-size: 10px;
+}
+
+.xy-pad span:nth-of-type(1) {
+  bottom: 24px;
+}
+
+.xy-pad span:nth-of-type(2) {
+  bottom: 8px;
+}
+
+.macro-morph-card {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  padding: 10px;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  background: #fbfdff;
+  color: #536879;
+}
+
+.macro-morph-card strong {
+  color: #243846;
+  font-size: 12px;
+}
+
+.macro-morph-card p {
+  margin: 0;
+  color: #718293;
+  font-size: 11px;
+}
+
+.ab-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ab-compare-grid button {
+  min-height: 58px;
+  display: grid;
+  gap: 3px;
+  place-items: center;
+  color: #536879;
+}
+
+.ab-compare-grid button strong {
+  color: #0d7774;
+  font-size: 18px;
+}
+
+.ab-compare-grid .is-active {
+  border-color: rgba(116, 103, 214, 0.42);
+  background: linear-gradient(180deg, #ffffff, #f4f3ff);
+}
+
+.ab-diff-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.ab-diff-row span {
+  border: 1px solid #e1eaf1;
+  border-radius: 999px;
+  background: #fbfdff;
+  color: #657787;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+.library-sync-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.export-name-rule {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) minmax(160px, 0.54fr);
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  color: #657787;
+  font-size: 11px;
+}
+
+.export-name-rule input {
+  min-height: 31px;
+  border: 1px solid #dfe9f0;
+  border-radius: 7px;
+  background: #fbfdff;
+  color: #2b4050;
+  padding: 5px 8px;
+}
+
+.export-name-rule strong {
+  overflow: hidden;
+  color: #0d7774;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workbench-right-rail {
   display: grid;
   gap: 10px;
@@ -4809,9 +5160,19 @@ textarea {
   .envelope-grid,
   .control-lower-grid,
   .control-bottom-grid,
+  .professional-control-grid,
+  .xy-macro-grid,
   .workbench-right-rail,
   .sound-family-rail {
     grid-template-columns: 1fr;
+  }
+
+  .advanced-module-dock {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .library-sync-panel {
+    grid-column: auto;
   }
 
   .output-meter-strip {
@@ -4890,6 +5251,10 @@ textarea {
   .synth-tab-row,
   .workbench-actions,
   .workbench-module-tabs,
+  .advanced-module-dock,
+  .professional-control-grid,
+  .library-sync-grid,
+  .export-name-rule,
   .compact-macro-bank,
   .modulation-grid,
   .material-token-row,
@@ -4897,6 +5262,31 @@ textarea {
   .quality-knob-row,
   .route-timeline {
     grid-template-columns: 1fr;
+  }
+
+  .sound-lab-workbench,
+  .synth-workbench-layout,
+  .workbench-core,
+  .workbench-panel,
+  .professional-module-panel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .advanced-module-pill,
+  .library-sync-grid button,
+  .export-name-rule input,
+  .export-name-rule button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mod-matrix-row {
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 0.72fr) minmax(0, 1fr);
+  }
+
+  .fx-chain-slot {
+    grid-template-columns: 24px minmax(0, 1fr) 42px 26px 26px;
   }
 
   .workbench-topbar,

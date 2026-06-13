@@ -272,3 +272,18 @@ test('native sound lab processor includes virtual analog oscillators, stereo FX,
   assert.match(processorJs, /dcBlock/);
   assert.match(processorJs, /onePole/);
 });
+
+test('sound lab app wires advanced controls and live analyzer drawing', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /data-mod-route-amount/);
+  assert.match(appJs, /data-fx-move/);
+  assert.match(appJs, /data-xy-pad/);
+  assert.match(appJs, /data-macro-morph/);
+  assert.match(appJs, /data-git-sync-action/);
+  assert.match(appJs, /drawSoundLabAnalyserFrame/);
+  assert.match(audioPlayerJs, /onAnalyserFrame/);
+  assert.match(audioPlayerJs, /getByteFrequencyData/);
+  assert.match(audioPlayerJs, /getByteTimeDomainData/);
+});
