@@ -625,6 +625,31 @@ function renderCommunitySteps(steps = []) {
   `).join('');
 }
 
+function renderCommunityModuleGuide(lab = {}) {
+  const steps = lab.moduleGuideSteps ?? [
+    '先看观看任务，明确应该观察什么。',
+    '再看调制蓝图，把教程动作转成可操作路由。',
+    '切换三合成器路径图，选择你要复刻的软件。',
+    '点场景练习并加载 Sound Lab 试听。',
+  ];
+  return `
+    <section class="community-module-guide" aria-label="这个模块怎么用">
+      <div>
+        <h4>这个模块怎么用</h4>
+        <p>按这个顺序走，避免在文字、参数和试听之间来回迷路。</p>
+      </div>
+      <ol>
+        ${steps.map((step, index) => `
+          <li>
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(step)}</strong>
+          </li>
+        `).join('')}
+      </ol>
+    </section>
+  `;
+}
+
 function renderCommunityBlueprint(lab) {
   const fallbackRows = Object.entries(lab.interactiveMappings ?? {}).slice(0, 5).map(([source, moves]) => ({
     source,
@@ -654,7 +679,51 @@ function renderCommunityBlueprint(lab) {
   `;
 }
 
-function renderCommunitySynthProcedure(lab = {}) {
+function getCommunitySynthSignalFlow(lab = {}, activeSynth = 'serum') {
+  const mappings = lab.synthParameterSteps ?? lab.synthMappings ?? {};
+  const fallback = (mappings[activeSynth] ?? []).slice(0, 4).map((step) => step.split('；')[0]);
+  const flow = lab.synthSignalFlow?.[activeSynth] ?? fallback;
+  return flow.length ? flow.slice(0, 5) : ['声源', '调制源', '效果链', '听感检查'];
+}
+
+function renderCommunitySynthRouteMap(lab = {}, activeSynth = 'serum') {
+  const synthOrder = [
+    ['serum', 'Serum 2'],
+    ['phasePlant', 'Phase Plant'],
+    ['vital', 'Vital'],
+  ];
+  const activeKey = synthOrder.some(([key]) => key === activeSynth) ? activeSynth : 'serum';
+  const activeLabel = synthOrder.find(([key]) => key === activeKey)?.[1] ?? 'Serum 2';
+  const route = getCommunitySynthSignalFlow(lab, activeKey);
+  return `
+    <section class="community-synth-route-map" aria-label="合成器路径图">
+      <div class="community-route-head">
+        <div>
+          <h4>合成器路径图</h4>
+          <p>先选你要复刻的软件，再按节点从左到右搭 patch。当前：${escapeHtml(activeLabel)}</p>
+        </div>
+        <div class="community-route-tabs" role="group" aria-label="选择合成器路径">
+          ${synthOrder.map(([key, label]) => `
+            <button class="${key === activeKey ? 'is-active' : ''}" type="button" data-community-synth-route="${escapeHtml(key)}" aria-pressed="${key === activeKey ? 'true' : 'false'}">
+              ${escapeHtml(label)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      <div class="community-route-lane">
+        ${route.map((node, index) => `
+          <div class="community-route-node">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(node)}</strong>
+          </div>
+          ${index < route.length - 1 ? '<i aria-hidden="true"></i>' : ''}
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderCommunitySynthProcedure(lab = {}, activeSynth = 'serum') {
   const mappings = lab.synthParameterSteps ?? lab.synthMappings ?? {};
   const synthOrder = [
     ['serum', 'Serum 2'],
@@ -680,6 +749,7 @@ function renderCommunitySynthProcedure(lab = {}) {
           `;
         }).join('')}
       </div>
+      ${renderCommunitySynthRouteMap(lab, activeSynth)}
     </section>
   `;
 }
@@ -812,8 +882,9 @@ export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
         <h4>详细方法</h4>
         <ol class="community-method-list">${renderCommunitySteps(lab.methodSteps)}</ol>
       </section>
+      ${renderCommunityModuleGuide(lab)}
       ${renderCommunityBlueprint(lab)}
-      ${renderCommunitySynthProcedure(lab)}
+      ${renderCommunitySynthProcedure(lab, options.activeCommunitySynthRoute)}
       <section class="community-control-panel" aria-label="交互练习">
         <div>
           <h4>交互练习</h4>

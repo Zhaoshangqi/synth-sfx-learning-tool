@@ -267,6 +267,10 @@ test('community creator technique labs connect non-official videos to interactiv
 
   for (const lab of communityTechniqueLabs.filter((item) => item.id.startsWith('creator-ngtvst-'))) {
     assert.ok(lab.practiceScenes?.length >= 3, `${lab.id} needs clickable practice scenes`);
+    assert.ok(lab.moduleGuideSteps?.length >= 4, `${lab.id} needs a module usage guide`);
+    assert.ok(lab.synthSignalFlow?.serum?.length >= 4, `${lab.id} needs a Serum visual signal flow`);
+    assert.ok(lab.synthSignalFlow?.phasePlant?.length >= 4, `${lab.id} needs a Phase Plant visual signal flow`);
+    assert.ok(lab.synthSignalFlow?.vital?.length >= 4, `${lab.id} needs a Vital visual signal flow`);
     for (const scene of lab.practiceScenes) {
       assert.match(scene.id, /^[a-z0-9-]+$/, `${lab.id} scene id should be stable`);
       assert.ok(scene.labelZh.length >= 3, `${lab.id} scene needs a label`);
