@@ -96,6 +96,7 @@ const state = {
   challengeAnswers: {},
   activeMaterialId: materialLabs[0]?.id,
   activeCommunityTechniqueId: communityTechniqueLabs[0]?.id,
+  activeCommunitySynthRoute: 'serum',
   communityControlStates: Object.fromEntries(communityTechniqueLabs.map((lab) => [
     lab.id,
     Object.fromEntries(lab.controls.map((control) => [control.id, control.default])),
@@ -709,6 +710,7 @@ function renderCommunityTechniquesView() {
       ${activeLab ? renderCommunityTechniqueLab(activeLab, allSources, {
         isActive: true,
         controlValues: getCommunityControlValues(activeLab),
+        activeCommunitySynthRoute: state.activeCommunitySynthRoute,
       }) : ''}
     </section>
   `;
@@ -2210,6 +2212,7 @@ function bindCommunityTechniqueControls() {
   document.querySelectorAll('button[data-community-technique]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeCommunityTechniqueId = button.dataset.communityTechnique;
+      state.activeCommunitySynthRoute = 'serum';
       render();
     });
   });
@@ -2247,6 +2250,13 @@ function bindCommunityTechniqueControls() {
           ...scene.values,
         },
       };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-community-synth-route]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeCommunitySynthRoute = button.dataset.communitySynthRoute || 'serum';
       render();
     });
   });

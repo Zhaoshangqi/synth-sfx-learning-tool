@@ -296,9 +296,14 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /非官方博主技巧/);
   assert.match(html, /观看任务/);
   assert.match(html, /详细方法/);
+  assert.match(html, /这个模块怎么用/);
+  assert.match(html, /community-module-guide/);
   assert.match(html, /调制蓝图/);
   assert.match(html, /三合成器参数步骤/);
   assert.match(html, /community-synth-procedure/);
+  assert.match(html, /合成器路径图/);
+  assert.match(html, /community-synth-route-map/);
+  assert.match(html, /data-community-synth-route/);
   assert.match(html, /场景练习/);
   assert.match(html, /community-practice-scenes/);
   assert.match(html, /data-community-practice-scene/);

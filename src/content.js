@@ -3657,6 +3657,57 @@ export const communityTechniqueLabs = [
   },
 ];
 
+const COMMUNITY_MODULE_GUIDE_STEPS = [
+  '先看观看任务：明确这支视频要观察的层级、调制目标和听感边界。',
+  '再看调制蓝图：把教程里的动作转成“控制源 → 合成器目标 → 听感结果”。',
+  '切换三合成器路径图：选 Serum 2、Phase Plant 或 Vital，看同一技巧在插件里的路由顺序。',
+  '点场景练习并加载 Sound Lab：先听核心，再放大调制，最后做 dry/full/tail 或 REAPER 交付。',
+];
+
+const NGTVST_SYNTH_SIGNAL_FLOWS = {
+  'creator-ngtvst-serum2-lead-signature-bass': mapping(
+    ['Osc A/Sub 中心音', 'Macro 1 filter/WT Pos', 'Macro 2 FM/warp/drive', 'Post filter + tail render'],
+    ['Body group', 'Curve/LFO motion', 'Drive snapin lane', 'Limiter + export variants'],
+    ['Osc/Sub anchor', 'LFO/MSEG to frame/filter', 'Warp/distortion', 'Visual mod check + tail'],
+  ),
+  'creator-ngtvst-one-note-distorted-bass': mapping(
+    ['Osc A/Sub anchor', 'Osc B interval', 'Drive input trim', 'Post notch / mono low'],
+    ['Anchor group', 'Interval group', 'Macro Tension to drive', 'Filter/Notch/Limiter'],
+    ['Osc 1/Sub anchor', 'Osc 2 interval', 'MSEG level/filter', 'Post filter + mono check'],
+  ),
+  'creator-ngtvst-recording-to-texture-impact': mapping(
+    ['Noise/sample texture', 'Sub/FM body', 'Filter/gate density', 'Short room / tail-only'],
+    ['Sample/Noise group', 'Analog/FM body group', 'Comb/modal size', 'Convolver/Room export'],
+    ['Noise-like texture', 'Osc/FM weight', 'Random gate/filter', 'Tail cleanup'],
+  ),
+  'creator-ngtvst-serum2-trailer-pack': mapping(
+    ['Sub/Osc body', 'LFO gate or pitch env', 'Drive/clip', 'Dry/full/tail export'],
+    ['Sub/body group', 'Curve pitch/filter', 'Snapin drive/clip', 'Limiter + naming rules'],
+    ['Osc/Sub anchor', 'LFO/MSEG shape', 'Distortion + low-pass', 'Tail-only check'],
+  ),
+  'creator-ngtvst-vital-dark-strings': mapping(
+    ['Dark wavetable', 'Slow LFO filter/WT', 'Noise texture', 'Delayed reverb send'],
+    ['Wavetable/analog body', 'Random/Curve drift', 'Texture group', 'Tail group loop check'],
+    ['Osc dark frame', 'LFO/Perlin cutoff/warp', 'High-pass noise', 'Reverb release loop'],
+  ),
+  'creator-ngtvst-robot-machina': mapping(
+    ['Osc carrier', 'Step LFO gate', 'Ring/comb shell', 'Servo tick + short tail'],
+    ['Analog carrier', 'Stepped LFO/Remap', 'Comb/FM snapin', 'Tick layer export'],
+    ['Osc/FM carrier', 'Step LFO pitch/filter', 'Spectral warp shell', 'Click/tail balance'],
+  ),
+};
+
+communityTechniqueLabs
+  .filter((lab) => lab.id.startsWith('creator-ngtvst-'))
+  .forEach((lab) => {
+    lab.moduleGuideSteps ??= COMMUNITY_MODULE_GUIDE_STEPS;
+    lab.synthSignalFlow ??= NGTVST_SYNTH_SIGNAL_FLOWS[lab.id] ?? mapping(
+      ['Source', 'Modulator', 'FX', 'Export check'],
+      ['Generator group', 'Curve/LFO', 'Snapin chain', 'Limiter/render'],
+      ['Osc/noise', 'LFO/MSEG', 'FX/filter', 'Visual check'],
+    );
+  });
+
 function deepDiveModule({
   id,
   titleZh,
