@@ -1169,6 +1169,7 @@ function renderWorkbenchMacroPanel(model = {}) {
             <span class="knob-face" aria-hidden="true"><i></i></span>
             <strong>Macro ${index + 1}</strong>
             <small>${escapeHtml(macro.labelZh.split(' ')[0])}</small>
+            <output>${escapeHtml(macro.value)}</output>
             <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value)}" />
           </label>
         `).join('')}

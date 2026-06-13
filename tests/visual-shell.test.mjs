@@ -56,6 +56,31 @@ test('range controls use smooth drag state and animation-frame chrome updates', 
   assert.match(css, /cursor:\s*grabbing/);
 });
 
+test('sound lab professional controls stay contained and use readable light surfaces', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.mod-matrix-row[\s\S]*grid-template-columns:\s*minmax\(0,\s*0\.82fr\)\s+16px\s+minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.mod-matrix-row[\s\S]*min-width:\s*0/);
+  assert.match(css, /\.mod-matrix-row\s*>\s*span[\s\S]*overflow-wrap:\s*anywhere/);
+  assert.match(css, /\.professional-module-panel[\s\S]*background:\s*linear-gradient\(180deg,\s*rgba\(255,\s*255,\s*255,\s*0\.98\)/);
+  assert.match(css, /\.professional-module-panel[\s\S]*color:\s*#203442/);
+  assert.match(css, /\.mini-quality-knob[\s\S]*grid-template-columns:\s*52px\s+minmax\(0,\s*1fr\)/);
+});
+
+test('sound lab controls expose larger touch targets and immediate tactile feedback hooks', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /applyImmediateControlFeedback/);
+  assert.match(appJs, /data-live-value/);
+  assert.match(appJs, /syncSoundLabPatchSoon/);
+  assert.match(css, /\.fx-chain-slot button[\s\S]*min-width:\s*34px/);
+  assert.match(css, /\.library-sync-grid button[\s\S]*min-height:\s*38px/);
+  assert.match(css, /\.sound-lab-key[\s\S]*min-width:\s*34px/);
+  assert.match(css, /\.xy-handle[\s\S]*width:\s*34px/);
+  assert.match(css, /touch-action:\s*none/);
+});
+
 test('visual shell uses a brighter premium glass tone and view transition motion', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
