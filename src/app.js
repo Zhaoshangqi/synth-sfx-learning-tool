@@ -39,6 +39,7 @@ import {
 import { BASIC_WAVEFORMS, buildLabAudioPatch } from './audio-model.js';
 import {
   SOUND_LAB_LAYER_MIX,
+  SOUND_LAB_FX_ORDER,
   SOUND_LAB_MACROS,
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
@@ -66,6 +67,7 @@ import {
 } from './render.js';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
+const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
 
 const app = document.querySelector('#app');
 const queryInput = document.querySelector('#query');
@@ -101,6 +103,21 @@ const state = {
   soundLabEngineMode: 'hq',
   activeWorkbenchModule: 'envelope',
   soundLabPerformance: { ...SOUND_LAB_PERFORMANCE_DEFAULTS },
+  soundLabEnvelope: {},
+  soundLabFxOrder: [...SOUND_LAB_FX_ORDER],
+  soundLabModMatrix: [],
+  soundLabXyPad: { x: 50, y: 50 },
+  soundLabMacroMorph: 0,
+  soundLabAbSlot: 'a',
+  soundLabFavorites: [],
+  soundLabProjects: [],
+  soundLabGitSync: {
+    owner: 'Zhaoshangqi',
+    repo: 'synth-sfx-learning-tool',
+    branch: 'main',
+    basePath: 'data/user-presets/zsq',
+  },
+  soundLabMidiMappings: [],
   soundLabToneReady: false,
   soundLabEngineUsed: 'worklet',
   soundLabMacros: { ...SOUND_LAB_MACROS, ...(getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.macroHints ?? {}) },
@@ -117,6 +134,12 @@ const state = {
   midiDevices: [],
   lastMidiMessage: '',
 };
+
+const savedSoundLabLibrary = loadSoundLabLibrary();
+state.soundLabFavorites = Array.isArray(savedSoundLabLibrary.favorites) ? savedSoundLabLibrary.favorites : state.soundLabFavorites;
+state.soundLabProjects = Array.isArray(savedSoundLabLibrary.projects) ? savedSoundLabLibrary.projects : state.soundLabProjects;
+state.soundLabGitSync = { ...state.soundLabGitSync, ...(savedSoundLabLibrary.gitSync ?? {}) };
+state.soundLabMidiMappings = Array.isArray(savedSoundLabLibrary.midiMappings) ? savedSoundLabLibrary.midiMappings : state.soundLabMidiMappings;
 
 let patchPlayingTimer = null;
 let rangeRenderTimer = null;
@@ -147,6 +170,23 @@ function saveUserSources(userSources) {
 }
 
 let userSources = loadUserSources();
+
+function loadSoundLabLibrary() {
+  try {
+    return JSON.parse(localStorage.getItem(SOUND_LAB_LIBRARY_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveSoundLabLibrary() {
+  localStorage.setItem(SOUND_LAB_LIBRARY_KEY, JSON.stringify({
+    favorites: state.soundLabFavorites,
+    projects: state.soundLabProjects,
+    gitSync: state.soundLabGitSync,
+    midiMappings: state.soundLabMidiMappings,
+  }));
+}
 
 function sourceIdFromTitle(title) {
   const base = normalizeText(title)
@@ -426,6 +466,16 @@ function getSoundLabOptions(optionOverrides = {}) {
     layerMix: state.soundLabLayerMix,
     engineMode: state.soundLabEngineMode,
     performance: state.soundLabPerformance,
+    envelope: state.soundLabEnvelope,
+    fxOrder: state.soundLabFxOrder,
+    modMatrix: state.soundLabModMatrix,
+    xyPad: state.soundLabXyPad,
+    macroMorph: state.soundLabMacroMorph,
+    abSlot: state.soundLabAbSlot,
+    favoriteIds: state.soundLabFavorites,
+    projects: state.soundLabProjects,
+    gitSync: state.soundLabGitSync,
+    midiMappings: state.soundLabMidiMappings,
     ...optionOverrides,
   };
 }
@@ -953,6 +1003,71 @@ function updateSurfaceMeter(selector, level) {
   });
 }
 
+function drawCanvasWaveform(canvas, timeDomain) {
+  if (!canvas || !timeDomain?.length) return;
+  const context = canvas.getContext('2d');
+  if (!context) return;
+  const width = canvas.width;
+  const height = canvas.height;
+  context.clearRect(0, 0, width, height);
+  context.lineWidth = 3;
+  context.strokeStyle = 'rgba(23, 167, 163, 0.92)';
+  context.shadowColor = 'rgba(23, 167, 163, 0.28)';
+  context.shadowBlur = 14;
+  context.beginPath();
+  for (let index = 0; index < timeDomain.length; index += 1) {
+    const x = (index / (timeDomain.length - 1)) * width;
+    const y = ((timeDomain[index] ?? 128) / 255) * height;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.stroke();
+}
+
+function drawCanvasSpectrum(canvas, frequency) {
+  if (!canvas || !frequency?.length) return;
+  const context = canvas.getContext('2d');
+  if (!context) return;
+  const width = canvas.width;
+  const height = canvas.height;
+  context.clearRect(0, 0, width, height);
+  const bars = 72;
+  const gap = 2;
+  const barWidth = width / bars - gap;
+  const gradient = context.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, 'rgba(116, 103, 214, 0.9)');
+  gradient.addColorStop(0.45, 'rgba(23, 167, 163, 0.78)');
+  gradient.addColorStop(1, 'rgba(98, 197, 143, 0.32)');
+  context.fillStyle = gradient;
+  context.shadowColor = 'rgba(116, 103, 214, 0.18)';
+  context.shadowBlur = 12;
+  for (let index = 0; index < bars; index += 1) {
+    const sourceIndex = Math.floor((index / bars) ** 1.65 * (frequency.length - 1));
+    const value = (frequency[sourceIndex] ?? 0) / 255;
+    const barHeight = Math.max(3, value * height * 0.94);
+    const x = index * (barWidth + gap);
+    context.fillRect(x, height - barHeight, barWidth, barHeight);
+  }
+}
+
+function drawSoundLabAnalyserFrame(frame) {
+  const level = Math.max(0, Math.min(1, frame?.level ?? 0));
+  const workbench = document.querySelector('.sound-lab-workbench');
+  if (!workbench) return;
+  drawCanvasWaveform(workbench.querySelector('[data-analyzer-waveform]'), frame?.timeDomain);
+  drawCanvasSpectrum(workbench.querySelector('[data-analyzer-spectrum]'), frame?.frequency);
+  workbench.querySelectorAll('[data-analyzer-meter] i').forEach((bar, index) => {
+    const offset = Math.sin(index * 1.3 + level * 5) * 0.16;
+    bar.style.setProperty('--meter', `${Math.round(Math.max(0.08, level + offset) * 100)}%`);
+  });
+}
+
+function syncActiveSoundLabPatch() {
+  if (!state.isSoundLabPlaying) return;
+  const patch = getSoundLabModel().patch;
+  audioPlayer.updateSoundLabPatch?.(patch);
+}
+
 function refreshAuditionPatch() {
   if (!state.isAuditioning) return;
   const lab = getActiveLab();
@@ -1146,6 +1261,171 @@ function updateSoundLabControl(controlId, value) {
     ...state.soundLabMacros,
     [controlId]: Math.max(0, Math.min(100, Number(value))),
   };
+  syncActiveSoundLabPatch();
+}
+
+function updateSoundLabEnvelope(controlId, value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return;
+  const next = { ...state.soundLabEnvelope };
+  if (controlId === 'sustain') next.sustain = Math.max(0, Math.min(100, numericValue)) / 100;
+  if (controlId === 'attack') next.attack = Math.max(1, Math.min(1500, numericValue)) / 1000;
+  if (controlId === 'decay') next.decay = Math.max(10, Math.min(3200, numericValue)) / 1000;
+  if (controlId === 'release') next.release = Math.max(10, Math.min(4200, numericValue)) / 1000;
+  state.soundLabEnvelope = next;
+  syncActiveSoundLabPatch();
+}
+
+function updateSoundLabModRoute(routeId, value) {
+  const modelRoutes = getSoundLabModel().modMatrix.routes;
+  const routes = state.soundLabModMatrix.length ? state.soundLabModMatrix : modelRoutes;
+  state.soundLabModMatrix = routes.map((route) => (
+    route.id === routeId ? { ...route, amount: Math.max(-100, Math.min(100, Number(value))) } : route
+  ));
+  syncActiveSoundLabPatch();
+}
+
+function moveFxSlot(slotId, direction) {
+  const order = [...state.soundLabFxOrder];
+  const index = order.indexOf(slotId);
+  const nextIndex = Math.max(0, Math.min(order.length - 1, index + direction));
+  if (index < 0 || index === nextIndex) return;
+  const [slot] = order.splice(index, 1);
+  order.splice(nextIndex, 0, slot);
+  state.soundLabFxOrder = order;
+  syncActiveSoundLabPatch();
+  render();
+}
+
+function updateXyPadFromPointer(pad, event) {
+  const rect = pad.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+  const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+  state.soundLabXyPad = { ...state.soundLabXyPad, x, y };
+  pad.style.setProperty('--xy-x', `${x.toFixed(2)}%`);
+  pad.style.setProperty('--xy-y', `${y.toFixed(2)}%`);
+  syncActiveSoundLabPatch();
+}
+
+function updateMacroMorph(value) {
+  const amount = Math.max(0, Math.min(100, Number(value)));
+  state.soundLabMacroMorph = amount;
+  const morphed = getSoundLabModel({}, { macroMorph: amount }).macroMorph.morphed;
+  state.soundLabMacros = { ...state.soundLabMacros, ...morphed };
+  syncActiveSoundLabPatch();
+}
+
+function setAbSlot(slot) {
+  state.soundLabAbSlot = slot === 'b' ? 'b' : 'a';
+  render();
+}
+
+function toggleFavoritePatch() {
+  const patch = getSoundLabModel().patch;
+  const patchKey = patch.libraryKey ?? patch.id;
+  state.soundLabFavorites = state.soundLabFavorites.includes(patchKey)
+    ? state.soundLabFavorites.filter((id) => id !== patchKey)
+    : [patchKey, ...state.soundLabFavorites];
+  saveSoundLabLibrary();
+  render();
+}
+
+function saveCurrentPatchToProject() {
+  const patch = getSoundLabModel().patch;
+  const patchKey = patch.libraryKey ?? patch.id;
+  const projectId = `project-${patch.familyId}`;
+  const existing = state.soundLabProjects.find((project) => project.id === projectId);
+  if (existing) {
+    existing.patchIds = [...new Set([patchKey, ...(existing.patchIds ?? [])])];
+  } else {
+    state.soundLabProjects = [
+      { id: projectId, name: `${patch.familyId} sound pack`, patchIds: [patchKey], tags: [patch.familyId] },
+      ...state.soundLabProjects,
+    ];
+  }
+  saveSoundLabLibrary();
+  render();
+}
+
+function utf8ToBase64(value) {
+  return btoa(unescape(encodeURIComponent(value)));
+}
+
+function base64ToUtf8(value) {
+  return decodeURIComponent(escape(atob(value.replace(/\s/g, ''))));
+}
+
+function buildSoundLabLibraryPayload() {
+  const model = getSoundLabModel();
+  const patchKey = model.patch.libraryKey ?? model.patch.id;
+  return {
+    updatedAt: new Date().toISOString(),
+    activePatchId: model.patch.id,
+    activePatchKey: patchKey,
+    favorites: state.soundLabFavorites,
+    projects: state.soundLabProjects,
+    midiMappings: state.soundLabMidiMappings,
+    patches: {
+      [patchKey]: JSON.parse(model.patchJson),
+    },
+  };
+}
+
+async function runGitPresetSync(action, button) {
+  const model = getSoundLabModel();
+  const sync = model.library.gitSync;
+  let token = localStorage.getItem('synthSfxLearningTool:githubToken') ?? '';
+  const url = `https://api.github.com${sync.apiPath}?ref=${encodeURIComponent(sync.branch)}`;
+  const headers = { Accept: 'application/vnd.github+json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const original = button.textContent;
+  button.textContent = action === 'pull' ? 'Pulling' : 'Pushing';
+  button.classList.add('is-confirmed');
+  try {
+    if (action === 'pull') {
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error('not-found');
+      const remote = await response.json();
+      const payload = JSON.parse(base64ToUtf8(remote.content ?? 'e30='));
+      state.soundLabFavorites = Array.isArray(payload.favorites) ? payload.favorites : state.soundLabFavorites;
+      state.soundLabProjects = Array.isArray(payload.projects) ? payload.projects : state.soundLabProjects;
+      state.soundLabMidiMappings = Array.isArray(payload.midiMappings) ? payload.midiMappings : state.soundLabMidiMappings;
+      saveSoundLabLibrary();
+      state.integrationStatus = 'connected';
+      state.integrationMessage = 'Git preset library pulled into local Sound Lab.';
+    } else {
+      if (!token) {
+        token = globalThis.prompt?.('Paste a GitHub fine-grained token with Contents write access. It will only be used for this request.') ?? '';
+      }
+      if (!token) throw new Error('token-missing');
+      headers.Authorization = `Bearer ${token}`;
+      const existing = await fetch(url, { headers }).then((response) => (response.ok ? response.json() : null));
+      const payload = buildSoundLabLibraryPayload();
+      const putResponse = await fetch(`https://api.github.com${sync.apiPath}`, {
+        method: 'PUT',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Update Sound Lab preset library ${payload.updatedAt}`,
+          content: utf8ToBase64(JSON.stringify(payload, null, 2)),
+          sha: existing?.sha,
+          branch: sync.branch,
+        }),
+      });
+      if (!putResponse.ok) throw new Error('push-failed');
+      state.integrationStatus = 'connected';
+      state.integrationMessage = 'Git preset library pushed with GitHub Contents API.';
+    }
+  } catch {
+    state.integrationStatus = 'error';
+    state.integrationMessage = 'Git sync request failed. Check network, repository, branch, file SHA, and token permissions.';
+  }
+  button.textContent = original;
+  globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
+  render();
 }
 
 async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
@@ -1158,6 +1438,7 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   try {
     const result = await audioPlayer.playSoundLabPatch(patch, {
       onLevel: (level) => updateSurfaceMeter('.sound-lab-workbench', level),
+      onAnalyserFrame: drawSoundLabAnalyserFrame,
     });
     state.soundLabWorkletReady = Boolean(result?.workletReady);
     state.soundLabToneReady = Boolean(result?.toneReady);
@@ -1185,6 +1466,12 @@ function bindSoundLabControls() {
       state.activeSoundPresetDnaId = presetDna?.id;
       state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
       state.soundLabPerformance = { ...SOUND_LAB_PERFORMANCE_DEFAULTS };
+      state.soundLabEnvelope = {};
+      state.soundLabFxOrder = [...SOUND_LAB_FX_ORDER];
+      state.soundLabModMatrix = [];
+      state.soundLabXyPad = { x: 50, y: 50 };
+      state.soundLabMacroMorph = 0;
+      state.soundLabAbSlot = 'a';
       render();
     });
   });
@@ -1237,6 +1524,77 @@ function bindSoundLabControls() {
         ...state.soundLabPerformance,
         [controlId]: Number.isFinite(numericValue) ? numericValue : state.soundLabPerformance[controlId],
       };
+      syncActiveSoundLabPatch();
+    });
+  });
+
+  document.querySelectorAll('[data-envelope-control]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      updateSoundLabEnvelope(rangeInput.dataset.envelopeControl, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-mod-route-amount]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      updateSoundLabModRoute(rangeInput.dataset.modRouteAmount, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-macro-morph]').forEach((input) => {
+    bindSmoothRangeInput(input, (rangeInput) => {
+      updateMacroMorph(rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-fx-move]').forEach((button) => {
+    button.addEventListener('click', () => {
+      moveFxSlot(button.dataset.fxMove, Number(button.dataset.fxDirection));
+    });
+  });
+
+  document.querySelectorAll('[data-xy-pad]').forEach((pad) => {
+    pad.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      pad.setPointerCapture?.(event.pointerId);
+      updateXyPadFromPointer(pad, event);
+    });
+    pad.addEventListener('pointermove', (event) => {
+      if ((event.buttons & 1) !== 1) return;
+      updateXyPadFromPointer(pad, event);
+    });
+  });
+
+  document.querySelectorAll('[data-ab-slot]').forEach((button) => {
+    button.addEventListener('click', () => setAbSlot(button.dataset.abSlot));
+  });
+
+  document.querySelectorAll('[data-favorite-patch]').forEach((button) => {
+    button.addEventListener('click', () => toggleFavoritePatch());
+  });
+
+  document.querySelectorAll('[data-project-library-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.dataset.projectLibraryAction === 'save') saveCurrentPatchToProject();
+    });
+  });
+
+  document.querySelectorAll('[data-git-sync-action]').forEach((button) => {
+    button.addEventListener('click', () => runGitPresetSync(button.dataset.gitSyncAction, button));
+  });
+
+  document.querySelectorAll('[data-midi-learn]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.integrationStatus = 'midi-learn';
+      state.integrationMessage = 'MIDI Learn armed: move a hardware CC to map the next control.';
+      button.classList.add('is-confirmed');
+      globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
+    });
+  });
+
+  document.querySelectorAll('[data-export-name-pattern]').forEach((input) => {
+    input.addEventListener('change', () => {
+      state.integrationStatus = 'export-rule';
+      state.integrationMessage = `Batch naming rule updated: ${input.value}`;
     });
   });
 
@@ -1246,6 +1604,7 @@ function bindSoundLabControls() {
         ...state.soundLabPerformance,
         hold: !state.soundLabPerformance.hold,
       };
+      syncActiveSoundLabPatch();
       render();
     });
   });
@@ -1554,6 +1913,22 @@ async function connectMidi() {
       input.onmidimessage = (message) => {
         const [status, data1, data2] = [...message.data];
         state.lastMidiMessage = `status ${status}, data ${data1}, value ${data2}`;
+        const messageType = (status & 0xf0) === 0xb0 ? 'cc' : (status & 0xf0) === 0x90 ? 'note' : 'other';
+        const channel = (status & 0x0f) + 1;
+        if (messageType === 'cc' && state.integrationStatus === 'midi-learn') {
+          state.soundLabMidiMappings = [
+            { controlId: 'brightness', messageType: 'cc', channel, number: data1 },
+            ...state.soundLabMidiMappings.filter((mapping) => !(mapping.messageType === 'cc' && mapping.channel === channel && mapping.number === data1)),
+          ];
+          state.integrationStatus = 'connected';
+          state.integrationMessage = `Mapped CC ${data1} channel ${channel} to Brightness.`;
+          saveSoundLabLibrary();
+        } else if (messageType === 'cc') {
+          const mapping = state.soundLabMidiMappings.find((item) => item.messageType === 'cc' && item.channel === channel && item.number === data1);
+          if (mapping?.controlId in state.soundLabMacros) {
+            updateSoundLabControl(mapping.controlId, Math.round((data2 / 127) * 100));
+          }
+        }
         if (state.view === 'integrations') render();
       };
     });

@@ -1031,6 +1031,7 @@ function renderWorkbenchWaveform(model = {}) {
         </defs>
         <polyline points="${escapeHtml(waveform.points)}" />
       </svg>
+      <canvas class="live-analyzer-canvas waveform-analyzer-canvas" data-analyzer-waveform width="720" height="216" aria-hidden="true"></canvas>
       <div class="osc-param-row">
         <span><strong>OCT</strong>0</span>
         <span><strong>SEM</strong>0</span>
@@ -1056,6 +1057,7 @@ function renderWorkbenchSpectrum(model = {}) {
       </div>
       <div class="spectrum-canvas">
         <div class="spectrum-grid" aria-hidden="true"></div>
+        <canvas class="live-analyzer-canvas spectrum-analyzer-canvas" data-analyzer-spectrum width="720" height="216" aria-hidden="true"></canvas>
         <div class="spectrum-bars" aria-hidden="true">
           ${bars.map((bar, index) => `<span style="--bar:${formatNumber(bar)}%; --i:${index}"></span>`).join('')}
         </div>
@@ -1070,7 +1072,7 @@ function renderWorkbenchOutputMeter(model = {}) {
   return `
     <section class="workbench-panel output-meter-strip" aria-label="输出电平">
       <strong>输出电平</strong>
-      <div class="output-meter-bars" aria-hidden="true">
+      <div class="output-meter-bars" data-analyzer-meter aria-hidden="true">
         ${meters.map((meter, index) => `<i style="--meter:${formatNumber(meter.value)}%; --i:${index}"></i>`).join('')}
       </div>
       <span>-8.2 dB</span>
@@ -1256,6 +1258,138 @@ function renderWorkbenchQuality(model = {}) {
   `;
 }
 
+function renderAdvancedModuleDock(model = {}) {
+  return `
+    <section class="advanced-module-dock" aria-label="Advanced Sound Lab modules">
+      ${(model.advancedModules ?? []).map((module) => `
+        <button class="advanced-module-pill" type="button" data-advanced-module="${escapeHtml(module.id)}">
+          <strong>${escapeHtml(module.labelZh)}</strong>
+          <span>${escapeHtml(module.noteZh)}</span>
+        </button>
+      `).join('')}
+    </section>
+  `;
+}
+
+function renderProfessionalModMatrix(model = {}) {
+  const matrix = model.modMatrix ?? {};
+  const routes = matrix.routes ?? [];
+  return `
+    <section class="workbench-panel professional-module-panel mod-matrix-panel" data-advanced-panel="mod-matrix" aria-label="Mod Matrix">
+      <div class="mini-panel-head"><strong>Mod Matrix</strong><span>${escapeHtml(routes.length)} routes · audio-rate ready</span></div>
+      <div class="mod-matrix-table">
+        ${routes.slice(0, 8).map((route) => `
+          <div class="mod-matrix-row" data-mod-route="${escapeHtml(route.id)}">
+            <span>${escapeHtml(route.source)}</span>
+            <i></i>
+            <span>${escapeHtml(route.target)}</span>
+            <label style="--range-value:${formatNumber((route.amount + 100) / 2)}%">
+              <input type="range" data-mod-route-amount="${escapeHtml(route.id)}" min="-100" max="100" step="1" value="${escapeHtml(route.amount)}" />
+              <output>${escapeHtml(route.amount)}</output>
+            </label>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderFxChainEditor(model = {}) {
+  const slots = model.fxChain?.slots ?? [];
+  return `
+    <section class="workbench-panel professional-module-panel fx-chain-editor" data-advanced-panel="fx-chain" aria-label="FX Chain reorder">
+      <div class="mini-panel-head"><strong>FX Chain reorder</strong><span>Drag order · rebuild graph</span></div>
+      <div class="fx-chain-list">
+        ${slots.map((slot, index) => `
+          <div class="fx-chain-slot" draggable="true" data-fx-chain-slot="${escapeHtml(slot.id)}">
+            <span>${index + 1}</span>
+            <strong>${escapeHtml(slot.labelZh)}</strong>
+            <small>${formatNumber((slot.amount ?? slot.ceiling ?? 0) * 100)}%</small>
+            <button type="button" data-fx-move="${escapeHtml(slot.id)}" data-fx-direction="-1" aria-label="Move up">↑</button>
+            <button type="button" data-fx-move="${escapeHtml(slot.id)}" data-fx-direction="1" aria-label="Move down">↓</button>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderXYMacroPanel(model = {}) {
+  const xy = model.xyPad ?? { x: 50, y: 50 };
+  const morph = model.macroMorph ?? { amount: 0 };
+  return `
+    <section class="workbench-panel professional-module-panel xy-macro-panel" data-advanced-panel="xy-macro" aria-label="XY Pad and Macro Morph">
+      <div class="mini-panel-head"><strong>XY Pad / Macro Morph</strong><span>gestural modulation</span></div>
+      <div class="xy-macro-grid">
+        <div class="xy-pad" data-xy-pad style="--xy-x:${formatNumber(xy.x)}%; --xy-y:${formatNumber(xy.y)}%">
+          <button class="xy-handle" type="button" data-xy-handle aria-label="XY Pad handle"></button>
+          <span>X → ${escapeHtml(xy.xTarget ?? 'filter.cutoff')}</span>
+          <span>Y → ${escapeHtml(xy.yTarget ?? 'fx.reverb')}</span>
+        </div>
+        <div class="macro-morph-card">
+          <strong>Macro morph</strong>
+          <label class="range-shell" style="--range-value:${formatNumber(morph.amount ?? 0)}%">
+            <input type="range" data-macro-morph min="0" max="100" step="1" value="${escapeHtml(morph.amount ?? 0)}" />
+          </label>
+          <p>A ${formatNumber(100 - (morph.amount ?? 0))}% / B ${formatNumber(morph.amount ?? 0)}%</p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderAbComparePanel(model = {}) {
+  const compare = model.abCompare ?? {};
+  return `
+    <section class="workbench-panel professional-module-panel ab-compare-panel" data-advanced-panel="ab-compare" aria-label="A/B Compare">
+      <div class="mini-panel-head"><strong>A/B Compare</strong><span>${escapeHtml(compare.activeSlot ?? 'a')} active</span></div>
+      <div class="ab-compare-grid">
+        <button class="${compare.activeSlot === 'a' ? 'is-active' : ''}" type="button" data-ab-slot="a"><strong>A</strong><span>${escapeHtml(compare.a?.label ?? 'Core')}</span></button>
+        <button class="${compare.activeSlot === 'b' ? 'is-active' : ''}" type="button" data-ab-slot="b"><strong>B</strong><span>${escapeHtml(compare.b?.label ?? 'Full')}</span></button>
+      </div>
+      <div class="ab-diff-row">
+        ${(compare.diff ?? []).slice(0, 5).map((item) => `<span>${escapeHtml(item.labelZh.split(' ')[0])} ${item.delta > 0 ? '+' : ''}${escapeHtml(item.delta)}</span>`).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLibrarySyncPanel(model = {}) {
+  const library = model.library ?? {};
+  const gitSync = library.gitSync ?? {};
+  const patchKey = model.patch?.libraryKey ?? model.patch?.id ?? '';
+  const isFavorite = (library.favorites ?? []).some((favorite) => favorite.patchId === patchKey && favorite.active);
+  return `
+    <section class="workbench-panel professional-module-panel library-sync-panel" data-advanced-panel="library-sync" aria-label="Project library and sync">
+      <div class="mini-panel-head"><strong>Project library / Git sync</strong><span>${escapeHtml(gitSync.owner ?? '')}/${escapeHtml(gitSync.repo ?? '')}</span></div>
+      <div class="library-sync-grid">
+        <button class="${isFavorite ? 'is-active' : ''}" type="button" data-favorite-patch="${escapeHtml(patchKey)}">${isFavorite ? 'Favorited' : 'Favorite'}</button>
+        <button type="button" data-project-library-action="save">Save to project</button>
+        <button type="button" data-git-sync-action="pull">Pull</button>
+        <button type="button" data-git-sync-action="push">Push</button>
+        <button type="button" data-midi-learn> MIDI Learn</button>
+      </div>
+      <label class="export-name-rule">
+        <span>Batch naming</span>
+        <input data-export-name-pattern value="${escapeHtml(library.exportRules?.pattern ?? '{family}_{preset}_{date}_{version}_{variant}')}" />
+        <strong>${escapeHtml(library.exportRules?.preview ?? '')}</strong>
+      </label>
+    </section>
+  `;
+}
+
+function renderProfessionalControlGrid(model = {}) {
+  return `
+    <div class="professional-control-grid">
+      ${renderProfessionalModMatrix(model)}
+      ${renderFxChainEditor(model)}
+      ${renderXYMacroPanel(model)}
+      ${renderAbComparePanel(model)}
+      ${renderLibrarySyncPanel(model)}
+    </div>
+  `;
+}
+
 function renderWorkbenchRightRail(family = {}, model = {}) {
   const drawer = model.sourceDrawer ?? {};
   return `
@@ -1366,6 +1500,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
             ${renderWorkbenchOutputMeter(model)}
           </div>
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
+          ${renderAdvancedModuleDock(model)}
           ${renderWorkbenchEnvelope(model)}
           <div class="control-lower-grid">
             ${renderWorkbenchMacroPanel(model)}
@@ -1376,6 +1511,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
             ${renderWorkbenchPlayback(model, isPlaying)}
             ${renderWorkbenchQuality(model)}
           </div>
+          ${renderProfessionalControlGrid(model)}
           <div class="advanced-engine-grid">
             ${renderSoundLabEngineControls(model, options)}
             ${renderSoundLabDnaControls(model)}
