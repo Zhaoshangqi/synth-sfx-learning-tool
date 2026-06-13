@@ -216,6 +216,11 @@ test('renderSoundLabWorkbench matches the light synth workstation reference modu
   assert.match(html, /输出电平/);
   assert.match(html, /材质选择/);
   assert.match(html, /怎么用这个工作台/);
+  assert.match(html, /workbench-module-map/);
+  assert.match(html, /模块速查/);
+  assert.match(html, /ADSR \/ 宏控制/);
+  assert.match(html, /data-workbench-module-jump="mod-matrix"/);
+  assert.match(html, /data-workbench-module-jump="coach"/);
   assert.match(html, /先选目标音效/);
   assert.match(html, /再调声音结构/);
   assert.match(html, /最后导出复盘/);
@@ -231,6 +236,23 @@ test('renderSoundLabWorkbench matches the light synth workstation reference modu
     activeWorkbenchSynth: 'phase-plant',
   });
   assert.match(phasePlantHtml, /class="synth-tab is-active" type="button" data-synth-tab="phase-plant"/);
+
+  const modMatrixMapHtml = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkflowStep: 'shape',
+    activeAdvancedModule: 'mod-matrix',
+  });
+  assert.match(modMatrixMapHtml, /data-workbench-module-jump="mod-matrix" aria-pressed="true"/);
+  assert.doesNotMatch(modMatrixMapHtml, /data-workbench-module-jump="fx-chain" aria-pressed="true"/);
+
+  const coachMapHtml = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkflowStep: 'shape',
+    activeAdvancedModule: 'mod-matrix',
+    activeModuleMapId: 'coach',
+  });
+  assert.match(coachMapHtml, /data-workbench-module-jump="coach" aria-pressed="true"/);
+  assert.doesNotMatch(coachMapHtml, /data-workbench-module-jump="mod-matrix" aria-pressed="true"/);
 });
 
 test('renderSoundLabWorkbench exposes module coaching with concrete synth steps', () => {

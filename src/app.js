@@ -118,6 +118,7 @@ const state = {
   soundLabMacroMorph: 0,
   soundLabAbSlot: 'a',
   soundLabWorkflowStep: 'source',
+  activeWorkbenchModuleMapId: 'source',
   soundLabAnalyzerMode: 'live',
   soundLabMoreOpen: false,
   activeAdvancedModule: 'advanced',
@@ -499,6 +500,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabMacroMorph = 0;
   state.soundLabAbSlot = 'a';
   state.soundLabWorkflowStep = 'source';
+  state.activeWorkbenchModuleMapId = 'source';
   state.activeAdvancedModule = 'advanced';
   state.activeWorkbenchModule = 'envelope';
   syncSoundLabPatchSoon();
@@ -524,6 +526,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     gitSync: state.soundLabGitSync,
     midiMappings: state.soundLabMidiMappings,
     activeWorkflowStep: state.soundLabWorkflowStep,
+    activeModuleMapId: state.activeWorkbenchModuleMapId,
     analyzerMode: state.soundLabAnalyzerMode,
     moreOpen: state.soundLabMoreOpen,
     activeAdvancedModule: state.activeAdvancedModule,
@@ -569,6 +572,7 @@ function renderSoundLabView() {
         isPlaying: state.isSoundLabPlaying,
         activeWorkbenchModule: state.activeWorkbenchModule,
         activeWorkflowStep: state.soundLabWorkflowStep,
+        activeModuleMapId: state.activeWorkbenchModuleMapId,
         analyzerMode: state.soundLabAnalyzerMode,
         moreOpen: state.soundLabMoreOpen,
         activeAdvancedModule: state.activeAdvancedModule,
@@ -1233,8 +1237,23 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
     'midi-input': 'deliver',
     'batch-export': 'deliver',
   };
+  const moduleMapByAdvancedModule = {
+    advanced: 'source',
+    'envelope-editor': 'envelope',
+    'mod-matrix': 'mod-matrix',
+    'fx-chain': 'fx-chain',
+    'xy-pad': 'mod-matrix',
+    'macro-morph': 'mod-matrix',
+    'ab-compare': 'compare',
+    favorites: 'coach',
+    'project-library': 'coach',
+    'cloud-sync': 'coach',
+    'midi-input': 'coach',
+    'batch-export': 'compare',
+  };
   state.activeAdvancedModule = moduleId;
   state.soundLabWorkflowStep = workflowByModule[moduleId] ?? state.soundLabWorkflowStep;
+  state.activeWorkbenchModuleMapId = moduleMapByAdvancedModule[moduleId] ?? state.activeWorkbenchModuleMapId;
   if (moduleId === 'advanced') state.activeWorkbenchModule = 'generator';
   if (moduleId === 'ab-compare') state.activeWorkbenchModule = 'macro';
   if (moduleId === 'fx-chain') state.activeWorkbenchModule = 'effects';
@@ -1256,6 +1275,12 @@ function handleWorkbenchStep(step) {
     compare: 'ab-compare',
     deliver: 'batch-export',
   };
+  const mapByStep = {
+    source: 'source',
+    shape: 'envelope',
+    compare: 'compare',
+    deliver: 'compare',
+  };
   const scrollByStep = {
     source: '.sound-family-rail',
     shape: '.workbench-module-tabs',
@@ -1265,8 +1290,57 @@ function handleWorkbenchStep(step) {
   state.soundLabWorkflowStep = step;
   state.activeWorkbenchModule = moduleByStep[step] ?? state.activeWorkbenchModule;
   state.activeAdvancedModule = advancedByStep[step] ?? state.activeAdvancedModule;
+  state.activeWorkbenchModuleMapId = mapByStep[step] ?? state.activeWorkbenchModuleMapId;
   render();
   scrollSoundLabIntoView(scrollByStep[step] ?? '.sound-lab-workbench');
+}
+
+function handleWorkbenchModuleJump(moduleId) {
+  const targetByModule = {
+    source: {
+      step: 'source',
+      workbenchModule: 'generator',
+      advancedModule: 'advanced',
+      selector: '.analyzer-row',
+    },
+    envelope: {
+      step: 'shape',
+      workbenchModule: 'envelope',
+      advancedModule: 'envelope-editor',
+      selector: '.envelope-panel',
+    },
+    'mod-matrix': {
+      step: 'shape',
+      workbenchModule: 'modulation',
+      advancedModule: 'mod-matrix',
+      selector: '.advanced-module-dock',
+    },
+    'fx-chain': {
+      step: 'shape',
+      workbenchModule: 'effects',
+      advancedModule: 'fx-chain',
+      selector: '.fx-chain-editor',
+    },
+    compare: {
+      step: 'compare',
+      workbenchModule: 'macro',
+      advancedModule: 'ab-compare',
+      selector: '.advanced-module-dock',
+    },
+    coach: {
+      step: 'shape',
+      workbenchModule: 'modulation',
+      advancedModule: 'mod-matrix',
+      selector: '.workbench-coach-panel',
+    },
+  };
+  const target = targetByModule[moduleId] ?? targetByModule.source;
+  state.soundLabWorkflowStep = target.step;
+  state.activeWorkbenchModule = target.workbenchModule;
+  state.activeAdvancedModule = target.advancedModule;
+  state.activeWorkbenchModuleMapId = moduleId;
+  render();
+  scrollSoundLabIntoView(target.selector);
 }
 
 function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
@@ -1274,11 +1348,13 @@ function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
   if (!guide) return;
   state.activeSynthModGuideId = guide.id;
   state.soundLabWorkflowStep = guide.workflowStep ?? state.soundLabWorkflowStep;
+  state.activeWorkbenchModuleMapId = 'coach';
   state.activeWorkbenchModule = guide.moduleId ?? state.activeWorkbenchModule;
   if (loadPatch) {
     selectSoundLabFamily(guide.familyId, false);
     state.activeSynthModGuideId = guide.id;
     state.soundLabWorkflowStep = guide.workflowStep ?? state.soundLabWorkflowStep;
+    state.activeWorkbenchModuleMapId = 'coach';
     state.activeWorkbenchModule = guide.moduleId ?? state.activeWorkbenchModule;
     state.soundLabMacros = { ...state.soundLabMacros, ...(guide.macroHints ?? {}) };
     state.soundLabLayerMix = { ...state.soundLabLayerMix, ...(guide.layerMix ?? {}) };
@@ -1876,8 +1952,17 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('[data-module-tab]').forEach((button) => {
     button.addEventListener('click', () => {
+      const mapByWorkbenchModule = {
+        generator: 'source',
+        filter: 'source',
+        modulation: 'mod-matrix',
+        envelope: 'envelope',
+        effects: 'fx-chain',
+        macro: 'compare',
+      };
       state.activeWorkbenchModule = button.dataset.moduleTab;
       state.soundLabWorkflowStep = 'shape';
+      state.activeWorkbenchModuleMapId = mapByWorkbenchModule[button.dataset.moduleTab] ?? state.activeWorkbenchModuleMapId;
       render();
     });
   });
@@ -1898,6 +1983,12 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-advanced-module]').forEach((button) => {
     button.addEventListener('click', () => {
       selectAdvancedModule(button.dataset.advancedModule);
+    });
+  });
+
+  document.querySelectorAll('[data-workbench-module-jump]').forEach((button) => {
+    button.addEventListener('click', () => {
+      handleWorkbenchModuleJump(button.dataset.workbenchModuleJump);
     });
   });
 
@@ -1961,6 +2052,7 @@ function bindSoundLabControls() {
       }
       if (action === 'focus-coach') {
         state.soundLabWorkflowStep = 'shape';
+        state.activeWorkbenchModuleMapId = 'coach';
         render();
         scrollSoundLabIntoView('.workbench-coach-panel');
         return;
@@ -1977,6 +2069,7 @@ function bindSoundLabControls() {
       if (action === 'analyze-patch') {
         state.soundLabAnalyzerMode = 'log';
         state.soundLabWorkflowStep = 'shape';
+        state.activeWorkbenchModuleMapId = 'mod-matrix';
         render();
         return;
       }

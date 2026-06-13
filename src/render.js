@@ -1546,6 +1546,109 @@ function renderWorkbenchUsageGuide(family = {}, activeStep = 'source') {
   `;
 }
 
+function renderWorkbenchModuleMap(family = {}, activeStep = 'source', activeAdvancedModule = 'advanced', activeModuleMapId = '') {
+  const familyName = family.titleZh?.split('：')[0] ?? '当前音效';
+  const currentByAdvancedModule = {
+    advanced: 'source',
+    'envelope-editor': 'envelope',
+    'mod-matrix': 'mod-matrix',
+    'fx-chain': 'fx-chain',
+    'ab-compare': 'compare',
+    favorites: 'coach',
+    'project-library': 'coach',
+    'cloud-sync': 'coach',
+    'midi-input': 'coach',
+    'batch-export': 'compare',
+  };
+  const currentByStep = {
+    source: 'source',
+    shape: 'envelope',
+    compare: 'compare',
+    deliver: 'compare',
+  };
+  const validCardIds = new Set(['source', 'envelope', 'mod-matrix', 'fx-chain', 'compare', 'coach']);
+  const currentCardId = validCardIds.has(activeModuleMapId)
+    ? activeModuleMapId
+    : currentByAdvancedModule[activeAdvancedModule] ?? currentByStep[activeStep] ?? 'source';
+  const cards = [
+    {
+      id: 'source',
+      step: 'source',
+      index: 'A',
+      title: '声源与频谱',
+      role: `确认「${familyName}」的声源角色、波形、频谱峰值和输出电平。`,
+      listen: '先听 transient 是否够清楚，再看低频是否占太多空间。',
+      action: '进入监听',
+    },
+    {
+      id: 'envelope',
+      step: 'shape',
+      index: 'B',
+      title: 'ADSR / 宏控制',
+      role: '把 Attack、Decay、Sustain、Release 与 Tone / Motion / Space 连接到听感。',
+      listen: '每次只改一个时间段：起音、主体、尾巴或运动感。',
+      action: '调包络',
+    },
+    {
+      id: 'mod-matrix',
+      step: 'shape',
+      index: 'C',
+      title: 'Mod Matrix / Envelope',
+      role: '查看 LFO、Env、Velocity、Note 到目标参数的调制关系。',
+      listen: '确认调制是在推动材质，而不是让音量忽大忽小。',
+      action: '看调制',
+    },
+    {
+      id: 'fx-chain',
+      step: 'shape',
+      index: 'D',
+      title: 'FX Chain / 材质',
+      role: '调整失真、滤波、空间、宽度和材质家族，决定声音的质地。',
+      listen: 'A/B drive 前后，保留有用谐波，削掉刺耳共振。',
+      action: '排效果链',
+    },
+    {
+      id: 'compare',
+      step: 'compare',
+      index: 'E',
+      title: 'A/B / 参考响度',
+      role: '对比 dry、full、Tone.js 高质量引擎和参考响度。',
+      listen: '不要被音量欺骗，先匹配响度再判断质感好坏。',
+      action: '开始对照',
+    },
+    {
+      id: 'coach',
+      step: 'shape',
+      index: 'F',
+      title: '合成器教练',
+      role: '把同一个技巧分别翻译到 Serum 2、Phase Plant、Vital。',
+      listen: '跟着路由图复刻，再回到 REAPER 检查交付版本。',
+      action: '看步骤',
+    },
+  ];
+
+  return `
+    <section class="workbench-module-map" aria-label="工作台模块速查">
+      <div class="module-map-head">
+        <span>模块速查</span>
+        <strong>从左到右完成一次可交付音效</strong>
+        <small>点任意模块会切到对应面板</small>
+      </div>
+      <div class="module-map-grid">
+        ${cards.map((card) => `
+          <button class="module-map-card ${card.id === currentCardId ? 'is-current' : ''}" type="button" data-workbench-module-jump="${escapeHtml(card.id)}" aria-pressed="${card.id === currentCardId ? 'true' : 'false'}">
+            <span>${escapeHtml(card.index)}</span>
+            <strong>${escapeHtml(card.title)}</strong>
+            <em>${escapeHtml(card.action)}</em>
+            <p>${escapeHtml(card.role)}</p>
+            <small>${escapeHtml(card.listen)}</small>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderWorkbenchZoneTitle(indexZh, titleZh, bodyZh) {
   return `
     <div class="workbench-zone-title" aria-label="${escapeHtml(`${indexZh} ${titleZh}`)}">
@@ -1980,6 +2083,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}
+      ${renderWorkbenchModuleMap(family, options.activeWorkflowStep, options.activeAdvancedModule, options.activeModuleMapId)}
       ${renderWorkbenchUsageGuide(family, options.activeWorkflowStep)}
       <div class="workbench-main-grid">
         <div class="workbench-core">
