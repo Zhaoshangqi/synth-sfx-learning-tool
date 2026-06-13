@@ -404,3 +404,23 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*#ffffff/);
   assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(23,\s*167,\s*163/);
 });
+
+test('sound lab module coach is interactive and visually separated from the workbench controls', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /synthModulationGuides/);
+  assert.match(appJs, /activeSynthModGuideId/);
+  assert.match(appJs, /applySynthModGuide/);
+  assert.match(appJs, /data-mod-guide/);
+  assert.match(appJs, /data-guide-load/);
+  assert.match(appJs, /data-guide-preview/);
+  assert.match(appJs, /modulationGuides:\s*synthModulationGuides/);
+  assert.match(appJs, /activeModulationGuideId:\s*state\.activeSynthModGuideId/);
+  assert.match(renderJs, /workbench-coach-panel/);
+  assert.match(renderJs, /coach-synth-grid/);
+  assert.match(renderJs, /data-guide-preview/);
+  assert.match(css, /\.workbench-coach-panel\s*\{[\s\S]*background:\s*linear-gradient/);
+  assert.match(css, /\.coach-synth-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3/);
+});

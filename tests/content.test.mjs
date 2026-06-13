@@ -19,6 +19,7 @@ import {
   communityTechniqueLabs,
   deepDiveModules,
   externalIntegrations,
+  synthModulationGuides,
 } from '../src/content.js';
 
 test('seed content includes the first-version learning surface', () => {
@@ -38,6 +39,7 @@ test('seed content includes the first-version learning surface', () => {
   assert.ok(communityTechniqueLabs.length >= 6, 'expected community creator technique labs');
   assert.ok(deepDiveModules.length >= 8, 'expected deep practical analysis modules');
   assert.ok(externalIntegrations.length >= 5, 'expected external integration options for browser sound quality');
+  assert.ok(synthModulationGuides.length >= 5, 'expected workstation module coaching guides');
   assert.ok(principleDiagrams.length >= 5, 'expected visual principle diagrams');
   assert.equal(interactiveLabs.length, 5, 'expected five Ableton-style interactive labs');
 });
@@ -226,6 +228,10 @@ test('community creator technique labs connect non-official videos to interactiv
   assert.ok(communitySources.some((source) => source.platform === 'Bilibili'), 'needs Bilibili creator videos');
   assert.ok(sourceIds.has('youtube-negativist-serum-metallic'), 'needs a concrete Serum metallic creator source');
   assert.ok(sourceIds.has('bilibili-serum-weapon-whoosh'), 'needs a concrete Bilibili Serum whoosh source');
+  assert.ok(sourceIds.has('youtube-ngtvst-channel-feed'), 'needs the requested NGTVST channel source');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-serum2-trailer-pack'), 'needs NGTVST Serum 2 trailer practice');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-vital-dark-strings'), 'needs NGTVST Vital dark strings practice');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-robot-machina'), 'needs NGTVST robot sound practice');
 
   for (const lab of communityTechniqueLabs) {
     assert.match(lab.id, /^[a-z0-9-]+$/);
@@ -243,6 +249,33 @@ test('community creator technique labs connect non-official videos to interactiv
     assert.ok(lab.synthMappings.serum || lab.synthMappings.phasePlant || lab.synthMappings.vital);
     assert.ok(lab.verification.listeningChecks.length >= 3, `${lab.id} needs listening checks`);
     assert.ok(lab.commonMistakes.length >= 2, `${lab.id} needs common mistakes`);
+  }
+});
+
+test('workstation modulation guides explain concrete Serum Phase Plant and Vital actions', () => {
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const guideIds = new Set();
+
+  assert.ok(sourceIds.has('youtube-ngtvst-channel-feed'), 'needs the requested NGTVST / Negativist channel feed source');
+  assert.ok(sourceIds.has('youtube-ngtvst-serum2-simple-pulses'), 'needs concrete NGTVST Serum 2 pulse source');
+
+  for (const guide of synthModulationGuides) {
+    assert.match(guide.id, /^[a-z0-9-]+$/);
+    assert.ok(!guideIds.has(guide.id), `${guide.id} is duplicated`);
+    guideIds.add(guide.id);
+    assert.ok(['source', 'shape', 'compare', 'deliver'].includes(guide.workflowStep), `${guide.id} needs a workbench step`);
+    assert.ok(guide.titleZh.length > 10, `${guide.id} needs a readable title`);
+    assert.ok(guide.questionZh.length > 20, `${guide.id} needs a clear usage question`);
+    assert.ok(guide.listenForZh.length > 40, `${guide.id} needs listening guidance`);
+    assert.ok(guide.diagramNodes.length >= 4, `${guide.id} needs diagram nodes`);
+    assert.ok(guide.controlFocus.length >= 4, `${guide.id} needs focused controls`);
+    assert.ok(guide.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${guide.id} has unknown source`);
+    assert.ok(guide.synthSteps.serum.length >= 3, `${guide.id} needs Serum steps`);
+    assert.ok(guide.synthSteps.phasePlant.length >= 3, `${guide.id} needs Phase Plant steps`);
+    assert.ok(guide.synthSteps.vital.length >= 3, `${guide.id} needs Vital steps`);
+    assert.ok(guide.familyId, `${guide.id} needs a Sound Lab family`);
+    assert.ok(Object.keys(guide.macroHints).length >= 4, `${guide.id} needs macro hints`);
+    assert.ok(Object.keys(guide.layerMix).length >= 4, `${guide.id} needs layer mix hints`);
   }
 });
 
