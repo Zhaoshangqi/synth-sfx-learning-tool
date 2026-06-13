@@ -3298,6 +3298,11 @@ export const communityTechniqueLabs = [
       { id: 'signature-drive', labelZh: '签名失真', goalZh: '提高 drive 与材质，检查刺点', values: { presence: 74, motion: 46, drive: 82, space: 28 } },
       { id: 'trailer-full', labelZh: '预告片 full', goalZh: '运动、失真、尾巴一起听', values: { presence: 78, motion: 76, drive: 70, space: 58 } },
     ],
+    practiceScenes: [
+      { id: 'motif-dry', labelZh: '先听动机', intentZh: '只保留中心音和主体穿透，确认不用 FX 也能记住。', listenForZh: '应该听到清楚的音高身份，drive 和 space 关闭后也不是普通噪声。', values: { presence: 62, motion: 18, drive: 28, space: 12 } },
+      { id: 'macro-motion', labelZh: '推宏运动', intentZh: '放大 filter、WT position 和 pitch bend，观察身份是否仍稳定。', listenForZh: '运动应该让声音推进，不应该把中心音推到听不出来。', values: { presence: 74, motion: 72, drive: 48, space: 24 } },
+      { id: 'signature-full', labelZh: '完整签名', intentZh: '加入失真和尾巴，检查它是否像可交付的 lead / bass。', listenForZh: 'full 版应更大更有规模，但 dry motif 仍能在中间被听见。', values: { presence: 78, motion: 76, drive: 70, space: 58 } },
+    ],
     controls: [
       { id: 'presence', labelZh: '主题穿透', min: 0, max: 100, default: 70, unit: '%', descriptionZh: '中心音和中高频识别度。' },
       { id: 'motion', labelZh: '宏运动', min: 0, max: 100, default: 52, unit: '%', descriptionZh: '滤波、WT position 或 pitch bend 的开合。' },
@@ -3361,6 +3366,11 @@ export const communityTechniqueLabs = [
       { id: 'single-anchor', labelZh: '单音锚点', goalZh: '先确认低频主体稳定', values: { anchor: 78, interval: 8, drive: 28, cleanup: 56 } },
       { id: 'interval-tension', labelZh: '音程张力', goalZh: '只推新增音程听身份变化', values: { anchor: 72, interval: 64, drive: 42, cleanup: 58 } },
       { id: 'cinematic-bass', labelZh: '电影低音', goalZh: '音程、失真和后级整理一起听', values: { anchor: 76, interval: 58, drive: 80, cleanup: 74 } },
+    ],
+    practiceScenes: [
+      { id: 'anchor-check', labelZh: '只听锚点', intentZh: '先关掉大部分 interval 和 drive，确认低频中心不漂。', listenForZh: '你应该听到稳定、单声道的低频主体；如果此时都糊，后面失真会更糊。', values: { anchor: 78, interval: 8, drive: 28, cleanup: 56 } },
+      { id: 'interval-before-drive', labelZh: '音程进失真前', intentZh: '只推新增音程，让失真前频率关系改变。', listenForZh: '身份应明显改变，但低频中心仍在；如果只变浑，降低 interval 或高通音程层。', values: { anchor: 72, interval: 64, drive: 42, cleanup: 58 } },
+      { id: 'distorted-cleanup', labelZh: '失真后整理', intentZh: '把 drive 推到电影低音强度，再用 cleanup 收刺点。', listenForZh: 'full 版应更凶但不刺，mono 下低频不消失，2k-8k 不应持续扎耳。', values: { anchor: 76, interval: 58, drive: 80, cleanup: 74 } },
     ],
     controls: [
       { id: 'anchor', labelZh: '低频锚点', min: 0, max: 100, default: 74, unit: '%', descriptionZh: 'Sub/Osc A 的中心稳定度。' },
@@ -3447,6 +3457,11 @@ export const communityTechniqueLabs = [
       { id: 'impact-body', labelZh: '冲击主体', goalZh: '合成器补重量', values: { attack: 72, weight: 82, texture: 42, tail: 32 } },
       { id: 'cinematic-full', labelZh: '电影 full', goalZh: '重量、碎裂、尾巴一起听', values: { attack: 76, weight: 78, texture: 70, tail: 64 } },
     ],
+    practiceScenes: [
+      { id: 'recording-only', labelZh: '只听录音纹理', intentZh: '把合成重量压低，先听纸张/纸板的真实颗粒。', listenForZh: '应该能听到真实触点和碎裂，但重量明显偏轻，这是后面合成 body 要补的部分。', values: { attack: 54, weight: 28, texture: 82, tail: 20 } },
+      { id: 'synth-body', labelZh: '补合成主体', intentZh: '推高 sub/FM body，检查冲击重量是否来自可控合成层。', listenForZh: '关闭 texture 后仍应该有重量；打开 texture 后只是更真实，不是更乱。', values: { attack: 72, weight: 82, texture: 42, tail: 32 } },
+      { id: 'full-impact', labelZh: '完整冲击', intentZh: '把录音、body、resonator 和 tail 合起来听交付版本。', listenForZh: 'full 版应同时有真实触点、重量和短空间，低频不能来自混响尾巴。', values: { attack: 76, weight: 78, texture: 70, tail: 64 } },
+    ],
     controls: [
       { id: 'attack', labelZh: '真实触点', min: 0, max: 100, default: 66, unit: '%', descriptionZh: '录音 transient 和 click 的清晰度。' },
       { id: 'weight', labelZh: '合成重量', min: 0, max: 100, default: 58, unit: '%', descriptionZh: 'sub/FM body 和 pitch drop。' },
@@ -3506,6 +3521,11 @@ export const communityTechniqueLabs = [
       { id: 'drive', labelZh: '失真压力', min: 0, max: 100, default: 62, unit: '%', descriptionZh: 'drive、clip 和谐波密度。' },
       { id: 'tail', labelZh: '规模尾巴', min: 0, max: 100, default: 54, unit: '%', descriptionZh: 'room、delay、tail-only 长度。' },
     ],
+    practiceScenes: [
+      { id: 'trailer-body', labelZh: '只听重量', intentZh: '先把 motion 和 tail 收小，确认 boom/braam 的低频锚点。', listenForZh: '应该听到稳定的 mono body，空间关闭后仍有规模感的基础。', values: { weight: 82, motion: 24, drive: 34, tail: 18 } },
+      { id: 'trailer-motion', labelZh: '选择时间形状', intentZh: '放大 pulse gate、filter rise 或 pitch fall，区分四类 trailer 功能。', listenForZh: 'pulse、boom、braam、downer 应该靠时间曲线区分，不是只靠名字。', values: { weight: 76, motion: 82, drive: 54, tail: 34 } },
+      { id: 'trailer-delivery', labelZh: '导出 full/tail', intentZh: '加入失真和规模尾巴，听 full 与 tail-only 是否可分。', listenForZh: 'full 版应更大，但 tail-only 不能含太多低频主体，否则后期不好剪。', values: { weight: 78, motion: 76, drive: 72, tail: 66 } },
+    ],
     interactiveMappings: {
       weight: ['Sub/body gain、pitch envelope depth、mono low layer'],
       motion: ['LFO gate、filter envelope、pitch fall curve'],
@@ -3553,6 +3573,11 @@ export const communityTechniqueLabs = [
       { id: 'texture', labelZh: '纹理', min: 0, max: 100, default: 44, unit: '%', descriptionZh: 'noise/随机细节。' },
       { id: 'space', labelZh: '空间', min: 0, max: 100, default: 68, unit: '%', descriptionZh: '长尾和深度。' },
     ],
+    practiceScenes: [
+      { id: 'dark-core', labelZh: '暗色主体', intentZh: '先压低漂移、纹理和空间，只听暗色 wavetable / oscillator。', listenForZh: '主体应该有暗色音高或谐波锚点；如果只剩混响，说明声源还没成立。', values: { darkness: 78, drift: 18, texture: 16, space: 24 } },
+      { id: 'slow-drift', labelZh: '慢调制', intentZh: '只推慢 LFO、warp 和 frame drift，确认运动是否细腻。', listenForZh: '你应该感到缓慢漂移，而不是明显颤音或晕眩的 pitch 乱动。', values: { darkness: 70, drift: 68, texture: 36, space: 42 } },
+      { id: 'atmosphere-tail', labelZh: '氛围交付', intentZh: '加入高通纹理和空间，检查 8 秒循环与尾部深度。', listenForZh: 'full 版应该更深，但关掉空间后主体仍是暗弦，不应只剩空气。', values: { darkness: 72, drift: 58, texture: 48, space: 78 } },
+    ],
     interactiveMappings: {
       darkness: ['Filter cutoff、high shelf、warp brightness'],
       drift: ['LFO amount、unison detune、wavetable frame drift'],
@@ -3599,6 +3624,11 @@ export const communityTechniqueLabs = [
       { id: 'gate', labelZh: '机械门控', min: 0, max: 100, default: 72, unit: '%', descriptionZh: 'stepped LFO / gate 强度。' },
       { id: 'shell', labelZh: '金属外壳', min: 0, max: 100, default: 54, unit: '%', descriptionZh: 'ring/FM/comb 腔体。' },
       { id: 'tick', labelZh: '伺服触点', min: 0, max: 100, default: 48, unit: '%', descriptionZh: '短 click 和机械起点。' },
+    ],
+    practiceScenes: [
+      { id: 'robot-carrier', labelZh: '只听载波', intentZh: '关小门控和金属外壳，确认机器人声有可读主体。', listenForZh: '应该听到短而清楚的 tonal body；如果主体不存在，gate 只会切碎噪声。', values: { carrier: 72, gate: 18, shell: 22, tick: 28 } },
+      { id: 'robot-stepped-gate', labelZh: '阶梯门控', intentZh: '推高 stepped LFO/gate，让时间切片产生机械感。', listenForZh: '节奏应像机械动作，而不是完全随机的 glitch；rate 要跟动作长度匹配。', values: { carrier: 62, gate: 82, shell: 38, tick: 46 } },
+      { id: 'robot-metal-shell', labelZh: '金属外壳', intentZh: '加入 ring/FM/comb 和伺服触点，检查硬壳质感。', listenForZh: '外壳应让声音更硬，但不能吞掉载波；tick 负责起点，不要比主体更响。', values: { carrier: 64, gate: 74, shell: 72, tick: 58 } },
     ],
     interactiveMappings: {
       carrier: ['Osc/body gain、FM carrier level、formant-like filter'],

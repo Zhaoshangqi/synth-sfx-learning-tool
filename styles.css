@@ -3664,6 +3664,97 @@ textarea {
   margin-bottom: 6px;
 }
 
+.community-practice-scenes {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  padding: 13px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 251, 251, 0.94)),
+    radial-gradient(ellipse at 0% 0%, rgba(23, 167, 163, 0.1), transparent 48%);
+}
+
+.community-practice-scenes h4,
+.community-practice-scenes p {
+  margin: 0;
+}
+
+.community-practice-scenes h4 {
+  color: #203442;
+}
+
+.community-practice-scenes p {
+  color: #64798a;
+  line-height: 1.55;
+}
+
+.community-practice-scene-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.community-practice-scene-grid button {
+  min-height: 132px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  border: 1px solid #d8e8ee;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 253, 252, 0.96));
+  color: #203442;
+  padding: 11px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(39, 63, 78, 0.04);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.community-practice-scene-grid button:hover,
+.community-practice-scene-grid button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.46);
+  background: #f7fdfc;
+  box-shadow: 0 16px 34px rgba(23, 167, 163, 0.12);
+}
+
+.community-practice-scene-grid span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e8fbf8;
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.community-practice-scene-grid strong,
+.community-practice-scene-grid small,
+.community-practice-scene-grid em {
+  min-width: 0;
+}
+
+.community-practice-scene-grid strong {
+  color: #0d7774;
+  font-size: 13px;
+}
+
+.community-practice-scene-grid small {
+  color: #536879;
+  line-height: 1.42;
+}
+
+.community-practice-scene-grid em {
+  color: #718394;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.42;
+}
+
 .community-focus-presets {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3774,6 +3865,7 @@ textarea {
   .community-control-grid,
   .community-focus-presets,
   .community-mapping-grid,
+  .community-practice-scene-grid,
   .community-synth-procedure-grid {
     grid-template-columns: 1fr;
   }
@@ -3799,6 +3891,10 @@ textarea {
 
   .community-focus-presets button {
     width: 100%;
+  }
+
+  .community-practice-scene-grid button {
+    min-height: 112px;
   }
 }
 

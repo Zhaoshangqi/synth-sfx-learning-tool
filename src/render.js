@@ -730,6 +730,57 @@ function renderCommunityFocusPresets(lab) {
   `;
 }
 
+function getCommunityPracticeScenes(lab) {
+  if (lab.practiceScenes?.length) return lab.practiceScenes;
+  const presets = getCommunityFocusPresets(lab);
+  return [
+    {
+      id: 'scene-core',
+      labelZh: '先听核心',
+      intentZh: '把 Sound Lab 推到最少层数，只判断 dry/body 是否成立。',
+      listenForZh: '此时应该能听清主体、触点或低频锚点；如果核心不成立，先别加空间和失真。',
+      values: presets[0]?.values ?? {},
+    },
+    {
+      id: 'scene-modulation',
+      labelZh: '放大调制',
+      intentZh: '只推运动、材质或音程，让变化变得容易听见。',
+      listenForZh: '注意参数变化是不是带来身份、方向或材质，而不是单纯更响或更刺。',
+      values: presets[1]?.values ?? {},
+    },
+    {
+      id: 'scene-delivery',
+      labelZh: '完整交付',
+      intentZh: '打开 tail、空间和后级整理，检查 dry/full/tail 的关系。',
+      listenForZh: '完整版本应该更有尺寸，但起音、主体和低频中心不能被尾巴盖住。',
+      values: presets[2]?.values ?? {},
+    },
+  ];
+}
+
+function renderCommunityPracticeScenes(lab) {
+  const scenes = getCommunityPracticeScenes(lab);
+  if (!scenes.length) return '';
+  return `
+    <section class="community-practice-scenes" aria-label="场景练习">
+      <div>
+        <h4>场景练习</h4>
+        <p>按顺序点：先确认核心，再放大调制，最后听完整交付。每个按钮都会把下方参数推到对应练习状态。</p>
+      </div>
+      <div class="community-practice-scene-grid">
+        ${scenes.map((scene, index) => `
+          <button type="button" data-community-practice-scene="${escapeHtml(scene.id)}">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(scene.labelZh)}</strong>
+            <small>${escapeHtml(scene.intentZh)}</small>
+            <em>${escapeHtml(scene.listenForZh)}</em>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
   const controlValues = options.controlValues ?? {};
   const activeClass = options.isActive ? 'is-active' : '';
@@ -768,6 +819,7 @@ export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
           <h4>交互练习</h4>
           <p>调这些听感参数，再把配方加载到 Sound Lab 试听。这里调整的是网页练习配方，不会伪装成原视频的逐帧参数。</p>
         </div>
+        ${renderCommunityPracticeScenes(lab)}
         ${renderCommunityFocusPresets(lab)}
         <div class="community-control-grid">
           ${(lab.controls ?? []).map((control) => renderCommunityControl(control, controlValues[control.id])).join('')}

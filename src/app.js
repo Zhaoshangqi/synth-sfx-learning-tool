@@ -2135,6 +2135,25 @@ function getCommunityFocusPresets(lab) {
   ];
 }
 
+function getCommunityPracticeScenes(lab) {
+  if (lab.practiceScenes?.length) return lab.practiceScenes;
+  const presets = getCommunityFocusPresets(lab);
+  return [
+    {
+      id: 'scene-core',
+      values: presets[0]?.values ?? {},
+    },
+    {
+      id: 'scene-modulation',
+      values: presets[1]?.values ?? {},
+    },
+    {
+      id: 'scene-delivery',
+      values: presets[2]?.values ?? {},
+    },
+  ];
+}
+
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Number(value)));
 }
@@ -2211,6 +2230,21 @@ function bindCommunityTechniqueControls() {
         [activeLab.id]: {
           ...getCommunityControlValues(activeLab),
           ...preset.values,
+        },
+      };
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-community-practice-scene]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const scene = getCommunityPracticeScenes(activeLab).find((item) => item.id === button.dataset.communityPracticeScene);
+      if (!scene) return;
+      state.communityControlStates = {
+        ...state.communityControlStates,
+        [activeLab.id]: {
+          ...getCommunityControlValues(activeLab),
+          ...scene.values,
         },
       };
       render();
