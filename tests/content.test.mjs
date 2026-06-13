@@ -264,6 +264,16 @@ test('community creator technique labs connect non-official videos to interactiv
     assert.ok(lab.verification.listeningChecks.length >= 3, `${lab.id} needs listening checks`);
     assert.ok(lab.commonMistakes.length >= 2, `${lab.id} needs common mistakes`);
   }
+
+  for (const lab of communityTechniqueLabs.filter((item) => item.id.startsWith('creator-ngtvst-'))) {
+    assert.ok(lab.practiceScenes?.length >= 3, `${lab.id} needs clickable practice scenes`);
+    for (const scene of lab.practiceScenes) {
+      assert.match(scene.id, /^[a-z0-9-]+$/, `${lab.id} scene id should be stable`);
+      assert.ok(scene.labelZh.length >= 3, `${lab.id} scene needs a label`);
+      assert.ok(scene.listenForZh.length >= 20, `${lab.id} scene needs listening guidance`);
+      assert.ok(Object.keys(scene.values).length >= 3, `${lab.id} scene needs control values`);
+    }
+  }
 });
 
 test('workstation modulation guides explain concrete Serum Phase Plant and Vital actions', () => {

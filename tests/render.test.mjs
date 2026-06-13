@@ -299,6 +299,9 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /调制蓝图/);
   assert.match(html, /三合成器参数步骤/);
   assert.match(html, /community-synth-procedure/);
+  assert.match(html, /场景练习/);
+  assert.match(html, /community-practice-scenes/);
+  assert.match(html, /data-community-practice-scene/);
   assert.match(html, /交互练习/);
   assert.match(html, /data-community-technique/);
   assert.match(html, /data-community-control/);
