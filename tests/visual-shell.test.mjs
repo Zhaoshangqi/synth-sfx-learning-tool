@@ -77,6 +77,8 @@ test('sound lab controls expose larger touch targets and immediate tactile feedb
   assert.match(css, /\.fx-chain-slot button[\s\S]*min-width:\s*34px/);
   assert.match(css, /\.library-sync-grid button[\s\S]*min-height:\s*38px/);
   assert.match(css, /\.sound-lab-key[\s\S]*min-width:\s*34px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.sound-lab-keyboard\s*\{[\s\S]*overflow-x:\s*auto/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.sound-lab-key\s*\{[\s\S]*min-width:\s*42px/);
   assert.match(css, /\.xy-handle[\s\S]*width:\s*34px/);
   assert.match(css, /touch-action:\s*none/);
 });
@@ -169,11 +171,16 @@ test('dashboard has product-design control console and learning flow shell', () 
   assert.match(appJs, /今日练习控制台/);
   assert.match(appJs, /learning-flow/);
   assert.match(appJs, /质量守门/);
-  assert.match(appJs, /data-dashboard-view/);
+  assert.match(appJs, /data-dashboard-primary-view="soundlab"/);
+  assert.match(appJs, /data-dashboard-flow-view="\$\{escapeHtml\(node\.view\)\}"/);
+  assert.match(appJs, /dashboardPrimaryView/);
+  assert.match(appJs, /dashboardFlowView/);
+  assert.doesNotMatch(appJs, /data-dashboard-view=/);
   assert.match(css, /\.dashboard-hero/);
   assert.match(css, /\.learning-flow/);
   assert.match(css, /\.signal-node/);
   assert.match(css, /\.quality-panel/);
+  assert.match(css, /\.dashboard-action-label/);
 });
 
 test('navigation includes compact numbered labels for dense product UI', () => {
@@ -380,12 +387,14 @@ test('dashboard CTA buttons use clear high-contrast clickable states', () => {
 
   assert.match(appJs, /进入可试听工作台/);
   assert.match(appJs, /先练波形 \/ ADSR \/ FM/);
+  assert.match(appJs, /主入口/);
   assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*background:\s*linear-gradient\(180deg,\s*#17a7a3/);
   assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*color:\s*#ffffff/);
   assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*background:\s*#ffffff/);
   assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*color:\s*#243846/);
   assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*pointer-events:\s*auto/);
   assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*min-height:\s*58px/);
+  assert.match(css, /\.dashboard-actions button em\s*\{/);
 });
 
 test('sound lab exposes a guided workflow map and real material family switching', () => {
@@ -456,6 +465,9 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
   assert.match(renderJs, /data-community-synth-route/);
   assert.match(renderJs, /community-practice-scenes/);
   assert.match(renderJs, /data-community-practice-scene/);
+  assert.match(renderJs, /renderCommunityParameterTranslator/);
+  assert.match(renderJs, /data-community-parameter-card/);
+  assert.match(renderJs, /parameter-action-list/);
   assert.match(appJs, /focus-controls/);
   assert.match(appJs, /focus-coach/);
   assert.match(appJs, /data-workbench-module-jump/);
@@ -470,6 +482,7 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
   assert.match(css, /\.community-module-guide\s*\{/);
   assert.match(css, /\.community-synth-route-map\s*\{/);
   assert.match(css, /\.community-practice-scenes\s*\{/);
+  assert.match(css, /\.community-parameter-translator\s*\{/);
   assert.match(css, /\.workbench-zone-title\s*\{[\s\S]*background:\s*linear-gradient/);
   assert.match(css, /\.workbench-zone-title strong\s*\{[\s\S]*color:\s*#203442/);
 });

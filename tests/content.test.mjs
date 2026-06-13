@@ -256,6 +256,25 @@ test('community creator technique labs connect non-official videos to interactiv
     }
     assert.ok(lab.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${lab.id} has an unknown source`);
     assert.ok(Object.keys(lab.synthParameterSteps ?? lab.synthMappings ?? {}).length >= 3, `${lab.id} needs three-synth parameter steps`);
+    assert.ok(lab.moduleGuideSteps?.length >= 4, `${lab.id} needs a module usage guide`);
+    assert.ok(lab.synthSignalFlow?.serum?.length >= 4, `${lab.id} needs a Serum visual signal flow`);
+    assert.ok(lab.synthSignalFlow?.phasePlant?.length >= 4, `${lab.id} needs a Phase Plant visual signal flow`);
+    assert.ok(lab.synthSignalFlow?.vital?.length >= 4, `${lab.id} needs a Vital visual signal flow`);
+    assert.ok(lab.synthDialPlan?.serum?.length >= 4, `${lab.id} needs detailed Serum parameter cards`);
+    assert.ok(lab.synthDialPlan?.phasePlant?.length >= 4, `${lab.id} needs detailed Phase Plant parameter cards`);
+    assert.ok(lab.synthDialPlan?.vital?.length >= 4, `${lab.id} needs detailed Vital parameter cards`);
+    for (const cards of Object.values(lab.synthDialPlan)) {
+      for (const card of cards) {
+        assert.ok(card.whereZh.length >= 8, `${lab.id} parameter card needs a location`);
+        assert.ok(card.targetZh.length >= 8, `${lab.id} parameter card needs a modulation target`);
+        assert.ok(card.rangeZh.length >= 8, `${lab.id} parameter card needs a suggested range`);
+        assert.ok(card.listenZh.length >= 16, `${lab.id} parameter card needs a listening check`);
+        assert.ok(card.actions?.length >= 2, `${lab.id} parameter card needs step-by-step actions`);
+        for (const action of card.actions) {
+          assert.ok(action.length >= 18, `${lab.id} action needs concrete synth control names`);
+        }
+      }
+    }
     assert.ok(lab.soundLabRecipe.familyId, `${lab.id} needs a Sound Lab family`);
     assert.ok(lab.soundLabRecipe.presetDnaId, `${lab.id} needs a Sound Lab preset DNA`);
     assert.ok(Object.keys(lab.soundLabRecipe.macros).length >= 4, `${lab.id} needs macro recipe values`);
@@ -271,6 +290,21 @@ test('community creator technique labs connect non-official videos to interactiv
     assert.ok(lab.synthSignalFlow?.serum?.length >= 4, `${lab.id} needs a Serum visual signal flow`);
     assert.ok(lab.synthSignalFlow?.phasePlant?.length >= 4, `${lab.id} needs a Phase Plant visual signal flow`);
     assert.ok(lab.synthSignalFlow?.vital?.length >= 4, `${lab.id} needs a Vital visual signal flow`);
+    assert.ok(lab.synthDialPlan?.serum?.length >= 4, `${lab.id} needs detailed Serum parameter cards`);
+    assert.ok(lab.synthDialPlan?.phasePlant?.length >= 4, `${lab.id} needs detailed Phase Plant parameter cards`);
+    assert.ok(lab.synthDialPlan?.vital?.length >= 4, `${lab.id} needs detailed Vital parameter cards`);
+    for (const cards of Object.values(lab.synthDialPlan)) {
+      for (const card of cards) {
+        assert.ok(card.whereZh.length >= 8, `${lab.id} parameter card needs a location`);
+        assert.ok(card.targetZh.length >= 8, `${lab.id} parameter card needs a modulation target`);
+        assert.ok(card.rangeZh.length >= 8, `${lab.id} parameter card needs a suggested range`);
+        assert.ok(card.listenZh.length >= 16, `${lab.id} parameter card needs a listening check`);
+        assert.ok(card.actions?.length >= 2, `${lab.id} parameter card needs step-by-step actions`);
+        for (const action of card.actions) {
+          assert.ok(action.length >= 18, `${lab.id} action needs concrete synth control names`);
+        }
+      }
+    }
     for (const scene of lab.practiceScenes) {
       assert.match(scene.id, /^[a-z0-9-]+$/, `${lab.id} scene id should be stable`);
       assert.ok(scene.labelZh.length >= 3, `${lab.id} scene needs a label`);

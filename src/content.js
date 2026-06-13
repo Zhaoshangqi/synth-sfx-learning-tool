@@ -3697,16 +3697,177 @@ const NGTVST_SYNTH_SIGNAL_FLOWS = {
   ),
 };
 
-communityTechniqueLabs
-  .filter((lab) => lab.id.startsWith('creator-ngtvst-'))
-  .forEach((lab) => {
-    lab.moduleGuideSteps ??= COMMUNITY_MODULE_GUIDE_STEPS;
-    lab.synthSignalFlow ??= NGTVST_SYNTH_SIGNAL_FLOWS[lab.id] ?? mapping(
-      ['Source', 'Modulator', 'FX', 'Export check'],
-      ['Generator group', 'Curve/LFO', 'Snapin chain', 'Limiter/render'],
-      ['Osc/noise', 'LFO/MSEG', 'FX/filter', 'Visual check'],
-    );
-  });
+const SYNTH_DIAL_CARD_HINTS = {
+  serum: [
+    {
+      stageZh: '01 声源入口',
+      whereZh: 'Serum 2 的 Osc A / Osc B / Sub / Noise 区域',
+      rangeZh: 'Level 先保守；调制深度从 10%-35% 开始，Sub 低频保持 mono。',
+      listenZh: '关闭 FX 后仍能听出主体、中心音或动作轮廓。',
+      actions: [
+        'Osc A：选 Basic Shapes / 合适 wavetable，Oct 保持 0 或 -1，Level 先放在 -12dB 到 -8dB。',
+        'Sub：打开 Direct Out 或保持 mono，只补低频中心；Noise 只做 click/texture，Level 从 -24dB 起。',
+        'Osc B：需要音程层时设置 Semitone +7 / +12 / +2，先把 Level 拉到 0 再慢慢推入。',
+      ],
+    },
+    {
+      stageZh: '02 调制分配',
+      whereZh: 'Matrix / Macro / LFO 拖拽到 WT Pos、Filter、Pitch 或 FM/Warp',
+      rangeZh: 'Macro 先只控制 1-3 个目标；LFO/Env amount 小范围推，避免一次全开。',
+      listenZh: '调制应该带来方向、节奏或材质变化，不应该只让音量忽大忽小。',
+      actions: [
+        'Macro 1：在 Matrix 里分配到 Filter Cutoff 或 WT Pos，Amount 先设 +15 到 +35。',
+        'LFO 1：拖到 Amp Level 或 Filter Cutoff，Envelope 模式用于 hit，Trigger 模式用于 pulse。',
+        'FM/Warp：把 Macro 2 分配到 FM Amount / Warp Amount，Amount 从 +5 到 +20 试，不要一开始推满。',
+      ],
+    },
+    {
+      stageZh: '03 效果链塑形',
+      whereZh: 'FX Rack：Filter、Distortion、Compressor、Delay/Reverb',
+      rangeZh: 'Drive 先低输入再补输出；post filter/notch 用来收刺点，不用来掩盖声源问题。',
+      listenZh: '打开 FX 后声音更有身份，但 dry 主体仍能被听出来。',
+      actions: [
+        'FX Distortion：选择 Soft Clip / Tube / Diode 类模式，Drive 从 15%-45% 起，先听输入是否糊。',
+        'FX Filter：放在 distortion 后做 Low-pass / Notch，Cutoff 先收高频刺点，Resonance 少量。',
+        'Delay/Reverb：Mix 先低于 18%，只让 tail 变宽，不要让起音被空间盖住。',
+      ],
+    },
+    {
+      stageZh: '04 交付检查',
+      whereZh: 'Serum preset 注释 + REAPER dry / full / tail-only render',
+      rangeZh: '每次只导出 2-3 个可比较版本；响度匹配后再判断好坏。',
+      listenZh: 'full 版更完整，dry 版仍有功能，tail-only 不抢主体低频。',
+      actions: [
+        '保存 preset 前在 Note 写下 Macro 1/2/3 的目标和范围，例如 M1=Filter Cutoff +25。',
+        'REAPER 导出 dry、full、tail-only 三个 region，文件名包含 synth、sound type、macro version。',
+        '用同一响度对比 dry/full，确认 full 只是更完整，不是单纯更响。',
+      ],
+    },
+  ],
+  phasePlant: [
+    {
+      stageZh: '01 Generator 分组',
+      whereZh: 'Phase Plant 的 Generator Area：Body / Edge / Tail 分组',
+      rangeZh: '每组先单独听，Group gain 留余量；低频组不要进宽化效果。',
+      listenZh: '关掉 Snapin 后仍能分清 transient、body、texture 或 tail 角色。',
+      actions: [
+        'Generator Area：新建 Body / Edge / Tail 三个 Group，先只打开 Body 组。',
+        'Body Group：添加 Analog 或 Wavetable Generator，Pitch 保持 root 或 -12，Gain 留 6dB 余量。',
+        'Edge Group：添加 Noise / Wavetable / Sample Generator，只负责中高频材质，先高通或降低 Gain。',
+      ],
+    },
+    {
+      stageZh: '02 Modulator 路由',
+      whereZh: 'LFO / Curve / Random / Remap 拖到 pitch、filter、gain 或 snapin 参数',
+      rangeZh: 'Curve 负责时间形状，Random 只做细微漂移；Remap 用来限制调制范围。',
+      listenZh: '运动应该跟声音功能一致：pulse 有门控，boom 有下坠，texture 有细颗粒。',
+      actions: [
+        'Modulators：添加 Curve 或 LFO，把输出拖到 Group Gain、Filter Cutoff 或 Generator Pitch。',
+        'Remap：在调制线上打开 Remap，限制最小/最大范围，避免 pitch 或 cutoff 跳得过头。',
+        'Random：只拖到 pan、texture gain 或 fine pitch，Depth 很小，用来做活感而不是主运动。',
+      ],
+    },
+    {
+      stageZh: '03 Snapin 链',
+      whereZh: 'Lane / Group FX：Distortion、Filter、Comb、Delay、Limiter',
+      rangeZh: '先在组内处理材质，再到全局 limiter；Comb/feedback 少量起步。',
+      listenZh: 'Snapin 增强材质和尺寸，但不会让分组角色混在一起。',
+      actions: [
+        'Body Group lane：先放 Filter，再放 Distortion/Clip，保证低频主体先被整理再变大。',
+        'Edge Group lane：放 Comb / Freq Shifter / Short Delay，Mix 从 5%-18% 起，Feedback 保守。',
+        'Global lane：最后放 EQ / Limiter，只做响度安全，不用 limiter 解决素材混乱。',
+      ],
+    },
+    {
+      stageZh: '04 变体导出',
+      whereZh: 'Macro、Multipass 或 Snap Heap 参数 + REAPER 命名规则',
+      rangeZh: '每个 Macro 只命名一个听感职责；导出 low / medium / high 三档。',
+      listenZh: '三个版本像同一个家族，而不是三个无关随机音色。',
+      actions: [
+        'Macro：命名为 Weight、Motion、Edge、Space，并分别拖到清楚的 1-3 个参数。',
+        '保存 preset 时记录 Group 开关和 Macro 值；不要只保存 full 状态。',
+        'REAPER 里按 low / medium / high 三档渲染，并检查同一响度下是否仍像同一族声音。',
+      ],
+    },
+  ],
+  vital: [
+    {
+      stageZh: '01 Osc / Noise 主体',
+      whereZh: 'Vital 的 Osc 1 / Osc 2 / Sub / Noise 与 WT Frame',
+      rangeZh: 'Frame/warp 先固定；Unison 少量，Noise 高通后低混入。',
+      listenZh: '看波形动画时，主体变化和耳朵听到的明暗/材质变化一致。',
+      actions: [
+        'Osc 1：选择基础 wavetable 或暗色 frame，WT Frame 先固定，Level 保守。',
+        'Sub：只补 mono 低频，Direct Out/Filter routing 按声音需要决定，先不要宽化。',
+        'Osc 2 / Noise：做音程、颗粒或 click，Noise 先高通，Level 从很低开始混入。',
+      ],
+    },
+    {
+      stageZh: '02 可视调制',
+      whereZh: 'LFO / MSEG / Random / Perlin 拖到 frame、cutoff、pitch、warp',
+      rangeZh: '慢调制 0.05-0.4Hz；节奏门控按项目节拍；pitch 调制先小范围。',
+      listenZh: '调制线条可见且可解释，听感不是晕、漂或随机乱动。',
+      actions: [
+        'LFO 1：拖到 Filter 1 Cutoff 或 Osc WT Frame，Amount 先很小，观察蓝色调制环范围。',
+        'MSEG：用于 pitch fall、gate 或长氛围曲线，先画简单斜线/门控，不要复杂乱画。',
+        'Random / Perlin：拖到 pan、warp 或 noise level，Depth 很小，只做细节漂移。',
+      ],
+    },
+    {
+      stageZh: '03 Spectral / FX 整理',
+      whereZh: 'Vital Warp、Filter、Distortion、Chorus、Reverb',
+      rangeZh: 'Spectral warp 少量增强身份；distortion 后用 filter 控高频刺点。',
+      listenZh: '材质更清楚，但中心音、暗度或机械外壳没有被 FX 吞掉。',
+      actions: [
+        'Warp：选择 FM / Bend / Spectral 类模式时 Amount 从 5%-20% 起，先保中心音。',
+        'Filter 1：放在 oscillator 后控制明暗；Filter 2 或 EQ 用于失真后整理刺点。',
+        'FX：Distortion Mix 先低，Chorus/Reverb 只加尺寸，Mix 不要盖过起音。',
+      ],
+    },
+    {
+      stageZh: '04 循环与尾巴',
+      whereZh: 'Envelope / LFO loop / REAPER loop render 与 tail render',
+      rangeZh: '循环先短时间检查 click；空间尾巴低频清理后再导出。',
+      listenZh: '循环三遍没有跳点，tail-only 能独立使用且不含多余低频主体。',
+      actions: [
+        'Env 1：先定 Attack / Decay / Sustain / Release，再让 LFO/MSEG 服务这个时间形状。',
+        'Loop：如果做氛围或机械循环，检查 LFO 是否 retrigger，必要时改为 sync 或 envelope 模式。',
+        'REAPER：导 full loop 和 tail-only，tail 前加低切，避免空间低频拖住画面。',
+      ],
+    },
+  ],
+};
+
+function buildSynthDialPlan(lab = {}) {
+  const plans = {};
+  for (const synthKey of ['serum', 'phasePlant', 'vital']) {
+    const route = lab.synthSignalFlow?.[synthKey] ?? [];
+    const steps = lab.synthParameterSteps?.[synthKey] ?? lab.synthMappings?.[synthKey] ?? [];
+    plans[synthKey] = SYNTH_DIAL_CARD_HINTS[synthKey].map((hint, index) => {
+      const routeNode = route[index] ? `${hint.whereZh}；对应路径节点：${route[index]}` : hint.whereZh;
+      const sourceStep = steps[index] ?? steps[0] ?? hint.whereZh;
+      return {
+        stageZh: hint.stageZh,
+        whereZh: routeNode,
+        targetZh: sourceStep,
+        rangeZh: hint.rangeZh,
+        listenZh: hint.listenZh,
+        actions: hint.actions,
+      };
+    });
+  }
+  return plans;
+}
+
+communityTechniqueLabs.forEach((lab) => {
+  lab.moduleGuideSteps ??= COMMUNITY_MODULE_GUIDE_STEPS;
+  lab.synthSignalFlow ??= NGTVST_SYNTH_SIGNAL_FLOWS[lab.id] ?? mapping(
+    ['Source', 'Modulator', 'FX', 'Export check'],
+    ['Generator group', 'Curve/LFO', 'Snapin chain', 'Limiter/render'],
+    ['Osc/noise', 'LFO/MSEG', 'FX/filter', 'Visual check'],
+  );
+  lab.synthDialPlan ??= buildSynthDialPlan(lab);
+});
 
 function deepDiveModule({
   id,

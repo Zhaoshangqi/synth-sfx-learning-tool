@@ -329,6 +329,12 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /场景练习/);
   assert.match(html, /community-practice-scenes/);
   assert.match(html, /data-community-practice-scene/);
+  assert.match(html, /参数翻译台/);
+  assert.match(html, /一步一步复刻/);
+  assert.match(html, /操作步骤/);
+  assert.match(html, /建议范围/);
+  assert.match(html, /听感检查/);
+  assert.match(html, /data-community-parameter-card/);
   assert.match(html, /交互练习/);
   assert.match(html, /data-community-technique/);
   assert.match(html, /data-community-control/);
@@ -338,6 +344,10 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /Phase Plant/);
   assert.match(html, /Vital/);
   assert.match(html, /来源依据/);
+
+  const phasePlantRouteHtml = renderCommunityTechniqueLab(lab, sources, { activeCommunitySynthRoute: 'phasePlant' });
+  assert.match(phasePlantRouteHtml, /class="is-active" type="button" data-community-synth-route="phasePlant"/);
+  assert.match(phasePlantRouteHtml, /Generator|Group|Snapin/);
 });
 
 test('renderDeepDiveModuleCard exposes deep analysis, practice stages, and evidence', () => {
