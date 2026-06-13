@@ -215,6 +215,12 @@ test('renderSoundLabWorkbench matches the light synth workstation reference modu
   assert.match(html, /快速入口/);
   assert.match(html, /输出电平/);
   assert.match(html, /材质选择/);
+
+  const phasePlantHtml = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkbenchSynth: 'phase-plant',
+  });
+  assert.match(phasePlantHtml, /class="synth-tab is-active" type="button" data-synth-tab="phase-plant"/);
 });
 
 test('renderSoundLabWorkbench exposes module coaching with concrete synth steps', () => {
@@ -280,9 +286,11 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /非官方博主技巧/);
   assert.match(html, /观看任务/);
   assert.match(html, /详细方法/);
+  assert.match(html, /调制蓝图/);
   assert.match(html, /交互练习/);
   assert.match(html, /data-community-technique/);
   assert.match(html, /data-community-control/);
+  assert.match(html, /data-community-focus-preset/);
   assert.match(html, /data-community-load-soundlab/);
   assert.match(html, /Serum/);
   assert.match(html, /Phase Plant/);
