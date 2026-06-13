@@ -2131,12 +2131,80 @@ function renderWorkbenchFooter(family = {}) {
   `;
 }
 
+function renderWorkbenchCommandCenter(family = {}, model = {}, options = {}) {
+  const stepCopy = {
+    source: ['01 选目标', '先选材质家族，听 dry 主体是否已经像目标声音。', '下一步：打开参数塑形，把 Attack、Decay、材质和运动分开调。'],
+    shape: ['02 调声音', '现在处理包络、宏、调制和效果链，每次只解决一个听感问题。', '下一步：做 A/B 对照，确认变化不是音量错觉。'],
+    compare: ['03 试听对比', '对比 dry / full / Tone.js，高质量引擎和参考响度要一起看。', '下一步：把当前版本导出为 dry、full、tail-only。'],
+    deliver: ['04 导出交付', '复制 Patch JSON 与 REAPER Notes，保存可复盘的版本。', '下一步：回到来源或新建实验，继续做变体。'],
+  };
+  const activeStep = options.activeWorkflowStep ?? 'source';
+  const [title, body, next] = stepCopy[activeStep] ?? stepCopy.source;
+  const familyName = family.titleZh?.split('：')[0] ?? '当前音效';
+  const activePanel = options.activeAdvancedModule ?? 'advanced';
+  const activeSynth = {
+    serum: 'Serum 2',
+    'phase-plant': 'Phase Plant',
+    vital: 'Vital',
+  }[options.activeWorkbenchSynth] ?? 'Serum 2';
+
+  return `
+    <section class="workbench-command-center" aria-label="工作台指挥条">
+      <div class="command-current-task">
+        <span>当前任务</span>
+        <strong>${escapeHtml(title)} · ${escapeHtml(familyName)}</strong>
+        <p>${escapeHtml(body)}</p>
+      </div>
+      <div class="workbench-command-actions" aria-label="快速操作">
+        <button type="button" data-workbench-action="focus-source">
+          <span>01</span>
+          <strong>声源</strong>
+          <small>波形 / 频谱</small>
+        </button>
+        <button type="button" data-workbench-action="focus-controls">
+          <span>02</span>
+          <strong>参数</strong>
+          <small>包络 / 宏</small>
+        </button>
+        <button type="button" data-workbench-action="focus-coach">
+          <span>03</span>
+          <strong>教练</strong>
+          <small>三合成器</small>
+        </button>
+        <button type="button" data-workbench-action="focus-export">
+          <span>04</span>
+          <strong>交付</strong>
+          <small>REAPER</small>
+        </button>
+        <button class="command-play-button ${options.isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play>
+          <span>${options.isPlaying ? '暂停感' : '▶'}</span>
+          <strong>${options.isPlaying ? '播放中' : '试听'}</strong>
+          <small>当前 Patch</small>
+        </button>
+      </div>
+      <div class="workbench-state-strip" aria-label="当前工作台状态">
+        <span><strong>下一步</strong>${escapeHtml(next)}</span>
+        <span><strong>面板</strong>${escapeHtml(activePanel)}</span>
+        <span><strong>合成器</strong>${escapeHtml(activeSynth)}</span>
+        <span><strong>音色</strong>${escapeHtml(model.patch?.nameZh ?? familyName)}</span>
+      </div>
+      <div class="workbench-feedback" role="status" aria-live="polite">
+        ${escapeHtml(options.workbenchActionFeedback ?? '先选材质或点击播放；每次只解决一个听感问题。')}
+      </div>
+    </section>
+  `;
+}
+
 function renderLightSoundLabWorkbench(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
   const activeWorkbenchSynth = options.activeWorkbenchSynth ?? 'serum';
   return `
-    <article class="card sound-lab-workbench synth-workbench-layout ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
+    <article
+      class="card sound-lab-workbench synth-workbench-layout ${isPlaying ? 'is-playing' : ''}"
+      data-active-sound-family="${escapeHtml(family.id)}"
+      data-workflow-step="${escapeHtml(options.activeWorkflowStep ?? 'source')}"
+    >
       <header class="workbench-topbar">
         <div>
           <div class="workbench-breadcrumb">工作台 / <strong>${escapeHtml(family.titleZh.split('：')[0])}</strong> <span>★</span></div>
@@ -2157,6 +2225,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
           ` : ''}
         </div>
       </header>
+      ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
       <div class="synth-tab-row">
         ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>

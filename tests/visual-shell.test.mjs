@@ -8,6 +8,8 @@ test('document shell includes premium audio-space background layers', () => {
   assert.match(html, /class="audio-space"/);
   assert.match(html, /id="particle-canvas"/);
   assert.match(html, /class="signal-field"/);
+  assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
+  assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /src="\.\/src\/visual-space\.js"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
 });
@@ -397,11 +399,30 @@ test('dashboard CTA buttons use clear high-contrast clickable states', () => {
   assert.match(css, /\.dashboard-actions button em\s*\{/);
 });
 
+test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /dashboard-launchpad/);
+  assert.match(appJs, /launchpad-button/);
+  assert.match(appJs, /从这里开始/);
+  assert.match(appJs, /data-dashboard-primary-view="soundlab"/);
+  assert.match(appJs, /data-dashboard-primary-view="interactive"/);
+  assert.match(css, /\.dashboard-launchpad\s*\{/);
+  assert.match(css, /\.launchpad-button\s*\{[\s\S]*cursor:\s*pointer/);
+  assert.match(css, /\.launchpad-button\s*\{[\s\S]*min-height:\s*74px/);
+  assert.match(css, /\.launchpad-button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
+  assert.match(css, /\.launchpad-button\.is-primary\s*\{[\s\S]*color:\s*#ffffff/);
+  assert.match(css, /\.launchpad-button\.is-secondary\s*\{[\s\S]*color:\s*#213442/);
+});
+
 test('sound lab exposes a guided workflow map and real material family switching', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
+  assert.match(appJs, /header\('Sound Lab'/);
+  assert.match(appJs, /可试听合成器工作台/);
   assert.match(renderJs, /workbench-flow-map/);
   assert.match(renderJs, /workflow-context-strip/);
   assert.match(renderJs, /data-workflow-step/);
@@ -412,6 +433,8 @@ test('sound lab exposes a guided workflow map and real material family switching
   assert.match(renderJs, /material-workflow-hint/);
   assert.match(appJs, /data-workbench-family/);
   assert.match(appJs, /selectSoundLabFamily/);
+  assert.match(appJs, /已切换到 \$\{family\.titleZh\.split\('：'\)\[0\]\}：先听 dry 主体，再进入参数塑形。/);
+  assert.match(appJs, /function selectSoundLabFamily[\s\S]*state\.activeWorkbenchModule = 'generator'/);
   assert.match(appJs, /activeAdvancedModule:\s*'advanced'/);
   assert.match(css, /\.control-bottom-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(250px,\s*0\.44fr\)/);
   assert.match(css, /\.material-selector-grid\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
@@ -485,6 +508,57 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
   assert.match(css, /\.community-parameter-translator\s*\{/);
   assert.match(css, /\.workbench-zone-title\s*\{[\s\S]*background:\s*linear-gradient/);
   assert.match(css, /\.workbench-zone-title strong\s*\{[\s\S]*color:\s*#203442/);
+});
+
+test('sound lab has a command center with current task, next action, and click feedback', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderWorkbenchCommandCenter/);
+  assert.match(renderJs, /workbench-command-center/);
+  assert.match(renderJs, /workbench-command-actions/);
+  assert.match(renderJs, /workbench-feedback/);
+  assert.match(renderJs, /data-workflow-step="\$\{escapeHtml\(options\.activeWorkflowStep/);
+  assert.match(renderJs, /data-sound-lab-play/);
+  assert.match(renderJs, /data-workbench-action="focus-source"/);
+  assert.match(renderJs, /data-workbench-action="focus-controls"/);
+  assert.match(renderJs, /data-workbench-action="focus-coach"/);
+  assert.match(renderJs, /data-workbench-action="focus-export"/);
+  assert.match(appJs, /workbenchActionFeedback/);
+  assert.match(appJs, /showWorkbenchActionFeedback/);
+  assert.match(appJs, /handleWorkbenchAction/);
+  assert.match(appJs, /workbenchActionFeedback:\s*state\.workbenchActionFeedback/);
+  assert.match(css, /\.workbench-command-center\s*\{/);
+  assert.match(css, /\.workbench-command-actions button\s*\{[\s\S]*cursor:\s*pointer/);
+  assert.match(css, /\.workbench-command-actions button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
+  assert.match(css, /\.workbench-feedback\s*\{[\s\S]*min-height:\s*34px/);
+  assert.match(css, /\.synth-workbench-layout\[data-workflow-step="deliver"\] \.sound-lab-export\s*\{[\s\S]*display:\s*grid/);
+});
+
+test('workbench actions are routed through a guarded dispatcher instead of loose dead buttons', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const WORKBENCH_ACTION_VIEW_TARGETS/);
+  assert.match(appJs, /'open-reaper-template':\s*'practice'/);
+  assert.match(appJs, /'open-library':\s*'integrations'/);
+  assert.match(appJs, /'start-ab':\s*'challenges'/);
+  assert.match(appJs, /const WORKBENCH_ACTION_MESSAGES/);
+  assert.match(appJs, /function handleWorkbenchAction\(action,\s*button\)/);
+  assert.match(appJs, /showWorkbenchActionFeedback\(WORKBENCH_ACTION_MESSAGES\[action\]/);
+  assert.match(appJs, /if \(action === 'focus-coach'\)\s*\{[\s\S]*state\.activeAdvancedModule = 'mod-matrix'/);
+  assert.match(appJs, /if \(action === 'focus-coach'\)\s*\{[\s\S]*state\.activeWorkbenchModule = 'modulation'/);
+  assert.match(appJs, /未识别的工作台按钮/);
+});
+
+test('workflow step binding targets only step buttons so the article state attribute cannot reset clicks', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /class="card sound-lab-workbench synth-workbench-layout/);
+  assert.match(renderJs, /data-workflow-step="\$\{escapeHtml\(options\.activeWorkflowStep/);
+  assert.match(appJs, /document\.querySelectorAll\('\.workflow-step\[data-workflow-step\]'\)/);
+  assert.doesNotMatch(appJs, /document\.querySelectorAll\('\[data-workflow-step\]'\)/);
 });
 
 test('sound lab module coach is interactive and visually separated from the workbench controls', () => {

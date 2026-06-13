@@ -82,6 +82,32 @@ const WORKBENCH_SYNTH_TO_COACH_SYNTH = {
   'phase-plant': 'phasePlant',
   vital: 'vital',
 };
+const WORKBENCH_ACTION_VIEW_TARGETS = {
+  'open-reaper-template': 'practice',
+  'open-library': 'integrations',
+  'import-serum': 'integrations',
+  'start-ab': 'challenges',
+  'start-parameter': 'interactive',
+  'start-signal': 'deep',
+};
+const WORKBENCH_ACTION_MESSAGES = {
+  'save-patch': 'Patch JSON 已复制，下一步可粘到预设备注或版本记录。',
+  'export-preset': 'REAPER Notes 已复制，按 dry / full / tail-only 导出即可。',
+  'compare-view': '已切到 A/B 对照：先匹配响度，再判断质感。',
+  'toggle-more': '更多工具已切换。',
+  'focus-source': '已聚焦声源和频谱：先确认目标声音是否成立。',
+  'focus-controls': '已聚焦参数塑形：一次只改一个听感问题。',
+  'focus-coach': '已聚焦合成器教练：按 Serum / Phase Plant / Vital 路由复刻。',
+  'focus-export': '已聚焦交付区：复制 Patch 并检查 REAPER 导出。',
+  'open-reaper-template': '正在打开 REAPER 练习区。',
+  'open-library': '正在打开外部集成与预设库。',
+  'import-serum': '正在打开导入 Serum 预设入口。',
+  'start-ab': '正在进入 A/B 听辨挑战。',
+  'start-parameter': '正在进入参数互动实验。',
+  'start-signal': '正在进入深度信号流解析。',
+  'analyze-patch': '已切到频谱/调制分析视角。',
+  'new-experiment': '已准备新实验：先选材质，再播放试听。',
+};
 
 const state = {
   view: 'dashboard',
@@ -124,6 +150,7 @@ const state = {
   activeAdvancedModule: 'advanced',
   activeSynthModGuideId: synthModulationGuides[0]?.id,
   activeCoachSynth: 'serum',
+  workbenchActionFeedback: '先选材质或点击播放；每次只解决一个听感问题。',
   soundLabFavorites: [],
   soundLabProjects: [],
   soundLabGitSync: {
@@ -289,31 +316,33 @@ function renderDashboard() {
           <span class="status-chip">四基础波形</span>
           <span class="status-chip">WebAudio 实时试听</span>
         </div>
-        <div class="dashboard-action-label">
-          <span>主入口</span>
-          <small>先从可试听工作台或互动实验开始，再进入解析和挑战。</small>
-        </div>
-        <div class="dashboard-actions" aria-label="主入口">
-          <button class="primary-button" type="button" data-dashboard-primary-view="soundlab">
-            <em>01</em>
-            <span>打开 Sound Lab</span>
-            <small>进入可试听工作台</small>
-          </button>
-          <button class="primary-button" type="button" data-dashboard-primary-view="interactive">
-            <em>02</em>
-            <span>开始互动实验</span>
-            <small>先练波形 / ADSR / FM</small>
-          </button>
-          <button class="secondary-button" type="button" data-dashboard-primary-view="deep">
-            <em>03</em>
-            <span>进入深度解析</span>
-            <small>拆 transient / body / tail</small>
-          </button>
-          <button class="secondary-button" type="button" data-dashboard-primary-view="challenges">
-            <em>04</em>
-            <span>做声音挑战</span>
-            <small>A/B 听辨和参数反推</small>
-          </button>
+        <div class="dashboard-launchpad" aria-label="从这里开始">
+          <div class="dashboard-action-label">
+            <span>从这里开始</span>
+            <small>先从可试听工作台或互动实验开始，再进入解析和挑战。</small>
+          </div>
+          <div class="dashboard-actions" aria-label="主入口">
+            <button class="primary-button launchpad-button is-primary" type="button" data-dashboard-primary-view="soundlab">
+              <em>01</em>
+              <span>打开 Sound Lab</span>
+              <small>进入可试听工作台</small>
+            </button>
+            <button class="primary-button launchpad-button is-primary" type="button" data-dashboard-primary-view="interactive">
+              <em>02</em>
+              <span>开始互动实验</span>
+              <small>先练波形 / ADSR / FM</small>
+            </button>
+            <button class="secondary-button launchpad-button is-secondary" type="button" data-dashboard-primary-view="deep">
+              <em>03</em>
+              <span>进入深度解析</span>
+              <small>拆 transient / body / tail</small>
+            </button>
+            <button class="secondary-button launchpad-button is-secondary" type="button" data-dashboard-primary-view="challenges">
+              <em>04</em>
+              <span>做声音挑战</span>
+              <small>A/B 听辨和参数反推</small>
+            </button>
+          </div>
         </div>
       </div>
       <aside class="quality-panel" aria-label="质量守门">
@@ -510,7 +539,8 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabWorkflowStep = 'source';
   state.activeWorkbenchModuleMapId = 'source';
   state.activeAdvancedModule = 'advanced';
-  state.activeWorkbenchModule = 'envelope';
+  state.activeWorkbenchModule = 'generator';
+  state.workbenchActionFeedback = `已切换到 ${family.titleZh.split('：')[0]}：先听 dry 主体，再进入参数塑形。`;
   syncSoundLabPatchSoon();
   if (shouldRender) render();
 }
@@ -542,6 +572,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     modulationGuides: synthModulationGuides,
     activeModulationGuideId: state.activeSynthModGuideId,
     activeCoachSynth: state.activeCoachSynth,
+    workbenchActionFeedback: state.workbenchActionFeedback,
     ...optionOverrides,
   };
 }
@@ -558,6 +589,7 @@ function renderSoundLabView() {
   const family = getActiveSoundFamily();
   const model = getSoundLabModel();
   return `
+    ${header('Sound Lab', '可试听合成器工作台：先选材质和目标声音，再用频谱、宏控制、合成器教练和 REAPER 清单完成一次音效交付。')}
     <section class="sound-lab-shell">
       <div class="sound-family-rail" role="list" aria-label="声音族选择">
         ${soundLabFamilies.map((item, index) => `
@@ -588,6 +620,7 @@ function renderSoundLabView() {
         modulationGuides: synthModulationGuides,
         activeModulationGuideId: state.activeSynthModGuideId,
         activeCoachSynth: state.activeCoachSynth,
+        workbenchActionFeedback: state.workbenchActionFeedback,
       })}
       <section class="grid two sound-lab-preset-grid">
         ${family.presets.map((preset) => `
@@ -1351,6 +1384,91 @@ function handleWorkbenchModuleJump(moduleId) {
   scrollSoundLabIntoView(target.selector);
 }
 
+function showWorkbenchActionFeedback(message, button) {
+  state.workbenchActionFeedback = message || '未识别的工作台按钮：这次点击没有可执行目标。';
+  if (button) {
+    button.classList.add('is-confirmed');
+    globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
+  }
+}
+
+async function handleWorkbenchAction(action, button) {
+  showWorkbenchActionFeedback(WORKBENCH_ACTION_MESSAGES[action] ?? '未识别的工作台按钮：这次点击没有可执行目标。', button);
+
+  if (action === 'save-patch' || action === 'export-preset') {
+    const text = action === 'save-patch' ? buildPatchExportJson() : buildReaperExportText();
+    const copied = await copyText(text).catch(() => false);
+    state.workbenchActionFeedback = copied
+      ? WORKBENCH_ACTION_MESSAGES[action]
+      : '复制受限：浏览器没有开放剪贴板权限，可以从下方 Patch JSON / REAPER Notes 手动复制。';
+    render();
+    return;
+  }
+
+  if (action === 'compare-view') {
+    handleWorkbenchStep('compare');
+    return;
+  }
+
+  if (action === 'toggle-more') {
+    state.soundLabMoreOpen = !state.soundLabMoreOpen;
+    render();
+    return;
+  }
+
+  if (action === 'focus-source') {
+    handleWorkbenchStep('source');
+    return;
+  }
+
+  if (action === 'focus-controls') {
+    handleWorkbenchStep('shape');
+    return;
+  }
+
+  if (action === 'focus-coach') {
+    state.soundLabWorkflowStep = 'shape';
+    state.activeWorkbenchModuleMapId = 'coach';
+    state.activeAdvancedModule = 'mod-matrix';
+    state.activeWorkbenchModule = 'modulation';
+    render();
+    scrollSoundLabIntoView('.workbench-coach-panel');
+    return;
+  }
+
+  if (action === 'focus-export') {
+    handleWorkbenchStep('deliver');
+    return;
+  }
+
+  if (action === 'analyze-patch') {
+    state.soundLabAnalyzerMode = 'log';
+    state.soundLabWorkflowStep = 'shape';
+    state.activeWorkbenchModuleMapId = 'mod-matrix';
+    render();
+    return;
+  }
+
+  if (action === 'new-experiment') {
+    state.soundLabWorkflowStep = 'source';
+    state.activeWorkbenchModuleMapId = 'source';
+    state.activeAdvancedModule = 'advanced';
+    state.activeWorkbenchModule = 'generator';
+    render();
+    scrollSoundLabIntoView('.sound-family-rail');
+    return;
+  }
+
+  const targetView = WORKBENCH_ACTION_VIEW_TARGETS[action];
+  if (targetView) {
+    switchView(targetView);
+    return;
+  }
+
+  state.workbenchActionFeedback = '未识别的工作台按钮：这次点击没有可执行目标。';
+  render();
+}
+
 function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
   const guide = synthModulationGuides.find((item) => item.id === guideId) ?? synthModulationGuides[0];
   if (!guide) return;
@@ -1976,7 +2094,7 @@ function bindSoundLabControls() {
     });
   });
 
-  document.querySelectorAll('[data-workflow-step]').forEach((button) => {
+  document.querySelectorAll('.workflow-step[data-workflow-step]').forEach((button) => {
     button.addEventListener('click', () => {
       handleWorkbenchStep(button.dataset.workflowStep);
     });
@@ -2029,63 +2147,7 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('[data-workbench-action]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const action = button.dataset.workbenchAction;
-      if (action === 'save-patch' || action === 'export-preset') {
-        const text = action === 'save-patch' ? buildPatchExportJson() : buildReaperExportText();
-        const copied = await copyText(text).catch(() => false);
-        const original = button.textContent;
-        button.textContent = copied ? '已复制' : '复制受限';
-        button.classList.add('is-confirmed');
-        globalThis.setTimeout(() => {
-          button.textContent = original;
-          button.classList.remove('is-confirmed');
-        }, 1200);
-        return;
-      }
-      if (action === 'compare-view') {
-        handleWorkbenchStep('compare');
-        return;
-      }
-      if (action === 'toggle-more') {
-        state.soundLabMoreOpen = !state.soundLabMoreOpen;
-        render();
-        return;
-      }
-      if (action === 'focus-source') {
-        handleWorkbenchStep('source');
-        return;
-      }
-      if (action === 'focus-controls') {
-        handleWorkbenchStep('shape');
-        return;
-      }
-      if (action === 'focus-coach') {
-        state.soundLabWorkflowStep = 'shape';
-        state.activeWorkbenchModuleMapId = 'coach';
-        render();
-        scrollSoundLabIntoView('.workbench-coach-panel');
-        return;
-      }
-      if (action === 'focus-export') {
-        handleWorkbenchStep('deliver');
-        return;
-      }
-      if (action === 'open-reaper-template') switchView('practice');
-      if (action === 'open-library' || action === 'import-serum') switchView('integrations');
-      if (action === 'start-ab') switchView('challenges');
-      if (action === 'start-parameter') switchView('interactive');
-      if (action === 'start-signal') switchView('deep');
-      if (action === 'analyze-patch') {
-        state.soundLabAnalyzerMode = 'log';
-        state.soundLabWorkflowStep = 'shape';
-        state.activeWorkbenchModuleMapId = 'mod-matrix';
-        render();
-        return;
-      }
-      if (action === 'new-experiment') {
-        button.classList.add('is-confirmed');
-        globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
-      }
+      await handleWorkbenchAction(button.dataset.workbenchAction, button);
     });
   });
 }
