@@ -911,11 +911,33 @@ function rangePercentFromInput(input) {
   return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 }
 
+function updateVerticalRangeFromPointer(input, event) {
+  if (!input?.closest('.vertical-slider')) return false;
+  const rect = input.getBoundingClientRect();
+  if (!rect.height) return false;
+  const min = Number(input.min || 0);
+  const max = Number(input.max || 100);
+  const step = Number(input.step || 1);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max === min) return false;
+
+  const ratio = Math.max(0, Math.min(1, (rect.bottom - event.clientY) / rect.height));
+  const rawValue = min + ratio * (max - min);
+  const stepped = Number.isFinite(step) && step > 0
+    ? min + Math.round((rawValue - min) / step) * step
+    : rawValue;
+  const nextValue = Math.max(min, Math.min(max, stepped));
+  const serializedValue = Number.isInteger(nextValue) ? String(nextValue) : nextValue.toFixed(3);
+  if (input.value === serializedValue) return false;
+  input.value = serializedValue;
+  input.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
+  return true;
+}
+
 function updateRangeChrome(input) {
   if (!input?.isConnected) return;
   const shell = input.closest('.range-shell');
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
-  const output = control?.querySelector('output') ?? input.closest('label')?.querySelector('output');
+  const output = control?.querySelector('output, strong') ?? input.closest('label')?.querySelector('output, strong');
   shell?.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
   if (output) output.textContent = `${input.value}${input.dataset.controlUnit ?? ''}`;
 }
@@ -971,10 +993,29 @@ function finishSmoothRangeInput(input = activeRangeInput) {
 }
 
 function bindSmoothRangeInput(input, onValue) {
-  input.addEventListener('pointerdown', () => {
+  const isVerticalRange = Boolean(input.closest('.vertical-slider'));
+  const commitVerticalPointerValue = (event) => {
+    if (!isVerticalRange) return false;
+    event.preventDefault();
+    const changed = updateVerticalRangeFromPointer(input, event);
+    if (!changed) return false;
+    applyImmediateControlFeedback(input);
+    scheduleRangeChromeUpdate(input);
+    onValue(input);
+    return true;
+  };
+
+  input.addEventListener('pointerdown', (event) => {
     activeRangeInput = input;
+    input.setPointerCapture?.(event.pointerId);
     setRangeDragging(input, true);
     applyImmediateControlFeedback(input);
+    commitVerticalPointerValue(event);
+  });
+
+  input.addEventListener('pointermove', (event) => {
+    if (input !== activeRangeInput) return;
+    commitVerticalPointerValue(event);
   });
 
   input.addEventListener('input', () => {
@@ -984,8 +1025,15 @@ function bindSmoothRangeInput(input, onValue) {
     if (!activeRangeInput) scheduleRangeCommitRender();
   });
 
-  input.addEventListener('pointerup', () => finishSmoothRangeInput(input));
-  input.addEventListener('pointercancel', () => finishSmoothRangeInput(input));
+  input.addEventListener('pointerup', (event) => {
+    input.releasePointerCapture?.(event.pointerId);
+    finishSmoothRangeInput(input);
+  });
+
+  input.addEventListener('pointercancel', (event) => {
+    input.releasePointerCapture?.(event.pointerId);
+    finishSmoothRangeInput(input);
+  });
 
   input.addEventListener('change', () => {
     finishSmoothRangeInput(input);

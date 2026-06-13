@@ -505,15 +505,16 @@ textarea {
   gap: 18px;
   margin-bottom: 18px;
   padding: 24px;
-  border: 1px solid rgba(151, 235, 224, 0.2);
+  border: 1px solid rgba(164, 195, 214, 0.46);
   border-radius: var(--radius);
   background:
-    radial-gradient(ellipse at 18% 0%, rgba(120, 225, 212, 0.16), transparent 38%),
-    radial-gradient(ellipse at 92% 12%, rgba(160, 139, 255, 0.13), transparent 36%),
-    linear-gradient(135deg, rgba(15, 25, 38, 0.82), rgba(5, 10, 17, 0.72));
+    radial-gradient(ellipse at 18% 0%, rgba(120, 225, 212, 0.24), transparent 38%),
+    radial-gradient(ellipse at 92% 12%, rgba(160, 139, 255, 0.16), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(240, 247, 251, 0.74));
+  color: #1d2d3a;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 32px 90px rgba(0, 0, 0, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 24px 70px rgba(42, 76, 104, 0.14);
   backdrop-filter: var(--glass);
   transform: translateZ(0);
 }
@@ -557,6 +558,7 @@ textarea {
 .hero-copy h3 {
   margin: 10px 0 10px;
   max-width: 760px;
+  color: #172734;
   font-size: clamp(28px, 4.4vw, 54px);
   line-height: 1.04;
 }
@@ -564,7 +566,7 @@ textarea {
 .hero-copy p {
   margin: 0;
   max-width: 700px;
-  color: #c6d9da;
+  color: #4f6476;
   line-height: 1.7;
 }
 
@@ -580,11 +582,11 @@ textarea {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(151, 235, 224, 0.18);
+  border: 1px solid rgba(23, 167, 163, 0.22);
   border-radius: 999px;
   padding: 4px 10px;
-  background: rgba(8, 14, 23, 0.58);
-  color: #d8fffa;
+  background: rgba(233, 251, 249, 0.86);
+  color: #0d7774;
   font-size: 12px;
   font-weight: 700;
 }
@@ -598,16 +600,18 @@ textarea {
   align-self: stretch;
   min-height: 100%;
   padding: 16px;
-  border: 1px solid rgba(151, 235, 224, 0.18);
+  border: 1px solid rgba(164, 195, 214, 0.42);
   border-radius: var(--radius);
   background:
-    linear-gradient(180deg, rgba(7, 13, 22, 0.76), rgba(7, 13, 22, 0.48)),
-    radial-gradient(ellipse at 100% 0%, rgba(201, 231, 139, 0.1), transparent 45%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(242, 248, 252, 0.78)),
+    radial-gradient(ellipse at 100% 0%, rgba(120, 225, 212, 0.14), transparent 45%);
+  color: #243846;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 14px 34px rgba(42, 76, 104, 0.08);
 }
 
 .quality-panel h3 {
   margin: 6px 0 12px;
+  color: #243846;
   font-size: 17px;
   line-height: 1.35;
 }
@@ -620,11 +624,11 @@ textarea {
   height: 78px;
   margin: 14px 0;
   padding: 12px;
-  border: 1px solid rgba(151, 235, 224, 0.12);
+  border: 1px solid rgba(164, 195, 214, 0.38);
   border-radius: 6px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
-    repeating-linear-gradient(0deg, rgba(151, 235, 224, 0.08) 0 1px, transparent 1px 14px);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(238, 246, 250, 0.62)),
+    repeating-linear-gradient(0deg, rgba(23, 167, 163, 0.11) 0 1px, transparent 1px 14px);
 }
 
 .quality-meter span {
@@ -647,17 +651,17 @@ textarea {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 12px;
   padding: 10px 0;
-  border-top: 1px solid rgba(151, 235, 224, 0.12);
+  border-top: 1px solid rgba(164, 195, 214, 0.34);
 }
 
 .metric-row span {
-  color: var(--muted);
+  color: #5a7082;
   font-size: 12px;
   font-weight: 750;
 }
 
 .metric-row strong {
-  color: #effffc;
+  color: #243846;
   font-size: 18px;
   font-variant-numeric: tabular-nums;
 }
@@ -665,7 +669,7 @@ textarea {
 .metric-row p {
   grid-column: 1 / -1;
   margin: 0;
-  color: #b8cbcd;
+  color: #536879;
   font-size: 12px;
   line-height: 1.55;
 }
@@ -675,12 +679,13 @@ textarea {
   overflow: hidden;
   margin-bottom: 18px;
   padding: 18px;
-  border: 1px solid rgba(151, 235, 224, 0.16);
+  border: 1px solid rgba(164, 195, 214, 0.42);
   border-radius: var(--radius);
   background:
-    linear-gradient(180deg, rgba(13, 22, 34, 0.72), rgba(7, 12, 20, 0.58)),
-    radial-gradient(ellipse at 10% 100%, rgba(120, 225, 212, 0.08), transparent 48%);
-  box-shadow: var(--shadow);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(241, 248, 252, 0.7)),
+    radial-gradient(ellipse at 10% 100%, rgba(120, 225, 212, 0.12), transparent 48%);
+  color: #243846;
+  box-shadow: 0 18px 48px rgba(42, 76, 104, 0.1);
   backdrop-filter: var(--glass);
 }
 
@@ -707,6 +712,7 @@ textarea {
 
 .flow-header h3 {
   margin: 6px 0 0;
+  color: #243846;
   font-size: 20px;
 }
 
@@ -734,14 +740,15 @@ textarea {
   display: grid;
   align-content: start;
   gap: 8px;
-  border: 1px solid rgba(151, 235, 224, 0.16);
+  border: 1px solid #dfe9f0;
   border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(9, 18, 29, 0.82), rgba(8, 14, 23, 0.66));
-  color: var(--text);
+  background: #fbfdff;
+  color: #243846;
   text-align: left;
   padding: 14px;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  pointer-events: auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 10px 24px rgba(42, 76, 104, 0.07);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
@@ -758,31 +765,32 @@ textarea {
 .signal-node:hover,
 .signal-node:focus-visible {
   transform: translateY(-2px);
-  border-color: rgba(120, 225, 212, 0.34);
-  background: linear-gradient(180deg, rgba(18, 32, 45, 0.82), rgba(8, 14, 23, 0.72));
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24), 0 0 26px rgba(120, 225, 212, 0.08);
+  border-color: rgba(23, 167, 163, 0.38);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(42, 76, 104, 0.14), 0 0 26px rgba(23, 167, 163, 0.08);
 }
 
 .node-index {
   width: max-content;
-  border: 1px solid rgba(151, 235, 224, 0.16);
+  border: 1px solid rgba(23, 167, 163, 0.22);
   border-radius: 5px;
   padding: 2px 7px;
-  color: #bdfaf0;
-  background: rgba(120, 225, 212, 0.08);
+  color: #0d7774;
+  background: #e9fbf9;
   font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .signal-node strong {
+  color: #243846;
   font-size: 14px;
   line-height: 1.35;
 }
 
 .signal-node p {
   margin: 0;
-  color: #afc3c7;
+  color: #536879;
   line-height: 1.55;
   font-size: 12px;
 }
@@ -1055,12 +1063,14 @@ textarea {
 .preset-button {
   position: relative;
   overflow: hidden;
-  min-height: 42px;
-  border: 1px solid var(--line);
+  min-height: 46px;
+  border: 1px solid #dfe9f0;
   border-radius: 6px;
-  background: rgba(10, 18, 30, 0.62);
-  color: var(--text);
+  background: #ffffff;
+  color: #243846;
   cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 8px 18px rgba(42, 76, 104, 0.045);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
@@ -1083,22 +1093,28 @@ textarea {
 .lab-select-button:focus-visible,
 .preset-button:hover,
 .preset-button:focus-visible {
-  border-color: rgba(120, 225, 212, 0.46);
-  background: rgba(120, 225, 212, 0.08);
-  box-shadow: 0 0 34px rgba(120, 225, 212, 0.08);
+  border-color: rgba(23, 167, 163, 0.36);
+  background: #f4fffd;
+  box-shadow: 0 14px 28px rgba(23, 167, 163, 0.1);
   transform: translateY(-1px);
 }
 
 .lab-select-button.is-active {
-  border-color: rgba(120, 225, 212, 0.62);
-  background: linear-gradient(180deg, rgba(120, 225, 212, 0.14), rgba(120, 225, 212, 0.055));
-  color: #f4fffc;
+  border-color: rgba(23, 167, 163, 0.52);
+  background: linear-gradient(180deg, #e9fbf9, #ffffff);
+  color: #0d7774;
   font-weight: 750;
+  box-shadow: 0 14px 30px rgba(23, 167, 163, 0.12);
 }
 
 .interactive-lab-card {
   display: grid;
   gap: 16px;
+  overflow: hidden;
+  border: 1px solid #dfe9f0;
+  background: rgba(255, 255, 255, 0.92);
+  color: #243846;
+  box-shadow: 0 18px 48px rgba(42, 76, 104, 0.1);
 }
 
 .lab-heading {
@@ -1110,6 +1126,7 @@ textarea {
 
 .lab-heading h3 {
   font-size: 22px;
+  color: #243846;
   margin-top: 4px;
 }
 
@@ -1118,7 +1135,12 @@ textarea {
   padding: 12px;
   border: 1px solid rgba(160, 139, 255, 0.22);
   border-radius: 6px;
-  background: rgba(160, 139, 255, 0.07);
+  background: rgba(246, 244, 255, 0.88);
+  color: #385064;
+}
+
+.interactive-lab-card .lab-goal {
+  color: #385064;
 }
 
 .lab-audio-panel {
@@ -1168,6 +1190,7 @@ textarea {
   color: #effffc;
   font-weight: 800;
   cursor: pointer;
+  pointer-events: auto;
   box-shadow: 0 0 24px rgba(120, 225, 212, 0.1);
 }
 
@@ -1285,22 +1308,23 @@ textarea {
   gap: 12px;
   align-items: stretch;
   padding: 14px;
-  border: 1px solid rgba(155, 219, 226, 0.18);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(38, 58, 70, 0.64), rgba(22, 35, 47, 0.58)),
-    radial-gradient(ellipse at 100% 0%, rgba(201, 231, 139, 0.08), transparent 44%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(239, 247, 251, 0.78)),
+    radial-gradient(ellipse at 100% 0%, rgba(120, 225, 212, 0.13), transparent 44%);
+  color: #243846;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .macro-mod-panel h4 {
   margin: 0 0 6px;
-  color: #f3fffc;
+  color: #243846;
 }
 
 .macro-mod-panel p {
   margin: 0;
-  color: #c5d8da;
+  color: #536879;
   font-size: 13px;
   line-height: 1.6;
 }
@@ -1318,24 +1342,24 @@ textarea {
   display: grid;
   align-content: start;
   gap: 7px;
-  border: 1px solid rgba(155, 219, 226, 0.18);
+  border: 1px solid #dce8ef;
   border-radius: 8px;
   padding: 12px;
-  background:
-    linear-gradient(180deg, rgba(33, 52, 65, 0.72), rgba(18, 31, 43, 0.72));
-  color: var(--text);
+  background: #fbfdff;
+  color: #243846;
   text-align: left;
   cursor: pointer;
+  pointer-events: auto;
   transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .macro-button strong {
-  color: #f0fffb;
+  color: #243846;
   font-size: 13px;
 }
 
 .macro-button span {
-  color: #bdd0d3;
+  color: #536879;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -1343,9 +1367,9 @@ textarea {
 .macro-button:hover,
 .macro-button:focus-visible {
   transform: translateY(-1px);
-  border-color: rgba(120, 225, 212, 0.42);
-  background: linear-gradient(180deg, rgba(45, 72, 84, 0.78), rgba(22, 38, 50, 0.78));
-  box-shadow: 0 18px 38px rgba(5, 12, 18, 0.22), 0 0 22px rgba(120, 225, 212, 0.08);
+  border-color: rgba(23, 167, 163, 0.38);
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(42, 76, 104, 0.12), 0 0 22px rgba(23, 167, 163, 0.08);
 }
 
 .lab-workbench {
@@ -1410,6 +1434,14 @@ textarea {
 .lab-control output {
   color: #ffffff;
   font-variant-numeric: tabular-nums;
+}
+
+.interactive-lab-card .lab-control span {
+  color: #51677a;
+}
+
+.interactive-lab-card .lab-control output {
+  color: #243846;
 }
 
 .range-shell {
@@ -4242,13 +4274,16 @@ textarea {
 
 .envelope-panel {
   padding: 12px;
+  overflow: hidden;
 }
 
 .envelope-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 238px;
+  grid-template-columns: minmax(0, 1fr) minmax(238px, 238px);
   gap: 14px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .toggle-chip {
@@ -4270,6 +4305,7 @@ textarea {
   width: 100%;
   height: 206px;
   min-height: 0;
+  min-width: 0;
   display: block;
 }
 
@@ -4298,45 +4334,58 @@ textarea {
 
 .vertical-slider-stack {
   display: grid;
-  grid-template-columns: repeat(4, minmax(40px, 1fr));
+  grid-template-columns: repeat(4, minmax(56px, 1fr));
   gap: 8px;
-  align-items: end;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .vertical-slider {
+  min-width: 0;
   min-height: 206px;
   display: grid;
   grid-template-rows: auto 1fr auto;
   justify-items: center;
   gap: 8px;
+  overflow: hidden;
+  padding: 0 2px;
   color: #718293;
   font-size: 11px;
 }
 
 .vertical-slider input {
-  width: 150px;
-  height: 22px;
-  transform: rotate(-90deg);
-  transform-origin: center;
+  width: 34px;
+  height: 150px;
+  min-height: 150px;
+  align-self: center;
+  writing-mode: vertical-lr;
+  direction: rtl;
   accent-color: #17a7a3;
-  appearance: none;
+  appearance: slider-vertical;
+  -webkit-appearance: slider-vertical;
   border: 0;
   background: transparent;
   box-shadow: none;
   padding: 0;
+  cursor: pointer;
+  touch-action: none;
 }
 
 .vertical-slider input::-webkit-slider-runnable-track {
-  height: 6px;
+  width: 6px;
+  height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #17a7a3 0 var(--range-value), #dce8ef var(--range-value) 100%);
+  background: linear-gradient(0deg, #17a7a3 0 var(--range-value), #dce8ef var(--range-value) 100%);
 }
 
 .vertical-slider input::-webkit-slider-thumb {
   appearance: none;
+  -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  margin-top: -5px;
+  margin-left: -5px;
   border: 3px solid #ffffff;
   border-radius: 50%;
   background: #17a7a3;
@@ -4344,13 +4393,15 @@ textarea {
 }
 
 .vertical-slider input::-moz-range-track {
-  height: 6px;
+  width: 6px;
+  height: 100%;
   border-radius: 999px;
   background: #dce8ef;
 }
 
 .vertical-slider input::-moz-range-progress {
-  height: 6px;
+  width: 6px;
+  height: 100%;
   border-radius: 999px;
   background: #17a7a3;
 }
@@ -5424,7 +5475,7 @@ textarea {
   }
 
   .vertical-slider-stack {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(56px, 1fr));
   }
 
   .route-timeline::before {
