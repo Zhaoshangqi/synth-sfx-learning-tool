@@ -977,11 +977,433 @@ function renderSoundLabEngineControls(model = {}, options = {}) {
     '</section>';
 }
 
+function percentFromRange(value, min, max) {
+  if (max === min) return 0;
+  return Math.max(0, Math.min(100, ((Number(value) - min) / (max - min)) * 100));
+}
+
+function renderWorkbenchSynthTabs() {
+  const tabs = [
+    { id: 'serum', label: 'Serum 2', active: true },
+    { id: 'phase-plant', label: 'Phase Plant', active: false },
+    { id: 'vital', label: '+ Vital', active: false },
+  ];
+  return tabs.map((tab) => `
+    <button class="synth-tab ${tab.active ? 'is-active' : ''}" type="button" data-synth-tab="${escapeHtml(tab.id)}">
+      ${escapeHtml(tab.label)}
+    </button>
+  `).join('');
+}
+
+function renderWorkbenchWaveform(model = {}) {
+  const patch = model.patch ?? {};
+  const waveform = {
+    width: 360,
+    height: 108,
+    points: Array.from({ length: 116 }, (_, index) => {
+      const x = (index / 115) * 360;
+      const normalized = index / 115;
+      const decay = Math.max(0.14, 1 - normalized * 0.86);
+      const angle = normalized * Math.PI * 22;
+      const fm = Math.sin(normalized * Math.PI * 5) * 0.34;
+      const y = 54 + Math.sin(angle + fm) * 42 * decay;
+      return `${formatNumber(x)},${formatNumber(y)}`;
+    }).join(' '),
+  };
+  const wtPos = Math.round(patch.macros?.material ?? 35);
+  return `
+    <section class="workbench-panel waveform-panel" aria-label="波形">
+      <div class="mini-panel-head">
+        <strong>波形</strong>
+        <select aria-label="Oscillator wavetable">
+          <option>Osc A · Default Shapes</option>
+          <option>FM Basic Shapes</option>
+          <option>Metal Modal Source</option>
+        </select>
+      </div>
+      <svg class="workbench-waveform-svg" viewBox="0 0 ${waveform.width} ${waveform.height}" role="img" aria-label="当前振荡器波形">
+        <defs>
+          <linearGradient id="workbenchWaveLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#17a7a3" />
+            <stop offset="62%" stop-color="#4882d9" />
+            <stop offset="100%" stop-color="#b8c3d4" />
+          </linearGradient>
+        </defs>
+        <polyline points="${escapeHtml(waveform.points)}" />
+      </svg>
+      <div class="osc-param-row">
+        <span><strong>OCT</strong>0</span>
+        <span><strong>SEM</strong>0</span>
+        <span><strong>FIN</strong>0</span>
+        <span><strong>CRS</strong>--</span>
+        <span><strong>WT POS</strong>${escapeHtml(wtPos)}%</span>
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchSpectrum(model = {}) {
+  const bars = model.spectrumBars ?? [];
+  return `
+    <section class="workbench-panel spectrum-panel spectrum-stage" aria-label="频谱分析">
+      <div class="mini-panel-head">
+        <strong>频谱分析</strong>
+        <div class="segmented-mini" aria-label="频谱模式">
+          <button class="is-active" type="button">实时</button>
+          <button type="button">冻结</button>
+          <button type="button">对数</button>
+        </div>
+      </div>
+      <div class="spectrum-canvas">
+        <div class="spectrum-grid" aria-hidden="true"></div>
+        <div class="spectrum-bars" aria-hidden="true">
+          ${bars.map((bar, index) => `<span style="--bar:${formatNumber(bar)}%; --i:${index}"></span>`).join('')}
+        </div>
+      </div>
+      <div class="frequency-scale" aria-hidden="true"><span>20</span><span>100</span><span>1k</span><span>10k</span><span>20k</span></div>
+    </section>
+  `;
+}
+
+function renderWorkbenchOutputMeter(model = {}) {
+  const meters = (model.meters ?? []).slice(0, 4);
+  return `
+    <section class="workbench-panel output-meter-strip" aria-label="输出电平">
+      <strong>输出电平</strong>
+      <div class="output-meter-bars" aria-hidden="true">
+        ${meters.map((meter, index) => `<i style="--meter:${formatNumber(meter.value)}%; --i:${index}"></i>`).join('')}
+      </div>
+      <span>-8.2 dB</span>
+    </section>
+  `;
+}
+
+function renderWorkbenchModuleTabs(activeWorkbenchModule = 'envelope') {
+  const tabs = [
+    ['generator', '声音生成'],
+    ['filter', '滤波器'],
+    ['modulation', '调制'],
+    ['envelope', '包络'],
+    ['effects', '效果'],
+    ['macro', '宏控制'],
+  ];
+  return `
+    <div class="workbench-module-tabs" role="tablist" aria-label="工作台模块">
+      ${tabs.map(([id, label]) => `
+        <button class="${id === activeWorkbenchModule ? 'is-active' : ''}" type="button" data-module-tab="${escapeHtml(id)}">${escapeHtml(label)}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderWorkbenchEnvelope(model = {}) {
+  const envelope = model.patch?.toneGraph?.envelope ?? { attack: 0.002, decay: 0.18, sustain: 0.04, release: 0.32 };
+  const attackMs = Math.max(1, Math.round(envelope.attack * 1000));
+  const decayMs = Math.max(20, Math.round(envelope.decay * 1000));
+  const sustain = Math.round((envelope.sustain ?? 0) * 100);
+  const releaseMs = Math.max(30, Math.round(envelope.release * 1000));
+  const sliders = [
+    { id: 'attack', label: '攻击', value: attackMs, min: 0, max: 120, unit: 'ms' },
+    { id: 'decay', label: '衰减', value: decayMs, min: 20, max: 1000, unit: 'ms' },
+    { id: 'sustain', label: '延音', value: sustain, min: 0, max: 100, unit: '%' },
+    { id: 'release', label: '释放', value: releaseMs, min: 30, max: 1400, unit: 'ms' },
+  ];
+  const sustainY = Math.max(48, 202 - sustain * 1.28);
+  const path = `26,212 52,42 148,${formatNumber(sustainY)} 360,${formatNumber(sustainY)} 430,212`;
+  return `
+    <section class="workbench-panel envelope-panel" aria-label="ADSR 包络">
+      <div class="mini-panel-head">
+        <strong>ADSR 包络</strong>
+        <div class="toggle-chip"><span></span> 循环</div>
+      </div>
+      <div class="envelope-grid">
+        <svg class="adsr-workbench-svg" viewBox="0 0 456 232" role="img" aria-label="ADSR 包络曲线">
+          <defs>
+            <linearGradient id="adsrFill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#17a7a3" stop-opacity="0.42" />
+              <stop offset="100%" stop-color="#17a7a3" stop-opacity="0.03" />
+            </linearGradient>
+          </defs>
+          <path class="adsr-fill" d="M ${path} L 430,212 L 26,212 Z" />
+          <polyline class="adsr-line" points="${escapeHtml(path)}" />
+          <circle cx="52" cy="42" r="5" />
+          <circle cx="148" cy="${formatNumber(sustainY)}" r="5" />
+          <circle cx="360" cy="${formatNumber(sustainY)}" r="5" />
+          <circle cx="430" cy="212" r="5" />
+          <text x="25" y="226">0ms</text>
+          <text x="128" y="226">${escapeHtml(decayMs)}ms</text>
+          <text x="300" y="226">Sustain</text>
+          <text x="403" y="226">${escapeHtml((releaseMs / 1000).toFixed(1))}s</text>
+        </svg>
+        <div class="vertical-slider-stack">
+          ${sliders.map((slider) => `
+            <label class="vertical-slider">
+              <span>${escapeHtml(slider.label)}</span>
+              <input
+                type="range"
+                data-envelope-control="${escapeHtml(slider.id)}"
+                min="${escapeHtml(slider.min)}"
+                max="${escapeHtml(slider.max)}"
+                step="1"
+                value="${escapeHtml(slider.value)}"
+                style="--range-value:${formatNumber(percentFromRange(slider.value, slider.min, slider.max))}%"
+              />
+              <strong>${escapeHtml(slider.value)}${escapeHtml(slider.unit)}</strong>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchMacroPanel(model = {}) {
+  return `
+    <section class="workbench-panel macro-control-panel" aria-label="宏控制">
+      <div class="mini-panel-head"><strong>宏控制</strong><span>可映射任意参数</span></div>
+      <div class="macro-bank compact-macro-bank">
+        ${(model.macros ?? []).map((macro, index) => `
+          <label class="macro-knob" style="--knob-value:${formatNumber(macro.percent)}%">
+            <span class="knob-face" aria-hidden="true"><i></i></span>
+            <strong>Macro ${index + 1}</strong>
+            <small>${escapeHtml(macro.labelZh.split(' ')[0])}</small>
+            <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value)}" />
+          </label>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchModulation(model = {}) {
+  const rows = (model.patch?.macroModulation ?? []).slice(0, 5);
+  return `
+    <section class="workbench-panel modulation-strip" aria-label="调制源">
+      <div class="mini-panel-head"><strong>调制源</strong><span>LFO / Env / MIDI</span></div>
+      <div class="modulation-grid">
+        ${rows.map((row, index) => `
+          <div class="mod-source">
+            <strong>${index < 2 ? `LFO ${index + 1}` : index === 2 ? 'Env 2' : index === 3 ? 'Vel' : 'Note'}</strong>
+            <i style="--amount:${formatNumber((row.amount ?? 0) * 100)}%"></i>
+            <span>${escapeHtml(row.source)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchMaterialPanel(family = {}) {
+  const materials = [
+    ['metal', '金属'],
+    ['glass', '玻璃'],
+    ['electric', '电流'],
+    ['machine', '机械'],
+    ['air', '空气'],
+    ['magic', '魔法'],
+    ['custom', '自定义'],
+  ];
+  const familyText = family.titleZh ?? '';
+  return `
+    <section class="workbench-panel material-selector-grid" aria-label="材质选择">
+      <div class="mini-panel-head"><strong>材质选择</strong><span>${escapeHtml((family.materialAxis ?? []).join(' / '))}</span></div>
+      <div class="material-token-row">
+        ${materials.map(([id, label]) => `
+          <button class="${familyText.includes(label) || (id === 'metal' && familyText.includes('金属')) ? 'is-active' : ''}" type="button" data-workbench-material="${escapeHtml(id)}">
+            <span aria-hidden="true"></span>
+            ${escapeHtml(label)}
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchPlayback(model = {}, isPlaying = false) {
+  return `
+    <section class="workbench-panel playback-card" aria-label="播放控制">
+      <div class="mini-panel-head"><strong>播放控制</strong><span>参考响度 -14 LUFS</span></div>
+      <div class="playback-grid">
+        <button class="ab-button" type="button" data-sound-lab-ab="a">A</button>
+        <button class="ab-button is-b" type="button" data-sound-lab-ab="b">B</button>
+        <button class="play-main-button ${isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play aria-label="试听"><span aria-hidden="true"></span></button>
+        <button class="tone-button" type="button" data-sound-lab-ab="tone">Tone.js</button>
+      </div>
+      <div class="reference-volume">
+        <span>参考音量</span>
+        <strong>-14 LUFS</strong>
+        <i style="--range-value:${formatNumber(model.patch?.macros?.space ?? 32)}%"></i>
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchQuality(model = {}) {
+  const fx = (model.fxRack ?? []).slice(0, 3);
+  return `
+    <section class="workbench-panel patch-quality-card" aria-label="补丁质量">
+      <div class="mini-panel-head"><strong>补丁质量</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>
+      <div class="quality-knob-row">
+        ${fx.map((item) => `
+          <div class="mini-quality-knob" style="--knob-value:${formatNumber((item.amount ?? 0) * 100)}%">
+            <span></span>
+            <strong>${escapeHtml(item.labelZh.split('/')[0].trim())}</strong>
+            <small>${(item.amount ?? 0) > 0.66 ? '优秀' : '良好'}</small>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkbenchRightRail(family = {}, model = {}) {
+  const drawer = model.sourceDrawer ?? {};
+  return `
+    <aside class="workbench-right-rail">
+      <section class="side-panel source-inspector-panel">
+        <div class="side-panel-title">来源快照</div>
+        <div class="video-source-row">
+          <span class="youtube-dot" aria-hidden="true"></span>
+          <div>
+            <strong>${escapeHtml(drawer.sourceName ?? 'Public tutorial / preset source')}</strong>
+            <p>${escapeHtml(drawer.titleZh ?? family.titleZh)}</p>
+          </div>
+          <small>08:25</small>
+        </div>
+        <div class="source-quote">
+          <span>时间轴 04:12</span>
+          <p>${escapeHtml(drawer.extractionZh ?? family.summaryZh)}</p>
+        </div>
+        <div class="translated-note">
+          <strong>中文提炼</strong>
+          <p>${escapeHtml(family.summaryZh)}</p>
+        </div>
+        <div class="source-evidence"><span class="source-pill">来源依据</span>${(family.sourceIds ?? []).map((sourceId) => `<span class="source-pill">${escapeHtml(sourceId)}</span>`).join('')}</div>
+      </section>
+      <section class="side-panel learning-step-panel">
+        <div class="side-panel-title">学习步骤</div>
+        <ol class="numbered-step-list">
+          ${(family.practiceSteps ?? []).slice(0, 5).map((step, index) => `<li><span>${index + 1}</span>${escapeHtml(step)}</li>`).join('')}
+        </ol>
+      </section>
+      <section class="side-panel reaper-export-panel">
+        <div class="side-panel-title">REAPER 导出清单</div>
+        <ul class="check-list">
+          ${(family.reaperExport ?? []).map((item, index) => `<li class="${index < 4 ? 'is-checked' : ''}"><span></span>${escapeHtml(item)}</li>`).join('')}
+        </ul>
+        <button class="reaper-template-button" type="button" data-workbench-action="open-reaper-template">打开 REAPER 模板</button>
+      </section>
+    </aside>
+  `;
+}
+
+function renderWorkbenchFooter(family = {}) {
+  const route = [
+    ['基础入门', '完成'],
+    ['声音生成', '完成'],
+    ['调制控制', '进行中'],
+    ['频谱塑形', '未开始'],
+    ['材质设计', '未开始'],
+    ['分层混合', '未开始'],
+    ['创意反馈', '未开始'],
+  ];
+  return `
+    <section class="workbench-footer-grid">
+      <div class="route-progress-panel">
+        <div class="mini-panel-head"><strong>学习路线进度</strong><span>${escapeHtml(family.titleZh?.split('：')[0] ?? '当前声音')}</span></div>
+        <div class="route-timeline">
+          ${route.map((item, index) => `
+            <div class="${index <= 2 ? 'is-current' : ''}">
+              <span>${index + 1}</span>
+              <strong>${escapeHtml(item[0])}</strong>
+              <small>${escapeHtml(item[1])}</small>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="challenge-panel">
+        <div class="mini-panel-head"><strong>今日挑战</strong><span>3 个 10 分钟练习</span></div>
+        <button type="button" data-workbench-action="start-ab">A/B 听辨</button>
+        <button type="button" data-workbench-action="start-parameter">参数反推</button>
+        <button type="button" data-workbench-action="start-signal">信号流排序</button>
+      </div>
+      <div class="quick-entry-panel">
+        <div class="mini-panel-head"><strong>快速入口</strong><span>继续制作</span></div>
+        <button type="button" data-workbench-action="new-experiment">新建实验</button>
+        <button type="button" data-workbench-action="open-library">打开预设库</button>
+        <button type="button" data-workbench-action="import-serum">导入 Serum 预设</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderLightSoundLabWorkbench(family, model, options, status) {
+  const { workletReady, toneReady, isPlaying, engineLabel } = status;
+  const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
+  return `
+    <article class="card sound-lab-workbench synth-workbench-layout ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
+      <header class="workbench-topbar">
+        <div>
+          <div class="workbench-breadcrumb">工作台 / <strong>${escapeHtml(family.titleZh.split('：')[0])}</strong> <span>★</span></div>
+          <h3>${escapeHtml(family.titleZh)}</h3>
+          <p>Sound Lab · Tone.js ${toneReady ? 'ready' : 'fallback'} · AudioWorklet ${workletReady ? 'ready' : 'fallback'} · ${escapeHtml(engineLabel)}</p>
+        </div>
+        <div class="workbench-actions">
+          <button type="button" data-workbench-action="save-patch">保存 Patch</button>
+          <button type="button" data-workbench-action="export-preset">导出 Preset</button>
+          <button class="icon-more-button" type="button" aria-label="更多">⋮</button>
+        </div>
+      </header>
+      <div class="synth-tab-row">
+        ${renderWorkbenchSynthTabs()}
+        <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
+      </div>
+      <div class="workbench-main-grid">
+        <div class="workbench-core">
+          <div class="analyzer-row">
+            ${renderWorkbenchWaveform(model)}
+            ${renderWorkbenchSpectrum(model)}
+            ${renderWorkbenchOutputMeter(model)}
+          </div>
+          ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
+          ${renderWorkbenchEnvelope(model)}
+          <div class="control-lower-grid">
+            ${renderWorkbenchMacroPanel(model)}
+            ${renderWorkbenchModulation(model)}
+          </div>
+          <div class="control-bottom-grid">
+            ${renderWorkbenchMaterialPanel(family)}
+            ${renderWorkbenchPlayback(model, isPlaying)}
+            ${renderWorkbenchQuality(model)}
+          </div>
+          <div class="advanced-engine-grid">
+            ${renderSoundLabEngineControls(model, options)}
+            ${renderSoundLabDnaControls(model)}
+          </div>
+        </div>
+        ${renderWorkbenchRightRail(family, model)}
+      </div>
+      ${renderWorkbenchFooter(family)}
+      <section class="sound-lab-export">
+        <div>
+          <h4>Patch JSON</h4>
+          <pre>${escapeHtml(model.patchJson)}</pre>
+        </div>
+        <div>
+          <h4>REAPER Notes</h4>
+          <pre>${escapeHtml(model.reaperNotes)}</pre>
+        </div>
+      </section>
+    </article>
+  `;
+}
+
 export function renderSoundLabWorkbench(family, model, options = {}) {
   const workletReady = Boolean(options.workletReady);
   const toneReady = Boolean(options.toneReady);
   const isPlaying = Boolean(options.isPlaying);
   const engineLabel = options.engineUsed ? options.engineUsed : model.activeEngineMode;
+  return renderLightSoundLabWorkbench(family, model, options, { workletReady, toneReady, isPlaying, engineLabel });
   return `
     <article class="card sound-lab-workbench ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
       <div class="sound-lab-head">

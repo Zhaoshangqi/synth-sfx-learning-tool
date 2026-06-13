@@ -60,12 +60,30 @@ test('visual shell uses a brighter premium glass tone and view transition motion
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /--bg:\s*#172735/);
+  assert.match(css, /--bg:\s*#f4f7fb/);
   assert.doesNotMatch(css, /--bg:\s*#050910/);
   assert.match(css, /\.content\.is-view-switching/);
   assert.match(css, /@keyframes view-soft-swap/);
   assert.match(appJs, /synth:view-transition/);
   assert.match(appJs, /is-view-switching/);
+});
+
+test('styles include the light synth workstation layout from the reference image', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /color-scheme:\s*light/);
+  assert.match(css, /--surface:\s*#ffffff/);
+  assert.match(css, /--accent:\s*#17a7a3/);
+  assert.match(css, /\.synth-workbench-layout/);
+  assert.match(css, /\.workbench-main-grid/);
+  assert.match(css, /\.workbench-right-rail/);
+  assert.match(css, /\.workbench-module-tabs/);
+  assert.match(css, /\.output-meter-strip/);
+  assert.match(css, /\.source-inspector-panel/);
+  assert.match(css, /\.route-progress-panel/);
+  assert.match(css, /\.quick-entry-panel/);
+  assert.match(css, /\.sidebar-progress-card/);
+  assert.match(css, /\.daily-suggestion-card/);
 });
 
 test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
@@ -156,6 +174,15 @@ test('sound lab app wires preset DNA, quality mode, and layer mixer interactions
   assert.match(appJs, /data-sound-lab-quality/);
   assert.match(appJs, /data-sound-lab-layer/);
   assert.match(appJs, /presetDna.macroHints/);
+});
+
+test('sound lab app preserves workstation module tab state across rerenders', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /activeWorkbenchModule/);
+  assert.match(appJs, /data-module-tab/);
+  assert.match(renderJs, /activeWorkbenchModule/);
 });
 
 test('app wires community creator technique labs into navigation and Sound Lab loading', () => {
