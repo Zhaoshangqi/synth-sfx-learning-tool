@@ -1949,6 +1949,24 @@ function bindSoundLabControls() {
         render();
         return;
       }
+      if (action === 'focus-source') {
+        handleWorkbenchStep('source');
+        return;
+      }
+      if (action === 'focus-controls') {
+        handleWorkbenchStep('shape');
+        return;
+      }
+      if (action === 'focus-coach') {
+        state.soundLabWorkflowStep = 'shape';
+        render();
+        scrollSoundLabIntoView('.workbench-coach-panel');
+        return;
+      }
+      if (action === 'focus-export') {
+        handleWorkbenchStep('deliver');
+        return;
+      }
       if (action === 'open-reaper-template') switchView('practice');
       if (action === 'open-library' || action === 'import-serum') switchView('integrations');
       if (action === 'start-ab') switchView('challenges');
@@ -2131,9 +2149,9 @@ function buildCommunitySoundLabRecipe(lab) {
     return Number.isFinite(Number(hit)) ? Number(hit) : fallback;
   };
 
-  const bright = pick(['brightness', 'sparkle', 'spark', 'presence', 'rise', 'edge'], base.macros.brightness);
+  const bright = pick(['brightness', 'sparkle', 'spark', 'presence', 'rise', 'edge', 'cleanup'], base.macros.brightness);
   const motion = pick(['speed', 'direction', 'urgency', 'rise', 'grain', 'motion', 'gate', 'drift'], base.macros.motion);
-  const material = pick(['edge', 'resonance', 'grain', 'techCore', 'density', 'drive', 'shell', 'inharmonicity'], base.macros.material);
+  const material = pick(['edge', 'resonance', 'grain', 'techCore', 'density', 'drive', 'shell', 'inharmonicity', 'interval', 'cleanup'], base.macros.material);
   const space = pick(['space', 'release', 'wetness', 'dragLength', 'tail'], base.macros.space);
   const variation = pick(['variation', 'loopSafety', 'grain', 'density', 'drift', 'randomness'], base.macros.variation);
   const dryFocus = pick(['dryFocus', 'anchor', 'techCore', 'loopSafety', 'carrier', 'weight'], base.layerMix.body);
@@ -2152,7 +2170,7 @@ function buildCommunitySoundLabRecipe(lab) {
       ...base.layerMix,
       transient: clampPercent((base.layerMix.transient + pick(['spark', 'presence', 'urgency', 'tick', 'attack'], base.layerMix.transient)) / 2),
       body: clampPercent((base.layerMix.body + dryFocus) / 2),
-      texture: clampPercent((base.layerMix.texture + pick(['edge', 'grain', 'wetness', 'density', 'sparkle', 'drive', 'texture'], base.layerMix.texture)) / 2),
+      texture: clampPercent((base.layerMix.texture + pick(['edge', 'grain', 'wetness', 'density', 'sparkle', 'drive', 'texture', 'interval'], base.layerMix.texture)) / 2),
       tail: clampPercent((base.layerMix.tail + space) / 2),
     },
   };

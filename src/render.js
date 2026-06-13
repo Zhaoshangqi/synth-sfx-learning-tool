@@ -654,6 +654,36 @@ function renderCommunityBlueprint(lab) {
   `;
 }
 
+function renderCommunitySynthProcedure(lab = {}) {
+  const mappings = lab.synthParameterSteps ?? lab.synthMappings ?? {};
+  const synthOrder = [
+    ['serum', 'Serum 2'],
+    ['phasePlant', 'Phase Plant'],
+    ['vital', 'Vital'],
+  ];
+  return `
+    <section class="community-synth-procedure" aria-label="三合成器参数步骤">
+      <div class="community-procedure-head">
+        <h4>三合成器参数步骤</h4>
+        <p>同一个技巧分别落到 Serum 2、Phase Plant、Vital。照顺序做，先听干声，再打开调制和 FX。</p>
+      </div>
+      <div class="community-synth-procedure-grid">
+        ${synthOrder.map(([key, label]) => {
+          const steps = mappings[key] ?? [];
+          return `
+            <article>
+              <strong>${escapeHtml(label)}</strong>
+              <ol>
+                ${steps.slice(0, 5).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+              </ol>
+            </article>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function getCommunityFocusPresets(lab) {
   if (lab.focusPresets?.length) return lab.focusPresets;
   const controls = lab.controls ?? [];
@@ -732,6 +762,7 @@ export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
         <ol class="community-method-list">${renderCommunitySteps(lab.methodSteps)}</ol>
       </section>
       ${renderCommunityBlueprint(lab)}
+      ${renderCommunitySynthProcedure(lab)}
       <section class="community-control-panel" aria-label="交互练习">
         <div>
           <h4>交互练习</h4>
@@ -1342,6 +1373,66 @@ function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
   `;
 }
 
+function renderWorkbenchUsageGuide(family = {}, activeStep = 'source') {
+  const familyName = family.titleZh?.split('：')[0] ?? '当前音效';
+  const cards = [
+    {
+      id: 'target',
+      index: '1',
+      titleZh: '先选目标音效',
+      bodyZh: `当前练习是「${familyName}」。先确认它属于 transient、body、texture 还是 tail 任务。`,
+      action: 'focus-source',
+    },
+    {
+      id: 'controls',
+      index: '2',
+      titleZh: '再调声音结构',
+      bodyZh: '看波形和频谱，再改 ADSR、Macro、材质和层级；一次只改一个听感问题。',
+      action: 'focus-controls',
+    },
+    {
+      id: 'coach',
+      index: '3',
+      titleZh: '跟着教练复刻',
+      bodyZh: '切 Serum 2 / Phase Plant / Vital，按路由图和参数步骤把同一技巧落到插件里。',
+      action: 'focus-coach',
+    },
+    {
+      id: 'export',
+      index: '4',
+      titleZh: '最后导出复盘',
+      bodyZh: '复制 Patch JSON 与 REAPER Notes，导出 dry / full / tail-only，避免只留下偶然版本。',
+      action: 'focus-export',
+    },
+  ];
+  return `
+    <section class="workbench-usage-panel" aria-label="怎么用这个工作台">
+      <div class="usage-panel-head">
+        <span>怎么用这个工作台</span>
+        <strong>${escapeHtml(familyName)}</strong>
+        <small>当前路径：${escapeHtml(activeStep)}</small>
+      </div>
+      ${cards.map((card) => `
+        <button class="usage-card" type="button" data-workbench-action="${escapeHtml(card.action)}">
+          <span>${escapeHtml(card.index)}</span>
+          <strong>${escapeHtml(card.titleZh)}</strong>
+          <small>${escapeHtml(card.bodyZh)}</small>
+        </button>
+      `).join('')}
+    </section>
+  `;
+}
+
+function renderWorkbenchZoneTitle(indexZh, titleZh, bodyZh) {
+  return `
+    <div class="workbench-zone-title" aria-label="${escapeHtml(`${indexZh} ${titleZh}`)}">
+      <span>${escapeHtml(indexZh)}</span>
+      <strong>${escapeHtml(titleZh)}</strong>
+      <small>${escapeHtml(bodyZh)}</small>
+    </div>
+  `;
+}
+
 function renderWorkbenchCoach(guides = [], activeGuideId, activeSynth = 'serum') {
   const activeGuide = guides.find((guide) => guide.id === activeGuideId) ?? guides[0];
   if (!activeGuide) return '';
@@ -1766,13 +1857,16 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}
+      ${renderWorkbenchUsageGuide(family, options.activeWorkflowStep)}
       <div class="workbench-main-grid">
         <div class="workbench-core">
+          ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
           <div class="analyzer-row">
             ${renderWorkbenchWaveform(model)}
             ${renderWorkbenchSpectrum(model, options.analyzerMode)}
             ${renderWorkbenchOutputMeter(model)}
           </div>
+          ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
           ${renderProfessionalControlGrid(model, options.activeAdvancedModule)}
@@ -1790,6 +1884,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
             ${renderSoundLabEngineControls(model, options)}
             ${renderSoundLabDnaControls(model)}
           </div>
+          ${renderWorkbenchZoneTitle('03', '合成器调制教练', '把同一声音拆成 Serum 2、Phase Plant、Vital 三套具体步骤，适合边看边复刻。')}
           ${renderWorkbenchCoach(options.modulationGuides, options.activeModulationGuideId, options.activeCoachSynth)}
         </div>
         ${renderWorkbenchRightRail(family, model)}

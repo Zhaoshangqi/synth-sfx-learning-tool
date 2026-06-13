@@ -215,6 +215,16 @@ test('renderSoundLabWorkbench matches the light synth workstation reference modu
   assert.match(html, /快速入口/);
   assert.match(html, /输出电平/);
   assert.match(html, /材质选择/);
+  assert.match(html, /怎么用这个工作台/);
+  assert.match(html, /先选目标音效/);
+  assert.match(html, /再调声音结构/);
+  assert.match(html, /最后导出复盘/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /data-workbench-action="focus-coach"/);
+  assert.match(html, /workbench-zone-title/);
+  assert.match(html, /01 监听与频谱/);
+  assert.match(html, /02 参数塑形/);
+  assert.match(html, /03 合成器调制教练/);
 
   const phasePlantHtml = renderSoundLabWorkbench(family, model, {
     selectedFamilyId: family.id,
@@ -287,6 +297,8 @@ test('renderCommunityTechniqueLab exposes source-backed interactive creator prac
   assert.match(html, /观看任务/);
   assert.match(html, /详细方法/);
   assert.match(html, /调制蓝图/);
+  assert.match(html, /三合成器参数步骤/);
+  assert.match(html, /community-synth-procedure/);
   assert.match(html, /交互练习/);
   assert.match(html, /data-community-technique/);
   assert.match(html, /data-community-control/);

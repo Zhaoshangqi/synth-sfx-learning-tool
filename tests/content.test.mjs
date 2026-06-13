@@ -235,8 +235,11 @@ test('community creator technique labs connect non-official videos to interactiv
   assert.ok(sourceIds.has('youtube-ngtvst-serum2-simple-leads'), 'needs NGTVST Serum 2 lead source');
   assert.ok(sourceIds.has('youtube-ngtvst-serum2-signature-basses'), 'needs NGTVST signature bass source');
   assert.ok(sourceIds.has('youtube-ngtvst-paper-explosive-impacts'), 'needs NGTVST recording-to-impact source');
+  assert.ok(sourceIds.has('youtube-ngtvst-cinematic-distorted-bass-signature-sounds'), 'needs NGTVST cinematic distorted bass source');
+  assert.ok(sourceIds.has('youtube-ngtvst-cardboard-punchy-impacts'), 'needs NGTVST cardboard impact source');
   assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-serum2-lead-signature-bass'), 'needs NGTVST lead/signature bass practice');
   assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-recording-to-texture-impact'), 'needs NGTVST recording-to-texture practice');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-one-note-distorted-bass'), 'needs NGTVST one-note distorted bass practice');
 
   for (const lab of communityTechniqueLabs) {
     assert.match(lab.id, /^[a-z0-9-]+$/);
@@ -252,6 +255,7 @@ test('community creator technique labs connect non-official videos to interactiv
       assert.ok(lab.focusPresets.every((preset) => Object.keys(preset.values).length >= 3), `${lab.id} focus presets need control values`);
     }
     assert.ok(lab.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${lab.id} has an unknown source`);
+    assert.ok(Object.keys(lab.synthParameterSteps ?? lab.synthMappings ?? {}).length >= 3, `${lab.id} needs three-synth parameter steps`);
     assert.ok(lab.soundLabRecipe.familyId, `${lab.id} needs a Sound Lab family`);
     assert.ok(lab.soundLabRecipe.presetDnaId, `${lab.id} needs a Sound Lab preset DNA`);
     assert.ok(Object.keys(lab.soundLabRecipe.macros).length >= 4, `${lab.id} needs macro recipe values`);
