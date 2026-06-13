@@ -625,6 +625,81 @@ function renderCommunitySteps(steps = []) {
   `).join('');
 }
 
+function renderCommunityBlueprint(lab) {
+  const fallbackRows = Object.entries(lab.interactiveMappings ?? {}).slice(0, 5).map(([source, moves]) => ({
+    source,
+    target: String(moves?.[0] ?? 'macro target'),
+    result: String(moves?.[1] ?? '听感变化'),
+  }));
+  const rows = lab.modulationBlueprint ?? fallbackRows;
+  if (!rows.length) return '';
+  return `
+    <section class="community-blueprint-panel" aria-label="调制蓝图">
+      <div>
+        <h4>调制蓝图</h4>
+        <p>把“看教程”转成可操作路由：控制源 → 合成器目标 → 你应该听到的变化。</p>
+      </div>
+      <div class="community-blueprint-grid">
+        ${rows.map((row, index) => `
+          <div class="community-blueprint-row">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(row.source)}</strong>
+            <i aria-hidden="true"></i>
+            <b>${escapeHtml(row.target)}</b>
+            <small>${escapeHtml(row.result)}</small>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function getCommunityFocusPresets(lab) {
+  if (lab.focusPresets?.length) return lab.focusPresets;
+  const controls = lab.controls ?? [];
+  const base = Object.fromEntries(controls.map((control) => [control.id, Number(control.default ?? 50)]));
+  const clamp = (control, value) => Math.max(Number(control.min ?? 0), Math.min(Number(control.max ?? 100), Number(value)));
+  const withValues = (rules) => Object.fromEntries(controls.map((control, index) => {
+    const rule = rules.find((item) => item.ids?.includes(control.id) || item.index === index);
+    return [control.id, clamp(control, rule ? rule.value : base[control.id])];
+  }));
+  return [
+    {
+      id: 'focus-core',
+      labelZh: '主体优先',
+      goalZh: '先听 dry/body 是否成立',
+      values: withValues([{ index: 0, value: 72 }, { ids: ['space', 'tail', 'release'], value: 24 }]),
+    },
+    {
+      id: 'focus-motion',
+      labelZh: '运动/材质',
+      goalZh: '放大调制和纹理变化',
+      values: withValues([{ index: 1, value: 76 }, { index: 2, value: 74 }]),
+    },
+    {
+      id: 'focus-delivery',
+      labelZh: '完整交付',
+      goalZh: '听 full 版和尾巴关系',
+      values: withValues([{ ids: ['space', 'tail', 'release'], value: 68 }, { index: 3, value: 64 }]),
+    },
+  ];
+}
+
+function renderCommunityFocusPresets(lab) {
+  const presets = getCommunityFocusPresets(lab);
+  if (!presets.length) return '';
+  return `
+    <div class="community-focus-presets" aria-label="快速听感预设">
+      ${presets.map((preset) => `
+        <button type="button" data-community-focus-preset="${escapeHtml(preset.id)}">
+          <strong>${escapeHtml(preset.labelZh)}</strong>
+          <span>${escapeHtml(preset.goalZh)}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
 export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
   const controlValues = options.controlValues ?? {};
   const activeClass = options.isActive ? 'is-active' : '';
@@ -656,11 +731,13 @@ export function renderCommunityTechniqueLab(lab, sources = [], options = {}) {
         <h4>详细方法</h4>
         <ol class="community-method-list">${renderCommunitySteps(lab.methodSteps)}</ol>
       </section>
+      ${renderCommunityBlueprint(lab)}
       <section class="community-control-panel" aria-label="交互练习">
         <div>
           <h4>交互练习</h4>
           <p>调这些听感参数，再把配方加载到 Sound Lab 试听。这里调整的是网页练习配方，不会伪装成原视频的逐帧参数。</p>
         </div>
+        ${renderCommunityFocusPresets(lab)}
         <div class="community-control-grid">
           ${(lab.controls ?? []).map((control) => renderCommunityControl(control, controlValues[control.id])).join('')}
         </div>
@@ -982,14 +1059,15 @@ function percentFromRange(value, min, max) {
   return Math.max(0, Math.min(100, ((Number(value) - min) / (max - min)) * 100));
 }
 
-function renderWorkbenchSynthTabs() {
+function renderWorkbenchSynthTabs(activeSynth = 'serum') {
+  const activeSynthId = ['serum', 'phase-plant', 'vital'].includes(activeSynth) ? activeSynth : 'serum';
   const tabs = [
-    { id: 'serum', label: 'Serum 2', active: true },
-    { id: 'phase-plant', label: 'Phase Plant', active: false },
-    { id: 'vital', label: '+ Vital', active: false },
+    { id: 'serum', label: 'Serum 2' },
+    { id: 'phase-plant', label: 'Phase Plant' },
+    { id: 'vital', label: '+ Vital' },
   ];
   return tabs.map((tab) => `
-    <button class="synth-tab ${tab.active ? 'is-active' : ''}" type="button" data-synth-tab="${escapeHtml(tab.id)}">
+    <button class="synth-tab ${tab.id === activeSynthId ? 'is-active' : ''}" type="button" data-synth-tab="${escapeHtml(tab.id)}" aria-pressed="${tab.id === activeSynthId ? 'true' : 'false'}">
       ${escapeHtml(tab.label)}
     </button>
   `).join('');
@@ -1660,6 +1738,7 @@ function renderWorkbenchFooter(family = {}) {
 function renderLightSoundLabWorkbench(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
+  const activeWorkbenchSynth = options.activeWorkbenchSynth ?? 'serum';
   return `
     <article class="card sound-lab-workbench synth-workbench-layout ${isPlaying ? 'is-playing' : ''}" data-active-sound-family="${escapeHtml(family.id)}">
       <header class="workbench-topbar">
@@ -1683,7 +1762,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         </div>
       </header>
       <div class="synth-tab-row">
-        ${renderWorkbenchSynthTabs()}
+        ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}

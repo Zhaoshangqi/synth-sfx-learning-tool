@@ -3364,22 +3364,28 @@ textarea {
   gap: 10px;
   align-items: start;
   min-height: 72px;
-  border: 1px solid rgba(174, 233, 236, 0.16);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
-  background: rgba(8, 19, 28, 0.32);
-  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 253, 0.94)),
+    #fbfdff;
+  color: #314758;
   padding: 12px;
   text-align: left;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 8px 20px rgba(42, 76, 104, 0.055);
+  transition: transform 150ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
 .community-lab-button:hover,
 .community-lab-button:focus-visible,
 .community-lab-button.is-active {
-  border-color: rgba(120, 225, 212, 0.46);
-  background: linear-gradient(135deg, rgba(120, 225, 212, 0.12), rgba(160, 139, 255, 0.07));
-  box-shadow: 0 0 30px rgba(120, 225, 212, 0.08);
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.38);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(120, 225, 212, 0.2), transparent 52%),
+    linear-gradient(180deg, #ffffff, #edf9f8);
+  box-shadow: 0 14px 30px rgba(23, 167, 163, 0.12);
 }
 
 .community-lab-button:active {
@@ -3392,9 +3398,9 @@ textarea {
   width: 28px;
   height: 24px;
   border-radius: 5px;
-  background: rgba(6, 13, 21, 0.64);
-  border: 1px solid rgba(151, 235, 224, 0.18);
-  color: #d9f8f4;
+  background: #e9fbf9;
+  border: 1px solid rgba(23, 167, 163, 0.18);
+  color: #0d7774;
   font-size: 11px;
   font-weight: 800;
 }
@@ -3435,12 +3441,12 @@ textarea {
 }
 
 .creator-source-pill {
-  border: 1px solid rgba(174, 233, 236, 0.18);
+  border: 1px solid #dce8ef;
   border-radius: 8px;
   padding: 12px;
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(120, 225, 212, 0.13), transparent 48%),
-    rgba(6, 15, 24, 0.36);
+    radial-gradient(ellipse at 0% 0%, rgba(120, 225, 212, 0.18), transparent 52%),
+    #fbfdff;
 }
 
 .creator-source-pill span,
@@ -3457,7 +3463,7 @@ textarea {
 
 .creator-source-pill strong {
   margin-top: 6px;
-  color: #f7fffc;
+  color: #203442;
 }
 
 .community-method-list {
@@ -3472,10 +3478,10 @@ textarea {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
-  border: 1px solid rgba(174, 233, 236, 0.12);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
   padding: 12px;
-  background: rgba(7, 18, 28, 0.28);
+  background: #fbfdff;
 }
 
 .community-method-list li > span {
@@ -3484,8 +3490,8 @@ textarea {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(120, 225, 212, 0.12);
-  color: #eafffb;
+  background: #e9fbf9;
+  color: #0d7774;
   font-size: 12px;
   font-weight: 800;
 }
@@ -3497,7 +3503,7 @@ textarea {
 
 .community-method-list p {
   margin: 6px 0;
-  color: var(--text);
+  color: #203442;
   line-height: 1.55;
 }
 
@@ -3509,12 +3515,137 @@ textarea {
 .community-control-panel {
   display: grid;
   gap: 14px;
-  border: 1px solid rgba(174, 233, 236, 0.16);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
   padding: 14px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(9, 23, 34, 0.34)),
-    radial-gradient(ellipse at 100% 0%, rgba(160, 139, 255, 0.09), transparent 42%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 250, 253, 0.92)),
+    radial-gradient(ellipse at 100% 0%, rgba(160, 139, 255, 0.1), transparent 42%);
+}
+
+.community-blueprint-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dfe9f0;
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 252, 253, 0.94)),
+    radial-gradient(ellipse at 0% 0%, rgba(23, 167, 163, 0.1), transparent 42%);
+}
+
+.community-blueprint-panel h4,
+.community-blueprint-panel p {
+  margin: 0;
+}
+
+.community-blueprint-panel p {
+  color: #64798a;
+  line-height: 1.55;
+}
+
+.community-blueprint-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.community-blueprint-row {
+  display: grid;
+  grid-template-columns: 30px minmax(90px, 0.34fr) 22px minmax(120px, 0.54fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid #e4edf3;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 9px;
+}
+
+.community-blueprint-row span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #e9fbf9;
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.community-blueprint-row strong,
+.community-blueprint-row b,
+.community-blueprint-row small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.community-blueprint-row strong {
+  color: #203442;
+  font-size: 12px;
+}
+
+.community-blueprint-row b {
+  color: #0d7774;
+  font-size: 12px;
+}
+
+.community-blueprint-row small {
+  color: #64798a;
+  font-size: 11px;
+}
+
+.community-blueprint-row i {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(23, 167, 163, 0.12), rgba(23, 167, 163, 0.7));
+}
+
+.community-focus-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.community-focus-presets button {
+  min-height: 58px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  border: 1px solid #dce8ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #203442;
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.community-focus-presets button:hover,
+.community-focus-presets button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(23, 167, 163, 0.4);
+  background: #f8fdfc;
+  box-shadow: 0 12px 26px rgba(23, 167, 163, 0.1);
+}
+
+.community-focus-presets button strong,
+.community-focus-presets button span {
+  display: block;
+  min-width: 0;
+}
+
+.community-focus-presets button strong {
+  color: #0d7774;
+  font-size: 12px;
+}
+
+.community-focus-presets button span {
+  color: #64798a;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .community-control-grid {
@@ -3526,10 +3657,10 @@ textarea {
 .community-control {
   display: grid;
   gap: 8px;
-  border: 1px solid rgba(174, 233, 236, 0.12);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
   padding: 10px;
-  background: rgba(7, 18, 28, 0.3);
+  background: #fbfdff;
 }
 
 .community-control > span:first-child {
@@ -3550,10 +3681,10 @@ textarea {
 }
 
 .community-mapping-grid > div {
-  border: 1px solid rgba(174, 233, 236, 0.1);
+  border: 1px solid #dfe9f0;
   border-radius: 8px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #fbfdff;
 }
 
 .community-mapping-grid ul {
@@ -3579,8 +3710,32 @@ textarea {
 @media (max-width: 680px) {
   .community-lab-rail,
   .community-control-grid,
+  .community-focus-presets,
   .community-mapping-grid {
     grid-template-columns: 1fr;
+  }
+
+  .community-blueprint-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .community-blueprint-row i {
+    display: none;
+  }
+
+  .community-blueprint-row strong,
+  .community-blueprint-row b,
+  .community-blueprint-row small {
+    grid-column: 2;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .community-focus-presets button {
+    width: 100%;
   }
 }
 
@@ -3721,6 +3876,35 @@ body {
   height: 5px;
   border-radius: 999px;
   background: linear-gradient(90deg, #17a7a3 0 62%, #dbe7ee 62% 100%);
+}
+
+.primary-button {
+  background: linear-gradient(180deg, #17a7a3, #0d817e);
+  border-color: rgba(13, 119, 116, 0.44);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(23, 167, 163, 0.18);
+}
+
+.secondary-button {
+  background: #ffffff;
+  border-color: #cfe0e9;
+  color: #243846;
+  box-shadow: 0 10px 22px rgba(42, 76, 104, 0.07);
+}
+
+.primary-button:hover,
+.primary-button:focus-visible {
+  background: linear-gradient(180deg, #1db7b2, #0b7572);
+  border-color: rgba(13, 119, 116, 0.58);
+  box-shadow: 0 16px 34px rgba(23, 167, 163, 0.23);
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible {
+  background: #f8fcff;
+  border-color: rgba(23, 167, 163, 0.34);
+  color: #0d7774;
+  box-shadow: 0 14px 28px rgba(42, 76, 104, 0.1);
 }
 
 .daily-suggestion-card {
@@ -6013,6 +6197,9 @@ textarea {
   }
 
   .sidebar {
+    position: static;
+    height: auto;
+    min-height: 0;
     background: rgba(248, 251, 254, 0.96);
     overflow: visible;
   }
@@ -6024,24 +6211,26 @@ textarea {
   .sidebar .tabs {
     order: 2;
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(132px, 58vw);
-    grid-template-columns: none;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    max-width: calc(100vw - 32px);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    padding: 2px 0 8px;
+    max-width: none;
+    overflow-x: visible;
+    overscroll-behavior-x: auto;
+    scroll-snap-type: none;
+    padding: 2px 0 0;
   }
 
   .sidebar .tab {
-    scroll-snap-align: start;
+    min-height: 42px;
+    scroll-snap-align: unset;
     background: #ffffff;
     border-color: #dce8ef;
     color: #4d6070;
     box-shadow: 0 8px 18px rgba(55, 86, 112, 0.08);
     font-weight: 800;
+    padding: 8px;
   }
 
   .sidebar .tab.is-active {

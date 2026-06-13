@@ -232,6 +232,11 @@ test('community creator technique labs connect non-official videos to interactiv
   assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-serum2-trailer-pack'), 'needs NGTVST Serum 2 trailer practice');
   assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-vital-dark-strings'), 'needs NGTVST Vital dark strings practice');
   assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-robot-machina'), 'needs NGTVST robot sound practice');
+  assert.ok(sourceIds.has('youtube-ngtvst-serum2-simple-leads'), 'needs NGTVST Serum 2 lead source');
+  assert.ok(sourceIds.has('youtube-ngtvst-serum2-signature-basses'), 'needs NGTVST signature bass source');
+  assert.ok(sourceIds.has('youtube-ngtvst-paper-explosive-impacts'), 'needs NGTVST recording-to-impact source');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-serum2-lead-signature-bass'), 'needs NGTVST lead/signature bass practice');
+  assert.ok(communityTechniqueLabs.some((lab) => lab.id === 'creator-ngtvst-recording-to-texture-impact'), 'needs NGTVST recording-to-texture practice');
 
   for (const lab of communityTechniqueLabs) {
     assert.match(lab.id, /^[a-z0-9-]+$/);
@@ -241,6 +246,11 @@ test('community creator technique labs connect non-official videos to interactiv
     assert.ok(lab.principleZh.length > 80, `${lab.id} needs a detailed principle`);
     assert.ok(lab.methodSteps.length >= 4, `${lab.id} needs detailed method steps`);
     assert.ok(lab.controls.length >= 4, `${lab.id} needs interactive controls`);
+    assert.ok((lab.modulationBlueprint?.length ?? 4) >= 4, `${lab.id} needs a modulation blueprint or fallback mappings`);
+    if (lab.focusPresets) {
+      assert.ok(lab.focusPresets.length >= 3, `${lab.id} needs at least three focus presets`);
+      assert.ok(lab.focusPresets.every((preset) => Object.keys(preset.values).length >= 3), `${lab.id} focus presets need control values`);
+    }
     assert.ok(lab.sourceIds.every((sourceId) => sourceIds.has(sourceId)), `${lab.id} has an unknown source`);
     assert.ok(lab.soundLabRecipe.familyId, `${lab.id} needs a Sound Lab family`);
     assert.ok(lab.soundLabRecipe.presetDnaId, `${lab.id} needs a Sound Lab preset DNA`);

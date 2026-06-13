@@ -135,12 +135,12 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(css, /\.spectrum-stage/);
 });
 
-test('mobile navigation uses a compact horizontal rail instead of a full-height wall', () => {
+test('mobile navigation exposes all page buttons without a horizontal scroll trap', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.tabs[\s\S]*grid-auto-flow:\s*column/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*overflow-x:\s*auto/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*scroll-snap-type:\s*x/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.sidebar \.tabs\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.sidebar \.tabs\s*\{[\s\S]*grid-auto-flow:\s*row/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.sidebar \.tabs\s*\{[\s\S]*overflow-x:\s*visible/);
 });
 
 test('integration view exposes browser-native sound quality and control hooks', () => {
@@ -219,14 +219,19 @@ test('sound lab app preserves workstation module tab state across rerenders', ()
 
 test('app wires community creator technique labs into navigation and Sound Lab loading', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
   const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
   assert.match(appJs, /communityTechniqueLabs/);
   assert.match(appJs, /activeCommunityTechniqueId/);
   assert.match(appJs, /data-community-technique/);
   assert.match(appJs, /data-community-control/);
+  assert.match(appJs, /data-community-focus-preset/);
+  assert.match(appJs, /getCommunityFocusPresets/);
   assert.match(appJs, /data-community-load-soundlab/);
   assert.match(appJs, /soundLabRecipe/);
+  assert.match(renderJs, /renderCommunityBlueprint/);
+  assert.match(renderJs, /data-community-focus-preset/);
   assert.match(indexHtml, /data-view="community"/);
 });
 
@@ -236,7 +241,17 @@ test('styles include community technique interactive controls', () => {
   assert.match(css, /\.community-lab-shell/);
   assert.match(css, /\.community-technique-card/);
   assert.match(css, /\.community-control-panel/);
+  assert.match(css, /\.community-blueprint-panel/);
+  assert.match(css, /\.community-focus-presets/);
   assert.match(css, /\.creator-source-pill/);
+});
+
+test('community technique blueprint stays readable on narrow screens', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.community-blueprint-row\s*\{[\s\S]*grid-template-columns:\s*28px\s+minmax\(0,\s*1fr\)/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.community-blueprint-row strong,[\s\S]*\.community-blueprint-row b,[\s\S]*\.community-blueprint-row small\s*\{[\s\S]*white-space:\s*normal/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.community-focus-presets\s*\{[\s\S]*grid-template-columns:\s*1fr/);
 });
 
 test('sound lab processor renders layered engines with global soft limiter', () => {
@@ -408,7 +423,9 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(appJs, /soundLabAnalyzerMode/);
   assert.match(appJs, /soundLabWorkflowStep/);
   assert.match(appJs, /activeAdvancedModule/);
+  assert.match(appJs, /activeWorkbenchSynth/);
   assert.match(appJs, /handleWorkbenchStep/);
+  assert.match(appJs, /data-synth-tab/);
   assert.match(appJs, /data-analyzer-mode/);
   assert.match(appJs, /data-advanced-module/);
   assert.match(appJs, /toggle-more/);

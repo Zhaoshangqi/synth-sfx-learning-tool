@@ -77,6 +77,11 @@ const difficultyFilter = document.querySelector('#difficulty-filter');
 const tagFilter = document.querySelector('#tag-filter');
 const tabs = [...document.querySelectorAll('.tab')];
 const audioPlayer = createLabAudioPlayer();
+const WORKBENCH_SYNTH_TO_COACH_SYNTH = {
+  serum: 'serum',
+  'phase-plant': 'phasePlant',
+  vital: 'vital',
+};
 
 const state = {
   view: 'dashboard',
@@ -103,6 +108,7 @@ const state = {
   soundLabSampleMix: 0.58,
   soundLabEngineMode: 'hq',
   activeWorkbenchModule: 'envelope',
+  activeWorkbenchSynth: 'serum',
   soundLabPerformance: { ...SOUND_LAB_PERFORMANCE_DEFAULTS },
   soundLabEnvelope: {},
   soundLabFxOrder: [...SOUND_LAB_FX_ORDER],
@@ -520,6 +526,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     analyzerMode: state.soundLabAnalyzerMode,
     moreOpen: state.soundLabMoreOpen,
     activeAdvancedModule: state.activeAdvancedModule,
+    activeWorkbenchSynth: state.activeWorkbenchSynth,
     modulationGuides: synthModulationGuides,
     activeModulationGuideId: state.activeSynthModGuideId,
     activeCoachSynth: state.activeCoachSynth,
@@ -564,6 +571,7 @@ function renderSoundLabView() {
         analyzerMode: state.soundLabAnalyzerMode,
         moreOpen: state.soundLabMoreOpen,
         activeAdvancedModule: state.activeAdvancedModule,
+        activeWorkbenchSynth: state.activeWorkbenchSynth,
         modulationGuides: synthModulationGuides,
         activeModulationGuideId: state.activeSynthModGuideId,
         activeCoachSynth: state.activeCoachSynth,
@@ -1680,6 +1688,16 @@ function bindSoundLabControls() {
     });
   });
 
+  document.querySelectorAll('[data-synth-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const synthId = button.dataset.synthTab;
+      if (!(synthId in WORKBENCH_SYNTH_TO_COACH_SYNTH)) return;
+      state.activeWorkbenchSynth = synthId;
+      state.activeCoachSynth = WORKBENCH_SYNTH_TO_COACH_SYNTH[synthId];
+      render();
+    });
+  });
+
   document.querySelectorAll('[data-sound-lab-engine]').forEach((button) => {
     button.addEventListener('click', () => {
       state.soundLabEngineMode = button.dataset.soundLabEngine;
@@ -2068,6 +2086,37 @@ function updateCommunityControl(labId, controlId, value) {
   };
 }
 
+function getCommunityFocusPresets(lab) {
+  if (lab.focusPresets?.length) return lab.focusPresets;
+  const controls = lab.controls ?? [];
+  const base = Object.fromEntries(controls.map((control) => [control.id, Number(control.default ?? 50)]));
+  const clampToControl = (control, value) => Math.max(Number(control.min ?? 0), Math.min(Number(control.max ?? 100), Number(value)));
+  const withValues = (rules) => Object.fromEntries(controls.map((control, index) => {
+    const rule = rules.find((item) => item.ids?.includes(control.id) || item.index === index);
+    return [control.id, clampToControl(control, rule ? rule.value : base[control.id])];
+  }));
+  return [
+    {
+      id: 'focus-core',
+      labelZh: '主体优先',
+      goalZh: '先听 dry/body 是否成立',
+      values: withValues([{ index: 0, value: 72 }, { ids: ['space', 'tail', 'release'], value: 24 }]),
+    },
+    {
+      id: 'focus-motion',
+      labelZh: '运动/材质',
+      goalZh: '放大调制和纹理变化',
+      values: withValues([{ index: 1, value: 76 }, { index: 2, value: 74 }]),
+    },
+    {
+      id: 'focus-delivery',
+      labelZh: '完整交付',
+      goalZh: '听 full 版和尾巴关系',
+      values: withValues([{ ids: ['space', 'tail', 'release'], value: 68 }, { index: 3, value: 64 }]),
+    },
+  ];
+}
+
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Number(value)));
 }
@@ -2082,12 +2131,12 @@ function buildCommunitySoundLabRecipe(lab) {
     return Number.isFinite(Number(hit)) ? Number(hit) : fallback;
   };
 
-  const bright = pick(['brightness', 'sparkle', 'spark', 'presence', 'rise'], base.macros.brightness);
-  const motion = pick(['speed', 'direction', 'urgency', 'rise', 'grain'], base.macros.motion);
-  const material = pick(['edge', 'resonance', 'grain', 'techCore', 'density'], base.macros.material);
-  const space = pick(['space', 'release', 'wetness', 'dragLength'], base.macros.space);
-  const variation = pick(['variation', 'loopSafety', 'grain', 'density'], base.macros.variation);
-  const dryFocus = pick(['dryFocus', 'anchor', 'techCore', 'loopSafety'], base.layerMix.body);
+  const bright = pick(['brightness', 'sparkle', 'spark', 'presence', 'rise', 'edge'], base.macros.brightness);
+  const motion = pick(['speed', 'direction', 'urgency', 'rise', 'grain', 'motion', 'gate', 'drift'], base.macros.motion);
+  const material = pick(['edge', 'resonance', 'grain', 'techCore', 'density', 'drive', 'shell', 'inharmonicity'], base.macros.material);
+  const space = pick(['space', 'release', 'wetness', 'dragLength', 'tail'], base.macros.space);
+  const variation = pick(['variation', 'loopSafety', 'grain', 'density', 'drift', 'randomness'], base.macros.variation);
+  const dryFocus = pick(['dryFocus', 'anchor', 'techCore', 'loopSafety', 'carrier', 'weight'], base.layerMix.body);
 
   return {
     ...base,
@@ -2101,9 +2150,9 @@ function buildCommunitySoundLabRecipe(lab) {
     },
     layerMix: {
       ...base.layerMix,
-      transient: clampPercent((base.layerMix.transient + pick(['spark', 'presence', 'urgency'], base.layerMix.transient)) / 2),
+      transient: clampPercent((base.layerMix.transient + pick(['spark', 'presence', 'urgency', 'tick', 'attack'], base.layerMix.transient)) / 2),
       body: clampPercent((base.layerMix.body + dryFocus) / 2),
-      texture: clampPercent((base.layerMix.texture + pick(['edge', 'grain', 'wetness', 'density', 'sparkle'], base.layerMix.texture)) / 2),
+      texture: clampPercent((base.layerMix.texture + pick(['edge', 'grain', 'wetness', 'density', 'sparkle', 'drive', 'texture'], base.layerMix.texture)) / 2),
       tail: clampPercent((base.layerMix.tail + space) / 2),
     },
   };
@@ -2132,6 +2181,21 @@ function bindCommunityTechniqueControls() {
   document.querySelectorAll('[data-community-control]').forEach((input) => {
     bindSmoothRangeInput(input, (rangeInput) => {
       updateCommunityControl(activeLab.id, rangeInput.dataset.communityControl, rangeInput.value);
+    });
+  });
+
+  document.querySelectorAll('[data-community-focus-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const preset = getCommunityFocusPresets(activeLab).find((item) => item.id === button.dataset.communityFocusPreset);
+      if (!preset) return;
+      state.communityControlStates = {
+        ...state.communityControlStates,
+        [activeLab.id]: {
+          ...getCommunityControlValues(activeLab),
+          ...preset.values,
+        },
+      };
+      render();
     });
   });
 
