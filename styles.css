@@ -701,6 +701,43 @@ textarea {
   color: #0d7774;
 }
 
+.dashboard-launchpad {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid rgba(177, 203, 218, 0.62);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(244, 251, 252, 0.72)),
+    radial-gradient(circle at 0% 0%, rgba(23, 167, 163, 0.12), transparent 38%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84), 0 16px 34px rgba(42, 76, 104, 0.08);
+}
+
+.launchpad-button {
+  cursor: pointer;
+  min-height: 74px;
+  border-radius: 11px;
+  outline: none;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.launchpad-button:active {
+  transform: translateY(1px) scale(0.996);
+}
+
+.launchpad-button.is-primary {
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(23, 167, 163, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.launchpad-button.is-secondary {
+  color: #213442;
+  box-shadow: 0 10px 24px rgba(42, 76, 104, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
 .quality-panel {
   align-self: stretch;
   min-height: 100%;
@@ -4644,6 +4681,162 @@ textarea {
   overflow: visible;
 }
 
+.workbench-command-center {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.78fr) minmax(420px, 1.28fr);
+  gap: 10px;
+  align-items: stretch;
+  padding: 10px;
+  border: 1px solid rgba(181, 204, 218, 0.7);
+  border-radius: 11px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 251, 253, 0.86)),
+    radial-gradient(circle at 18% 0%, rgba(23, 167, 163, 0.1), transparent 40%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 12px 30px rgba(42, 76, 104, 0.07);
+}
+
+.command-current-task {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(23, 167, 163, 0.15);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #f9fefe, #f3fbfb);
+}
+
+.command-current-task span,
+.workbench-state-strip strong {
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.command-current-task strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #203442;
+  font-size: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-current-task p {
+  margin: 0;
+  color: #536879;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.workbench-command-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(82px, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.workbench-command-actions button {
+  cursor: pointer;
+  min-width: 0;
+  min-height: 70px;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  justify-items: start;
+  padding: 8px 10px;
+  border: 1px solid #dce8ef;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #263b4b;
+  text-align: left;
+  box-shadow: 0 10px 22px rgba(42, 76, 104, 0.07);
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.workbench-command-actions button:hover,
+.workbench-command-actions button:focus-visible {
+  border-color: rgba(23, 167, 163, 0.36);
+  background: #f8fdfd;
+  box-shadow: 0 12px 26px rgba(23, 167, 163, 0.12);
+}
+
+.workbench-command-actions button:active {
+  transform: translateY(1px);
+}
+
+.workbench-command-actions button span {
+  color: #0d7774;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.workbench-command-actions button strong {
+  color: inherit;
+  font-size: 13px;
+}
+
+.workbench-command-actions button small {
+  min-width: 0;
+  overflow: hidden;
+  color: #667a8b;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbench-command-actions .command-play-button {
+  border-color: rgba(23, 167, 163, 0.34);
+  background: linear-gradient(180deg, #18a8a3, #118984);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(23, 167, 163, 0.2);
+}
+
+.workbench-command-actions .command-play-button span,
+.workbench-command-actions .command-play-button small {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.workbench-command-actions .command-play-button strong {
+  color: #ffffff;
+}
+
+.workbench-state-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(120px, 0.72fr));
+  gap: 8px;
+}
+
+.workbench-state-strip span,
+.workbench-feedback {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid #e1ebf1;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #536879;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.workbench-feedback {
+  grid-column: 1 / -1;
+  min-height: 34px;
+  align-items: center;
+  border-color: rgba(23, 167, 163, 0.2);
+  background: linear-gradient(180deg, #f5fcfc, #ffffff);
+  color: #203442;
+  font-weight: 750;
+}
+
 .workbench-topbar,
 .synth-tab-row,
 .mini-panel-head,
@@ -5919,8 +6112,8 @@ textarea {
   writing-mode: vertical-lr;
   direction: rtl;
   accent-color: #17a7a3;
-  appearance: slider-vertical;
-  -webkit-appearance: slider-vertical;
+  appearance: none;
+  -webkit-appearance: none;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -6974,6 +7167,12 @@ textarea {
   display: none;
 }
 
+.synth-workbench-layout[data-workflow-step="deliver"] .sound-lab-export {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .tap-spark {
   mix-blend-mode: normal;
   background:
@@ -6982,6 +7181,10 @@ textarea {
 }
 
 @media (max-width: 1180px) {
+  .workbench-command-center {
+    grid-template-columns: 1fr;
+  }
+
   .workbench-main-grid,
   .workbench-footer-grid {
     grid-template-columns: 1fr;
@@ -7010,6 +7213,14 @@ textarea {
   .workbench-right-rail,
   .sound-family-rail {
     grid-template-columns: 1fr;
+  }
+
+  .workbench-command-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .workbench-state-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .advanced-module-dock {
@@ -7116,6 +7327,9 @@ textarea {
   .workbench-topbar,
   .synth-tab-row,
   .workbench-actions,
+  .workbench-command-center,
+  .workbench-command-actions,
+  .workbench-state-strip,
   .workbench-module-tabs,
   .advanced-module-dock,
   .professional-control-grid,
@@ -7136,6 +7350,18 @@ textarea {
 
   .workflow-step {
     min-height: 76px;
+  }
+
+  .workbench-command-center {
+    padding: 8px;
+  }
+
+  .workbench-command-actions button {
+    min-height: 58px;
+  }
+
+  .synth-workbench-layout[data-workflow-step="deliver"] .sound-lab-export {
+    grid-template-columns: 1fr;
   }
 
   .module-map-head,
