@@ -15,6 +15,7 @@ import {
   techniqueTips,
   communityTechniqueLabs,
   deepDiveModules,
+  synthModulationGuides,
 } from '../src/content.js';
 import { buildDefaultLabState, buildLabVisualModel } from '../src/lab-engine.js';
 import { buildDefaultMaterialState, buildMaterialVisualModel } from '../src/challenge-model.js';
@@ -214,6 +215,25 @@ test('renderSoundLabWorkbench matches the light synth workstation reference modu
   assert.match(html, /快速入口/);
   assert.match(html, /输出电平/);
   assert.match(html, /材质选择/);
+});
+
+test('renderSoundLabWorkbench exposes module coaching with concrete synth steps', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS);
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    modulationGuides: synthModulationGuides,
+    activeModulationGuideId: 'mod-coach-modmatrix',
+  });
+
+  assert.match(html, /workbench-coach-panel/);
+  assert.match(html, /data-mod-guide="mod-coach-modmatrix"/);
+  assert.match(html, /data-guide-load="mod-coach-modmatrix"/);
+  assert.match(html, /data-guide-preview="mod-coach-modmatrix"/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /调制矩阵/);
 });
 
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {

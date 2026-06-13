@@ -1253,6 +1253,66 @@ function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
   `;
 }
 
+function renderWorkbenchCoach(guides = [], activeGuideId) {
+  const activeGuide = guides.find((guide) => guide.id === activeGuideId) ?? guides[0];
+  if (!activeGuide) return '';
+  const synthLabels = {
+    serum: 'Serum',
+    phasePlant: 'Phase Plant',
+    vital: 'Vital',
+  };
+  return `
+    <section class="workbench-coach-panel" aria-label="模块使用教练">
+      <div class="coach-nav" role="list" aria-label="选择学习模块">
+        ${guides.map((guide, index) => `
+          <button class="${guide.id === activeGuide.id ? 'is-active' : ''}" type="button" data-mod-guide="${escapeHtml(guide.id)}" aria-pressed="${guide.id === activeGuide.id ? 'true' : 'false'}">
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <strong>${escapeHtml(guide.titleZh.split('：')[0])}</strong>
+          </button>
+        `).join('')}
+      </div>
+      <div class="coach-main">
+        <div class="coach-explain">
+          <span class="card-kicker">模块怎么用</span>
+          <h4>${escapeHtml(activeGuide.titleZh)}</h4>
+          <p>${escapeHtml(activeGuide.questionZh)}</p>
+          <div class="coach-listen">
+            <strong>先听什么</strong>
+            <span>${escapeHtml(activeGuide.listenForZh)}</span>
+          </div>
+          <div class="coach-actions">
+            <button type="button" data-guide-load="${escapeHtml(activeGuide.id)}">加载练习参数</button>
+            <button type="button" data-guide-preview="${escapeHtml(activeGuide.id)}">加载并试听</button>
+          </div>
+        </div>
+        <div class="coach-diagram" aria-label="信号流图">
+          ${(activeGuide.diagramNodes ?? []).map((node, index, nodes) => `
+            <div class="coach-node">
+              <span>${String(index + 1).padStart(2, '0')}</span>
+              <strong>${escapeHtml(node)}</strong>
+            </div>
+            ${index < nodes.length - 1 ? '<i aria-hidden="true"></i>' : ''}
+          `).join('')}
+        </div>
+      </div>
+      <div class="coach-synth-grid">
+        ${Object.entries(activeGuide.synthSteps ?? {}).map(([synth, steps]) => `
+          <article>
+            <strong>${escapeHtml(synthLabels[synth] ?? synth)}</strong>
+            <ol>
+              ${(steps ?? []).map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+            </ol>
+          </article>
+        `).join('')}
+      </div>
+      <div class="coach-bottom-row">
+        <div><strong>重点参数</strong><span>${escapeHtml((activeGuide.controlFocus ?? []).join(' / '))}</span></div>
+        <div><strong>别踩坑</strong><span>${escapeHtml(activeGuide.mistakeZh)}</span></div>
+      </div>
+    </section>
+  `;
+}
+
 function renderWorkbenchPlayback(model = {}, isPlaying = false) {
   return `
     <section class="workbench-panel playback-card" aria-label="播放控制">
@@ -1533,6 +1593,7 @@ function renderLightSoundLabWorkbench(family, model, options, status) {
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
       </div>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep)}
+      ${renderWorkbenchCoach(options.modulationGuides, options.activeModulationGuideId)}
       <div class="workbench-main-grid">
         <div class="workbench-core">
           <div class="analyzer-row">

@@ -17,6 +17,7 @@
   communityTechniqueLabs,
   deepDiveModules,
   externalIntegrations,
+  synthModulationGuides,
   soundLabFamilies,
 } from './content.js';
 import {
@@ -113,6 +114,7 @@ const state = {
   soundLabAnalyzerMode: 'live',
   soundLabMoreOpen: false,
   activeAdvancedModule: 'advanced-panel',
+  activeSynthModGuideId: synthModulationGuides[0]?.id,
   soundLabFavorites: [],
   soundLabProjects: [],
   soundLabGitSync: {
@@ -505,6 +507,8 @@ function getSoundLabOptions(optionOverrides = {}) {
     analyzerMode: state.soundLabAnalyzerMode,
     moreOpen: state.soundLabMoreOpen,
     activeAdvancedModule: state.activeAdvancedModule,
+    modulationGuides: synthModulationGuides,
+    activeModulationGuideId: state.activeSynthModGuideId,
     ...optionOverrides,
   };
 }
@@ -546,6 +550,8 @@ function renderSoundLabView() {
         analyzerMode: state.soundLabAnalyzerMode,
         moreOpen: state.soundLabMoreOpen,
         activeAdvancedModule: state.activeAdvancedModule,
+        modulationGuides: synthModulationGuides,
+        activeModulationGuideId: state.activeSynthModGuideId,
       })}
       <section class="grid two sound-lab-preset-grid">
         ${family.presets.map((preset) => `
@@ -1237,6 +1243,25 @@ function handleWorkbenchStep(step) {
   scrollSoundLabIntoView(scrollByStep[step] ?? '.sound-lab-workbench');
 }
 
+function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
+  const guide = synthModulationGuides.find((item) => item.id === guideId) ?? synthModulationGuides[0];
+  if (!guide) return;
+  state.activeSynthModGuideId = guide.id;
+  state.soundLabWorkflowStep = guide.workflowStep ?? state.soundLabWorkflowStep;
+  state.activeWorkbenchModule = guide.moduleId ?? state.activeWorkbenchModule;
+  if (loadPatch) {
+    selectSoundLabFamily(guide.familyId, false);
+    state.activeSynthModGuideId = guide.id;
+    state.soundLabWorkflowStep = guide.workflowStep ?? state.soundLabWorkflowStep;
+    state.activeWorkbenchModule = guide.moduleId ?? state.activeWorkbenchModule;
+    state.soundLabMacros = { ...state.soundLabMacros, ...(guide.macroHints ?? {}) };
+    state.soundLabLayerMix = { ...state.soundLabLayerMix, ...(guide.layerMix ?? {}) };
+  }
+  render();
+  scrollSoundLabIntoView('.workbench-coach-panel');
+  if (play) playSoundLabPatch();
+}
+
 function refreshAuditionPatch() {
   if (!state.isAuditioning) return;
   const lab = getActiveLab();
@@ -1837,6 +1862,24 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-advanced-module]').forEach((button) => {
     button.addEventListener('click', () => {
       selectAdvancedModule(button.dataset.advancedModule);
+    });
+  });
+
+  document.querySelectorAll('[data-mod-guide]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applySynthModGuide(button.dataset.modGuide);
+    });
+  });
+
+  document.querySelectorAll('[data-guide-load]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applySynthModGuide(button.dataset.guideLoad, { loadPatch: true });
+    });
+  });
+
+  document.querySelectorAll('[data-guide-preview]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applySynthModGuide(button.dataset.guidePreview, { loadPatch: true, play: true });
     });
   });
 
