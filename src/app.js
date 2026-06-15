@@ -497,7 +497,7 @@ function renderDailyVideosView() {
   const updatedDate = DAILY_VIDEO_FEED_UPDATED_AT.slice(0, 10);
   const youtubeCount = dailyVideoFeed.filter((video) => video.platform === 'YouTube').length;
   const biliCount = dailyVideoFeed.filter((video) => video.platform === 'Bilibili').length;
-  const pendingCount = dailyVideoFeed.filter((video) => video.statusZh === '待整理').length;
+  const pendingCount = dailyVideoFeed.filter((video) => video.statusZh === '待精读').length;
 
   return `
     ${header('每日新教程', '每天自动搜索合成器音效制作教程，先抓取 YouTube/B 站候选，再转成中文学习提炼和可实践提示。', `${filtered.length} / ${dailyVideoFeed.length} 条`)}
@@ -510,7 +510,7 @@ function renderDailyVideosView() {
           <div><span>更新时间</span><strong>${escapeHtml(updatedDate)}</strong></div>
           <div><span>YouTube</span><strong>${youtubeCount}</strong></div>
           <div><span>B 站</span><strong>${biliCount}</strong></div>
-          <div><span>待整理</span><strong>${pendingCount}</strong></div>
+          <div><span>待精读</span><strong>${pendingCount}</strong></div>
         </div>
         <div class="daily-filter-row" aria-label="每日教程筛选">
           ${DAILY_VIDEO_FILTERS.map(([id, label]) => `
