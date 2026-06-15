@@ -1652,7 +1652,7 @@ function bindSourceForm() {
       .map((tag) => tag.trim())
       .filter(Boolean);
     const credibility = String(data.get('credibility') ?? 'professional-tutorial');
-    const noteZh = String(data.get('noteZh') ?? '').trim() || '手动添加的英文资料，等待整理字幕、翻译和知识卡片。';
+    const noteZh = String(data.get('noteZh') ?? '').trim() || '手动添加的英文资料，后续需要补字幕、翻译和知识卡片。';
 
     userSources = [
       {
