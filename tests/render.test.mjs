@@ -74,6 +74,28 @@ test('renderDailyVideoCard exposes synced tutorial metadata and practice actions
   assert.match(html, /data-daily-video-action="open"/);
   assert.match(html, /data-daily-video-action="practice"/);
   assert.match(html, /https:\/\/www\.youtube\.com\/watch\?v=metal001/);
+  assert.match(html, /daily-video-open-link/);
+  assert.match(html, /打开视频页/);
+  assert.match(html, /aria-label="打开视频页：How to Make Metallic UI Hits in Serum with FM and Comb Filters"/);
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /daily-video-url/);
+});
+
+test('renderDailyVideoCard shows a disabled open state when a synced tutorial has no URL', () => {
+  const html = renderDailyVideoCard({
+    id: 'daily-missing-url',
+    platform: 'YouTube',
+    title: 'Pending URL Tutorial',
+    creator: 'Creator Lab',
+    statusZh: '待精读',
+    tags: ['Serum'],
+    learningNoteZh: '等待补充来源链接。',
+    practicePromptZh: '先在 Sound Lab 做参数拆解。',
+  });
+
+  assert.doesNotMatch(html, /href="undefined"/);
+  assert.match(html, /daily-video-open-link is-disabled/);
+  assert.match(html, /视频链接待补/);
 });
 
 test('renderKnowledgeCard includes Chinese explanation, evidence, and synth mappings', () => {

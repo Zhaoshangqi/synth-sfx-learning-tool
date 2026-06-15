@@ -13,6 +13,16 @@ function badgeList(items = []) {
   return items.map((item) => `<span class="badge">${escapeHtml(item)}</span>`).join('');
 }
 
+function compactExternalUrl(url = '') {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, '');
+    return `${host}${parsed.pathname}${parsed.search}`.replace(/\/$/, '');
+  } catch {
+    return String(url).trim();
+  }
+}
+
 function listItems(items = []) {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 }
@@ -263,7 +273,14 @@ export function renderSourceCard(source) {
 export function renderDailyVideoCard(video) {
   const published = video.publishedAt || '日期待补';
   const duration = video.durationLabel ? ` · ${video.durationLabel}` : '';
-  const status = video.statusZh || '待整理';
+  const status = video.statusZh || '待精读';
+  const videoUrl = String(video.url ?? '').trim();
+  const openControl = videoUrl
+    ? `<a class="source-link daily-video-open-link" data-daily-video-action="open" href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener noreferrer" aria-label="打开视频页：${escapeHtml(video.title)}">打开视频页</a>`
+    : '<span class="source-link daily-video-open-link is-disabled" aria-disabled="true">视频链接待补</span>';
+  const urlControl = videoUrl
+    ? `<a href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(compactExternalUrl(videoUrl))}</a>`
+    : '<span>等待同步脚本补充链接</span>';
   return `
     <article class="card daily-video-card" data-daily-video-id="${escapeHtml(video.id)}">
       <div class="daily-video-topline">
@@ -278,8 +295,9 @@ export function renderDailyVideoCard(video) {
         <p>${escapeHtml(video.practicePromptZh)}</p>
       </section>
       <div class="badges daily-video-tags">${badgeList(video.tags)}</div>
+      <p class="daily-video-url"><span>视频页</span>${urlControl}</p>
       <div class="daily-video-actions">
-        <a class="source-link" data-daily-video-action="open" href="${escapeHtml(video.url)}" target="_blank" rel="noreferrer">打开教程</a>
+        ${openControl}
         <button class="secondary-button" type="button" data-daily-video-action="practice" data-daily-video-practice="${escapeHtml(video.id)}">推到 Sound Lab</button>
       </div>
     </article>
