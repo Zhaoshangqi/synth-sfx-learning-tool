@@ -215,6 +215,25 @@ export function buildChineseLearningNote(item = {}) {
   return '适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。';
 }
 
+export function deriveVideoWorkflowStatus(item = {}, context = {}) {
+  const explicitStatus = String(item.statusZh ?? '').trim();
+  if (explicitStatus && explicitStatus !== '待整理') return explicitStatus;
+  if (item.knowledgeCardId || item.cardId) return '已转卡';
+  if (item.transcriptZh || item.summaryZh || item.extractedStepsZh?.length) return '待转卡';
+
+  const source = String(item.sync?.source ?? context.source ?? '').toLowerCase();
+  const hasCuratedChineseNote = Boolean(item.learningNoteZh && item.practicePromptZh);
+  const isCuratedSource = source.includes('manual') || source.includes('curated') || item.curated === true || context.curated === true;
+  if (hasCuratedChineseNote && isCuratedSource) return '已提炼';
+  return '待精读';
+}
+
+function deriveTranslationStatus(statusZh, current = '') {
+  if (current && current !== '待翻译') return current;
+  if (statusZh === '已提炼' || statusZh === '待转卡' || statusZh === '已转卡') return '中文提炼';
+  return '待翻译';
+}
+
 function buildPracticePrompt(item = {}) {
   const tags = new Set(item.tags ?? []);
   const synths = ['Serum', 'Phase Plant', 'Vital'].filter((name) => tags.has(name));
@@ -275,8 +294,8 @@ export function normalizeVideoItem(raw = {}, platform = raw.platform ?? 'youtube
     durationLabel: raw.durationLabel ?? raw.duration_string ?? secondsToDuration(durationSeconds),
     difficulty: raw.difficulty ?? classified.difficulty,
     tags: unique([...classified.tags, ...rawTags]),
-    statusZh: raw.statusZh ?? '待整理',
-    translationStatusZh: raw.translationStatusZh ?? '待翻译',
+    statusZh: raw.statusZh ?? '',
+    translationStatusZh: raw.translationStatusZh ?? '',
     learningNoteZh: raw.learningNoteZh ?? '',
     practicePromptZh: raw.practicePromptZh ?? '',
     sync: {
@@ -287,6 +306,8 @@ export function normalizeVideoItem(raw = {}, platform = raw.platform ?? 'youtube
   };
   item.learningNoteZh ||= buildChineseLearningNote(item);
   item.practicePromptZh ||= buildPracticePrompt(item);
+  item.statusZh = deriveVideoWorkflowStatus(item, context);
+  item.translationStatusZh = deriveTranslationStatus(item.statusZh, item.translationStatusZh);
   item.score = scoreVideoCandidate(item);
   return item;
 }

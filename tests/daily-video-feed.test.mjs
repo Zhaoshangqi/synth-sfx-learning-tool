@@ -4,6 +4,7 @@ import {
   SEARCH_QUERIES,
   buildChineseLearningNote,
   classifyVideo,
+  deriveVideoWorkflowStatus,
   mergeVideoFeed,
   normalizeVideoItem,
   scoreVideoCandidate,
@@ -21,6 +22,7 @@ test('daily video updater classifies synth SFX tutorials into practical Chinese 
     upload_date: '20260614',
   }, 'youtube', {
     query: 'Serum metallic sound design FM comb filter tutorial',
+    source: 'yt-dlp',
     now: '2026-06-15T00:00:00.000Z',
   });
 
@@ -32,7 +34,7 @@ test('daily video updater classifies synth SFX tutorials into practical Chinese 
   assert.ok(item.tags.includes('FM'));
   assert.ok(item.tags.includes('comb filter'));
   assert.equal(item.difficulty, 'intermediate');
-  assert.equal(item.statusZh, '待整理');
+  assert.equal(item.statusZh, '待精读');
   assert.match(item.learningNoteZh, /金属|FM|梳状/);
   assert.match(item.practicePromptZh, /Serum|Phase Plant|Vital|REAPER/);
   assert.equal(item.sync.query, 'Serum metallic sound design FM comb filter tutorial');
@@ -95,6 +97,8 @@ test('daily video merge dedupes repeated URLs, refreshes last seen time, and cap
 
 test('generated daily feed module exports safe static data for the browser app', () => {
   assert.ok(dailyVideoFeed.length >= 4, 'expected seed videos before the first scheduled sync');
+  assert.ok(dailyVideoFeed.some((item) => item.statusZh === '已提炼'), 'curated seed tutorials should not all look unprocessed');
+  assert.equal(dailyVideoFeed.filter((item) => item.statusZh === '待整理').length, 0, 'legacy vague status should not be shown');
   for (const item of dailyVideoFeed) {
     assert.match(item.id, /^daily-[a-z0-9-]+$/);
     assert.ok(['YouTube', 'Bilibili'].includes(item.platform));
@@ -109,6 +113,30 @@ test('generated daily feed module exports safe static data for the browser app',
   assert.match(moduleText, /export const dailyVideoFeed/);
   assert.match(moduleText, /DAILY_VIDEO_FEED_UPDATED_AT/);
   assert.doesNotMatch(moduleText, /<\/script>/i);
+});
+
+test('workflow status distinguishes curated notes from raw search candidates', () => {
+  const curated = normalizeVideoItem({
+    id: 'manual-metal',
+    title: 'Simple Metallic Sound Design With Serum 2',
+    webpage_url: 'https://www.youtube.com/watch?v=Pu7cSOqW8iM',
+    uploader: 'Negativist / NGTVST',
+    learningNoteZh: '已经整理过核心中文听感提炼。',
+    practicePromptZh: '已经写好可执行的 Sound Lab 练习。',
+    statusZh: '待整理',
+    sync: { source: 'manual-seed' },
+  }, 'youtube', { query: 'Serum metallic', now: '2026-06-15T00:00:00.000Z' });
+
+  const rawSearch = normalizeVideoItem({
+    id: 'raw-metal',
+    title: 'New Serum Metallic Tutorial',
+    webpage_url: 'https://www.youtube.com/watch?v=rawmetal',
+    uploader: 'Fresh Search',
+  }, 'youtube', { query: 'Serum metallic', source: 'yt-dlp', now: '2026-06-15T00:00:00.000Z' });
+
+  assert.equal(deriveVideoWorkflowStatus(curated, { source: 'manual-seed' }), '已提炼');
+  assert.equal(curated.statusZh, '已提炼');
+  assert.equal(rawSearch.statusZh, '待精读');
 });
 
 test('daily sync searches across target synths and major SFX families', () => {
