@@ -1,0 +1,175 @@
+{
+  "updatedAt": "2026-06-15T02:20:50.599Z",
+  "items": [
+    {
+      "id": "daily-youtube-j5ju2bnsx0i",
+      "platform": "YouTube",
+      "videoId": "J5Ju2bNSx0I",
+      "title": "5 INDUSTRIAL METAL sound design techniques you need to know",
+      "creator": "Tonepusher",
+      "url": "https://www.youtube.com/watch?v=J5Ju2bNSx0I",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "durationSeconds": 0,
+      "durationLabel": "",
+      "difficulty": "advanced",
+      "tags": [
+        "metal",
+        "whoosh",
+        "impact",
+        "distortion",
+        "SFX",
+        "YouTube",
+        "industrial"
+      ],
+      "statusZh": "待整理",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合做工业金属技巧索引：把多种处理法拆成瞬态、材质、空间和响度四类，避免只堆失真。",
+      "practicePromptZh": "选其中 1 个技巧转成网页配方：写出原理、Serum / Phase Plant / Vital 替代路线，以及 REAPER 导出检查。",
+      "sync": {
+        "query": "synth sound design resampling impact whoosh game audio tutorial",
+        "source": "manual-seed",
+        "seenCount": 1
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-pu7csoqw8im",
+      "platform": "YouTube",
+      "videoId": "Pu7cSOqW8iM",
+      "title": "Simple Metallic Sound Design With Serum 2",
+      "creator": "Negativist / NGTVST",
+      "url": "https://www.youtube.com/watch?v=Pu7cSOqW8iM",
+      "publishedAt": "2026-06-01",
+      "discoveredAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "durationSeconds": 0,
+      "durationLabel": "",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "FM",
+        "comb filter",
+        "filter",
+        "SFX",
+        "YouTube",
+        "Serum 2",
+        "frequency shifter"
+      ],
+      "statusZh": "待整理",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：把 Serum 2 的频移、FM 侧频和短包络分开听，重点记录哪些参数让声音从塑料变成金属。",
+      "practicePromptZh": "在 Serum / Phase Plant / Vital 中各做一个短金属 hit：先做干声主体，再加 frequency shifter 或 comb filter，最后到 REAPER 做 dry/full/tail-only 对照。",
+      "sync": {
+        "query": "Serum metallic sound design FM comb filter tutorial",
+        "source": "manual-seed",
+        "seenCount": 1
+      },
+      "score": 48
+    },
+    {
+      "id": "daily-youtube-evtchtclrg0",
+      "platform": "YouTube",
+      "videoId": "EvTcHTCLRg0",
+      "title": "Sound Design Metallic Friction (using Vital)",
+      "creator": "Negativist / NGTVST",
+      "url": "https://www.youtube.com/watch?v=EvTcHTCLRg0",
+      "publishedAt": "2026-05-24",
+      "discoveredAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "durationSeconds": 0,
+      "durationLabel": "",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "metal",
+        "granular",
+        "SFX",
+        "YouTube",
+        "friction",
+        "noise"
+      ],
+      "statusZh": "待整理",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练摩擦类金属：重点听噪声、随机调制、滤波峰和空间尾巴如何让材质从单点 hit 变成连续刮擦。",
+      "practicePromptZh": "在 Vital 里复刻一条 2 秒金属摩擦，再把同样结构转译到 Serum 和 Phase Plant；REAPER 中检查 transient/body/tail 是否分层清楚。",
+      "sync": {
+        "query": "Vital metallic friction sound design tutorial",
+        "source": "manual-seed",
+        "seenCount": 1
+      },
+      "score": 40
+    },
+    {
+      "id": "daily-youtube-iurzptfwih-e",
+      "platform": "YouTube",
+      "videoId": "iUrzPtfWIhE",
+      "title": "Robot Sound Design (with Machina By Rock The Speakerbox)",
+      "creator": "Negativist / NGTVST",
+      "url": "https://www.youtube.com/watch?v=iUrzPtfWIhE",
+      "publishedAt": "2026-05-17",
+      "discoveredAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "durationSeconds": 0,
+      "durationLabel": "",
+      "difficulty": "intermediate",
+      "tags": [
+        "robot",
+        "comb filter",
+        "filter",
+        "SFX",
+        "YouTube",
+        "mechanical",
+        "pitch",
+        "gate",
+        "short delay"
+      ],
+      "statusZh": "待整理",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练机械语言：把音高跳变、门控节奏、短延迟和共振峰当成四个可控维度，不只照搬插件。",
+      "practicePromptZh": "在 Sound Lab 先用机械材质做 A/B，再回到 Serum / Phase Plant / Vital 里尝试 pitch gate 与 comb delay 的组合。",
+      "sync": {
+        "query": "synth sound design robot mechanical tutorial",
+        "source": "manual-seed",
+        "seenCount": 1
+      },
+      "score": 26
+    },
+    {
+      "id": "daily-youtube-hx6i8nl-sqi",
+      "platform": "YouTube",
+      "videoId": "hx6I8nl-SQI",
+      "title": "Trailer Sound Design with Serum 2: Simple Pulses",
+      "creator": "Negativist / NGTVST",
+      "url": "https://www.youtube.com/watch?v=hx6I8nl-SQI",
+      "publishedAt": "2026-03-01",
+      "discoveredAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "durationSeconds": 0,
+      "durationLabel": "",
+      "difficulty": "beginner",
+      "tags": [
+        "Serum",
+        "UI",
+        "modulation",
+        "SFX",
+        "YouTube",
+        "Serum 2",
+        "pulse",
+        "trailer"
+      ],
+      "statusZh": "待整理",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练节奏型音效：观察 gate、LFO、滤波开合和失真如何把一个简单波形变成预告片脉冲。",
+      "practicePromptZh": "先在 Serum 2 里做 1 小节 pulse，再用 Phase Plant 和 Vital 复刻调制节奏；REAPER 中渲染 90/120/150 BPM 三个速度。",
+      "sync": {
+        "query": "Serum UI click game audio sound design tutorial",
+        "source": "manual-seed",
+        "seenCount": 1
+      },
+      "score": 38
+    }
+  ]
+}

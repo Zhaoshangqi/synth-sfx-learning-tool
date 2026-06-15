@@ -36,6 +36,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
+  renderDailyVideoCard,
 } from '../src/render.js';
 import { soundLabFamilies } from '../src/content.js';
 import { SOUND_LAB_MACROS, buildSoundLabViewModel } from '../src/sound-lab-model.js';
@@ -45,6 +46,34 @@ test('renderSourceCard includes title, platform, credibility, and link', () => {
   assert.match(html, /href="https:\/\//);
   assert.match(html, new RegExp(sources[0].platform));
   assert.match(html, new RegExp(sources[0].credibility));
+});
+
+test('renderDailyVideoCard exposes synced tutorial metadata and practice actions', () => {
+  const video = {
+    id: 'daily-demo',
+    platform: 'YouTube',
+    title: 'How to Make Metallic UI Hits in Serum with FM and Comb Filters',
+    creator: 'Creator Lab',
+    url: 'https://www.youtube.com/watch?v=metal001',
+    durationLabel: '8:25',
+    publishedAt: '2026-06-14',
+    discoveredAt: '2026-06-15T00:00:00.000Z',
+    statusZh: '待整理',
+    difficulty: 'intermediate',
+    tags: ['Serum', 'metal', 'FM', 'comb filter'],
+    learningNoteZh: '适合拆金属质感：重点观察 FM 侧频和梳状共振。',
+    practicePromptZh: '在 Sound Lab 里加载金属材质，用短 Decay 复刻一次。',
+  };
+
+  const html = renderDailyVideoCard(video);
+  assert.match(html, /daily-video-card/);
+  assert.match(html, /data-daily-video-id="daily-demo"/);
+  assert.match(html, /Creator Lab/);
+  assert.match(html, /待整理/);
+  assert.match(html, /FM/);
+  assert.match(html, /data-daily-video-action="open"/);
+  assert.match(html, /data-daily-video-action="practice"/);
+  assert.match(html, /https:\/\/www\.youtube\.com\/watch\?v=metal001/);
 });
 
 test('renderKnowledgeCard includes Chinese explanation, evidence, and synth mappings', () => {
