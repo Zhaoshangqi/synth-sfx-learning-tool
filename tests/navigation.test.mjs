@@ -7,6 +7,7 @@ test('main navigation exposes the learning and practice views', () => {
 
   assert.match(html, /data-view="interactive"/);
   assert.match(html, /data-view="micro"/);
+  assert.match(html, /data-view="daily"/);
   assert.match(html, /data-view="challenges"/);
   assert.match(html, /data-view="techniques"/);
   assert.match(html, /data-view="deep"/);

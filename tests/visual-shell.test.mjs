@@ -399,6 +399,44 @@ test('dashboard CTA buttons use clear high-contrast clickable states', () => {
   assert.match(css, /\.dashboard-actions button em\s*\{/);
 });
 
+test('daily tutorial feed is wired into navigation, app routing, and styles', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /data-view="daily"/);
+  assert.match(html, /每日新教程/);
+  assert.match(appJs, /dailyVideoFeed/);
+  assert.match(appJs, /renderDailyVideosView/);
+  assert.match(appJs, /daily:\s*renderDailyVideosView/);
+  assert.match(appJs, /data-daily-filter/);
+  assert.match(appJs, /data-daily-video-action/);
+  assert.match(renderJs, /renderDailyVideoCard/);
+  assert.match(renderJs, /daily-video-card/);
+  assert.match(css, /\.daily-video-shell/);
+  assert.match(css, /\.daily-video-grid/);
+  assert.match(css, /\.daily-video-card/);
+  assert.match(css, /\.daily-sync-panel/);
+});
+
+test('daily tutorial sync workflow can refresh data and publish the gh-pages branch', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/daily-video-sync.yml', import.meta.url), 'utf8');
+  const script = readFileSync(new URL('../scripts/update-video-feed.mjs', import.meta.url), 'utf8');
+
+  assert.match(workflow, /schedule:/);
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /yt-dlp/);
+  assert.match(workflow, /node scripts\/update-video-feed\.mjs/);
+  assert.match(workflow, /git push origin main/);
+  assert.match(workflow, /git push origin (HEAD:)?gh-pages/);
+  assert.match(workflow, /data\/daily-video-feed\.json/);
+  assert.match(script, /YOUTUBE_API_KEY/);
+  assert.match(script, /ytsearchdate/);
+  assert.match(script, /bilibili/);
+  assert.match(script, /serializeFeedModule/);
+});
+
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');

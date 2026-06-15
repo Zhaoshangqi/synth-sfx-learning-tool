@@ -260,6 +260,32 @@ export function renderSourceCard(source) {
   `;
 }
 
+export function renderDailyVideoCard(video) {
+  const published = video.publishedAt || '日期待补';
+  const duration = video.durationLabel ? ` · ${video.durationLabel}` : '';
+  const status = video.statusZh || '待整理';
+  return `
+    <article class="card daily-video-card" data-daily-video-id="${escapeHtml(video.id)}">
+      <div class="daily-video-topline">
+        <span class="card-kicker">${escapeHtml(video.platform)} · ${escapeHtml(video.difficulty ?? 'intermediate')}</span>
+        <span class="daily-video-status">${escapeHtml(status)}</span>
+      </div>
+      <h3>${escapeHtml(video.title)}</h3>
+      <p class="english-title">${escapeHtml(video.creator ?? 'Unknown creator')} · ${escapeHtml(published)}${escapeHtml(duration)}</p>
+      <p>${escapeHtml(video.learningNoteZh)}</p>
+      <section class="daily-practice-note">
+        <h4>今日练习</h4>
+        <p>${escapeHtml(video.practicePromptZh)}</p>
+      </section>
+      <div class="badges daily-video-tags">${badgeList(video.tags)}</div>
+      <div class="daily-video-actions">
+        <a class="source-link" data-daily-video-action="open" href="${escapeHtml(video.url)}" target="_blank" rel="noreferrer">打开教程</a>
+        <button class="secondary-button" type="button" data-daily-video-action="practice" data-daily-video-practice="${escapeHtml(video.id)}">推到 Sound Lab</button>
+      </div>
+    </article>
+  `;
+}
+
 export function renderKnowledgeCard(card, sources) {
   const source = findSource(sources, card.sourceId);
   return `

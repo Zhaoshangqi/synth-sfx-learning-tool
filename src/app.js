@@ -20,6 +20,7 @@
   synthModulationGuides,
   soundLabFamilies,
 } from './content.js';
+import { DAILY_VIDEO_FEED_UPDATED_AT, dailyVideoFeed } from './daily-video-feed.js';
 import {
   applyLabMacro,
   applyLabPreset,
@@ -62,6 +63,7 @@ import {
   renderSoundChallenge,
   renderSoundLabWorkbench,
   renderSourceCard,
+  renderDailyVideoCard,
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
@@ -115,6 +117,8 @@ const state = {
   synth: 'all',
   difficulty: 'all',
   tag: 'all',
+  dailyVideoFilter: 'all',
+  dailyVideoActionMessage: '每天自动搜索英文 YouTube 和 B 站教程；先收集，再转成中文练习卡。',
   activeLabId: interactiveLabs[0]?.id,
   labStates: Object.fromEntries(interactiveLabs.map((lab) => [lab.id, buildDefaultLabState(lab)])),
   activeMicroTrackId: microLearningTracks[0]?.id,
@@ -455,6 +459,74 @@ function renderSourcesView() {
       <button class="primary-button" type="submit">添加来源</button>
     </form>
     <section class="grid">${filtered.map(renderSourceCard).join('') || '<div class="empty-state">没有匹配的来源。</div>'}</section>
+  `;
+}
+
+const DAILY_VIDEO_FILTERS = [
+  ['all', '全部'],
+  ['Serum', 'Serum'],
+  ['Phase Plant', 'Phase Plant'],
+  ['Vital', 'Vital'],
+  ['metal', '金属'],
+  ['whoosh', 'Whoosh'],
+  ['impact', 'Impact'],
+  ['Bilibili', 'B 站'],
+];
+
+function dailyVideoMatchesLocalFilter(video, filter) {
+  if (filter === 'all') return true;
+  const text = normalizeText([video.platform, video.title, video.creator, ...(video.tags ?? [])].join(' '));
+  return text.includes(normalizeText(filter));
+}
+
+function dailyVideoMatchesGlobalFilters(video) {
+  const text = normalizeText([video.platform, video.title, video.creator, video.learningNoteZh, video.practicePromptZh, ...(video.tags ?? [])].join(' '));
+  const query = normalizeText(state.query);
+  const synth = normalizeText(state.synth);
+  const difficulty = state.difficulty;
+  const tag = normalizeText(state.tag);
+  if (query && !text.includes(query)) return false;
+  if (state.synth !== 'all' && !text.includes(synth)) return false;
+  if (difficulty !== 'all' && video.difficulty !== difficulty) return false;
+  if (state.tag !== 'all' && !text.includes(tag)) return false;
+  return dailyVideoMatchesLocalFilter(video, state.dailyVideoFilter);
+}
+
+function renderDailyVideosView() {
+  const filtered = dailyVideoFeed.filter(dailyVideoMatchesGlobalFilters);
+  const updatedDate = DAILY_VIDEO_FEED_UPDATED_AT.slice(0, 10);
+  const youtubeCount = dailyVideoFeed.filter((video) => video.platform === 'YouTube').length;
+  const biliCount = dailyVideoFeed.filter((video) => video.platform === 'Bilibili').length;
+  const pendingCount = dailyVideoFeed.filter((video) => video.statusZh === '待整理').length;
+
+  return `
+    ${header('每日新教程', '每天自动搜索合成器音效制作教程，先抓取 YouTube/B 站候选，再转成中文学习提炼和可实践提示。', `${filtered.length} / ${dailyVideoFeed.length} 条`)}
+    <section class="daily-video-shell">
+      <aside class="card daily-sync-panel">
+        <div class="card-kicker">Daily Sync</div>
+        <h3>自动资料入口</h3>
+        <p>GitHub Actions 每天会运行搜索脚本：优先英文 YouTube，补充 B 站中文资料；去重后写入 data/daily-video-feed.json 和前端模块。</p>
+        <div class="daily-sync-stats">
+          <div><span>更新时间</span><strong>${escapeHtml(updatedDate)}</strong></div>
+          <div><span>YouTube</span><strong>${youtubeCount}</strong></div>
+          <div><span>B 站</span><strong>${biliCount}</strong></div>
+          <div><span>待整理</span><strong>${pendingCount}</strong></div>
+        </div>
+        <div class="daily-filter-row" aria-label="每日教程筛选">
+          ${DAILY_VIDEO_FILTERS.map(([id, label]) => `
+            <button
+              class="${state.dailyVideoFilter === id ? 'is-active' : ''}"
+              type="button"
+              data-daily-filter="${escapeHtml(id)}"
+            >${escapeHtml(label)}</button>
+          `).join('')}
+        </div>
+        <p class="daily-sync-message" role="status">${escapeHtml(state.dailyVideoActionMessage)}</p>
+      </aside>
+      <section class="daily-video-grid">
+        ${filtered.map(renderDailyVideoCard).join('') || '<div class="empty-state">没有匹配的每日教程。</div>'}
+      </section>
+    </section>
   `;
 }
 
@@ -971,6 +1043,7 @@ function render() {
   const views = {
     dashboard: renderDashboard,
     sources: renderSourcesView,
+    daily: renderDailyVideosView,
     cards: renderCardsView,
     interactive: renderInteractiveView,
     soundlab: renderSoundLabView,
@@ -1545,6 +1618,7 @@ function stopAudition({ rerender = true } = {}) {
 function bindDynamicForms() {
   bindDashboardControls();
   bindSourceForm();
+  bindDailyVideoControls();
   bindInteractiveLabControls();
   bindSoundLabControls();
   bindMicroRouteControls();
@@ -1597,6 +1671,50 @@ function bindSourceForm() {
     saveUserSources(userSources);
     sourceForm.reset();
     render();
+  });
+}
+
+function soundFamilyForDailyVideo(video) {
+  const text = normalizeText([video.title, ...(video.tags ?? [])].join(' '));
+  if (text.includes('whoosh') || text.includes('riser') || text.includes('sweep')) return 'air-whoosh';
+  if (text.includes('robot') || text.includes('mechanical') || text.includes('servo')) return 'servo-tick';
+  if (text.includes('electric') || text.includes('glitch') || text.includes('crackle')) return 'electric-crackle';
+  if (text.includes('pulse') || text.includes('charge') || text.includes('energy') || text.includes('trailer')) return 'energy-charge';
+  if (text.includes('glass') || text.includes('crystal')) return 'glass-ping';
+  if (text.includes('metal') || text.includes('industrial') || text.includes('friction') || text.includes('fm')) return 'metal-impact';
+  if (text.includes('impact') || text.includes('boom') || text.includes('hit')) return 'metal-impact';
+  return 'metal-impact';
+}
+
+function bindDailyVideoControls() {
+  document.querySelectorAll('[data-daily-filter]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.dailyVideoFilter = button.dataset.dailyFilter || 'all';
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-daily-video-action="practice"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const video = dailyVideoFeed.find((item) => item.id === button.dataset.dailyVideoPractice);
+      if (!video) return;
+      const familyId = soundFamilyForDailyVideo(video);
+      selectSoundLabFamily(familyId, false);
+      state.soundLabWorkflowStep = 'shape';
+      state.activeWorkbenchModuleMapId = 'source';
+      state.activeAdvancedModule = 'advanced';
+      state.dailyVideoActionMessage = `已把《${video.title}》推到 Sound Lab：先按中文练习提示做 dry 主体，再回到教程核对细节。`;
+      state.workbenchActionFeedback = `来自每日教程：《${video.title}》。先听 dry 主体，再按教程补材质和尾巴。`;
+      switchView('soundlab');
+    });
+  });
+
+  document.querySelectorAll('[data-daily-video-action="open"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const card = link.closest('[data-daily-video-id]');
+      const video = dailyVideoFeed.find((item) => item.id === card?.dataset.dailyVideoId);
+      if (video) state.dailyVideoActionMessage = `已打开《${video.title}》，回来看时先整理目标声音、核心方法和可复刻参数。`;
+    });
   });
 }
 
@@ -2526,7 +2644,7 @@ function bindIntegrationControls() {
 }
 
 function populateTagFilter() {
-  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...communityTechniqueLabs, ...deepDiveModules, ...soundLabFamilies])) {
+  for (const tag of collectTags([...knowledgeCards, ...recipes, ...microLessons, ...techniqueTips, ...communityTechniqueLabs, ...deepDiveModules, ...soundLabFamilies, ...dailyVideoFeed])) {
     const option = document.createElement('option');
     option.value = tag;
     option.textContent = tag;
