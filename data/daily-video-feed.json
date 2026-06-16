@@ -1,6 +1,747 @@
 {
-  "updatedAt": "2026-06-15T07:19:02.229Z",
+  "updatedAt": "2026-06-16T02:28:02.033Z",
   "items": [
+    {
+      "id": "daily-youtube-ndqvaybodec",
+      "platform": "YouTube",
+      "videoId": "NDQVaYBoDEc",
+      "title": "Serum FX Comb Delay Trick !!",
+      "creator": "Multiplier",
+      "url": "https://www.youtube.com/watch?v=NDQVaYBoDEc",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 142,
+      "durationLabel": "2:22",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "FM",
+        "comb filter",
+        "filter",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum metallic sound design FM comb filter tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 48
+    },
+    {
+      "id": "daily-youtube-zpyxolf6rsy",
+      "platform": "YouTube",
+      "videoId": "ZPyXOLf6RsY",
+      "title": "Sound Design #11 - Serum Huge Screech Lead (Spilled)",
+      "creator": "Spektral Sound",
+      "url": "https://www.youtube.com/watch?v=ZPyXOLf6RsY",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1042,
+      "durationLabel": "17:22",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "FM",
+        "comb filter",
+        "filter",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum metallic sound design FM comb filter tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 48
+    },
+    {
+      "id": "daily-youtube-ntzplvqb1oc",
+      "platform": "YouTube",
+      "videoId": "NTzPlVQB1Oc",
+      "title": "Serum Tutorial - Reverb Filter Grindy Bass",
+      "creator": "Teramite",
+      "url": "https://www.youtube.com/watch?v=NTzPlVQB1Oc",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 525,
+      "durationLabel": "8:45",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "FM",
+        "comb filter",
+        "filter",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum metallic sound design FM comb filter tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 48
+    },
+    {
+      "id": "daily-youtube-fi1zwsuv6vu",
+      "platform": "YouTube",
+      "videoId": "fi1ZWSUV6VU",
+      "title": "Serum Tutorial -  Fill Growl Bass",
+      "creator": "Teramite",
+      "url": "https://www.youtube.com/watch?v=fi1ZWSUV6VU",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 533,
+      "durationLabel": "8:53",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "FM",
+        "comb filter",
+        "filter",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum metallic sound design FM comb filter tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 48
+    },
+    {
+      "id": "daily-youtube-m7femi8vsy4",
+      "platform": "YouTube",
+      "videoId": "M7fEMi8VSy4",
+      "title": "How To Sound Design Complex Risers (using Vital)",
+      "creator": "Negativist",
+      "url": "https://www.youtube.com/watch?v=M7fEMi8VSy4",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 458,
+      "durationLabel": "7:38",
+      "difficulty": "advanced",
+      "tags": [
+        "Vital",
+        "metal",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Vital 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Vital metallic friction sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 44
+    },
+    {
+      "id": "daily-youtube-azb9euzfeny",
+      "platform": "YouTube",
+      "videoId": "AZB9EuZfenY",
+      "title": "How To Sound Design Retro Game Sound Effects (using Vital)",
+      "creator": "Negativist",
+      "url": "https://www.youtube.com/watch?v=AZB9EuZfenY",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 259,
+      "durationLabel": "4:19",
+      "difficulty": "advanced",
+      "tags": [
+        "Vital",
+        "SFX",
+        "whoosh",
+        "impact"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Vital 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "synth sound design resampling impact whoosh game audio tutorial",
+        "source": "yt-dlp",
+        "seenCount": 2
+      },
+      "score": 43
+    },
+    {
+      "id": "daily-youtube-vlndd7e7k9c",
+      "platform": "YouTube",
+      "videoId": "vLNDd7e7K9c",
+      "title": "Explosion Sound Design Tutorial From Scratch With Phase Plant and Snap Heap",
+      "creator": "Bas Bertrand Game Audio",
+      "url": "https://www.youtube.com/watch?v=vLNDd7e7K9c",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 791,
+      "durationLabel": "13:11",
+      "difficulty": "beginner",
+      "tags": [
+        "Phase Plant",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Phase Plant 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "Phase Plant whoosh riser synth sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 41
+    },
+    {
+      "id": "daily-youtube-zxfbe0exxkk",
+      "platform": "YouTube",
+      "videoId": "zxfbE0exXKk",
+      "title": "How I make WET SCI-FI sounds (effects chain breakdown)",
+      "creator": "Orrin Keep",
+      "url": "https://www.youtube.com/watch?v=zxfbE0exXKk",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1002,
+      "durationLabel": "16:42",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "UI",
+        "laser",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练短音效：关注 attack、短 decay、亮度和尾巴长度，避免按钮声拖泥带水。",
+      "practicePromptZh": "先在 Serum 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Serum UI click game audio sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 40
+    },
+    {
+      "id": "daily-youtube-vsqok7jueo0",
+      "platform": "YouTube",
+      "videoId": "vSQoK7JuEO0",
+      "title": "Example: Whoosh and Glitch Sound Design Generator Using Granular in Phase Plant",
+      "creator": "Bas Bertrand Game Audio",
+      "url": "https://www.youtube.com/watch?v=vSQoK7JuEO0",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 22,
+      "durationLabel": "22",
+      "difficulty": "intermediate",
+      "tags": [
+        "Phase Plant",
+        "whoosh",
+        "granular",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Phase Plant 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "Phase Plant whoosh riser synth sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 40
+    },
+    {
+      "id": "daily-youtube-98sh7-tkikq",
+      "platform": "YouTube",
+      "videoId": "98sH7-tkiKQ",
+      "title": "Low-mid \"Modern Rumble\" in Game Audio – Sound Design Snacks 80",
+      "creator": "Kilohearts",
+      "url": "https://www.youtube.com/watch?v=98sH7-tkiKQ",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 61,
+      "durationLabel": "1:01",
+      "difficulty": "intermediate",
+      "tags": [
+        "Phase Plant",
+        "SFX",
+        "whoosh"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Phase Plant 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "Phase Plant whoosh riser synth sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 2
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-9insjooravy",
+      "platform": "YouTube",
+      "videoId": "9iNSjoORavY",
+      "title": "Whoosh Sound Design with Phaseplant",
+      "creator": "David Dumais Audio",
+      "url": "https://www.youtube.com/watch?v=9iNSjoORavY",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 639,
+      "durationLabel": "10:39",
+      "difficulty": "intermediate",
+      "tags": [
+        "Phase Plant",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Phase Plant 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "Phase Plant whoosh riser synth sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-gt0ccdbtlou",
+      "platform": "YouTube",
+      "videoId": "gt0CcDbtLoU",
+      "title": "How To Sound Design Electricity / Static (using Vital)",
+      "creator": "Negativist",
+      "url": "https://www.youtube.com/watch?v=gt0CcDbtLoU",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 197,
+      "durationLabel": "3:17",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "metal",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Vital 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Vital metallic friction sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-xwjis9ufdsa",
+      "platform": "YouTube",
+      "videoId": "xWJIS9uFDSA",
+      "title": "How To Sound Design Waves (using Vital)",
+      "creator": "Negativist",
+      "url": "https://www.youtube.com/watch?v=xWJIS9uFDSA",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 204,
+      "durationLabel": "3:24",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "metal",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Vital 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Vital metallic friction sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-u3knqpdgxgg",
+      "platform": "YouTube",
+      "videoId": "u3KnqpDgxGg",
+      "title": "How to make SCI-FI UI Sounds",
+      "creator": "Orrin Keep",
+      "url": "https://www.youtube.com/watch?v=u3KnqpDgxGg",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 306,
+      "durationLabel": "5:06",
+      "difficulty": "advanced",
+      "tags": [
+        "whoosh",
+        "impact",
+        "UI",
+        "laser",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Serum / Phase Plant / Vital 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "synth sound design resampling impact whoosh game audio tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 37
+    },
+    {
+      "id": "daily-youtube-b4edtjkvpig",
+      "platform": "YouTube",
+      "videoId": "b4edTjKVPig",
+      "title": "How to create DIGITAL UI SOUNDS",
+      "creator": "Eytan Krief",
+      "url": "https://www.youtube.com/watch?v=b4edTjKVPig",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 358,
+      "durationLabel": "5:58",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "UI",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练短音效：关注 attack、短 decay、亮度和尾巴长度，避免按钮声拖泥带水。",
+      "practicePromptZh": "先在 Serum 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Serum UI click game audio sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 35
+    },
+    {
+      "id": "daily-youtube-ealajckt1k0",
+      "platform": "YouTube",
+      "videoId": "eALAJcKt1K0",
+      "title": "Create UI sounds using NI Massive - Button click & Count",
+      "creator": "Eytan Krief",
+      "url": "https://www.youtube.com/watch?v=eALAJcKt1K0",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1283,
+      "durationLabel": "21:23",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "UI",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练短音效：关注 attack、短 decay、亮度和尾巴长度，避免按钮声拖泥带水。",
+      "practicePromptZh": "先在 Serum 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Serum UI click game audio sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 35
+    },
+    {
+      "id": "daily-youtube-mq1kwnovoak",
+      "platform": "YouTube",
+      "videoId": "mq1kWnOVoAk",
+      "title": "How to make UI sounds for Games",
+      "creator": "Gravity Sound",
+      "url": "https://www.youtube.com/watch?v=mq1kWnOVoAk",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 285,
+      "durationLabel": "4:45",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "UI",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练短音效：关注 attack、短 decay、亮度和尾巴长度，避免按钮声拖泥带水。",
+      "practicePromptZh": "先在 Serum 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Serum UI click game audio sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 35
+    },
+    {
+      "id": "daily-youtube-adu6fxumene",
+      "platform": "YouTube",
+      "videoId": "AdU6FxumenE",
+      "title": "Sci-Fi Weapon Sound Design in Phase Plant",
+      "creator": "David Dumais Audio",
+      "url": "https://www.youtube.com/watch?v=AdU6FxumenE",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1112,
+      "durationLabel": "18:32",
+      "difficulty": "intermediate",
+      "tags": [
+        "Phase Plant",
+        "laser",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Phase Plant 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Phase Plant game audio SFX sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 35
+    },
+    {
+      "id": "daily-youtube-luod-3ut7e",
+      "platform": "YouTube",
+      "videoId": "-LUod-3Ut7E",
+      "title": "How To Sound Design Sci-Fi Sounds In Vital (A Beginner's Guide)",
+      "creator": "David Dumais Audio",
+      "url": "https://www.youtube.com/watch?v=-LUod-3Ut7E",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 2132,
+      "durationLabel": "35:32",
+      "difficulty": "beginner",
+      "tags": [
+        "Vital",
+        "laser",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital synth beginner sound design tutorial SFX",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 35
+    },
+    {
+      "id": "daily-youtube-1dk1j2bedbw",
+      "platform": "YouTube",
+      "videoId": "1Dk1j2bedbw",
+      "title": "Earthquake Generator Sound Design Tutorial using Granular in Phase Plant",
+      "creator": "Bas Bertrand Game Audio",
+      "url": "https://www.youtube.com/watch?v=1Dk1j2bedbw",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1657,
+      "durationLabel": "27:37",
+      "difficulty": "intermediate",
+      "tags": [
+        "Phase Plant",
+        "granular",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练纹理设计：听颗粒密度、随机度、窗长和滤波如何从素材变成可控质感。",
+      "practicePromptZh": "先在 Phase Plant 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Phase Plant game audio SFX sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 33
+    },
+    {
+      "id": "daily-youtube-77vn6e-vlv8",
+      "platform": "YouTube",
+      "videoId": "77vn6E-VlV8",
+      "title": "Phase Plant Made Easy: The beginner's Guide to Pro Sound Design",
+      "creator": "Anna Fruit",
+      "url": "https://www.youtube.com/watch?v=77vn6E-VlV8",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1303,
+      "durationLabel": "21:43",
+      "difficulty": "beginner",
+      "tags": [
+        "Phase Plant",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Phase Plant 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Phase Plant game audio SFX sound design tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-youtube-yfzcoewhvcq",
+      "platform": "YouTube",
+      "videoId": "yFzcoeWHVCQ",
+      "title": "How To Make ANY Sound You Want (Vital Sound Design)",
+      "creator": "MHA",
+      "url": "https://www.youtube.com/watch?v=yFzcoeWHVCQ",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 904,
+      "durationLabel": "15:04",
+      "difficulty": "beginner",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital synth beginner sound design tutorial SFX",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-youtube-7qqx6ygbqea",
+      "platform": "YouTube",
+      "videoId": "7qQX6YGBQEA",
+      "title": "Free Vital Synth - Full Tutorial",
+      "creator": "In The Mix",
+      "url": "https://www.youtube.com/watch?v=7qQX6YGBQEA",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 1814,
+      "durationLabel": "30:14",
+      "difficulty": "beginner",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital synth beginner sound design tutorial SFX",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-youtube-hkjstcqb00i",
+      "platform": "YouTube",
+      "videoId": "hkJsTCQb00I",
+      "title": "How To Sound Design Crunchy Impacts and Textures",
+      "creator": "Negativist",
+      "url": "https://www.youtube.com/watch?v=hkJsTCQb00I",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 487,
+      "durationLabel": "8:07",
+      "difficulty": "advanced",
+      "tags": [
+        "whoosh",
+        "impact",
+        "granular",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Serum / Phase Plant / Vital 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "synth sound design resampling impact whoosh game audio tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-youtube-pvgxkiy-5ai",
+      "platform": "YouTube",
+      "videoId": "PVgXkiY-5AI",
+      "title": "Video Game Audio Ep.1 - Sound Design / Synthesis Basics for Sound Effects",
+      "creator": "Dash Glitch",
+      "url": "https://www.youtube.com/watch?v=PVgXkiY-5AI",
+      "publishedAt": "",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 2351,
+      "durationLabel": "39:11",
+      "difficulty": "advanced",
+      "tags": [
+        "whoosh",
+        "impact",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+      "practicePromptZh": "在 Serum / Phase Plant / Vital 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+      "sync": {
+        "query": "synth sound design resampling impact whoosh game audio tutorial",
+        "source": "yt-dlp",
+        "seenCount": 1
+      },
+      "score": 27
+    },
     {
       "id": "daily-youtube-j5ju2bnsx0i",
       "platform": "YouTube",
@@ -78,7 +819,7 @@
       "url": "https://www.youtube.com/watch?v=EvTcHTCLRg0",
       "publishedAt": "2026-05-24",
       "discoveredAt": "2026-06-15T00:00:00.000Z",
-      "lastSeenAt": "2026-06-15T00:00:00.000Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
       "durationSeconds": 0,
       "durationLabel": "",
       "difficulty": "intermediate",
@@ -97,8 +838,8 @@
       "practicePromptZh": "在 Vital 里复刻一条 2 秒金属摩擦，再把同样结构转译到 Serum 和 Phase Plant；REAPER 中检查 transient/body/tail 是否分层清楚。",
       "sync": {
         "query": "Vital metallic friction sound design tutorial",
-        "source": "manual-seed",
-        "seenCount": 1
+        "source": "yt-dlp",
+        "seenCount": 2
       },
       "score": 40
     },
@@ -138,6 +879,34 @@
       "score": 26
     },
     {
+      "id": "daily-bilibili-bv1odofbqe1n",
+      "platform": "Bilibili",
+      "videoId": "BV1oDoFBqE1n",
+      "title": "[FLM合成器教学]  第一节  合成器的认识与介绍",
+      "creator": "sunR1se垃圾桶",
+      "url": "https://www.bilibili.com/video/BV1oDoFBqE1n",
+      "publishedAt": "2026-04-19",
+      "discoveredAt": "2026-06-16T02:24:34.481Z",
+      "lastSeenAt": "2026-06-16T02:24:34.481Z",
+      "durationSeconds": 616,
+      "durationLabel": "10:16",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital 合成器 音效 设计 教程 B站",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
       "id": "daily-youtube-hx6i8nl-sqi",
       "platform": "YouTube",
       "videoId": "hx6I8nl-SQI",
@@ -170,6 +939,212 @@
         "seenCount": 1
       },
       "score": 38
+    },
+    {
+      "id": "daily-bilibili-bv1jzhtzke8j",
+      "platform": "Bilibili",
+      "videoId": "BV1jZhtzKE8J",
+      "title": "【中文字幕】免费合成器VITAL系列终极教学视频（共9集字幕烤制完成）",
+      "creator": "DTMwiki编曲中文社区",
+      "url": "https://www.bilibili.com/video/BV1jZhtzKE8J",
+      "publishedAt": "2025-08-02",
+      "discoveredAt": "2026-06-16T02:24:34.481Z",
+      "lastSeenAt": "2026-06-16T02:24:34.481Z",
+      "durationSeconds": 5762,
+      "durationLabel": "96:2",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital 合成器 音效 设计 教程 B站",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-bilibili-bv1dwejzvepu",
+      "platform": "Bilibili",
+      "videoId": "BV1dWEJzVEPu",
+      "title": "【serum2音色调制】具有冲击力的Brass Stab铜管音色",
+      "creator": "Toby的音乐工坊",
+      "url": "https://www.bilibili.com/video/BV1dWEJzVEPu",
+      "publishedAt": "2025-05-12",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 397,
+      "durationLabel": "6:37",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "whoosh",
+        "impact",
+        "modulation",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum 音效 合成 金属 whoosh 教程",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 53
+    },
+    {
+      "id": "daily-bilibili-bv1gn4y1w75i",
+      "platform": "Bilibili",
+      "videoId": "BV1GN4y1W75i",
+      "title": "[免费] serum预设  Brass黄铜铜管  EDM trap  dubstep 均可适用！",
+      "creator": "且与风吟-",
+      "url": "https://www.bilibili.com/video/BV1GN4y1W75i",
+      "publishedAt": "2024-01-01",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 141,
+      "durationLabel": "2:21",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum 音效 合成 金属 whoosh 教程",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 44
+    },
+    {
+      "id": "daily-bilibili-bv1cg4y1d7go",
+      "platform": "Bilibili",
+      "videoId": "BV1CG4y1D7Go",
+      "title": "Vital合成器皮肤和预制安装",
+      "creator": "liquidcatz",
+      "url": "https://www.bilibili.com/video/BV1CG4y1D7Go",
+      "publishedAt": "2023-01-23",
+      "discoveredAt": "2026-06-16T02:24:34.481Z",
+      "lastSeenAt": "2026-06-16T02:24:34.481Z",
+      "durationSeconds": 351,
+      "durationLabel": "5:51",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital 合成器 音效 设计 教程 B站",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 30
+    },
+    {
+      "id": "daily-bilibili-bv17e4y1e7qy",
+      "platform": "Bilibili",
+      "videoId": "BV17e4y1e7qY",
+      "title": "合成器serum音色制作教程，合成铜管音色制作Synth Brass",
+      "creator": "狒狒狒周",
+      "url": "https://www.bilibili.com/video/BV17e4y1e7qY",
+      "publishedAt": "2022-10-22",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 755,
+      "durationLabel": "12:35",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum 音效 合成 金属 whoosh 教程",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 44
+    },
+    {
+      "id": "daily-bilibili-bv1ca411u7ze",
+      "platform": "Bilibili",
+      "videoId": "BV1ca411U7ze",
+      "title": "用Serum血清合成器做武器挥舞的whoosh音效【音效设计】",
+      "creator": "阿超音效_A-Chao",
+      "url": "https://www.bilibili.com/video/BV1ca411U7ze",
+      "publishedAt": "2022-07-27",
+      "discoveredAt": "2026-06-16T02:28:02.033Z",
+      "lastSeenAt": "2026-06-16T02:28:02.033Z",
+      "durationSeconds": 372,
+      "durationLabel": "6:12",
+      "difficulty": "intermediate",
+      "tags": [
+        "Serum",
+        "metal",
+        "whoosh",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合拆金属质感：重点观察 FM 侧频、梳状/短延迟共振、频移或 chorus 如何把泛音拉成硬质材料。",
+      "practicePromptZh": "在 Serum 中先用短包络做主体，再加 FM 或 comb filter；最后到 REAPER 导出 dry/full/tail-only 做 A/B。",
+      "sync": {
+        "query": "Serum 音效 合成 金属 whoosh 教程",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 44
+    },
+    {
+      "id": "daily-bilibili-bv1aa411w7e4",
+      "platform": "Bilibili",
+      "videoId": "BV1aa411w7E4",
+      "title": "【合成器ZeroToHero】如何白嫖良心合成器Vital",
+      "creator": "SYNTH_",
+      "url": "https://www.bilibili.com/video/BV1aa411w7E4",
+      "publishedAt": "2020-11-29",
+      "discoveredAt": "2026-06-16T02:24:34.481Z",
+      "lastSeenAt": "2026-06-16T02:24:34.481Z",
+      "durationSeconds": 312,
+      "durationLabel": "5:12",
+      "difficulty": "intermediate",
+      "tags": [
+        "Vital",
+        "SFX"
+      ],
+      "statusZh": "待精读",
+      "translationStatusZh": "待翻译",
+      "learningNoteZh": "适合加入资料库复盘：先摘出目标声音、核心合成方法、可复刻参数范围，再转成 Sound Lab 或 REAPER 练习。",
+      "practicePromptZh": "先在 Vital 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
+      "sync": {
+        "query": "Vital 合成器 音效 设计 教程 B站",
+        "source": "bilibili-search",
+        "seenCount": 1
+      },
+      "score": 30
     }
   ]
 }
