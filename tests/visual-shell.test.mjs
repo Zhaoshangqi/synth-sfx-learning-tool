@@ -442,11 +442,43 @@ test('daily tutorial sync workflow can refresh data and publish the gh-pages bra
 test('source cards keep tags and source links readable on light panels', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /\.source-card\s+\.badge/);
+  assert.match(css, /\.card\s+\.badge/);
   assert.match(css, /\.source-card\s+\.source-link/);
   assert.match(css, /color:\s*#0f5f63/);
   assert.match(css, /color:\s*#113747/);
   assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.9/);
+});
+
+test('technique cards keep nested chains and validation panels readable on light surfaces', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.card\s+\.badge/);
+  assert.match(css, /\.technique-chain\s+li/);
+  assert.match(css, /\.technique-validation-grid\s*>\s*div/);
+  assert.match(css, /color:\s*#1d2d3a/);
+  assert.match(css, /color:\s*#203442/);
+  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.8/);
+  assert.doesNotMatch(css, /\.technique-chain\s+li\s*\{[^}]*rgba\(5,\s*14,\s*22,\s*0\.5\)/s);
+  assert.doesNotMatch(css, /\.technique-validation-grid\s*>\s*div\s*\{[^}]*rgba\(2,\s*8,\s*14,\s*0\.34\)/s);
+});
+
+test('light theme shared cards and practice buttons avoid dark washed text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.card\s+p,\s*\n\.card\s+li\s*\{[^}]*color:\s*#405464/s);
+  assert.match(css, /\.stat-card\s+strong\s*\{[^}]*color:\s*#0f5f63/s);
+  assert.match(css, /\.micro-track-button,[^}]*\.challenge-play-button\s*\{[^}]*color:\s*#243846/s);
+  assert.match(css, /\.engine-mode-button,[^}]*\.quality-mode-button\s*\{[^}]*color:\s*#243846/s);
+  assert.match(css, /\.deep-module-button\s*\{[^}]*color:\s*#243846/s);
+  assert.match(css, /\.deep-signal-flow\s+li\s*\{[^}]*background:[^}]*rgba\(255,\s*255,\s*255,\s*0\.86\)/s);
+  assert.match(css, /\.sound-lab-meter-grid\s*>\s*div\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.84\)/s);
+  assert.match(css, /\.sound-lab-practice\s*>\s*div,[^}]*\.sound-lab-export\s*>\s*div\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.84\)/s);
+  assert.match(css, /\.integration-console\s*\{[^}]*rgba\(239,\s*252,\s*250,\s*0\.92\)/s);
+  assert.match(css, /\.empty-state\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.74\)/s);
+  assert.doesNotMatch(css, /color:\s*#c4d4d4/);
+  assert.doesNotMatch(css, /color:\s*#d9f6f2/);
+  assert.doesNotMatch(css, /background:\s*rgba\((5,\s*14,\s*22|5,\s*15,\s*24|2,\s*8,\s*14|7,\s*12,\s*20|7,\s*18,\s*28|8,\s*14,\s*23),/);
+  assert.doesNotMatch(css, /background:\s*linear-gradient\((180deg|135deg),\s*rgba\((16,\s*26,\s*38|33,\s*74,\s*82|37,\s*58,\s*72)/);
 });
 
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
