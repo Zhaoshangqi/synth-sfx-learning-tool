@@ -439,6 +439,16 @@ test('daily tutorial sync workflow can refresh data and publish the gh-pages bra
   assert.match(script, /serializeFeedModule/);
 });
 
+test('source cards keep tags and source links readable on light panels', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.source-card\s+\.badge/);
+  assert.match(css, /\.source-card\s+\.source-link/);
+  assert.match(css, /color:\s*#0f5f63/);
+  assert.match(css, /color:\s*#113747/);
+  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.9/);
+});
+
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
