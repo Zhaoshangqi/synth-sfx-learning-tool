@@ -1067,6 +1067,14 @@ textarea {
   font-weight: 650;
 }
 
+.source-card .badge,
+.daily-video-card .badge {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(23, 167, 163, 0.34);
+  color: #0f5f63;
+  box-shadow: 0 4px 12px rgba(23, 167, 163, 0.08);
+}
+
 .source-link,
 .primary-button,
 .secondary-button {
@@ -1089,6 +1097,22 @@ textarea {
   color: #effffc;
   border: 1px solid rgba(120, 225, 212, 0.38);
   margin-top: 14px;
+}
+
+.source-card .source-link {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(23, 167, 163, 0.42);
+  color: #113747;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(23, 167, 163, 0.12);
+}
+
+.source-card .source-link:hover,
+.source-card .source-link:focus-visible {
+  background: rgba(238, 254, 252, 0.98);
+  border-color: rgba(23, 167, 163, 0.62);
+  color: #0a5556;
+  box-shadow: 0 14px 30px rgba(23, 167, 163, 0.18);
 }
 
 .secondary-button {
