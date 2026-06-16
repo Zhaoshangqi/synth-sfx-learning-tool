@@ -432,7 +432,9 @@ test('daily tutorial sync workflow can refresh data and publish the gh-pages bra
   assert.match(workflow, /git push origin (HEAD:)?gh-pages/);
   assert.match(workflow, /data\/daily-video-feed\.json/);
   assert.match(script, /YOUTUBE_API_KEY/);
-  assert.match(script, /ytsearchdate/);
+  assert.match(script, /buildYtDlpSearchUrl/);
+  assert.match(script, /ytsearch\$\{safeLimit\}/);
+  assert.doesNotMatch(script, /ytsearchdate/);
   assert.match(script, /bilibili/);
   assert.match(script, /serializeFeedModule/);
 });

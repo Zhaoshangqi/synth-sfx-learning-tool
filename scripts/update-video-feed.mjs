@@ -411,8 +411,13 @@ async function fetchYouTubeApi(query, limit, now, sourceId) {
   }, 'youtube', { query, now, source: 'youtube-api', queryId: sourceId })).filter(Boolean);
 }
 
+export function buildYtDlpSearchUrl(query, limit) {
+  const safeLimit = Math.max(1, Math.min(10, Number.parseInt(limit, 10) || 4));
+  return `ytsearch${safeLimit}:${query}`;
+}
+
 function fetchYouTubeYtDlp(query, limit, now, sourceId) {
-  const searchUrl = `ytsearchdate${limit}:${query}`;
+  const searchUrl = buildYtDlpSearchUrl(query, limit);
   const result = spawnSync('yt-dlp', [
     '--dump-json',
     '--flat-playlist',

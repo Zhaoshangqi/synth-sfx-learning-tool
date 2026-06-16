@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   SEARCH_QUERIES,
   buildChineseLearningNote,
+  buildYtDlpSearchUrl,
   classifyVideo,
   deriveVideoWorkflowStatus,
   mergeVideoFeed,
@@ -38,6 +39,13 @@ test('daily video updater classifies synth SFX tutorials into practical Chinese 
   assert.match(item.learningNoteZh, /金属|FM|梳状/);
   assert.match(item.practicePromptZh, /Serum|Phase Plant|Vital|REAPER/);
   assert.equal(item.sync.query, 'Serum metallic sound design FM comb filter tutorial');
+});
+
+test('daily video updater uses yt-dlp search syntax supported by current yt-dlp builds', () => {
+  const searchUrl = buildYtDlpSearchUrl('Serum metallic sound design FM comb filter tutorial', 4);
+
+  assert.equal(searchUrl, 'ytsearch4:Serum metallic sound design FM comb filter tutorial');
+  assert.doesNotMatch(searchUrl, /ytsearchdate/);
 });
 
 test('daily video updater scores relevant sound-design tutorials above noisy results', () => {
