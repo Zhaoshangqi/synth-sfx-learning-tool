@@ -97,6 +97,68 @@ test('visual shell uses a brighter premium glass tone and view transition motion
   assert.match(appJs, /is-view-switching/);
 });
 
+test('v3 premium dark visual system defines high-contrast audio tech tokens', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Premium dark visual system v3/);
+  assert.match(css, /--v3-bg:\s*#080A12/);
+  assert.match(css, /--v3-bg-2:\s*#0B0F1A/);
+  assert.match(css, /--v3-text:\s*#F4F7FB/);
+  assert.match(css, /--v3-body:\s*#AEB7C6/);
+  assert.match(css, /--v3-dim:\s*#6F7A8C/);
+  assert.match(css, /--v3-cyan:\s*#6EE7F9/);
+  assert.match(css, /--v3-blue:\s*#7C8CFF/);
+  assert.match(css, /--v3-violet:\s*#A78BFA/);
+  assert.match(css, /--v3-mint:\s*#5EEAD4/);
+  assert.match(css, /body\s*\{[\s\S]*linear-gradient\(145deg,\s*#080A12/);
+  assert.match(css, /\.audio-space\s*\{[\s\S]*rgba\(174,\s*183,\s*198,\s*0\.055\)/);
+});
+
+test('v3 dark cards and dense learning modules avoid gray-on-gray text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.card p,[\s\S]*\.daily-video-url,[\s\S]*\.field span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.technique-chain li,[\s\S]*\.technique-validation-grid > div,[\s\S]*\.deep-analysis-grid > div,[\s\S]*\.deep-practice-stage,[\s\S]*\.sound-lab-meter-grid > div[\s\S]*background:[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.76\)/);
+  assert.match(css, /\.signal-node strong,[\s\S]*\.technique-validation-grid h5,[\s\S]*\.deep-analysis-grid h4[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.signal-node p,[\s\S]*\.technique-validation-grid li,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.dashboard-launchpad\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.78\)/);
+  assert.match(css, /\.dashboard-action-label small,[\s\S]*\.quality-panel \.metric-row p,[\s\S]*\.metric-row span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+});
+
+test('v3 contrast pass removes light Sound Lab remnants and clarifies deep analysis text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Premium dark visual system v3\.1 contrast pass/);
+  assert.match(css, /\.deep-dive-card,[\s\S]*\.deep-practice-stage\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.84\)/);
+  assert.match(css, /\.deep-dive-heading p,[\s\S]*\.deep-diagnostic-list li\s*\{[\s\S]*color:\s*#B8C3D2/);
+  assert.match(css, /\.sound-family-rail \.material-select-button,[\s\S]*\.compare-tab,[\s\S]*\.workbench-feedback\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.compare-tab\s*\{[\s\S]*font-weight:\s*850/);
+  assert.match(css, /\.workbench-command-actions button small,[\s\S]*\.workbench-state-strip span\s*\{[\s\S]*color:\s*#AEB7C6/);
+  assert.match(css, /\.workflow-step span,[\s\S]*\.workbench-feedback span\s*\{[\s\S]*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /\.workbench-command-actions \.command-play-button,[\s\S]*\.sound-lab-play-button\s*\{[\s\S]*rgba\(94,\s*234,\s*212,\s*0\.94\)/);
+});
+
+test('v3 background particles use restrained cyan violet and mint colors', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(js, /110,\s*231,\s*249/);
+  assert.match(js, /167,\s*139,\s*250/);
+  assert.match(js, /94,\s*234,\s*212/);
+  assert.doesNotMatch(js, /201,\s*231,\s*139/);
+});
+
+test('view routing supports direct hash links for module QA and sharing', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const VIEW_IDS = new Set\(\[/);
+  assert.match(appJs, /function getViewFromHash\(\)/);
+  assert.match(appJs, /view:\s*getViewFromHash\(\)/);
+  assert.match(appJs, /globalThis\.addEventListener\('hashchange'/);
+  assert.match(appJs, /history\.replaceState\(null,\s*'',\s*`\$\{globalThis\.location\.pathname\}\$\{globalThis\.location\.search\}\$\{nextHash\}`\)/);
+  assert.match(appJs, /VIEW_IDS\.has\(nextView\)/);
+});
+
 test('view switching keeps content below the sticky toolbar', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
