@@ -228,7 +228,7 @@ test('renderSoundLabWorkbench exposes AudioWorklet controls, A/B comparison, and
   assert.match(html, /来源依据/);
 });
 
-test('renderSoundLabWorkbench matches the light synth workstation reference modules', () => {
+test('renderSoundLabWorkbench matches the premium synth workstation reference modules', () => {
   const family = soundLabFamilies[0];
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',

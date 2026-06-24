@@ -1,23 +1,23 @@
 ﻿:root {
-  color-scheme: light;
-  --bg: #f4f7fb;
-  --surface: #ffffff;
-  --surface-2: #f8fbfe;
-  --surface-3: #eef4f8;
-  --panel-soft: #f7fbfd;
-  --panel-strong: #ffffff;
+  color-scheme: dark;
+  --bg: #080A12;
+  --surface: #10131F;
+  --surface-2: #121826;
+  --surface-3: #182033;
+  --panel-soft: rgba(16, 19, 31, 0.72);
+  --panel-strong: rgba(18, 24, 38, 0.94);
   --ableton-navy: #00004c;
-  --text: #1d2d3a;
-  --muted: #718293;
-  --line: #e2ebf2;
-  --line-strong: #c9d9e4;
-  --accent: #17a7a3;
-  --accent-2: #7467d6;
-  --accent-3: #62c58f;
-  --warning: #d6a63f;
+  --text: #F4F7FB;
+  --muted: #AEB7C6;
+  --line: rgba(174, 183, 198, 0.16);
+  --line-strong: rgba(174, 183, 198, 0.28);
+  --accent: #6EE7F9;
+  --accent-2: #7C8CFF;
+  --accent-3: #5EEAD4;
+  --warning: #F6C76A;
   --danger: #b33434;
-  --shadow: 0 18px 48px rgba(42, 76, 104, 0.1);
-  --glass: blur(18px) saturate(1.08);
+  --shadow: 0 26px 90px rgba(0, 0, 0, 0.42);
+  --glass: blur(24px) saturate(1.18);
   --radius: 8px;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -37,9 +37,10 @@ body {
   min-height: 100dvh;
   color: var(--text);
   background:
-    radial-gradient(ellipse at 32% -12%, rgba(69, 193, 188, 0.16), transparent 44%),
-    radial-gradient(ellipse at 82% 12%, rgba(117, 103, 214, 0.1), transparent 36%),
-    linear-gradient(135deg, #f6f9fc 0%, #eef4f8 54%, #f8fbfd 100%);
+    radial-gradient(circle at 18% -10%, rgba(110, 231, 249, 0.18), transparent 34%),
+    radial-gradient(circle at 82% 6%, rgba(167, 139, 250, 0.16), transparent 30%),
+    radial-gradient(circle at 78% 82%, rgba(94, 234, 212, 0.08), transparent 34%),
+    linear-gradient(145deg, #080A12 0%, #0B0F1A 46%, #121826 100%);
   display: grid;
   grid-template-columns: 242px minmax(0, 1fr);
   letter-spacing: 0;
@@ -9118,4 +9119,313 @@ textarea:focus {
   background:
     linear-gradient(180deg, rgba(18, 24, 38, 0.9), rgba(8, 12, 22, 0.86)),
     radial-gradient(circle at 86% 12%, rgba(124, 140, 255, 0.09), transparent 38%);
+}
+
+/* Premium dark visual system v3.2 workbench root cleanup */
+.workbench-module-map,
+.workbench-usage-panel,
+.workbench-zone-title,
+.workflow-context-strip,
+.module-map-card,
+.usage-panel-card,
+.usage-card,
+.source-inspector-panel,
+.learning-step-panel,
+.reaper-export-panel,
+.video-source-row {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.84), rgba(10, 15, 27, 0.76)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.06), transparent 36%);
+  color: #B8C3D2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 36px rgba(0, 0, 0, 0.2);
+}
+
+.module-map-head span,
+.usage-panel-head span,
+.module-map-card span,
+.usage-panel-card span,
+.usage-card span,
+.workflow-context-strip span,
+.workbench-zone-title span,
+.numbered-step-list span,
+.source-pill {
+  border: 1px solid rgba(110, 231, 249, 0.2);
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.module-map-head strong,
+.usage-panel-head strong,
+.module-map-card strong,
+.usage-panel-card strong,
+.usage-card strong,
+.workflow-context-strip strong,
+.workbench-zone-title strong,
+.video-source-row strong,
+.source-quote span,
+.translated-note strong {
+  color: var(--v3-text);
+}
+
+.module-map-head small,
+.usage-panel-head small,
+.module-map-card p,
+.module-map-card small,
+.usage-panel-card p,
+.usage-panel-card small,
+.usage-card p,
+.usage-card small,
+.workflow-context-strip p,
+.workbench-zone-title small,
+.video-source-row p,
+.source-quote p,
+.translated-note p,
+.numbered-step-list li,
+.check-list li {
+  color: #AEB7C6;
+}
+
+.module-map-card em,
+.usage-panel-card em,
+.usage-card em {
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  background: rgba(94, 234, 212, 0.08);
+  color: var(--v3-mint);
+}
+
+.module-map-card:hover,
+.module-map-card:focus-visible,
+.module-map-card.is-current,
+.usage-panel-card:hover,
+.usage-panel-card:focus-visible,
+.usage-card:hover,
+.usage-card:focus-visible {
+  border-color: rgba(110, 231, 249, 0.38);
+  background:
+    linear-gradient(180deg, rgba(25, 34, 54, 0.92), rgba(12, 18, 32, 0.84)),
+    radial-gradient(circle at 100% 0%, rgba(124, 140, 255, 0.08), transparent 36%);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28), 0 0 26px rgba(110, 231, 249, 0.08);
+}
+
+.side-panel-title,
+.video-source-row small {
+  color: var(--v3-dim);
+}
+
+.check-list span {
+  border-color: rgba(174, 183, 198, 0.28);
+  background: rgba(8, 10, 18, 0.28);
+}
+
+.check-list .is-checked span {
+  border-color: rgba(94, 234, 212, 0.52);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.92), rgba(110, 231, 249, 0.66));
+}
+
+.reaper-template-button {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.08);
+  color: var(--v3-cyan);
+}
+
+.workbench-panel,
+.waveform-panel,
+.spectrum-panel,
+.output-meter-strip {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.82), rgba(10, 15, 27, 0.74));
+  color: #B8C3D2;
+}
+
+.mini-panel-head,
+.osc-param-row,
+.frequency-scale,
+.output-meter-strip > span {
+  color: var(--v3-dim);
+}
+
+.mini-panel-head strong,
+.osc-param-row strong,
+.output-meter-strip > strong {
+  color: var(--v3-text);
+}
+
+.mini-panel-head select {
+  border-color: rgba(174, 183, 198, 0.18);
+  background: rgba(8, 10, 18, 0.54);
+  color: var(--v3-text);
+}
+
+.workbench-waveform-svg,
+.spectrum-canvas {
+  border-color: rgba(110, 231, 249, 0.18);
+  background:
+    linear-gradient(90deg, rgba(174, 183, 198, 0.075) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(174, 183, 198, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(110, 231, 249, 0.08), transparent 42%),
+    rgba(8, 10, 18, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.waveform-analyzer-canvas {
+  mix-blend-mode: screen;
+  opacity: 0.82;
+}
+
+.segmented-mini,
+.workbench-module-tabs {
+  border-color: rgba(174, 183, 198, 0.16);
+  background: rgba(8, 10, 18, 0.42);
+}
+
+.segmented-mini button,
+.workbench-module-tabs button {
+  border-left-color: rgba(174, 183, 198, 0.12);
+  color: #AEB7C6;
+}
+
+.segmented-mini button.is-active,
+.workbench-module-tabs button.is-active {
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-text);
+}
+
+/* Premium dark visual system v3.3 legacy neutralizer */
+.dashboard-module-directory,
+.module-directory-card,
+.source-card,
+.knowledge-card,
+.recipe-card,
+.lesson-card,
+.lab-course-shell,
+.interactive-lab-card,
+.micro-lesson-card,
+.technique-card,
+.community-technique-card,
+.community-practice-scenes,
+.community-practice-scene-grid button,
+.deep-dive-card,
+.deep-practice-stage,
+.practice-reference-card,
+.research-command-panel,
+.source-result-toolbar,
+.source-form-compact,
+.daily-sync-panel,
+.daily-sync-stats div,
+.daily-suggestion-card,
+.daily-video-card,
+.daily-practice-note,
+.daily-video-url,
+.library-sync-panel,
+.quick-entry-panel,
+.library-sync-grid button,
+.route-progress-panel,
+.sound-lab-secondary-section,
+.sound-preset-card,
+.workflow-step,
+.signal-node,
+.notice,
+.empty-state,
+.integration-console,
+.integration-status-grid > div {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.82), rgba(10, 15, 27, 0.72)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.055), transparent 34%);
+  color: var(--v3-body);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 38px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-module-directory h3,
+.module-directory-card strong,
+.source-card h3,
+.knowledge-card h3,
+.recipe-card h3,
+.lesson-card h3,
+.lab-course-shell h3,
+.interactive-lab-card h3,
+.micro-lesson-card h3,
+.technique-card h3,
+.community-technique-card h3,
+.community-practice-scenes h4,
+.community-practice-scene-grid strong,
+.deep-dive-card h3,
+.deep-practice-stage strong,
+.practice-reference-card h4,
+.research-command-panel h3,
+.daily-sync-panel h3,
+.daily-sync-stats strong,
+.daily-suggestion-card strong,
+.daily-video-card h3,
+.library-sync-panel h4,
+.quick-entry-panel h4,
+.route-progress-panel h4,
+.sound-lab-secondary-section h3,
+.sound-preset-card strong,
+.workflow-step strong,
+.signal-node strong,
+.notice h3,
+.integration-console h3,
+.integration-status-grid strong {
+  color: var(--v3-text);
+}
+
+.dashboard-module-directory p,
+.module-directory-card p,
+.source-card p,
+.knowledge-card p,
+.knowledge-card li,
+.recipe-card p,
+.recipe-card li,
+.lesson-card p,
+.lesson-card li,
+.lab-course-shell p,
+.interactive-lab-card p,
+.micro-lesson-card p,
+.technique-card p,
+.technique-card li,
+.community-technique-card p,
+.community-technique-card li,
+.community-practice-scenes p,
+.community-practice-scene-grid small,
+.community-practice-scene-grid em,
+.deep-dive-card p,
+.deep-dive-card li,
+.deep-practice-stage p,
+.deep-practice-stage li,
+.practice-reference-card p,
+.practice-reference-card li,
+.research-command-panel p,
+.source-result-toolbar p,
+.source-form-compact p,
+.daily-sync-panel p,
+.daily-sync-stats span,
+.daily-suggestion-card small,
+.daily-video-card p,
+.daily-practice-note p,
+.daily-video-url,
+.library-sync-panel p,
+.quick-entry-panel p,
+.route-progress-panel p,
+.sound-lab-secondary-section p,
+.sound-preset-card p,
+.workflow-step p,
+.signal-node p,
+.notice p,
+.empty-state,
+.integration-console p,
+.integration-status-grid p {
+  color: var(--v3-body);
+}
+
+.source-link,
+.source-card .source-link,
+.daily-video-url a,
+.library-sync-grid button.is-active,
+.daily-filter-row button.is-active {
+  border-color: rgba(110, 231, 249, 0.28);
+  background: rgba(110, 231, 249, 0.1);
+  color: var(--v3-cyan);
 }
