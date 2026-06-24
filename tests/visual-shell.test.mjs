@@ -481,6 +481,38 @@ test('light theme shared cards and practice buttons avoid dark washed text', () 
   assert.doesNotMatch(css, /background:\s*linear-gradient\((180deg|135deg),\s*rgba\((16,\s*26,\s*38|33,\s*74,\s*82|37,\s*58,\s*72)/);
 });
 
+test('professional information architecture separates primary and secondary modules', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /class="nav-section"/);
+  assert.match(html, /data-nav-group="workflow"/);
+  assert.match(html, /data-nav-group="learning"/);
+  assert.match(html, /data-nav-group="delivery"/);
+  assert.match(html, /data-priority="primary"/);
+  assert.match(html, /data-priority="secondary"/);
+
+  assert.match(appJs, /dashboard-module-directory/);
+  assert.match(appJs, /module-directory-card/);
+  assert.match(appJs, /data-module-directory-view/);
+  assert.match(appJs, /research-hub-shell/);
+  assert.match(appJs, /research-command-panel/);
+  assert.match(appJs, /source-result-toolbar/);
+  assert.match(appJs, /sound-lab-secondary-section/);
+  assert.match(appJs, /practice-reference-card/);
+  assert.doesNotMatch(appJs, /style="margin-top:16px"/);
+
+  assert.match(css, /--panel-soft:\s*#f7fbfd/);
+  assert.match(css, /\.nav-section/);
+  assert.match(css, /\.dashboard-module-directory/);
+  assert.match(css, /\.module-directory-card/);
+  assert.match(css, /\.research-hub-shell/);
+  assert.match(css, /\.source-result-toolbar/);
+  assert.match(css, /\.sound-lab-secondary-section/);
+  assert.match(css, /\.module-priority-badge/);
+});
+
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
@@ -523,6 +555,14 @@ test('sound lab exposes a guided workflow map and real material family switching
   assert.match(css, /\.material-token-row\s*\{[\s\S]*repeat\(auto-fit,\s*minmax\(74px,\s*1fr\)\)/);
   assert.match(css, /\.workflow-context-strip\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
   assert.match(css, /\.material-workflow-hint\s*\{[\s\S]*background:\s*linear-gradient/);
+});
+
+test('sound lab keeps the primary workbench before secondary preset browsing', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.sound-family-rail\s*\{[\s\S]*order:\s*0/);
+  assert.match(css, /\.sound-lab-shell \.synth-workbench-layout\s*\{[\s\S]*order:\s*1/);
+  assert.match(css, /\.sound-lab-secondary-section\s*\{[\s\S]*order:\s*3/);
 });
 
 test('sound lab workstation utility controls have real stateful handlers', () => {
