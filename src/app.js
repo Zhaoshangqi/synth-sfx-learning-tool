@@ -110,9 +110,32 @@ const WORKBENCH_ACTION_MESSAGES = {
   'analyze-patch': '已切到频谱/调制分析视角。',
   'new-experiment': '已准备新实验：先选材质，再播放试听。',
 };
+const VIEW_IDS = new Set([
+  'dashboard',
+  'sources',
+  'daily',
+  'cards',
+  'interactive',
+  'soundlab',
+  'micro',
+  'challenges',
+  'techniques',
+  'community',
+  'deep',
+  'roadmap',
+  'diagrams',
+  'recipes',
+  'practice',
+  'integrations',
+]);
+
+function getViewFromHash() {
+  const rawHash = decodeURIComponent(globalThis.location?.hash?.replace(/^#/, '') ?? '').trim();
+  return VIEW_IDS.has(rawHash) ? rawHash : 'dashboard';
+}
 
 const state = {
-  view: 'dashboard',
+  view: getViewFromHash(),
   query: '',
   synth: 'all',
   difficulty: 'all',
@@ -1166,8 +1189,8 @@ function render() {
   bindDynamicForms();
 }
 
-function switchView(nextView) {
-  if (!nextView || state.view === nextView) return;
+function switchView(nextView, options = {}) {
+  if (!VIEW_IDS.has(nextView) || state.view === nextView) return;
   const previousView = state.view;
   if (state.isAuditioning && nextView !== 'interactive') {
     stopAudition({ rerender: false });
@@ -1182,6 +1205,12 @@ function switchView(nextView) {
   app.classList.add('is-view-switching');
   globalThis.setTimeout(() => app.classList.remove('is-view-switching'), 460);
   state.view = nextView;
+  if (options.updateHash !== false) {
+    const nextHash = nextView === 'dashboard' ? '' : `#${nextView}`;
+    if (globalThis.location.hash !== nextHash) {
+      globalThis.history.replaceState(null, '', `${globalThis.location.pathname}${globalThis.location.search}${nextHash}`);
+    }
+  }
   render();
   globalThis.requestAnimationFrame(() => {
     globalThis.scrollTo({ top: 0, behavior: 'auto' });
@@ -2766,6 +2795,10 @@ document.querySelectorAll('.daily-suggestion-card [data-view]').forEach((button)
   button.addEventListener('click', () => {
     switchView(button.dataset.view);
   });
+});
+
+globalThis.addEventListener('hashchange', () => {
+  switchView(getViewFromHash(), { updateHash: false });
 });
 
 document.addEventListener('pointermove', (event) => {

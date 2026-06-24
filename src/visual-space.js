@@ -65,7 +65,7 @@ function drawParticle(particle, time) {
   const parallaxX = pointer.x * particle.z * 14;
   const parallaxY = pointer.y * particle.z * 10;
   const pulse = 0.45 + Math.sin(time * 0.001 + particle.phase) * 0.28;
-  const color = particle.hue === 'violet' ? '150, 116, 255' : '126, 226, 215';
+  const color = particle.hue === 'violet' ? '124, 140, 255' : '110, 231, 249';
   const baseX = particle.x + parallaxX;
   const baseY = particle.y + parallaxY;
   const pointerDistance = Math.hypot(baseX - pointer.screenX, baseY - pointer.screenY);
@@ -98,7 +98,7 @@ function drawConnections(time) {
       const shimmer = 0.012 + Math.sin(time * 0.0012 + i) * 0.006;
 
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(126, 226, 215, ${0.036 * (1 - distance / 108) + mouseInfluence * 0.045 + shimmer})`;
+      ctx.strokeStyle = `rgba(110, 231, 249, ${0.03 * (1 - distance / 108) + mouseInfluence * 0.04 + shimmer})`;
       ctx.lineWidth = 0.7;
       ctx.moveTo(ax, ay);
       ctx.lineTo(bx, by);
@@ -115,7 +115,7 @@ function drawSignalWave(time) {
       if (x === -20) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = `rgba(${rowIndex === 1 ? '155, 130, 255' : '126, 226, 215'}, ${0.035 + rowIndex * 0.012})`;
+    ctx.strokeStyle = `rgba(${rowIndex === 1 ? '167, 139, 250' : '110, 231, 249'}, ${0.032 + rowIndex * 0.01})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   });
@@ -129,7 +129,7 @@ function drawSignalParticles(time) {
     const trailX = x - 28 * particle.z;
     const trailY = waveY(trailX, particle.row, time) + pointer.y * particle.z * 12;
     const pulse = 0.5 + Math.sin(time * 0.0014 + particle.phase) * 0.28;
-    const color = particle.hue === 'violet' ? '155, 130, 255' : particle.hue === 'green' ? '201, 231, 139' : '126, 226, 215';
+    const color = particle.hue === 'violet' ? '167, 139, 250' : particle.hue === 'green' ? '94, 234, 212' : '110, 231, 249';
 
     ctx.beginPath();
     ctx.strokeStyle = `rgba(${color}, ${0.035 + pulse * 0.07})`;
@@ -178,7 +178,7 @@ function drawTransitionParticles(time) {
     particle.x += particle.vx;
     particle.y += particle.vy;
     const life = 1 - particle.age / particle.ttl;
-    const color = particle.hue === 'violet' ? '155, 130, 255' : particle.hue === 'green' ? '201, 231, 139' : '126, 226, 215';
+    const color = particle.hue === 'violet' ? '167, 139, 250' : particle.hue === 'green' ? '94, 234, 212' : '110, 231, 249';
     const pulse = 0.7 + Math.sin(time * 0.003 + particle.age * 8) * 0.24;
 
     ctx.beginPath();
@@ -203,7 +203,7 @@ function drawRippleField(time) {
       const radius = 48 + phase * 190;
       const alpha = (1 - phase) * 0.035;
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(${centerIndex === 0 ? '126, 226, 215' : '155, 130, 255'}, ${alpha})`;
+      ctx.strokeStyle = `rgba(${centerIndex === 0 ? '110, 231, 249' : '167, 139, 250'}, ${alpha})`;
       ctx.lineWidth = 1;
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.stroke();
@@ -217,7 +217,7 @@ function tick(time = 0) {
   pointer.x += (pointer.tx - pointer.x) * 0.055;
   pointer.y += (pointer.ty - pointer.y) * 0.055;
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = 'rgba(6, 14, 22, 0.018)';
+  ctx.fillStyle = 'rgba(8, 10, 18, 0.022)';
   ctx.fillRect(0, 0, width, height);
 
   drawRippleField(time);
