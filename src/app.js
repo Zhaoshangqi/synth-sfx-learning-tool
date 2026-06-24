@@ -307,6 +307,43 @@ function renderDashboard() {
       view: 'practice',
     },
   ];
+  const moduleGroups = [
+    {
+      label: '主工作流',
+      note: '每天最常用，先从这里进入',
+      priority: 'primary',
+      modules: [
+        { view: 'soundlab', index: '01', title: 'Sound Lab', body: '像 Ableton 一样先听、拖、改，再把声音落到目标材质。', meta: '实时试听' },
+        { view: 'daily', index: '02', title: '每日教程', body: '自动同步新教程，直接跳视频并转成中文练习提示。', meta: '外部资料' },
+        { view: 'sources', index: '03', title: '资料检索', body: '按主题、合成器、可信度查证据，适合先找参考。', meta: '查询中心' },
+      ],
+    },
+    {
+      label: '学习线路',
+      note: '把零基础知识拆成短任务',
+      priority: 'secondary',
+      modules: [
+        { view: 'micro', index: '04', title: '微课路线', body: '按天推进，从波形、ADSR、滤波到 FM 和分层。', meta: '路线' },
+        { view: 'interactive', index: '05', title: '互动课程', body: '每页只练一个概念，拖参数就能听到结果。', meta: '练手感' },
+        { view: 'cards', index: '06', title: '知识卡片', body: '把英文资料翻成中文知识点，保留来源。', meta: '记忆' },
+        { view: 'diagrams', index: '07', title: '原理图', body: '用信号图解释波形、包络、滤波、FM、分层。', meta: '理解' },
+      ],
+    },
+    {
+      label: '制作与交付',
+      note: '从技巧、挑战到 REAPER 输出',
+      priority: 'secondary',
+      modules: [
+        { view: 'challenges', index: '08', title: '声音挑战', body: 'A/B 听辨、参数反推、材质实验。', meta: '训练' },
+        { view: 'techniques', index: '09', title: '技巧库', body: '金属、whoosh、空间、失真等技法拆解。', meta: '方法' },
+        { view: 'community', index: '10', title: '博主技巧', body: '把 YouTube/B 站创作者技巧转成可操作步骤。', meta: '案例' },
+        { view: 'deep', index: '11', title: '深度解析', body: '按 transient / body / tail 拆复杂声音。', meta: '分析' },
+        { view: 'recipes', index: '12', title: '音效配方', body: '可复用制作链和验收清单。', meta: '配方' },
+        { view: 'practice', index: '13', title: 'REAPER 练习', body: '渲染、响度、A/B、交付模板。', meta: '交付' },
+        { view: 'integrations', index: '14', title: '外部集成', body: 'MIDI、导出命名、浏览器音质路线。', meta: '扩展' },
+      ],
+    },
+  ];
 
   return `
     ${header('学习总览', '从英文资料进入中文知识卡片，再落到 Serum、Phase Plant、Vital 和 REAPER 练习。')}
@@ -390,6 +427,33 @@ function renderDashboard() {
         `).join('')}
       </div>
     </section>
+    <section class="dashboard-module-directory" aria-label="模块地图">
+      <div class="module-section-head">
+        <div>
+          <div class="module-priority-badge">Module Map</div>
+          <h3>主次清楚的学习工作台</h3>
+        </div>
+        <p>Ableton Learning Synths 的核心是“一页一个概念，一个可听控件”。这里也把入口拆成主工作流、学习线路和制作交付，避免所有模块同时抢注意力。</p>
+      </div>
+      ${moduleGroups.map((group) => `
+        <section class="module-directory-group" data-module-priority="${escapeHtml(group.priority)}">
+          <div class="module-directory-group-head">
+            <strong>${escapeHtml(group.label)}</strong>
+            <span>${escapeHtml(group.note)}</span>
+          </div>
+          <div class="module-directory-grid">
+            ${group.modules.map((module) => `
+              <button class="module-directory-card ${group.priority === 'primary' ? 'is-primary' : 'is-secondary'}" type="button" data-module-directory-view="${escapeHtml(module.view)}">
+                <span>${escapeHtml(module.index)}</span>
+                <strong>${escapeHtml(module.title)}</strong>
+                <p>${escapeHtml(module.body)}</p>
+                <small>${escapeHtml(module.meta)}</small>
+              </button>
+            `).join('')}
+          </div>
+        </section>
+      `).join('')}
+    </section>
     <section class="grid dashboard-grid">
       <article class="card stat-card"><span class="card-kicker">资料来源</span><strong>${stats.sources}</strong><p>包含官方、论文、YouTube 搜索种子和你手动添加的来源。</p></article>
       <article class="card stat-card"><span class="card-kicker">知识卡片</span><strong>${stats.cards}</strong><p>每张卡片都保留来源、时间戳或证据说明。</p></article>
@@ -424,41 +488,72 @@ function renderSourcesView() {
     const text = normalizeText([source.title, source.platform, source.noteZh, ...(source.tags ?? [])].join(' '));
     return !query || text.includes(query);
   });
+  const youtubeCount = allSources.filter((source) => normalizeText(source.platform).includes('youtube')).length;
+  const manualCount = userSources.length;
+  const evidenceCount = allSources.filter((source) => ['official', 'paper', 'professional-tutorial', 'verifiable-experience'].includes(source.credibility)).length;
 
   return `
-    ${header('资料库', '手动添加英文 YouTube 链接或保留搜索种子，后续再把字幕和翻译整理成知识卡片。', `${filtered.length} 条`)}
-    <form class="card source-form" id="source-form">
-      <label class="field full">
-        <span>YouTube 或资料链接</span>
-        <input name="url" type="url" required placeholder="https://www.youtube.com/watch?v=..." />
-      </label>
-      <label class="field">
-        <span>标题</span>
-        <input name="title" required placeholder="Serum metallic FM tutorial" />
-      </label>
-      <label class="field">
-        <span>平台</span>
-        <input name="platform" value="YouTube" required />
-      </label>
-      <label class="field">
-        <span>标签</span>
-        <input name="tags" placeholder="Serum, metal, FM" />
-      </label>
-      <label class="field">
-        <span>可信度</span>
-        <select name="credibility">
-          <option value="professional-tutorial">专业教程</option>
-          <option value="verifiable-experience">可验证经验</option>
-          <option value="inspiration">仅供灵感</option>
-        </select>
-      </label>
-      <label class="field full">
-        <span>中文备注</span>
-        <textarea name="noteZh" placeholder="这条资料适合学习什么？例如：金属 FM 侧频、UI click、Phase Plant audio-rate modulation。"></textarea>
-      </label>
-      <button class="primary-button" type="submit">添加来源</button>
-    </form>
-    <section class="grid">${filtered.map(renderSourceCard).join('') || '<div class="empty-state">没有匹配的来源。</div>'}</section>
+    ${header('资料检索', '像 Ableton 的章节一样先聚焦一个声音问题：搜资料、看证据等级，再把来源推进到 Sound Lab 或知识卡片。', `${filtered.length} / ${allSources.length} 条`)}
+    <section class="research-hub-shell">
+      <aside class="research-command-panel card" aria-label="资料查询控制台">
+        <div class="module-priority-badge">Research Hub</div>
+        <h3>先找可验证资料，再练声音</h3>
+        <p>顶部搜索会同时过滤标题、平台、备注和标签。建议先搜目标声音，例如 metal、whoosh、impact、FM，再看可信度和可练方向。</p>
+        <div class="research-metrics" aria-label="资料统计">
+          <div><span>全部来源</span><strong>${allSources.length}</strong></div>
+          <div><span>YouTube</span><strong>${youtubeCount}</strong></div>
+          <div><span>高可信</span><strong>${evidenceCount}</strong></div>
+          <div><span>手动添加</span><strong>${manualCount}</strong></div>
+        </div>
+        <div class="research-query-hints" aria-label="推荐查询">
+          ${['metal FM', 'Serum whoosh', 'Phase Plant impact', 'comb filter', 'Vital wavetable'].map((hint) => `<span>${escapeHtml(hint)}</span>`).join('')}
+        </div>
+      </aside>
+      <div class="research-workspace">
+        <div class="source-result-toolbar">
+          <div>
+            <div class="module-priority-badge">Results</div>
+            <strong>当前结果 ${filtered.length} 条</strong>
+            <p>优先打开有视频链接或明确来源的卡片，再把关键参数记录成中文练习。</p>
+          </div>
+          <span>${escapeHtml(state.query || '未输入关键词')}</span>
+        </div>
+        <section class="grid source-result-grid">${filtered.map(renderSourceCard).join('') || '<div class="empty-state">没有匹配的来源。</div>'}</section>
+        <form class="card source-form source-form-compact" id="source-form">
+          <div class="module-priority-badge">Add Source</div>
+          <h3>补充一个教程或资料</h3>
+          <label class="field full">
+            <span>YouTube 或资料链接</span>
+            <input name="url" type="url" required placeholder="https://www.youtube.com/watch?v=..." />
+          </label>
+          <label class="field">
+            <span>标题</span>
+            <input name="title" required placeholder="Serum metallic FM tutorial" />
+          </label>
+          <label class="field">
+            <span>平台</span>
+            <input name="platform" value="YouTube" required />
+          </label>
+          <label class="field">
+            <span>标签</span>
+            <input name="tags" placeholder="Serum, metal, FM" />
+          </label>
+          <label class="field">
+            <span>可信度</span>
+            <select name="credibility">
+              <option value="professional-tutorial">专业教程</option>
+              <option value="verifiable-experience">可验证经验</option>
+              <option value="inspiration">仅供灵感</option>
+            </select>
+          </label>
+          <label class="field full">
+            <span>中文备注</span>
+            <textarea name="noteZh" placeholder="这条资料适合学习什么？例如：金属 FM 侧频、UI click、Phase Plant audio-rate modulation。"></textarea>
+          </label>
+          <button class="primary-button" type="submit">添加来源</button>
+        </form>
+      </div>
+    </section>
   `;
 }
 
@@ -694,14 +789,23 @@ function renderSoundLabView() {
         activeCoachSynth: state.activeCoachSynth,
         workbenchActionFeedback: state.workbenchActionFeedback,
       })}
-      <section class="grid two sound-lab-preset-grid">
-        ${family.presets.map((preset) => `
-          <button class="card sound-preset-card" type="button" data-sound-lab-preset="${escapeHtml(preset.id)}">
-            <span class="card-kicker">Preset</span>
-            <strong>${escapeHtml(preset.labelZh)}</strong>
-            <small>${Object.entries(preset.values).map(([key, value]) => `${key} ${value}`).join(' / ')}</small>
-          </button>
-        `).join('')}
+      <section class="sound-lab-secondary-section" aria-label="次级预设与变化">
+        <div class="module-section-head">
+          <div>
+            <div class="module-priority-badge">Secondary</div>
+            <h3>预设变化库</h3>
+          </div>
+          <p>主流程先听当前声音；需要变化时再从这里切换 preset，避免工作台首屏被辅助模块淹没。</p>
+        </div>
+        <div class="grid two sound-lab-preset-grid">
+          ${family.presets.map((preset) => `
+            <button class="card sound-preset-card" type="button" data-sound-lab-preset="${escapeHtml(preset.id)}">
+              <span class="card-kicker">Preset</span>
+              <strong>${escapeHtml(preset.labelZh)}</strong>
+              <small>${Object.entries(preset.values).map(([key, value]) => `${key} ${value}`).join(' / ')}</small>
+            </button>
+          `).join('')}
+        </div>
       </section>
     </section>
   `;
@@ -880,7 +984,7 @@ function renderPracticeView() {
         </article>
       `).join('')}
     </section>
-    <section class="card" style="margin-top:16px">
+    <section class="card practice-reference-card">
       <div class="card-kicker">术语表</div>
       <h3>英文教程常见词</h3>
       <div class="grid">
@@ -892,7 +996,7 @@ function renderPracticeView() {
         `).join('')}
       </div>
     </section>
-    <section class="card" style="margin-top:16px">
+    <section class="card practice-reference-card">
       <div class="card-kicker">字幕样例</div>
       <h3>英文原文和中文提炼</h3>
       ${transcriptSegments.map((segment) => `
@@ -1630,9 +1734,9 @@ function bindDynamicForms() {
 }
 
 function bindDashboardControls() {
-  document.querySelectorAll('[data-dashboard-primary-view], [data-dashboard-flow-view]').forEach((button) => {
+  document.querySelectorAll('[data-dashboard-primary-view], [data-dashboard-flow-view], [data-module-directory-view]').forEach((button) => {
     button.addEventListener('click', () => {
-      const dashboardTarget = button.dataset.dashboardPrimaryView ?? button.dataset.dashboardFlowView;
+      const dashboardTarget = button.dataset.dashboardPrimaryView ?? button.dataset.dashboardFlowView ?? button.dataset.moduleDirectoryView;
       if (dashboardTarget) switchView(dashboardTarget);
     });
   });
