@@ -58,14 +58,14 @@ test('range controls use smooth drag state and animation-frame chrome updates', 
   assert.match(css, /cursor:\s*grabbing/);
 });
 
-test('sound lab professional controls stay contained and use readable light surfaces', () => {
+test('sound lab professional controls stay contained and use premium dark surfaces', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(css, /\.mod-matrix-row[\s\S]*grid-template-columns:\s*minmax\(0,\s*0\.82fr\)\s+16px\s+minmax\(0,\s*1fr\)/);
   assert.match(css, /\.mod-matrix-row[\s\S]*min-width:\s*0/);
   assert.match(css, /\.mod-matrix-row\s*>\s*span[\s\S]*overflow-wrap:\s*anywhere/);
-  assert.match(css, /\.professional-module-panel[\s\S]*background:\s*linear-gradient\(180deg,\s*rgba\(255,\s*255,\s*255,\s*0\.98\)/);
-  assert.match(css, /\.professional-module-panel[\s\S]*color:\s*#203442/);
+  assert.match(css, /\.professional-module-panel,[\s\S]*\.panel-heading-row\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.78\)/);
+  assert.match(css, /\.professional-module-panel strong,[\s\S]*\.panel-heading-row h4\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
   assert.match(css, /\.mini-quality-knob[\s\S]*grid-template-columns:\s*52px\s+minmax\(0,\s*1fr\)/);
 });
 
@@ -85,16 +85,79 @@ test('sound lab controls expose larger touch targets and immediate tactile feedb
   assert.match(css, /touch-action:\s*none/);
 });
 
-test('visual shell uses a brighter premium glass tone and view transition motion', () => {
+test('visual shell uses a premium dark glass tone and view transition motion', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /--bg:\s*#f4f7fb/);
+  assert.match(css, /--bg:\s*#080A12/);
+  assert.match(css, /--surface:\s*#10131F/);
   assert.doesNotMatch(css, /--bg:\s*#050910/);
   assert.match(css, /\.content\.is-view-switching/);
   assert.match(css, /@keyframes view-soft-swap/);
   assert.match(appJs, /synth:view-transition/);
   assert.match(appJs, /is-view-switching/);
+});
+
+test('v3 premium dark visual system defines high-contrast audio tech tokens', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Premium dark visual system v3/);
+  assert.match(css, /--v3-bg:\s*#080A12/);
+  assert.match(css, /--v3-bg-2:\s*#0B0F1A/);
+  assert.match(css, /--v3-text:\s*#F4F7FB/);
+  assert.match(css, /--v3-body:\s*#AEB7C6/);
+  assert.match(css, /--v3-dim:\s*#6F7A8C/);
+  assert.match(css, /--v3-cyan:\s*#6EE7F9/);
+  assert.match(css, /--v3-blue:\s*#7C8CFF/);
+  assert.match(css, /--v3-violet:\s*#A78BFA/);
+  assert.match(css, /--v3-mint:\s*#5EEAD4/);
+  assert.match(css, /body\s*\{[\s\S]*linear-gradient\(145deg,\s*#080A12/);
+  assert.match(css, /\.audio-space\s*\{[\s\S]*rgba\(174,\s*183,\s*198,\s*0\.055\)/);
+});
+
+test('v3 dark cards and dense learning modules avoid gray-on-gray text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.card p,[\s\S]*\.daily-video-url,[\s\S]*\.field span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.technique-chain li,[\s\S]*\.technique-validation-grid > div,[\s\S]*\.deep-analysis-grid > div,[\s\S]*\.deep-practice-stage,[\s\S]*\.sound-lab-meter-grid > div[\s\S]*background:[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.76\)/);
+  assert.match(css, /\.signal-node strong,[\s\S]*\.technique-validation-grid h5,[\s\S]*\.deep-analysis-grid h4[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.signal-node p,[\s\S]*\.technique-validation-grid li,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.dashboard-launchpad\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.78\)/);
+  assert.match(css, /\.dashboard-action-label small,[\s\S]*\.quality-panel \.metric-row p,[\s\S]*\.metric-row span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+});
+
+test('v3 contrast pass removes light Sound Lab remnants and clarifies deep analysis text', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Premium dark visual system v3\.1 contrast pass/);
+  assert.match(css, /\.deep-dive-card,[\s\S]*\.deep-practice-stage\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.84\)/);
+  assert.match(css, /\.deep-dive-heading p,[\s\S]*\.deep-diagnostic-list li\s*\{[\s\S]*color:\s*#B8C3D2/);
+  assert.match(css, /\.sound-family-rail \.material-select-button,[\s\S]*\.compare-tab,[\s\S]*\.workbench-feedback\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.compare-tab\s*\{[\s\S]*font-weight:\s*850/);
+  assert.match(css, /\.workbench-command-actions button small,[\s\S]*\.workbench-state-strip span\s*\{[\s\S]*color:\s*#AEB7C6/);
+  assert.match(css, /\.workflow-step span,[\s\S]*\.workbench-feedback span\s*\{[\s\S]*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /\.workbench-command-actions \.command-play-button,[\s\S]*\.sound-lab-play-button\s*\{[\s\S]*rgba\(94,\s*234,\s*212,\s*0\.94\)/);
+});
+
+test('v3 background particles use restrained cyan violet and mint colors', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(js, /110,\s*231,\s*249/);
+  assert.match(js, /167,\s*139,\s*250/);
+  assert.match(js, /94,\s*234,\s*212/);
+  assert.doesNotMatch(js, /201,\s*231,\s*139/);
+});
+
+test('view routing supports direct hash links for module QA and sharing', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const VIEW_IDS = new Set\(\[/);
+  assert.match(appJs, /function getViewFromHash\(\)/);
+  assert.match(appJs, /view:\s*getViewFromHash\(\)/);
+  assert.match(appJs, /globalThis\.addEventListener\('hashchange'/);
+  assert.match(appJs, /history\.replaceState\(null,\s*'',\s*`\$\{globalThis\.location\.pathname\}\$\{globalThis\.location\.search\}\$\{nextHash\}`\)/);
+  assert.match(appJs, /VIEW_IDS\.has\(nextView\)/);
 });
 
 test('view switching keeps content below the sticky toolbar', () => {
@@ -104,12 +167,13 @@ test('view switching keeps content below the sticky toolbar', () => {
   assert.doesNotMatch(appJs, /getBoundingClientRect\(\)\.top \+ globalThis\.scrollY/);
 });
 
-test('styles include the light synth workstation layout from the reference image', () => {
+test('styles include the premium dark synth workstation layout from the reference image', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /color-scheme:\s*light/);
-  assert.match(css, /--surface:\s*#ffffff/);
-  assert.match(css, /--accent:\s*#17a7a3/);
+  assert.match(css, /color-scheme:\s*dark/);
+  assert.match(css, /--v3-bg:\s*#080A12/);
+  assert.match(css, /--surface:\s*#10131F/);
+  assert.match(css, /--accent:\s*#6EE7F9/);
   assert.match(css, /\.synth-workbench-layout/);
   assert.match(css, /\.workbench-main-grid/);
   assert.match(css, /\.workbench-right-rail/);
@@ -350,26 +414,25 @@ test('sound lab envelope sliders stay inside their panel and keep real pointer t
   assert.doesNotMatch(css, /\.vertical-slider input\s*\{[\s\S]*transform:\s*rotate\(-90deg\)/);
 });
 
-test('dashboard overview uses readable light workstation panels instead of dark washed text', () => {
+test('dashboard overview uses readable premium dark workstation panels', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.88\)/);
-  assert.match(css, /\.hero-copy p\s*\{[\s\S]*color:\s*#4f6476/);
-  assert.match(css, /\.quality-panel\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.92\)/);
-  assert.match(css, /\.metric-row strong\s*\{[\s\S]*color:\s*#243846/);
-  assert.match(css, /\.learning-flow\s*\{[\s\S]*background:[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.88\)/);
-  assert.match(css, /\.signal-node\s*\{[\s\S]*background:\s*#fbfdff/);
-  assert.match(css, /\.signal-node p\s*\{[\s\S]*color:\s*#536879/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.88\)/);
+  assert.match(css, /\.view-header p\s*\{[\s\S]*color:\s*#C3CDDB/);
+  assert.match(css, /\.quality-panel,[\s\S]*\.learning-flow,[\s\S]*\.daily-video-card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.metric-row strong,[\s\S]*\.daily-sync-stats strong\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
+  assert.match(css, /\.signal-node,[\s\S]*\.sound-lab-meter-grid\s*>\s*div,[\s\S]*\.integration-status-grid\s*>\s*div\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.76\)/);
+  assert.match(css, /\.signal-node p,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
 });
 
-test('interactive course controls keep light readable surfaces and explicit click hit areas', () => {
+test('interactive course controls keep dark readable surfaces and explicit click hit areas', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /\.lab-select-button,[\s\S]*\.preset-button\s*\{[\s\S]*background:\s*#ffffff/);
+  assert.match(css, /\.lab-select-button,[\s\S]*\.preset-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*background:\s*rgba\(18,\s*24,\s*38,\s*0\.58\)/);
   assert.match(css, /\.lab-select-button,[\s\S]*\.preset-button\s*\{[\s\S]*pointer-events:\s*auto/);
-  assert.match(css, /\.lab-select-button\.is-active\s*\{[\s\S]*color:\s*#0d7774/);
-  assert.match(css, /\.interactive-lab-card\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.92\)/);
-  assert.match(css, /\.lab-goal\s*\{[\s\S]*color:\s*#385064/);
+  assert.match(css, /\.lab-select-button\.is-active,[\s\S]*\.dna-card\.is-active\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.interactive-lab-card,[\s\S]*\.daily-video-card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.macro-button,[\s\S]*\.lab-control,[\s\S]*\.panel-heading-row\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
   assert.match(css, /\.audition-button\s*\{[\s\S]*pointer-events:\s*auto/);
 });
 
@@ -390,10 +453,10 @@ test('dashboard CTA buttons use clear high-contrast clickable states', () => {
   assert.match(appJs, /进入可试听工作台/);
   assert.match(appJs, /先练波形 \/ ADSR \/ FM/);
   assert.match(appJs, /主入口/);
-  assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*background:\s*linear-gradient\(180deg,\s*#17a7a3/);
-  assert.match(css, /\.dashboard-actions \.primary-button\s*\{[\s\S]*color:\s*#ffffff/);
-  assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*background:\s*#ffffff/);
-  assert.match(css, /\.dashboard-actions \.secondary-button\s*\{[\s\S]*color:\s*#243846/);
+  assert.match(css, /\.primary-button,[\s\S]*\.dashboard-actions \.primary-button,[\s\S]*\.launchpad-button\.is-primary\s*\{[\s\S]*rgba\(110,\s*231,\s*249,\s*0\.96\)/);
+  assert.match(css, /\.primary-button,[\s\S]*\.dashboard-actions \.primary-button,[\s\S]*\.launchpad-button\.is-primary\s*\{[\s\S]*color:\s*#061018/);
+  assert.match(css, /\.secondary-button,[\s\S]*\.dashboard-actions \.secondary-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*background:\s*rgba\(18,\s*24,\s*38,\s*0\.58\)/);
+  assert.match(css, /\.secondary-button,[\s\S]*\.dashboard-actions \.secondary-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
   assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*pointer-events:\s*auto/);
   assert.match(css, /\.dashboard-actions button\s*\{[\s\S]*min-height:\s*58px/);
   assert.match(css, /\.dashboard-actions button em\s*\{/);
@@ -439,46 +502,71 @@ test('daily tutorial sync workflow can refresh data and publish the gh-pages bra
   assert.match(script, /serializeFeedModule/);
 });
 
-test('source cards keep tags and source links readable on light panels', () => {
+test('source cards keep tags and source links readable on dark panels', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(css, /\.card\s+\.badge/);
   assert.match(css, /\.source-card\s+\.source-link/);
-  assert.match(css, /color:\s*#0f5f63/);
-  assert.match(css, /color:\s*#113747/);
-  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.9/);
+  assert.match(css, /\.source-card h3,[\s\S]*\.daily-video-card h3\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.source-card p,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.source-card \.source-link,[\s\S]*\.daily-video-url a\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
 });
 
-test('technique cards keep nested chains and validation panels readable on light surfaces', () => {
+test('technique cards keep nested chains and validation panels readable on dark surfaces', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(css, /\.card\s+\.badge/);
   assert.match(css, /\.technique-chain\s+li/);
   assert.match(css, /\.technique-validation-grid\s*>\s*div/);
-  assert.match(css, /color:\s*#1d2d3a/);
-  assert.match(css, /color:\s*#203442/);
-  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.8/);
-  assert.doesNotMatch(css, /\.technique-chain\s+li\s*\{[^}]*rgba\(5,\s*14,\s*22,\s*0\.5\)/s);
-  assert.doesNotMatch(css, /\.technique-validation-grid\s*>\s*div\s*\{[^}]*rgba\(2,\s*8,\s*14,\s*0\.34\)/s);
+  assert.match(css, /\.technique-chain strong,[\s\S]*\.source-card h3,[\s\S]*\.daily-video-card h3\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.technique-chain li,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.technique-validation\s*\{[\s\S]*background:\s*rgba\(8,\s*10,\s*18,\s*0\.18\)/);
+  assert.match(css, /\.technique-chain li::before,[\s\S]*\.deep-signal-flow li > span\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
 });
 
-test('light theme shared cards and practice buttons avoid dark washed text', () => {
+test('dark theme shared cards and practice buttons avoid washed text', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /\.card\s+p,\s*\n\.card\s+li\s*\{[^}]*color:\s*#405464/s);
-  assert.match(css, /\.stat-card\s+strong\s*\{[^}]*color:\s*#0f5f63/s);
-  assert.match(css, /\.micro-track-button,[^}]*\.challenge-play-button\s*\{[^}]*color:\s*#243846/s);
-  assert.match(css, /\.engine-mode-button,[^}]*\.quality-mode-button\s*\{[^}]*color:\s*#243846/s);
-  assert.match(css, /\.deep-module-button\s*\{[^}]*color:\s*#243846/s);
-  assert.match(css, /\.deep-signal-flow\s+li\s*\{[^}]*background:[^}]*rgba\(255,\s*255,\s*255,\s*0\.86\)/s);
-  assert.match(css, /\.sound-lab-meter-grid\s*>\s*div\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.84\)/s);
-  assert.match(css, /\.sound-lab-practice\s*>\s*div,[^}]*\.sound-lab-export\s*>\s*div\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.84\)/s);
-  assert.match(css, /\.integration-console\s*\{[^}]*rgba\(239,\s*252,\s*250,\s*0\.92\)/s);
-  assert.match(css, /\.empty-state\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.74\)/s);
-  assert.doesNotMatch(css, /color:\s*#c4d4d4/);
-  assert.doesNotMatch(css, /color:\s*#d9f6f2/);
-  assert.doesNotMatch(css, /background:\s*rgba\((5,\s*14,\s*22|5,\s*15,\s*24|2,\s*8,\s*14|7,\s*12,\s*20|7,\s*18,\s*28|8,\s*14,\s*23),/);
-  assert.doesNotMatch(css, /background:\s*linear-gradient\((180deg|135deg),\s*rgba\((16,\s*26,\s*38|33,\s*74,\s*82|37,\s*58,\s*72)/);
+  assert.match(css, /color-scheme:\s*dark/);
+  assert.match(css, /--surface:\s*#10131F/);
+  assert.match(css, /\.card,[\s\S]*\.daily-video-card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.secondary-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.signal-node,[\s\S]*\.sound-lab-meter-grid\s*>\s*div,[\s\S]*\.integration-status-grid\s*>\s*div\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.daily-sync-panel,[\s\S]*\.daily-sync-stats div,[\s\S]*\.daily-suggestion-card,[\s\S]*\.integration-status-grid\s*>\s*div\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
+  assert.match(css, /\.source-card p,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.doesNotMatch(css, /color-scheme:\s*light/);
+});
+
+test('professional information architecture separates primary and secondary modules', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /class="nav-section"/);
+  assert.match(html, /data-nav-group="workflow"/);
+  assert.match(html, /data-nav-group="learning"/);
+  assert.match(html, /data-nav-group="delivery"/);
+  assert.match(html, /data-priority="primary"/);
+  assert.match(html, /data-priority="secondary"/);
+
+  assert.match(appJs, /dashboard-module-directory/);
+  assert.match(appJs, /module-directory-card/);
+  assert.match(appJs, /data-module-directory-view/);
+  assert.match(appJs, /research-hub-shell/);
+  assert.match(appJs, /research-command-panel/);
+  assert.match(appJs, /source-result-toolbar/);
+  assert.match(appJs, /sound-lab-secondary-section/);
+  assert.match(appJs, /practice-reference-card/);
+  assert.doesNotMatch(appJs, /style="margin-top:16px"/);
+
+  assert.match(css, /--panel-soft:\s*rgba\(16,\s*19,\s*31,\s*0\.72\)/);
+  assert.match(css, /\.nav-section/);
+  assert.match(css, /\.dashboard-module-directory/);
+  assert.match(css, /\.module-directory-card/);
+  assert.match(css, /\.research-hub-shell/);
+  assert.match(css, /\.source-result-toolbar/);
+  assert.match(css, /\.sound-lab-secondary-section/);
+  assert.match(css, /\.module-priority-badge/);
 });
 
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
@@ -525,6 +613,14 @@ test('sound lab exposes a guided workflow map and real material family switching
   assert.match(css, /\.material-workflow-hint\s*\{[\s\S]*background:\s*linear-gradient/);
 });
 
+test('sound lab keeps the primary workbench before secondary preset browsing', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.sound-family-rail\s*\{[\s\S]*order:\s*0/);
+  assert.match(css, /\.sound-lab-shell \.synth-workbench-layout\s*\{[\s\S]*order:\s*1/);
+  assert.match(css, /\.sound-lab-secondary-section\s*\{[\s\S]*order:\s*3/);
+});
+
 test('sound lab workstation utility controls have real stateful handlers', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
@@ -546,8 +642,8 @@ test('sound lab workstation utility controls have real stateful handlers', () =>
   assert.match(appJs, /data-advanced-module/);
   assert.match(appJs, /toggle-more/);
   assert.match(css, /\.workflow-step\s*\{[\s\S]*cursor:\s*pointer/);
-  assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*#ffffff/);
-  assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(23,\s*167,\s*163/);
+  assert.match(css, /\.segmented-mini button\.is-active\s*\{[\s\S]*background:\s*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /\.advanced-module-pill\.is-active\s*\{[\s\S]*border-color:\s*rgba\(110,\s*231,\s*249/);
   assert.match(css, /\.professional-control-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
@@ -589,7 +685,21 @@ test('sound lab workbench has a clear usage guide and section hierarchy', () => 
   assert.match(css, /\.community-practice-scenes\s*\{/);
   assert.match(css, /\.community-parameter-translator\s*\{/);
   assert.match(css, /\.workbench-zone-title\s*\{[\s\S]*background:\s*linear-gradient/);
-  assert.match(css, /\.workbench-zone-title strong\s*\{[\s\S]*color:\s*#203442/);
+  assert.match(css, /\.workbench-zone-title strong\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+});
+
+test('sound lab no longer depends on the historical light workstation renderer', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(renderJs, /function renderLightSoundLabWorkbench/);
+  assert.doesNotMatch(renderJs, /return renderLightSoundLabWorkbench/);
+  assert.doesNotMatch(renderJs, /return `\s*<article class="card sound-lab-workbench/);
+  assert.match(renderJs, /class="usage-card"/);
+  assert.match(css, /\.workbench-module-map,[\s\S]*\.workbench-usage-panel,[\s\S]*\.module-map-card,[\s\S]*\.usage-card,[\s\S]*\.video-source-row\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.84\)/);
+  assert.match(css, /\.video-source-row p,[\s\S]*\.numbered-step-list li,[\s\S]*\.check-list li\s*\{[\s\S]*color:\s*#AEB7C6/);
+  assert.match(css, /\.workbench-waveform-svg,[\s\S]*\.spectrum-canvas\s*\{[\s\S]*rgba\(8,\s*10,\s*18,\s*0\.86\)/);
+  assert.match(css, /\.waveform-analyzer-canvas\s*\{[\s\S]*mix-blend-mode:\s*screen/);
 });
 
 test('sound lab has a command center with current task, next action, and click feedback', () => {
