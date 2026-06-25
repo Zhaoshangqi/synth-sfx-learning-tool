@@ -9429,3 +9429,678 @@ textarea:focus {
   background: rgba(110, 231, 249, 0.1);
   color: var(--v3-cyan);
 }
+
+/* Premium dark visual system v3.4 nested legacy neutralizer */
+.research-metrics div,
+.lab-goal,
+.challenge-select-button,
+.challenge-answer-button,
+.sound-lab-engine-panel,
+.sound-lab-dna-panel,
+.sound-lab-control-console,
+.sound-lab-source-drawer,
+.engine-mode-button,
+.dna-card,
+.quality-mode-button,
+.keyboard-panel,
+.performance-panel,
+.fx-rack-panel,
+.layer-control,
+.performance-control,
+.material-current-brief,
+.ab-button,
+.play-main-button,
+.tone-button,
+.mini-quality-knob,
+.coach-explain,
+.coach-diagram,
+.coach-route-panel,
+.coach-synth-focus,
+.challenge-panel,
+.challenge-panel button,
+.community-lab-button,
+.creator-source-pill,
+.community-method-list li,
+.community-control-panel,
+.community-blueprint-panel,
+.community-blueprint-row,
+.community-module-guide,
+.community-module-guide li,
+.community-synth-procedure,
+.community-synth-procedure-grid article,
+.community-synth-route-map,
+.community-route-tabs button,
+.community-route-node,
+.community-parameter-translator,
+.community-parameter-grid article,
+.community-parameter-grid .parameter-action-list,
+.community-practice-scenes,
+.community-practice-scene-grid button,
+.community-focus-presets button,
+.community-control,
+.community-mapping-grid > div,
+.sidebar-progress-card button {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.84), rgba(10, 15, 27, 0.74)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.055), transparent 34%);
+  color: var(--v3-body);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 38px rgba(0, 0, 0, 0.2);
+}
+
+.research-metrics strong,
+.lab-goal strong,
+.challenge-select-button strong,
+.challenge-answer-button strong,
+.sound-lab-engine-panel strong,
+.sound-lab-dna-panel strong,
+.sound-lab-control-console strong,
+.sound-lab-source-drawer strong,
+.engine-mode-button strong,
+.dna-card strong,
+.quality-mode-button strong,
+.keyboard-panel strong,
+.performance-panel strong,
+.fx-rack-panel h4,
+.layer-control strong,
+.performance-control strong,
+.coach-explain h4,
+.coach-route-panel strong,
+.coach-synth-focus h4,
+.challenge-panel strong,
+.community-lab-button strong,
+.creator-source-pill strong,
+.community-method-list strong,
+.community-control-panel h4,
+.community-blueprint-panel h4,
+.community-blueprint-row strong,
+.community-module-guide h4,
+.community-module-guide li strong,
+.community-synth-procedure h4,
+.community-synth-procedure-grid strong,
+.community-synth-route-map h4,
+.community-route-node strong,
+.community-parameter-head h4,
+.community-parameter-grid strong,
+.community-practice-scenes h4,
+.community-practice-scene-grid strong,
+.community-focus-presets button strong,
+.community-control strong,
+.community-mapping-grid strong,
+.sidebar-progress-card button {
+  color: var(--v3-text);
+}
+
+.research-metrics span,
+.lab-goal,
+.challenge-select-button small,
+.challenge-answer-button,
+.sound-lab-engine-panel p,
+.sound-lab-engine-panel span,
+.sound-lab-dna-panel p,
+.sound-lab-dna-panel small,
+.sound-lab-dna-panel span,
+.sound-lab-control-console p,
+.sound-lab-control-console small,
+.sound-lab-source-drawer p,
+.engine-mode-button span,
+.dna-card small,
+.dna-card span,
+.quality-mode-button span,
+.keyboard-head,
+.performance-panel small,
+.fx-rack-item,
+.layer-control small,
+.performance-control small,
+.mini-quality-knob small,
+.coach-explain p,
+.coach-route-panel p,
+.coach-synth-focus p,
+.coach-synth-focus li,
+.challenge-panel p,
+.community-lab-button small,
+.creator-source-pill span,
+.community-method-list p,
+.community-method-list small,
+.community-control-panel p,
+.community-blueprint-panel p,
+.community-blueprint-row small,
+.community-module-guide p,
+.community-synth-procedure p,
+.community-synth-procedure-grid li,
+.community-route-head p,
+.community-parameter-head p,
+.community-parameter-grid p,
+.parameter-action-list li,
+.community-parameter-grid dd,
+.community-practice-scenes p,
+.community-practice-scene-grid small,
+.community-practice-scene-grid em,
+.community-focus-presets button span,
+.community-control small,
+.community-mapping-grid li {
+  color: var(--v3-body);
+}
+
+.community-route-node span,
+.community-practice-scene-grid span,
+.module-priority-badge,
+.status-chip,
+.dashboard-action-label span,
+.challenge-select-button span,
+.community-lab-button span,
+.community-method-list li > span,
+.community-blueprint-row span,
+.community-module-guide li span,
+.community-parameter-head span,
+.community-parameter-grid article > span,
+.community-parameter-grid dt,
+.parameter-action-list b,
+.research-query-hints span {
+  border-color: rgba(110, 231, 249, 0.22);
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.challenge-select-button:hover,
+.challenge-select-button:focus-visible,
+.challenge-answer-button:hover,
+.challenge-answer-button:focus-visible,
+.community-lab-button:hover,
+.community-lab-button:focus-visible,
+.community-lab-button.is-active,
+.community-route-tabs button:hover,
+.community-route-tabs button:focus-visible,
+.community-route-tabs button.is-active,
+.community-practice-scene-grid button:hover,
+.community-practice-scene-grid button:focus-visible,
+.community-focus-presets button:hover,
+.community-focus-presets button:focus-visible,
+.engine-mode-button:hover,
+.engine-mode-button:focus-visible,
+.dna-card:hover,
+.dna-card:focus-visible,
+.quality-mode-button:hover,
+.quality-mode-button:focus-visible {
+  border-color: rgba(110, 231, 249, 0.38);
+  background:
+    linear-gradient(180deg, rgba(25, 34, 54, 0.92), rgba(12, 18, 32, 0.84)),
+    radial-gradient(circle at 100% 0%, rgba(124, 140, 255, 0.08), transparent 36%);
+  color: var(--v3-text);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28), 0 0 26px rgba(110, 231, 249, 0.08);
+}
+
+.challenge-select-button.is-active,
+.challenge-answer-button.is-selected,
+.engine-mode-button.is-active,
+.dna-card.is-active,
+.quality-mode-button.is-active {
+  border-color: rgba(110, 231, 249, 0.48);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.18), rgba(124, 140, 255, 0.12)),
+    rgba(18, 24, 38, 0.88);
+  color: var(--v3-text);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 249, 0.1), 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.community-parameter-grid div {
+  border-top-color: rgba(174, 183, 198, 0.14);
+}
+
+.user-avatar {
+  border-color: rgba(110, 231, 249, 0.32);
+  background:
+    radial-gradient(circle at 32% 28%, rgba(244, 247, 251, 0.28), transparent 22%),
+    linear-gradient(135deg, rgba(110, 231, 249, 0.26), rgba(94, 234, 212, 0.14)),
+    rgba(18, 24, 38, 0.78);
+  color: var(--v3-text);
+}
+
+/* Premium dark visual system v3.5 route-wide readability clamp */
+.research-metrics div,
+.lab-goal,
+.challenge-select-button,
+.challenge-answer-button,
+.sound-lab-engine-panel,
+.sound-lab-dna-panel,
+.sound-lab-control-console,
+.sound-lab-source-drawer,
+.engine-mode-button,
+.dna-card,
+.quality-mode-button,
+.keyboard-panel,
+.performance-panel,
+.fx-rack-panel,
+.layer-control,
+.performance-control,
+.material-current-brief,
+.ab-button,
+.play-main-button,
+.tone-button,
+.mini-quality-knob,
+.coach-explain,
+.coach-diagram,
+.coach-route-panel,
+.coach-synth-focus,
+.challenge-panel,
+.challenge-panel button,
+.community-lab-button,
+.creator-source-pill,
+.community-method-list li,
+.community-control-panel,
+.community-blueprint-panel,
+.community-blueprint-row,
+.community-module-guide,
+.community-module-guide li,
+.community-synth-procedure,
+.community-synth-procedure-grid article,
+.community-synth-route-map,
+.community-route-tabs button,
+.community-route-node,
+.community-parameter-translator,
+.community-parameter-grid article,
+.community-parameter-grid .parameter-action-list,
+.community-practice-scenes,
+.community-practice-scene-grid button,
+.community-focus-presets button,
+.community-control,
+.community-mapping-grid > div,
+.dashboard-module-directory,
+.module-directory-group,
+.module-directory-card,
+.usage-panel,
+.usage-panel-step,
+.sidebar-progress-card,
+.sidebar-progress-card button {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.88), rgba(10, 15, 27, 0.78)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.06), transparent 34%);
+  background-color: rgba(18, 24, 38, 0.86);
+  color: var(--v3-body);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 38px rgba(0, 0, 0, 0.22);
+}
+
+.brand-mark,
+.sidebar-progress-card strong,
+.sidebar-progress-card button,
+.usage-panel-head,
+.usage-panel-head strong,
+.module-directory-group-head,
+.module-directory-group-head strong,
+.module-directory-card strong,
+.community-lab-button strong,
+.community-control strong,
+.community-mapping-grid strong,
+.community-method-list strong,
+.community-synth-procedure-grid strong,
+.community-route-node strong,
+.community-parameter-grid strong,
+.community-practice-scene-grid strong,
+.sound-lab-engine-panel strong,
+.sound-lab-dna-panel strong,
+.sound-lab-control-console strong,
+.coach-explain h4,
+.coach-route-panel strong,
+.challenge-panel strong {
+  color: var(--v3-text);
+}
+
+.module-directory-group-head span,
+.module-directory-card p,
+.module-directory-card small,
+.usage-panel-head span,
+.usage-panel-head small,
+.sidebar-progress-card span,
+.community-lab-button small,
+.community-method-list p,
+.community-method-list small,
+.community-control small,
+.community-mapping-grid li,
+.community-synth-procedure-grid li,
+.community-parameter-grid p,
+.community-parameter-grid dd,
+.community-practice-scene-grid small,
+.sound-lab-engine-panel p,
+.sound-lab-engine-panel span,
+.sound-lab-dna-panel p,
+.sound-lab-dna-panel small,
+.sound-lab-control-console p,
+.sound-lab-control-console small,
+.coach-explain p,
+.coach-route-panel p,
+.challenge-panel p {
+  color: var(--v3-body);
+}
+
+.brand-mark {
+  border-color: rgba(110, 231, 249, 0.28);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.2), rgba(124, 140, 255, 0.18)),
+    rgba(18, 24, 38, 0.9);
+  background-color: rgba(18, 24, 38, 0.9);
+  text-shadow: 0 0 18px rgba(110, 231, 249, 0.28);
+}
+
+.module-priority-badge,
+.status-chip,
+.dashboard-action-label span,
+.challenge-select-button span,
+.community-lab-button span,
+.community-method-list li > span,
+.community-blueprint-row span,
+.community-module-guide li span,
+.community-parameter-head span,
+.community-parameter-grid article > span,
+.community-parameter-grid dt,
+.community-route-node span,
+.community-practice-scene-grid span,
+.parameter-action-list b,
+.research-query-hints span {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.12);
+  background-color: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.primary-button,
+.dashboard-actions .primary-button,
+.audition-button,
+.challenge-play-button,
+.material-play-button,
+.daily-video-open-link,
+.sound-lab-play-button,
+.workbench-command-actions .is-primary,
+.workbench-command-actions .command-play-button,
+.command-play-button,
+.community-load-button,
+.launchpad-button.is-primary {
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.96), rgba(124, 140, 255, 0.86) 58%, rgba(167, 139, 250, 0.78));
+  background-color: rgb(110, 231, 249);
+  color: #061018;
+}
+
+.challenge-select-button:hover,
+.challenge-select-button:focus-visible,
+.challenge-answer-button:hover,
+.challenge-answer-button:focus-visible,
+.community-lab-button:hover,
+.community-lab-button:focus-visible,
+.community-lab-button.is-active,
+.community-route-tabs button:hover,
+.community-route-tabs button:focus-visible,
+.community-route-tabs button.is-active,
+.community-practice-scene-grid button:hover,
+.community-practice-scene-grid button:focus-visible,
+.community-focus-presets button:hover,
+.community-focus-presets button:focus-visible,
+.engine-mode-button:hover,
+.engine-mode-button:focus-visible,
+.dna-card:hover,
+.dna-card:focus-visible,
+.quality-mode-button:hover,
+.quality-mode-button:focus-visible,
+.module-directory-card:hover,
+.module-directory-card:focus-visible,
+.module-directory-card.is-primary {
+  border-color: rgba(110, 231, 249, 0.38);
+  background:
+    linear-gradient(180deg, rgba(25, 34, 54, 0.94), rgba(12, 18, 32, 0.86)),
+    radial-gradient(circle at 100% 0%, rgba(124, 140, 255, 0.09), transparent 36%);
+  background-color: rgba(18, 24, 38, 0.9);
+  color: var(--v3-text);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.3), 0 0 26px rgba(110, 231, 249, 0.08);
+}
+
+button:disabled,
+.primary-button:disabled,
+.secondary-button:disabled,
+.dashboard-actions button:disabled,
+.launchpad-button:disabled,
+.community-load-button:disabled {
+  border-color: rgba(174, 183, 198, 0.12);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.56), rgba(10, 15, 27, 0.48));
+  background-color: rgba(18, 24, 38, 0.56);
+  color: rgba(174, 183, 198, 0.58);
+  opacity: 0.82;
+}
+
+/* Premium dark visual system v3.6 high-specificity legacy clamps */
+.synth-workbench-layout .advanced-overview-grid > div,
+.synth-workbench-layout .sound-lab-engine-panel,
+.synth-workbench-layout .sound-lab-dna-panel,
+.synth-workbench-layout .sound-lab-control-console,
+.synth-workbench-layout .sound-lab-source-drawer,
+.synth-workbench-layout .keyboard-panel,
+.synth-workbench-layout .performance-panel,
+.synth-workbench-layout .fx-rack-panel,
+.synth-workbench-layout .engine-mode-button,
+.synth-workbench-layout .dna-card,
+.synth-workbench-layout .quality-mode-button,
+.synth-workbench-layout .lab-control.layer-control,
+.synth-workbench-layout .lab-control.performance-control,
+.synth-workbench-layout .coach-synth-focus,
+.synth-workbench-layout .coach-nav button,
+.synth-workbench-layout .coach-synth-switch button,
+.synth-workbench-layout .patch-quality-card button,
+.synth-workbench-layout .workbench-coach-panel button,
+.technique-card .technique-validation,
+.technique-card .technique-validation-grid,
+.technique-card .technique-validation-grid > div,
+.community-technique-card .technique-validation,
+.community-technique-card .technique-validation-grid,
+.community-technique-card .technique-validation-grid > div,
+.interactive-lab-card .lab-goal,
+.interactive-lab-card .lab-control,
+.daily-suggestion-card button {
+  border-color: rgba(174, 183, 198, 0.16);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.9), rgba(10, 15, 27, 0.82)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.065), transparent 34%);
+  background-color: rgba(18, 24, 38, 0.9);
+  color: var(--v3-body);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 14px 38px rgba(0, 0, 0, 0.24);
+}
+
+.synth-workbench-layout .advanced-overview-grid strong,
+.synth-workbench-layout .sound-lab-engine-panel strong,
+.synth-workbench-layout .sound-lab-dna-panel strong,
+.synth-workbench-layout .sound-lab-control-console strong,
+.synth-workbench-layout .engine-mode-button strong,
+.synth-workbench-layout .dna-card strong,
+.synth-workbench-layout .quality-mode-button strong,
+.synth-workbench-layout .keyboard-panel strong,
+.synth-workbench-layout .performance-panel strong,
+.synth-workbench-layout .fx-rack-panel h4,
+.synth-workbench-layout .coach-synth-focus h4,
+.synth-workbench-layout .workbench-coach-panel button strong,
+.technique-card .technique-validation h4,
+.technique-card .technique-validation strong,
+.technique-card .technique-validation-grid strong,
+.community-technique-card .technique-validation h4,
+.community-technique-card .technique-validation strong,
+.community-technique-card .technique-validation-grid strong,
+.interactive-lab-card .lab-control > span,
+.daily-suggestion-card button {
+  color: var(--v3-text);
+}
+
+.synth-workbench-layout .advanced-overview-grid span,
+.synth-workbench-layout .sound-lab-engine-panel p,
+.synth-workbench-layout .sound-lab-engine-panel span,
+.synth-workbench-layout .sound-lab-dna-panel p,
+.synth-workbench-layout .sound-lab-dna-panel small,
+.synth-workbench-layout .sound-lab-dna-panel span,
+.synth-workbench-layout .sound-lab-control-console p,
+.synth-workbench-layout .sound-lab-control-console small,
+.synth-workbench-layout .sound-lab-source-drawer p,
+.synth-workbench-layout .engine-mode-button span,
+.synth-workbench-layout .dna-card small,
+.synth-workbench-layout .dna-card span,
+.synth-workbench-layout .quality-mode-button span,
+.synth-workbench-layout .keyboard-head,
+.synth-workbench-layout .performance-panel small,
+.synth-workbench-layout .lab-control small,
+.synth-workbench-layout .coach-synth-focus p,
+.synth-workbench-layout .coach-synth-focus li,
+.technique-card .technique-validation p,
+.technique-card .technique-validation li,
+.technique-card .technique-validation-grid,
+.community-technique-card .technique-validation p,
+.community-technique-card .technique-validation li,
+.community-technique-card .technique-validation-grid,
+.interactive-lab-card .lab-goal,
+.interactive-lab-card .lab-control span {
+  color: var(--v3-body);
+}
+
+.technique-card .source-reliability,
+.community-technique-card .source-reliability {
+  border-left-color: rgba(190, 242, 132, 0.42);
+  background: rgba(190, 242, 132, 0.08);
+  background-color: rgba(190, 242, 132, 0.08);
+  color: #D9F99D;
+}
+
+.interactive-lab-card .lab-control output,
+.module-directory-card > span,
+.module-directory-card small {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.12);
+  background-color: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.launchpad-button.is-primary em,
+.primary-button.is-primary em,
+.dashboard-actions .primary-button em {
+  border-color: rgba(6, 16, 24, 0.16);
+  background: rgba(6, 16, 24, 0.1);
+  background-color: rgba(6, 16, 24, 0.1);
+  color: #061018;
+}
+
+/* Premium dark visual system v3.7 final state and importance cleanup */
+.synth-workbench-layout .advanced-module-pill,
+.synth-workbench-layout .engine-mode-button.is-active,
+.synth-workbench-layout .dna-card.is-active,
+.synth-workbench-layout .quality-mode-button.is-active {
+  border-color: rgba(110, 231, 249, 0.42);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.16), rgba(124, 140, 255, 0.12)),
+    rgba(18, 24, 38, 0.92);
+  background-color: rgba(18, 24, 38, 0.92);
+  color: var(--v3-text);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 249, 0.08), 0 16px 42px rgba(0, 0, 0, 0.28);
+}
+
+.synth-workbench-layout .advanced-module-pill strong,
+.synth-workbench-layout .engine-mode-button.is-active strong,
+.synth-workbench-layout .dna-card.is-active strong,
+.synth-workbench-layout .quality-mode-button.is-active strong,
+.community-control-panel b,
+.community-mapping-grid b,
+.community-parameter-grid b,
+.parameter-action-list b {
+  color: var(--v3-text);
+}
+
+.synth-workbench-layout .advanced-module-pill span,
+.synth-workbench-layout .engine-mode-button.is-active span,
+.synth-workbench-layout .dna-card.is-active span,
+.synth-workbench-layout .quality-mode-button.is-active span {
+  border-color: rgba(110, 231, 249, 0.22);
+  background: rgba(110, 231, 249, 0.12);
+  background-color: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.technique-card .source-reliability,
+.community-technique-card .source-reliability {
+  border-left-color: rgba(190, 242, 132, 0.42);
+  background: rgba(190, 242, 132, 0.08);
+  background-color: rgba(190, 242, 132, 0.08);
+  color: #D9F99D !important;
+}
+
+/* Premium dark visual system v3.8 final nested child cleanup */
+.synth-workbench-layout .panel-heading-row > span,
+.synth-workbench-layout .coach-bottom-row > div,
+.synth-workbench-layout .quick-entry-panel button,
+.synth-workbench-layout .lab-control output {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.12);
+  background-color: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.synth-workbench-layout .coach-bottom-row > div,
+.synth-workbench-layout .quick-entry-panel button {
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.9), rgba(10, 15, 27, 0.82)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.065), transparent 34%);
+  background-color: rgba(18, 24, 38, 0.9);
+  color: var(--v3-body);
+}
+
+.synth-workbench-layout .coach-bottom-row > div strong,
+.synth-workbench-layout .quick-entry-panel button,
+.community-blueprint-row b {
+  color: var(--v3-text);
+}
+
+.synth-workbench-layout .material-current-brief span,
+.synth-workbench-layout .material-workflow-hint span,
+.synth-workbench-layout .translated-note p {
+  color: var(--v3-body);
+}
+
+/* Premium dark visual system v3.9 range label contrast cleanup */
+.synth-workbench-layout .lab-control.layer-control > span,
+.synth-workbench-layout .lab-control.performance-control > span,
+.synth-workbench-layout .lab-control > span:first-child {
+  color: var(--v3-text);
+}
+
+/* Premium dark visual system v3.10 coach microcopy cleanup */
+.synth-workbench-layout .coach-listen span,
+.synth-workbench-layout .coach-route-head span {
+  color: var(--v3-body);
+}
+
+.synth-workbench-layout .coach-node > span,
+.synth-workbench-layout .coach-route-node > span {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.12);
+  background-color: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+/* Premium dark visual system v3.11 synth focus microcopy cleanup */
+.synth-workbench-layout .coach-synth-focus strong {
+  color: var(--v3-text);
+}
+
+.synth-workbench-layout .coach-synth-focus span {
+  color: var(--v3-body);
+}
+
+/* Premium dark visual system v3.12 coach grid legacy text cleanup */
+.synth-workbench-layout .coach-synth-grid article strong {
+  color: var(--v3-text);
+}
+
+.synth-workbench-layout .coach-synth-grid li,
+.synth-workbench-layout .coach-synth-grid li span,
+.synth-workbench-layout .coach-bottom-row span {
+  color: var(--v3-body);
+}
+
+/* Premium dark visual system v3.13 footer and compare text cleanup */
+.synth-workbench-layout .coach-synth-compare button span,
+.synth-workbench-layout .workbench-footer-grid .mini-panel-head,
+.synth-workbench-layout .quick-entry-panel .mini-panel-head {
+  color: var(--v3-body);
+}
