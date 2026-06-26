@@ -537,6 +537,43 @@ test('dark theme shared cards and practice buttons avoid washed text', () => {
   assert.doesNotMatch(css, /color-scheme:\s*light/);
 });
 
+test('dark theme neutralizes nested legacy light modules across every route', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Premium dark visual system v3\.4 nested legacy neutralizer/);
+  assert.match(css, /\.research-metrics div,[\s\S]*\.lab-goal,[\s\S]*\.challenge-select-button,[\s\S]*\.challenge-answer-button,[\s\S]*\.sound-lab-engine-panel,[\s\S]*\.coach-explain,[\s\S]*\.community-lab-button,[\s\S]*\.community-control,[\s\S]*\.sidebar-progress-card button\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.84\)/);
+  assert.match(css, /\.research-metrics strong,[\s\S]*\.community-mapping-grid strong,[\s\S]*\.sidebar-progress-card button\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.community-route-node span,[\s\S]*background:\s*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /\.community-practice-scene-grid span,[\s\S]*background:\s*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /\.module-priority-badge,[\s\S]*background:\s*rgba\(110,\s*231,\s*249,\s*0\.12\)/);
+  assert.match(css, /Premium dark visual system v3\.5 route-wide readability clamp/);
+  assert.match(css, /\.community-lab-button,[\s\S]*\.mini-quality-knob,[\s\S]*\.module-directory-card,[\s\S]*\.sidebar-progress-card button\s*\{[\s\S]*background-color:\s*rgba\(18,\s*24,\s*38,\s*0\.86\)/);
+  assert.match(css, /\.brand-mark,[\s\S]*\.sidebar-progress-card strong,[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.usage-panel-head,[\s\S]*\.module-directory-group-head,[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /Premium dark visual system v3\.6 high-specificity legacy clamps/);
+  assert.match(css, /\.synth-workbench-layout \.advanced-overview-grid > div,[\s\S]*\.synth-workbench-layout \.sound-lab-engine-panel,[\s\S]*\.technique-card \.technique-validation,[\s\S]*\.daily-suggestion-card button\s*\{[\s\S]*background-color:\s*rgba\(18,\s*24,\s*38,\s*0\.9\)/);
+  assert.match(css, /\.interactive-lab-card \.lab-control output,[\s\S]*\.module-directory-card > span,[\s\S]*\.module-directory-card small\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
+  assert.match(css, /Premium dark visual system v3\.7 final state and importance cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.engine-mode-button\.is-active,[\s\S]*\.synth-workbench-layout \.quality-mode-button\.is-active\s*\{[\s\S]*background-color:\s*rgba\(18,\s*24,\s*38,\s*0\.92\)/);
+  assert.match(css, /\.technique-card \.source-reliability,[\s\S]*\.community-technique-card \.source-reliability\s*\{[\s\S]*color:\s*#D9F99D !important/);
+  assert.match(css, /Premium dark visual system v3\.8 final nested child cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.panel-heading-row > span,[\s\S]*\.synth-workbench-layout \.quick-entry-panel button,[\s\S]*\.synth-workbench-layout \.lab-control output\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
+  assert.match(css, /\.synth-workbench-layout \.coach-bottom-row > div strong,[\s\S]*\.community-blueprint-row b\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /Premium dark visual system v3\.9 range label contrast cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.lab-control\.layer-control > span,[\s\S]*\.synth-workbench-layout \.lab-control > span:first-child\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /Premium dark visual system v3\.10 coach microcopy cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.coach-listen span,[\s\S]*\.synth-workbench-layout \.coach-route-head span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /\.synth-workbench-layout \.coach-node > span,[\s\S]*\.synth-workbench-layout \.coach-route-node > span\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
+  assert.match(css, /Premium dark visual system v3\.11 synth focus microcopy cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.coach-synth-focus strong\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.synth-workbench-layout \.coach-synth-focus span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /Premium dark visual system v3\.12 coach grid legacy text cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.coach-synth-grid article strong\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
+  assert.match(css, /\.synth-workbench-layout \.coach-synth-grid li,[\s\S]*\.synth-workbench-layout \.coach-bottom-row span\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+  assert.match(css, /Premium dark visual system v3\.13 footer and compare text cleanup/);
+  assert.match(css, /\.synth-workbench-layout \.coach-synth-compare button span,[\s\S]*\.synth-workbench-layout \.quick-entry-panel \.mini-panel-head\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
+});
+
 test('professional information architecture separates primary and secondary modules', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
