@@ -2106,8 +2106,25 @@ function renderProfessionalControlGrid(model = {}, activeAdvancedModule = 'advan
 
 function renderWorkbenchRightRail(family = {}, model = {}) {
   const drawer = model.sourceDrawer ?? {};
+  const familyName = family.titleZh?.split('：')[0] ?? '当前声音';
+  const goalText = `用 ${familyName} 做一个可交付的目标音效：先听 dry 主体，再用频谱、包络、调制和空间判断是否接近参考。`;
+  const theoryText = family.summaryZh ?? '通过频谱、包络和调制关系判断声音材质，而不是只靠音量变化。';
   return `
     <aside class="workbench-right-rail atlas-right-rail">
+      <section class="side-panel atlas-goal-panel">
+        <div class="atlas-inspector-heading">
+          <span aria-hidden="true">◎</span>
+          <strong>今日目标</strong>
+        </div>
+        <p>${escapeHtml(goalText)}</p>
+      </section>
+      <section class="side-panel atlas-theory-panel">
+        <div class="atlas-inspector-heading">
+          <span aria-hidden="true">✓</span>
+          <strong>理论重点</strong>
+        </div>
+        <p>${escapeHtml(theoryText)}</p>
+      </section>
       <section class="side-panel source-inspector-panel">
         <div class="side-panel-title">来源快照</div>
         <div class="video-source-row">
@@ -2131,8 +2148,9 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
       <section class="side-panel learning-step-panel">
         <div class="side-panel-title">学习步骤</div>
         <ol class="numbered-step-list">
-          ${(family.practiceSteps ?? []).slice(0, 5).map((step, index) => `<li><span>${index + 1}</span>${escapeHtml(step)}</li>`).join('')}
+          ${(family.practiceSteps ?? []).slice(0, 3).map((step, index) => `<li><span>${index + 1}</span>${escapeHtml(step)}</li>`).join('')}
         </ol>
+        <button class="atlas-push-button" type="button" data-workbench-action="focus-source">推到 Sound Lab</button>
       </section>
       <section class="side-panel reaper-export-panel">
         <div class="side-panel-title">REAPER 导出清单</div>
@@ -2147,13 +2165,11 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
 
 function renderWorkbenchFooter(family = {}) {
   const route = [
-    ['基础入门', '完成'],
-    ['声音生成', '完成'],
-    ['调制控制', '进行中'],
-    ['频谱塑形', '未开始'],
-    ['材质设计', '未开始'],
-    ['分层混合', '未开始'],
-    ['创意反馈', '未开始'],
+    ['LISTENING', '听辨参考'],
+    ['BASIC WAVE', '基础波形'],
+    ['SOUND LAB', '当前步骤'],
+    ['DELIVERY PREP', '导出准备'],
+    ['REAPER DELIVERY', '交付检查'],
   ];
   return `
     <section class="workbench-footer-grid atlas-roadmap-strip">

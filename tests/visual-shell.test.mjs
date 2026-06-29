@@ -826,6 +826,11 @@ test('signal atlas console fuses the primary lab with a guided signal path', () 
   assert.match(renderJs, /atlas-roadmap-strip/);
   assert.match(renderJs, /data-workbench-action="randomize-patch"/);
   assert.match(renderJs, /confirmedWorkbenchAction/);
+  assert.match(renderJs, /atlas-goal-panel/);
+  assert.match(renderJs, /atlas-theory-panel/);
+  assert.match(renderJs, /atlas-push-button/);
+  assert.match(renderJs, /LISTENING/);
+  assert.match(renderJs, /SOUND LAB/);
 
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.match(appJs, /randomize-patch/);
@@ -835,6 +840,9 @@ test('signal atlas console fuses the primary lab with a guided signal path', () 
 
   assert.match(css, /Signal Atlas Console v4/);
   assert.match(css, /Signal Atlas Console v4\.1 fidelity pass/);
+  assert.match(css, /Signal Atlas Console v4\.4 Stitch inspector fusion/);
+  assert.match(css, /\.atlas-goal-panel/);
+  assert.match(css, /\.atlas-push-button/);
   assert.match(css, /\.signal-atlas-console\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(280px,\s*0\.34fr\)/);
   assert.match(css, /\.atlas-signal-ribbon\s*\{[\s\S]*display:\s*grid/);
   assert.match(css, /\.atlas-lab-stage\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(300px,\s*0\.72fr\)/);
