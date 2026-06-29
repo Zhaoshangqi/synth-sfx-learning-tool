@@ -811,3 +811,36 @@ test('sound lab module coach is interactive and visually separated from the work
   assert.match(css, /\.workbench-coach-panel\s*\{[\s\S]*background:\s*linear-gradient/);
   assert.match(css, /\.coach-synth-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(260px,\s*0\.58fr\)/);
 });
+
+test('signal atlas console fuses the primary lab with a guided signal path', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /signal-atlas-console/);
+  assert.match(renderJs, /atlas-signal-ribbon/);
+  assert.match(renderJs, /data-atlas-node/);
+  assert.match(renderJs, /atlas-main-console/);
+  assert.match(renderJs, /atlas-lab-stage/);
+  assert.match(renderJs, /atlas-right-rail/);
+  assert.match(renderJs, /atlas-command-dock/);
+  assert.match(renderJs, /atlas-roadmap-strip/);
+  assert.match(renderJs, /data-workbench-action="randomize-patch"/);
+  assert.match(renderJs, /confirmedWorkbenchAction/);
+
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(appJs, /randomize-patch/);
+  assert.match(appJs, /randomizeSoundLabMacros/);
+  assert.match(appJs, /confirmedWorkbenchAction/);
+  assert.match(appJs, /workbenchConfirmTimer/);
+
+  assert.match(css, /Signal Atlas Console v4/);
+  assert.match(css, /Signal Atlas Console v4\.1 fidelity pass/);
+  assert.match(css, /\.signal-atlas-console\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(280px,\s*0\.34fr\)/);
+  assert.match(css, /\.atlas-signal-ribbon\s*\{[\s\S]*display:\s*grid/);
+  assert.match(css, /\.atlas-lab-stage\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(300px,\s*0\.72fr\)/);
+  assert.match(css, /\.atlas-command-dock\s*\{[\s\S]*backdrop-filter:\s*blur\(24px\)/);
+  assert.match(css, /@keyframes atlas-node-arrive/);
+  assert.match(css, /@keyframes atlas-soft-pulse/);
+  assert.match(css, /@keyframes atlas-confirm-pop/);
+  assert.match(css, /transition:\s*transform 180ms cubic-bezier/);
+});

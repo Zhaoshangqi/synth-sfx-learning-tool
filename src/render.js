@@ -1592,28 +1592,38 @@ function renderWorkbenchMaterialPanel(family = {}) {
   `;
 }
 
-function renderWorkbenchFlowMap(family = {}, activeStep = 'source') {
+function renderWorkbenchFlowMap(family = {}, activeStep = 'source', activeAtlasNode = '') {
   const familyName = (family.titleZh ?? '').split('：')[0] || 'Sound Lab';
   const steps = [
-    ['source', '01', '选目标', familyName, '先选材质家族，再确认声源角色。'],
-    ['shape', '02', '调声音', '包络 / 宏 / 调制', '用 ADSR、Macro 和 Mod Matrix 把听感变化做出来。'],
-    ['compare', '03', '试听对比', 'A / B / Tone.js', '用干声、完整链路和高质量引擎排除错觉。'],
-    ['deliver', '04', '导出交付', 'Patch / REAPER', '保存 Patch、记录命名并检查 REAPER 交付项。'],
+    ['source', '01', 'source', '声源', familyName, '确认基础波形、层级角色和瞬态来源。'],
+    ['shape', '02', 'envelope', '包络', 'ADSR / Macro', '用时间形状决定 click、pluck、hit 或 tail。'],
+    ['shape', '03', 'modulation', '调制', 'LFO / Env / MIDI', '让材质有运动，但不靠音量错觉。'],
+    ['shape', '04', 'fx-chain', '效果链', 'Drive / Filter / Space', '决定谐波、空间、宽度和动态边缘。'],
+    ['compare', '05', 'material', '材质', 'Metal / Glass / Air', '用 A/B 验证目标质感是否成立。'],
+    ['deliver', '06', 'export', '导出', 'Patch / REAPER', '保存 Patch、命名规则和交付检查。'],
   ];
-  const current = steps.find(([id]) => id === activeStep) ?? steps[0];
+  const activeNodeByStep = {
+    source: 'source',
+    shape: 'envelope',
+    compare: 'material',
+    deliver: 'export',
+  };
+  const activeNode = activeAtlasNode || activeNodeByStep[activeStep] || 'source';
+  const current = steps.find(([, , nodeId]) => nodeId === activeNode) ?? steps.find(([id]) => id === activeStep) ?? steps[0];
   return `
-    <section class="workbench-flow-map" aria-label="Sound Lab workflow">
-      ${steps.map(([id, index, label, note]) => `
-        <button class="workflow-step ${id === activeStep ? 'is-active' : ''}" type="button" data-workflow-step="${escapeHtml(id)}" aria-pressed="${id === activeStep ? 'true' : 'false'}">
+    <section class="workbench-flow-map atlas-signal-ribbon" aria-label="Sound Lab workflow">
+      ${steps.map(([id, index, nodeId, label, note, detail]) => `
+        <button class="workflow-step atlas-signal-node ${nodeId === activeNode ? 'is-active' : ''}" type="button" data-atlas-node="${escapeHtml(nodeId)}" data-workflow-step="${escapeHtml(id)}" aria-pressed="${nodeId === activeNode ? 'true' : 'false'}">
           <span>${escapeHtml(index)}</span>
           <strong>${escapeHtml(label)}</strong>
           <small>${escapeHtml(note)}</small>
+          <em>${escapeHtml(detail)}</em>
         </button>
       `).join('')}
       <div class="workflow-context-strip">
-        <span>当前步骤 ${escapeHtml(current[1])}</span>
-        <strong>${escapeHtml(current[2])}</strong>
-        <p>${escapeHtml(current[4])}</p>
+        <span>当前信号节点 ${escapeHtml(current[1])}</span>
+        <strong>${escapeHtml(current[3])}</strong>
+        <p>${escapeHtml(current[5])}</p>
       </div>
     </section>
   `;
@@ -2097,7 +2107,7 @@ function renderProfessionalControlGrid(model = {}, activeAdvancedModule = 'advan
 function renderWorkbenchRightRail(family = {}, model = {}) {
   const drawer = model.sourceDrawer ?? {};
   return `
-    <aside class="workbench-right-rail">
+    <aside class="workbench-right-rail atlas-right-rail">
       <section class="side-panel source-inspector-panel">
         <div class="side-panel-title">来源快照</div>
         <div class="video-source-row">
@@ -2146,7 +2156,7 @@ function renderWorkbenchFooter(family = {}) {
     ['创意反馈', '未开始'],
   ];
   return `
-    <section class="workbench-footer-grid">
+    <section class="workbench-footer-grid atlas-roadmap-strip">
       <div class="route-progress-panel">
         <div class="mini-panel-head"><strong>学习路线进度</strong><span>${escapeHtml(family.titleZh?.split('：')[0] ?? '当前声音')}</span></div>
         <div class="route-timeline">
@@ -2239,6 +2249,35 @@ function renderWorkbenchCommandCenter(family = {}, model = {}, options = {}) {
   `;
 }
 
+function renderAtlasCommandDock(model = {}, options = {}) {
+  const morphAmount = model.macroMorph?.amount ?? 0;
+  const confirmedClass = (action) => options.confirmedWorkbenchAction === action ? ' is-confirmed' : '';
+  return `
+    <section class="atlas-command-dock" aria-label="Signal Atlas playback and compare controls">
+      <div class="atlas-dock-status" role="status" aria-live="polite">
+        <span>当前 Patch</span>
+        <strong>${escapeHtml(model.patch?.nameZh ?? 'Sound Lab')}</strong>
+        <small>${escapeHtml(options.workbenchActionFeedback ?? '先听 dry 主体，再判断材质和空间。')}</small>
+      </div>
+      <div class="atlas-dock-actions" aria-label="试听与对照">
+        <button class="atlas-ab-button" type="button" data-sound-lab-ab="a"><span>A</span><strong>Dry</strong></button>
+        <button class="atlas-ab-button is-b" type="button" data-sound-lab-ab="b"><span>B</span><strong>Full</strong></button>
+        <button class="atlas-play-button ${options.isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play>
+          <span aria-hidden="true"></span>
+          <strong>${options.isPlaying ? '播放中' : '试听'}</strong>
+        </button>
+        <button class="atlas-tool-button${confirmedClass('randomize-patch')}" type="button" data-workbench-action="randomize-patch">Randomize</button>
+        <button class="atlas-tool-button${confirmedClass('export-preset')}" type="button" data-workbench-action="export-preset">Export</button>
+      </div>
+      <label class="atlas-morph-control range-shell" style="--range-value:${formatNumber(morphAmount)}%">
+        <span>Macro Morph</span>
+        <input type="range" data-macro-morph min="0" max="100" step="1" value="${escapeHtml(morphAmount)}" />
+        <strong>${formatNumber(100 - morphAmount)} / ${formatNumber(morphAmount)}</strong>
+      </label>
+    </section>
+  `;
+}
+
 function renderSoundLabWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
@@ -2323,10 +2362,103 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
   `;
 }
 
+function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
+  const { workletReady, toneReady, isPlaying, engineLabel } = status;
+  const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
+  const activeWorkbenchSynth = options.activeWorkbenchSynth ?? 'serum';
+  return `
+    <article
+      class="card sound-lab-workbench synth-workbench-layout signal-atlas-console ${isPlaying ? 'is-playing' : ''}"
+      data-active-sound-family="${escapeHtml(family.id)}"
+      data-workflow-step="${escapeHtml(options.activeWorkflowStep ?? 'source')}"
+      data-atlas-console="signal-atlas"
+    >
+      <div class="atlas-orb" aria-hidden="true"></div>
+      <header class="workbench-topbar atlas-topbar">
+        <div>
+          <div class="workbench-breadcrumb">Signal Atlas / <strong>${escapeHtml(family.titleZh.split('：')[0])}</strong> <span>★</span></div>
+          <h3>${escapeHtml(family.titleZh)}</h3>
+          <p>Sound Lab · Tone.js ${toneReady ? 'ready' : 'fallback'} · AudioWorklet ${workletReady ? 'ready' : 'fallback'} · ${escapeHtml(engineLabel)}</p>
+        </div>
+        <div class="workbench-actions">
+          <button type="button" data-workbench-action="save-patch">保存 Patch</button>
+          <button type="button" data-workbench-action="export-preset">导出 Preset</button>
+          <button class="icon-more-button ${options.moreOpen ? 'is-active' : ''}" type="button" data-workbench-action="toggle-more" aria-label="更多" aria-pressed="${options.moreOpen ? 'true' : 'false'}">⋯</button>
+          ${options.moreOpen ? `
+            <div class="workbench-more-tray" role="status">
+              <span>Quick</span>
+              <button type="button" data-workbench-action="open-library">预设库</button>
+              <button type="button" data-workbench-action="open-reaper-template">REAPER</button>
+              <button type="button" data-workbench-action="analyze-patch">分析</button>
+            </div>
+          ` : ''}
+        </div>
+      </header>
+      ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
+      <main class="atlas-main-console">
+        ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
+        <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">
+          <div class="atlas-visual-deck">
+            <div class="synth-tab-row atlas-synth-tabs">
+              ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
+              <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
+            </div>
+            <div class="analyzer-row atlas-analyzer-row">
+              ${renderWorkbenchWaveform(model)}
+              ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+              ${renderWorkbenchOutputMeter(model)}
+            </div>
+          </div>
+          <div class="atlas-control-column">
+            ${renderWorkbenchEnvelope(model)}
+            ${renderWorkbenchMacroPanel(model)}
+            ${renderXYMacroPanel(model)}
+          </div>
+        </section>
+        ${renderAtlasCommandDock(model, { ...options, isPlaying })}
+      </main>
+      ${renderWorkbenchRightRail(family, model)}
+      <section class="workbench-main-grid atlas-support-grid" aria-label="Advanced Sound Lab support modules">
+        <div class="workbench-core">
+          ${renderWorkbenchZoneTitle('02', '参数塑形', '高级编辑区保留 Mod Matrix、FX Chain、A/B、项目库、MIDI 和导出命名，但不再抢占主舞台。')}
+          ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
+          ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
+          ${renderProfessionalControlGrid(model, options.activeAdvancedModule)}
+          ${renderWorkbenchModuleMap(family, options.activeWorkflowStep, options.activeAdvancedModule, options.activeModuleMapId)}
+          ${renderWorkbenchUsageGuide(family, options.activeWorkflowStep)}
+          ${renderWorkbenchModulation(model)}
+          <div class="control-bottom-grid">
+            ${renderWorkbenchMaterialPanel(family)}
+            ${renderWorkbenchPlayback(model, isPlaying)}
+            ${renderWorkbenchQuality(model)}
+          </div>
+          <div class="advanced-engine-grid">
+            ${renderSoundLabEngineControls(model, options)}
+            ${renderSoundLabDnaControls(model)}
+          </div>
+          ${renderWorkbenchZoneTitle('03', '合成器调制教练', '把同一声音拆成 Serum 2、Phase Plant、Vital 三套具体步骤，适合边看边复制。')}
+          ${renderWorkbenchCoach(options.modulationGuides, options.activeModulationGuideId, options.activeCoachSynth)}
+        </div>
+      </section>
+      ${renderWorkbenchFooter(family)}
+      <section class="sound-lab-export">
+        <div>
+          <h4>Patch JSON</h4>
+          <pre>${escapeHtml(model.patchJson)}</pre>
+        </div>
+        <div>
+          <h4>REAPER Notes</h4>
+          <pre>${escapeHtml(model.reaperNotes)}</pre>
+        </div>
+      </section>
+    </article>
+  `;
+}
+
 export function renderSoundLabWorkbench(family, model, options = {}) {
   const workletReady = Boolean(options.workletReady);
   const toneReady = Boolean(options.toneReady);
   const isPlaying = Boolean(options.isPlaying);
   const engineLabel = options.engineUsed ? options.engineUsed : model.activeEngineMode;
-  return renderSoundLabWorkbenchLayout(family, model, options, { workletReady, toneReady, isPlaying, engineLabel });
+  return renderSignalAtlasWorkbenchLayout(family, model, options, { workletReady, toneReady, isPlaying, engineLabel });
 }
