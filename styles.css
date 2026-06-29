@@ -10104,3 +10104,1214 @@ button:disabled,
 .synth-workbench-layout .quick-entry-panel .mini-panel-head {
   color: var(--v3-body);
 }
+
+/* Signal Atlas Console v4 */
+.signal-atlas-console {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.34fr);
+  gap: 16px;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid rgba(174, 183, 198, 0.16);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(110, 231, 249, 0.14), transparent 31%),
+    radial-gradient(circle at 84% 8%, rgba(167, 139, 250, 0.13), transparent 28%),
+    linear-gradient(145deg, rgba(14, 20, 35, 0.94), rgba(8, 10, 18, 0.92) 54%, rgba(18, 24, 38, 0.88));
+  color: var(--v3-text);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.signal-atlas-console::before,
+.signal-atlas-console::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.signal-atlas-console::before {
+  background:
+    linear-gradient(90deg, rgba(174, 183, 198, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(174, 183, 198, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 30%, black 0 58%, transparent 86%);
+  opacity: 0.72;
+}
+
+.signal-atlas-console::after {
+  z-index: -1;
+  background:
+    radial-gradient(circle at 42% 20%, rgba(110, 231, 249, 0.08), transparent 16%),
+    linear-gradient(110deg, transparent 0 18%, rgba(110, 231, 249, 0.035) 18.2% 18.7%, transparent 19% 48%, rgba(167, 139, 250, 0.04) 48.2% 48.7%, transparent 49%);
+  opacity: 0.86;
+  animation: atlas-soft-pulse 9s ease-in-out infinite alternate;
+}
+
+.atlas-orb {
+  position: absolute;
+  z-index: -1;
+  right: 18%;
+  top: 90px;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(110, 231, 249, 0.14), rgba(124, 140, 255, 0.08) 38%, transparent 68%);
+  filter: blur(18px);
+  opacity: 0.72;
+  transform: translate3d(0, 0, 0);
+  animation: atlas-panel-drift 14s ease-in-out infinite alternate;
+}
+
+.signal-atlas-console > .atlas-topbar,
+.signal-atlas-console > .atlas-signal-ribbon,
+.signal-atlas-console > .atlas-support-grid,
+.signal-atlas-console > .atlas-roadmap-strip,
+.signal-atlas-console > .sound-lab-export {
+  grid-column: 1 / -1;
+}
+
+.atlas-topbar {
+  padding: 0 0 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.atlas-topbar h3 {
+  color: var(--v3-text);
+  font-size: clamp(24px, 3.1vw, 38px);
+  letter-spacing: 0;
+}
+
+.atlas-topbar p,
+.atlas-topbar .workbench-breadcrumb {
+  color: var(--v3-body);
+}
+
+.atlas-signal-ribbon {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  padding: 10px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.76), rgba(8, 10, 18, 0.54)),
+    radial-gradient(circle at 16% 50%, rgba(110, 231, 249, 0.08), transparent 34%);
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.atlas-signal-node {
+  position: relative;
+  min-height: 96px;
+  overflow: hidden;
+  border-color: rgba(174, 183, 198, 0.14);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.78), rgba(10, 15, 27, 0.64));
+  color: var(--v3-body);
+  animation: atlas-node-arrive 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.atlas-signal-node::after {
+  content: "";
+  position: absolute;
+  left: 52px;
+  right: -22px;
+  top: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(110, 231, 249, 0.28), transparent);
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.atlas-signal-node:last-of-type::after {
+  display: none;
+}
+
+.atlas-signal-node:hover,
+.atlas-signal-node:focus-visible,
+.atlas-signal-node.is-active {
+  transform: translateY(-2px);
+  border-color: rgba(110, 231, 249, 0.44);
+  background:
+    linear-gradient(180deg, rgba(25, 34, 54, 0.9), rgba(10, 15, 27, 0.78)),
+    radial-gradient(circle at 20% 0%, rgba(110, 231, 249, 0.16), transparent 42%);
+  color: var(--v3-text);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28), 0 0 28px rgba(110, 231, 249, 0.08);
+}
+
+.atlas-signal-node span {
+  border-color: rgba(110, 231, 249, 0.24);
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+}
+
+.atlas-signal-node strong {
+  color: var(--v3-text);
+}
+
+.atlas-signal-node small,
+.atlas-signal-node em {
+  color: var(--v3-body);
+}
+
+.atlas-signal-node em {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.atlas-main-console {
+  position: relative;
+  grid-column: 1;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(16, 19, 31, 0.84), rgba(8, 10, 18, 0.7)),
+    radial-gradient(circle at 0% 0%, rgba(110, 231, 249, 0.08), transparent 42%);
+  backdrop-filter: blur(22px) saturate(1.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.atlas-lab-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+  gap: 14px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.atlas-visual-deck,
+.atlas-control-column {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.atlas-synth-tabs {
+  padding: 8px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 10, 18, 0.32);
+}
+
+.atlas-analyzer-row {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.86fr) 74px;
+  gap: 12px;
+}
+
+.atlas-analyzer-row .waveform-panel,
+.atlas-analyzer-row .spectrum-panel,
+.atlas-control-column .envelope-panel,
+.atlas-control-column .macro-control-panel,
+.atlas-control-column .xy-macro-panel {
+  border-color: rgba(174, 183, 198, 0.14);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.88), rgba(10, 15, 27, 0.8)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.07), transparent 36%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 16px 44px rgba(0, 0, 0, 0.24);
+}
+
+.atlas-control-column .envelope-panel {
+  min-height: 260px;
+}
+
+.atlas-control-column .compact-macro-bank {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.atlas-control-column .xy-macro-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.64fr);
+}
+
+.atlas-command-dock {
+  position: sticky;
+  bottom: 12px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.48fr) minmax(360px, 1fr) minmax(190px, 0.48fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(174, 183, 198, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.86), rgba(8, 10, 18, 0.74)),
+    radial-gradient(circle at 50% 0%, rgba(110, 231, 249, 0.08), transparent 48%);
+  backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.atlas-dock-status {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.atlas-dock-status span,
+.atlas-morph-control span {
+  color: var(--v3-dim);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.atlas-dock-status strong {
+  min-width: 0;
+  color: var(--v3-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atlas-dock-status small,
+.atlas-morph-control strong {
+  color: var(--v3-body);
+  line-height: 1.35;
+}
+
+.atlas-dock-actions {
+  display: grid;
+  grid-template-columns: 56px 56px minmax(92px, 0.72fr) minmax(100px, 0.76fr) minmax(88px, 0.64fr);
+  gap: 8px;
+}
+
+.atlas-dock-actions button,
+.atlas-morph-control {
+  min-height: 48px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.86), rgba(10, 15, 27, 0.72));
+  color: var(--v3-text);
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.atlas-dock-actions button:hover,
+.atlas-dock-actions button:focus-visible,
+.atlas-morph-control:focus-within {
+  transform: translateY(-1px);
+  border-color: rgba(110, 231, 249, 0.38);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 0 22px rgba(110, 231, 249, 0.08);
+}
+
+.atlas-dock-actions button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.atlas-ab-button {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+}
+
+.atlas-ab-button span {
+  color: var(--v3-cyan);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.atlas-play-button {
+  grid-template-columns: 20px minmax(0, 1fr);
+  justify-content: center;
+  border-color: rgba(94, 234, 212, 0.36);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.96), rgba(94, 234, 212, 0.82));
+  color: #061018;
+  font-weight: 900;
+}
+
+.atlas-play-button span {
+  width: 13px;
+  height: 13px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  background: currentColor;
+}
+
+.atlas-play-button.is-playing span {
+  clip-path: inset(0 18% 0 18%);
+  animation: atlas-soft-pulse 720ms ease-in-out infinite alternate;
+}
+
+.atlas-tool-button {
+  padding: 0 12px;
+  font-weight: 850;
+}
+
+.atlas-morph-control {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(100px, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.atlas-right-rail {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+
+.atlas-right-rail .side-panel {
+  border-color: rgba(174, 183, 198, 0.14);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.82), rgba(10, 15, 27, 0.72)),
+    radial-gradient(circle at 100% 0%, rgba(167, 139, 250, 0.07), transparent 36%);
+  color: var(--v3-body);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.atlas-right-rail .side-panel-title,
+.atlas-right-rail strong {
+  color: var(--v3-text);
+}
+
+.atlas-right-rail p,
+.atlas-right-rail li {
+  color: var(--v3-body);
+}
+
+.atlas-support-grid {
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  padding: 12px;
+  background:
+    linear-gradient(180deg, rgba(16, 19, 31, 0.72), rgba(8, 10, 18, 0.56));
+}
+
+.atlas-support-grid .workbench-core {
+  display: grid;
+  gap: 12px;
+}
+
+.atlas-support-grid .workbench-module-map,
+.atlas-support-grid .workbench-usage-panel {
+  opacity: 0.92;
+}
+
+.atlas-roadmap-strip {
+  padding: 12px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 10, 18, 0.36);
+}
+
+.atlas-roadmap-strip .route-progress-panel {
+  grid-column: 1 / -1;
+}
+
+.atlas-roadmap-strip .challenge-panel,
+.atlas-roadmap-strip .quick-entry-panel {
+  display: none;
+}
+
+.signal-atlas-console button,
+.signal-atlas-console input,
+.signal-atlas-console select {
+  touch-action: manipulation;
+}
+
+.signal-atlas-console .range-shell input,
+.signal-atlas-console input[type="range"] {
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.signal-atlas-console .range-shell.is-dragging input,
+.signal-atlas-console input[type="range"]:active {
+  filter: drop-shadow(0 0 14px rgba(110, 231, 249, 0.28));
+}
+
+@keyframes atlas-node-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes atlas-soft-pulse {
+  from {
+    opacity: 0.62;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes atlas-panel-drift {
+  from {
+    transform: translate3d(-14px, -8px, 0) scale(0.98);
+  }
+  to {
+    transform: translate3d(18px, 10px, 0) scale(1.03);
+  }
+}
+
+@media (max-width: 1180px) {
+  .signal-atlas-console {
+    grid-template-columns: 1fr;
+  }
+
+  .atlas-main-console,
+  .atlas-right-rail {
+    grid-column: 1 / -1;
+  }
+
+  .atlas-right-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .atlas-lab-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 880px) {
+  .atlas-signal-ribbon {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .atlas-analyzer-row,
+  .atlas-command-dock,
+  .atlas-dock-actions,
+  .atlas-morph-control,
+  .atlas-right-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .atlas-command-dock {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .signal-atlas-console {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .atlas-signal-ribbon {
+    grid-template-columns: 1fr;
+  }
+
+  .atlas-signal-node {
+    min-height: 78px;
+  }
+
+  .atlas-control-column .compact-macro-bank,
+  .atlas-control-column .xy-macro-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-atlas-console::after,
+  .atlas-orb,
+  .atlas-signal-node,
+  .atlas-play-button.is-playing span {
+    animation: none;
+  }
+}
+
+/* Signal Atlas Console v4.1 fidelity pass */
+.signal-atlas-console {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 334px);
+  gap: 18px;
+}
+
+.signal-atlas-console,
+.signal-atlas-console * {
+  letter-spacing: 0;
+}
+
+.signal-atlas-console h4,
+.signal-atlas-console h5,
+.signal-atlas-console strong,
+.signal-atlas-console .mini-panel-head strong,
+.signal-atlas-console .module-map-head strong,
+.signal-atlas-console .usage-panel-head strong {
+  color: var(--v3-text);
+}
+
+.signal-atlas-console p,
+.signal-atlas-console li,
+.signal-atlas-console label,
+.signal-atlas-console small,
+.signal-atlas-console .mini-panel-head,
+.signal-atlas-console .module-map-head small,
+.signal-atlas-console .usage-panel-head small {
+  color: rgba(174, 183, 198, 0.88);
+}
+
+.signal-atlas-console button {
+  color: var(--v3-text);
+}
+
+.signal-atlas-console .atlas-signal-ribbon {
+  grid-template-columns: repeat(6, minmax(154px, 1fr));
+  gap: 10px;
+  overflow: hidden;
+}
+
+.signal-atlas-console .atlas-signal-node.workflow-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-content: start;
+  min-height: 116px;
+  padding: 13px;
+  text-align: left;
+  white-space: normal;
+}
+
+.signal-atlas-console .atlas-signal-node span {
+  grid-row: 1 / 3;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(110, 231, 249, 0.24);
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.signal-atlas-console .atlas-signal-node strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.signal-atlas-console .atlas-signal-node small {
+  display: block;
+  min-width: 0;
+  overflow: visible;
+  color: rgba(174, 183, 198, 0.82);
+  font-size: 11px;
+  line-height: 1.36;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.signal-atlas-console .atlas-signal-node em {
+  grid-column: 2;
+  display: -webkit-box;
+  max-height: 45px;
+  overflow: hidden;
+  margin-top: 3px;
+  color: rgba(174, 183, 198, 0.68);
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.signal-atlas-console .atlas-signal-node.is-active span,
+.signal-atlas-console .atlas-signal-node:hover span,
+.signal-atlas-console .atlas-signal-node:focus-visible span {
+  background: linear-gradient(135deg, rgba(110, 231, 249, 0.28), rgba(124, 140, 255, 0.2));
+  box-shadow: 0 0 18px rgba(110, 231, 249, 0.14);
+}
+
+.signal-atlas-console .workflow-context-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: center;
+  margin-top: 0;
+  border: 1px solid rgba(110, 231, 249, 0.16);
+  background:
+    linear-gradient(90deg, rgba(110, 231, 249, 0.08), rgba(124, 140, 255, 0.055)),
+    rgba(8, 10, 18, 0.48);
+}
+
+.signal-atlas-console .workflow-context-strip span {
+  color: var(--v3-cyan);
+}
+
+.signal-atlas-console .workflow-context-strip p {
+  overflow: hidden;
+  margin: 0;
+  color: rgba(174, 183, 198, 0.82);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signal-atlas-console .atlas-main-console {
+  align-self: start;
+}
+
+.signal-atlas-console .atlas-lab-stage {
+  grid-template-columns: minmax(450px, 1.04fr) minmax(292px, 0.72fr);
+  align-items: start;
+}
+
+.signal-atlas-console .atlas-visual-deck {
+  align-content: start;
+  grid-template-rows: auto minmax(304px, auto);
+}
+
+.signal-atlas-console .atlas-synth-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.signal-atlas-console .atlas-synth-tabs .synth-tab,
+.signal-atlas-console .atlas-synth-tabs .compare-tab {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  margin-left: 0;
+  border-color: rgba(174, 183, 198, 0.14);
+  background: rgba(8, 10, 18, 0.46);
+  color: rgba(244, 247, 251, 0.88);
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.signal-atlas-console .atlas-synth-tabs .synth-tab:hover,
+.signal-atlas-console .atlas-synth-tabs .compare-tab:hover,
+.signal-atlas-console .atlas-synth-tabs .synth-tab:focus-visible,
+.signal-atlas-console .atlas-synth-tabs .compare-tab:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(110, 231, 249, 0.36);
+  background: rgba(110, 231, 249, 0.09);
+}
+
+.signal-atlas-console .atlas-synth-tabs .synth-tab.is-active {
+  border-color: rgba(110, 231, 249, 0.5);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 249, 0.2), rgba(124, 140, 255, 0.14)),
+    rgba(18, 24, 38, 0.86);
+  color: var(--v3-text);
+  box-shadow: inset 0 -2px 0 rgba(110, 231, 249, 0.72), 0 12px 34px rgba(110, 231, 249, 0.08);
+}
+
+.signal-atlas-console .atlas-analyzer-row {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(260px, 0.9fr) 76px;
+  gap: 12px;
+  min-height: 304px;
+}
+
+.signal-atlas-console .atlas-analyzer-row .waveform-panel,
+.signal-atlas-console .atlas-analyzer-row .spectrum-panel {
+  position: relative;
+  min-height: 304px;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.signal-atlas-console .atlas-analyzer-row .mini-panel-head {
+  position: relative;
+  z-index: 3;
+  min-height: 30px;
+  margin-bottom: 10px;
+}
+
+.signal-atlas-console .atlas-analyzer-row .workbench-waveform-svg {
+  height: 188px;
+  border-color: rgba(110, 231, 249, 0.18);
+  background:
+    linear-gradient(90deg, rgba(174, 183, 198, 0.055) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(174, 183, 198, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 38% 42%, rgba(110, 231, 249, 0.1), transparent 46%),
+    rgba(5, 8, 15, 0.84);
+  background-size: 58px 100%, 100% 26px, 100% 100%, 100% 100%;
+}
+
+.signal-atlas-console .atlas-analyzer-row .workbench-waveform-svg polyline {
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 10px rgba(110, 231, 249, 0.22));
+}
+
+.signal-atlas-console .atlas-analyzer-row .waveform-analyzer-canvas {
+  top: 54px;
+  left: 12px;
+  right: 12px;
+  width: calc(100% - 24px);
+  height: 188px;
+  opacity: 0.64;
+  mix-blend-mode: screen;
+}
+
+.signal-atlas-console .atlas-analyzer-row .spectrum-canvas {
+  min-height: 188px;
+  border-color: rgba(110, 231, 249, 0.18);
+  background:
+    radial-gradient(circle at 50% 6%, rgba(167, 139, 250, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(8, 10, 18, 0.86), rgba(5, 8, 15, 0.92));
+}
+
+.signal-atlas-console .atlas-analyzer-row .spectrum-grid {
+  opacity: 0.8;
+}
+
+.signal-atlas-console .atlas-analyzer-row .spectrum-bars {
+  opacity: 0.5;
+}
+
+.signal-atlas-console .atlas-analyzer-row .output-meter-strip {
+  min-height: 304px;
+  border-color: rgba(110, 231, 249, 0.16);
+  background: linear-gradient(180deg, rgba(18, 24, 38, 0.78), rgba(5, 8, 15, 0.88));
+}
+
+.signal-atlas-console .atlas-control-column .envelope-panel,
+.signal-atlas-console .atlas-control-column .macro-control-panel,
+.signal-atlas-console .atlas-control-column .xy-macro-panel {
+  min-width: 0;
+}
+
+.signal-atlas-console .workbench-panel,
+.signal-atlas-console .side-panel,
+.signal-atlas-console .route-progress-panel,
+.signal-atlas-console .challenge-panel,
+.signal-atlas-console .quick-entry-panel,
+.signal-atlas-console .workbench-module-map,
+.signal-atlas-console .workbench-usage-panel,
+.signal-atlas-console .advanced-module-dock,
+.signal-atlas-console .professional-control-grid,
+.signal-atlas-console .modulation-panel,
+.signal-atlas-console .control-bottom-grid > *,
+.signal-atlas-console .advanced-engine-grid > *,
+.signal-atlas-console .workbench-coach-panel,
+.signal-atlas-console .sound-lab-export > div,
+.signal-atlas-console .module-map-card,
+.signal-atlas-console .usage-card,
+.signal-atlas-console .advanced-module-pill,
+.signal-atlas-console .macro-tile,
+.signal-atlas-console .mod-source-card,
+.signal-atlas-console .material-tile,
+.signal-atlas-console .quality-row,
+.signal-atlas-console .fx-chain-row,
+.signal-atlas-console .dna-card,
+.signal-atlas-console .coach-card,
+.signal-atlas-console .coach-synth-focus,
+.signal-atlas-console .coach-synth-grid article,
+.signal-atlas-console .coach-synth-compare,
+.signal-atlas-console .export-check-card {
+  border-color: rgba(174, 183, 198, 0.14) !important;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.82), rgba(8, 10, 18, 0.68)),
+    radial-gradient(circle at 100% 0%, rgba(110, 231, 249, 0.06), transparent 34%) !important;
+  color: var(--v3-text) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 14px 42px rgba(0, 0, 0, 0.22) !important;
+}
+
+.signal-atlas-console .module-map-card:hover,
+.signal-atlas-console .usage-card:hover,
+.signal-atlas-console .advanced-module-pill:hover,
+.signal-atlas-console .macro-tile:hover,
+.signal-atlas-console .material-tile:hover,
+.signal-atlas-console .dna-card:hover,
+.signal-atlas-console .coach-card:hover,
+.signal-atlas-console .export-check-card:hover,
+.signal-atlas-console .module-map-card:focus-visible,
+.signal-atlas-console .usage-card:focus-visible,
+.signal-atlas-console .advanced-module-pill:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(110, 231, 249, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(24, 32, 52, 0.88), rgba(11, 16, 29, 0.74)),
+    radial-gradient(circle at 18% 0%, rgba(110, 231, 249, 0.12), transparent 42%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 56px rgba(0, 0, 0, 0.28), 0 0 24px rgba(110, 231, 249, 0.07) !important;
+}
+
+.signal-atlas-console .module-map-card p,
+.signal-atlas-console .module-map-card small,
+.signal-atlas-console .usage-card small,
+.signal-atlas-console .macro-tile small,
+.signal-atlas-console .mod-source-card small,
+.signal-atlas-console .material-tile small,
+.signal-atlas-console .quality-row small,
+.signal-atlas-console .coach-card small,
+.signal-atlas-console .export-check-card small {
+  color: rgba(174, 183, 198, 0.82) !important;
+}
+
+.signal-atlas-console .module-map-card span,
+.signal-atlas-console .usage-card span,
+.signal-atlas-console .advanced-module-pill span,
+.signal-atlas-console .macro-tile span,
+.signal-atlas-console .material-tile span {
+  color: var(--v3-cyan) !important;
+}
+
+.signal-atlas-console .atlas-command-dock {
+  animation: atlas-dock-arrive 560ms cubic-bezier(0.2, 0.8, 0.2, 1) 90ms both;
+}
+
+.signal-atlas-console .atlas-dock-actions button.is-confirmed,
+.signal-atlas-console [data-workbench-action].is-confirmed {
+  animation: atlas-confirm-pop 520ms ease both;
+}
+
+.signal-atlas-console input[type="range"] {
+  accent-color: var(--v3-cyan);
+  cursor: ew-resize;
+}
+
+.signal-atlas-console input[type="range"]::-webkit-slider-thumb {
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 160ms ease;
+}
+
+.signal-atlas-console input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.16);
+  box-shadow: 0 0 0 8px rgba(110, 231, 249, 0.12), 0 0 18px rgba(110, 231, 249, 0.26);
+}
+
+@keyframes atlas-dock-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes atlas-confirm-pop {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 rgba(110, 231, 249, 0);
+  }
+  42% {
+    transform: translateY(-1px) scale(1.015);
+    box-shadow: 0 0 0 5px rgba(110, 231, 249, 0.1), 0 0 24px rgba(110, 231, 249, 0.16);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1280px) {
+  .signal-atlas-console .atlas-signal-ribbon {
+    grid-template-columns: repeat(3, minmax(190px, 1fr));
+  }
+
+  .signal-atlas-console .atlas-lab-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 880px) {
+  .signal-atlas-console .atlas-signal-ribbon,
+  .signal-atlas-console .atlas-synth-tabs,
+  .signal-atlas-console .atlas-analyzer-row {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-atlas-console .workflow-context-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-atlas-console .workflow-context-strip p {
+    white-space: normal;
+  }
+
+  .signal-atlas-console .atlas-analyzer-row .waveform-panel,
+  .signal-atlas-console .atlas-analyzer-row .spectrum-panel,
+  .signal-atlas-console .atlas-analyzer-row .output-meter-strip {
+    min-height: 238px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-atlas-console .atlas-command-dock,
+  .signal-atlas-console .atlas-dock-actions button.is-confirmed,
+  .signal-atlas-console [data-workbench-action].is-confirmed {
+    animation: none;
+  }
+}
+
+/* Signal Atlas Console v4.2 mobile shell compression */
+@media (max-width: 680px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: auto;
+    padding: 12px 14px 10px;
+    gap: 10px;
+    overflow: hidden;
+    border-bottom-color: rgba(110, 231, 249, 0.18);
+    background:
+      linear-gradient(180deg, rgba(8, 10, 18, 0.96), rgba(11, 15, 26, 0.9)),
+      radial-gradient(circle at 0% 0%, rgba(110, 231, 249, 0.1), transparent 42%);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+  }
+
+  .brand {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    min-width: 38px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .brand h1 {
+    font-size: 15px;
+    line-height: 1.18;
+  }
+
+  .brand p {
+    display: none;
+  }
+
+  .sidebar .tabs {
+    display: flex !important;
+    grid-auto-flow: initial;
+    grid-auto-columns: initial;
+    grid-template-columns: none !important;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 0 4px;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .sidebar .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar .nav-section {
+    display: contents;
+    padding: 0;
+    border: 0;
+  }
+
+  .sidebar .nav-section-label {
+    display: none;
+  }
+
+  .sidebar .nav-section .tab {
+    flex: 0 0 auto;
+    min-height: 38px;
+    width: auto;
+    min-width: auto;
+    grid-template-columns: 28px max-content;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    scroll-snap-align: start;
+  }
+
+  .sidebar .nav-index {
+    width: 24px;
+    height: 22px;
+    border-radius: 7px;
+  }
+
+  .sidebar .nav-label {
+    max-width: 7.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidebar-progress-card,
+  .daily-suggestion-card {
+    display: none !important;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 84px;
+    z-index: 8;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 42px;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(8, 10, 18, 0.86);
+    backdrop-filter: blur(20px) saturate(1.16);
+  }
+
+  .toolbar .field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .toolbar .field span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .toolbar input,
+  .toolbar select {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+
+  .notification-button {
+    width: 42px;
+    min-width: 42px;
+    min-height: 40px;
+    padding: 0;
+  }
+}
+
+/* Signal Atlas Console v4.3 reference alignment */
+@media (min-width: 881px) {
+  .signal-atlas-console .atlas-signal-ribbon {
+    position: relative;
+    grid-template-columns: repeat(6, minmax(128px, 1fr));
+    padding: 18px 22px 12px;
+    background:
+      linear-gradient(180deg, rgba(8, 10, 18, 0.46), rgba(8, 10, 18, 0.26)),
+      radial-gradient(circle at 48% 16%, rgba(110, 231, 249, 0.08), transparent 38%);
+  }
+
+  .signal-atlas-console .atlas-signal-node.workflow-step {
+    justify-items: center;
+    min-height: 86px;
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px auto auto;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .signal-atlas-console .atlas-signal-node::before {
+    content: "";
+    position: absolute;
+    left: calc(50% + 31px);
+    right: calc(-50% + 31px);
+    top: 26px;
+    height: 2px;
+    background:
+      linear-gradient(90deg, rgba(110, 231, 249, 0.58), rgba(124, 140, 255, 0.24)),
+      linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    box-shadow: 0 0 16px rgba(110, 231, 249, 0.12);
+  }
+
+  .signal-atlas-console .atlas-signal-node:last-of-type::before,
+  .signal-atlas-console .atlas-signal-node::after {
+    display: none;
+  }
+
+  .signal-atlas-console .atlas-signal-node span {
+    position: relative;
+    z-index: 1;
+    grid-row: auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 42% 36%, rgba(110, 231, 249, 0.24), rgba(18, 24, 38, 0.92) 58%),
+      rgba(8, 10, 18, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(244, 247, 251, 0.06), 0 0 24px rgba(110, 231, 249, 0.1);
+  }
+
+  .signal-atlas-console .atlas-signal-node.is-active span {
+    border-color: rgba(167, 139, 250, 0.58);
+    background:
+      radial-gradient(circle at 45% 40%, rgba(167, 139, 250, 0.56), rgba(74, 46, 157, 0.46) 42%, rgba(8, 10, 18, 0.92) 72%);
+    color: #F4F7FB;
+    box-shadow: inset 0 0 0 1px rgba(244, 247, 251, 0.08), 0 0 30px rgba(167, 139, 250, 0.28), 0 0 22px rgba(110, 231, 249, 0.12);
+  }
+
+  .signal-atlas-console .atlas-signal-node strong {
+    max-width: 100%;
+    font-size: 13px;
+  }
+
+  .signal-atlas-console .atlas-signal-node small {
+    max-width: 100%;
+    overflow: hidden;
+    color: rgba(174, 183, 198, 0.7);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .signal-atlas-console .atlas-signal-node em {
+    display: none;
+  }
+
+  .signal-atlas-console .workflow-context-strip {
+    margin-top: 8px;
+  }
+
+  .signal-atlas-console .atlas-lab-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-atlas-console .atlas-right-rail {
+    margin-left: 12px;
+  }
+
+  .signal-atlas-console .atlas-analyzer-row {
+    grid-template-columns: minmax(330px, 1.08fr) minmax(300px, 0.92fr) 82px;
+    min-height: 332px;
+  }
+
+  .signal-atlas-console .atlas-analyzer-row .waveform-panel,
+  .signal-atlas-console .atlas-analyzer-row .spectrum-panel,
+  .signal-atlas-console .atlas-analyzer-row .output-meter-strip {
+    min-height: 332px;
+  }
+
+  .signal-atlas-console .atlas-analyzer-row .workbench-waveform-svg,
+  .signal-atlas-console .atlas-analyzer-row .spectrum-canvas {
+    height: 212px;
+    min-height: 212px;
+  }
+
+  .signal-atlas-console .atlas-analyzer-row .waveform-analyzer-canvas {
+    height: 212px;
+  }
+
+  .signal-atlas-console .atlas-control-column {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.52fr);
+    align-items: stretch;
+  }
+
+  .signal-atlas-console .atlas-control-column .envelope-panel {
+    grid-column: 1 / -1;
+    min-height: 238px;
+  }
+
+  .signal-atlas-console .atlas-control-column .macro-control-panel,
+  .signal-atlas-console .atlas-control-column .xy-macro-panel {
+    min-height: 220px;
+  }
+}

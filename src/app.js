@@ -97,6 +97,7 @@ const WORKBENCH_ACTION_MESSAGES = {
   'export-preset': 'REAPER Notes 已复制，按 dry / full / tail-only 导出即可。',
   'compare-view': '已切到 A/B 对照：先匹配响度，再判断质感。',
   'toggle-more': '更多工具已切换。',
+  'randomize-patch': '已生成一个轻微变化版本：宏参数只做小幅偏移，方便继续 A/B。',
   'focus-source': '已聚焦声源和频谱：先确认目标声音是否成立。',
   'focus-controls': '已聚焦参数塑形：一次只改一个听感问题。',
   'focus-coach': '已聚焦合成器教练：按 Serum / Phase Plant / Vital 路由复刻。',
@@ -110,6 +111,7 @@ const WORKBENCH_ACTION_MESSAGES = {
   'analyze-patch': '已切到频谱/调制分析视角。',
   'new-experiment': '已准备新实验：先选材质，再播放试听。',
 };
+let workbenchConfirmTimer = null;
 const VIEW_IDS = new Set([
   'dashboard',
   'sources',
@@ -171,6 +173,7 @@ const state = {
   soundLabMacroMorph: 0,
   soundLabAbSlot: 'a',
   soundLabWorkflowStep: 'source',
+  activeAtlasNode: 'source',
   activeWorkbenchModuleMapId: 'source',
   soundLabAnalyzerMode: 'live',
   soundLabMoreOpen: false,
@@ -178,6 +181,7 @@ const state = {
   activeSynthModGuideId: synthModulationGuides[0]?.id,
   activeCoachSynth: 'serum',
   workbenchActionFeedback: '先选材质或点击播放；每次只解决一个听感问题。',
+  confirmedWorkbenchAction: '',
   soundLabFavorites: [],
   soundLabProjects: [],
   soundLabGitSync: {
@@ -727,6 +731,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabMacroMorph = 0;
   state.soundLabAbSlot = 'a';
   state.soundLabWorkflowStep = 'source';
+  state.activeAtlasNode = 'source';
   state.activeWorkbenchModuleMapId = 'source';
   state.activeAdvancedModule = 'advanced';
   state.activeWorkbenchModule = 'generator';
@@ -754,6 +759,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     gitSync: state.soundLabGitSync,
     midiMappings: state.soundLabMidiMappings,
     activeWorkflowStep: state.soundLabWorkflowStep,
+    activeAtlasNode: state.activeAtlasNode,
     activeModuleMapId: state.activeWorkbenchModuleMapId,
     analyzerMode: state.soundLabAnalyzerMode,
     moreOpen: state.soundLabMoreOpen,
@@ -763,6 +769,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     activeModulationGuideId: state.activeSynthModGuideId,
     activeCoachSynth: state.activeCoachSynth,
     workbenchActionFeedback: state.workbenchActionFeedback,
+    confirmedWorkbenchAction: state.confirmedWorkbenchAction,
     ...optionOverrides,
   };
 }
@@ -802,6 +809,7 @@ function renderSoundLabView() {
         isPlaying: state.isSoundLabPlaying,
         activeWorkbenchModule: state.activeWorkbenchModule,
         activeWorkflowStep: state.soundLabWorkflowStep,
+        activeAtlasNode: state.activeAtlasNode,
         activeModuleMapId: state.activeWorkbenchModuleMapId,
         analyzerMode: state.soundLabAnalyzerMode,
         moreOpen: state.soundLabMoreOpen,
@@ -811,6 +819,7 @@ function renderSoundLabView() {
         activeModulationGuideId: state.activeSynthModGuideId,
         activeCoachSynth: state.activeCoachSynth,
         workbenchActionFeedback: state.workbenchActionFeedback,
+        confirmedWorkbenchAction: state.confirmedWorkbenchAction,
       })}
       <section class="sound-lab-secondary-section" aria-label="次级预设与变化">
         <div class="module-section-head">
@@ -1501,6 +1510,18 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
   state.activeAdvancedModule = moduleId;
   state.soundLabWorkflowStep = workflowByModule[moduleId] ?? state.soundLabWorkflowStep;
   state.activeWorkbenchModuleMapId = moduleMapByAdvancedModule[moduleId] ?? state.activeWorkbenchModuleMapId;
+  state.activeAtlasNode = {
+    advanced: 'source',
+    'envelope-editor': 'envelope',
+    'mod-matrix': 'modulation',
+    'fx-chain': 'fx-chain',
+    'ab-compare': 'material',
+    favorites: 'export',
+    'project-library': 'export',
+    'cloud-sync': 'export',
+    'midi-input': 'export',
+    'batch-export': 'export',
+  }[moduleId] ?? state.activeAtlasNode;
   if (moduleId === 'advanced') state.activeWorkbenchModule = 'generator';
   if (moduleId === 'ab-compare') state.activeWorkbenchModule = 'macro';
   if (moduleId === 'fx-chain') state.activeWorkbenchModule = 'effects';
@@ -1509,7 +1530,62 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
   if (shouldRender) render();
 }
 
-function handleWorkbenchStep(step) {
+function handleWorkbenchStep(step, atlasNode = '') {
+  const targetByAtlasNode = {
+    source: {
+      step: 'source',
+      workbenchModule: 'generator',
+      advancedModule: 'advanced',
+      moduleMap: 'source',
+      selector: '.analyzer-row',
+    },
+    envelope: {
+      step: 'shape',
+      workbenchModule: 'envelope',
+      advancedModule: 'envelope-editor',
+      moduleMap: 'envelope',
+      selector: '.envelope-panel',
+    },
+    modulation: {
+      step: 'shape',
+      workbenchModule: 'modulation',
+      advancedModule: 'mod-matrix',
+      moduleMap: 'mod-matrix',
+      selector: '.advanced-module-dock',
+    },
+    'fx-chain': {
+      step: 'shape',
+      workbenchModule: 'effects',
+      advancedModule: 'fx-chain',
+      moduleMap: 'fx-chain',
+      selector: '.fx-chain-editor',
+    },
+    material: {
+      step: 'compare',
+      workbenchModule: 'macro',
+      advancedModule: 'ab-compare',
+      moduleMap: 'compare',
+      selector: '.advanced-module-dock',
+    },
+    export: {
+      step: 'deliver',
+      workbenchModule: 'effects',
+      advancedModule: 'batch-export',
+      moduleMap: 'compare',
+      selector: '.sound-lab-export',
+    },
+  };
+  if (atlasNode && targetByAtlasNode[atlasNode]) {
+    const target = targetByAtlasNode[atlasNode];
+    state.soundLabWorkflowStep = target.step;
+    state.activeAtlasNode = atlasNode;
+    state.activeWorkbenchModule = target.workbenchModule;
+    state.activeAdvancedModule = target.advancedModule;
+    state.activeWorkbenchModuleMapId = target.moduleMap;
+    render();
+    scrollSoundLabIntoView(target.selector);
+    return;
+  }
   const moduleByStep = {
     source: 'generator',
     shape: 'envelope',
@@ -1534,7 +1610,14 @@ function handleWorkbenchStep(step) {
     compare: '.advanced-module-dock',
     deliver: '.sound-lab-export',
   };
+  const atlasNodeByStep = {
+    source: 'source',
+    shape: 'envelope',
+    compare: 'material',
+    deliver: 'export',
+  };
   state.soundLabWorkflowStep = step;
+  state.activeAtlasNode = atlasNodeByStep[step] ?? state.activeAtlasNode;
   state.activeWorkbenchModule = moduleByStep[step] ?? state.activeWorkbenchModule;
   state.activeAdvancedModule = advancedByStep[step] ?? state.activeAdvancedModule;
   state.activeWorkbenchModuleMapId = mapByStep[step] ?? state.activeWorkbenchModuleMapId;
@@ -1583,6 +1666,14 @@ function handleWorkbenchModuleJump(moduleId) {
   };
   const target = targetByModule[moduleId] ?? targetByModule.source;
   state.soundLabWorkflowStep = target.step;
+  state.activeAtlasNode = {
+    source: 'source',
+    envelope: 'envelope',
+    'mod-matrix': 'modulation',
+    'fx-chain': 'fx-chain',
+    compare: 'material',
+    coach: 'modulation',
+  }[moduleId] ?? state.activeAtlasNode;
   state.activeWorkbenchModule = target.workbenchModule;
   state.activeAdvancedModule = target.advancedModule;
   state.activeWorkbenchModuleMapId = moduleId;
@@ -1592,6 +1683,17 @@ function handleWorkbenchModuleJump(moduleId) {
 
 function showWorkbenchActionFeedback(message, button) {
   state.workbenchActionFeedback = message || '未识别的工作台按钮：这次点击没有可执行目标。';
+  const action = button?.dataset?.workbenchAction ?? '';
+  if (action) {
+    state.confirmedWorkbenchAction = action;
+    if (workbenchConfirmTimer) globalThis.clearTimeout(workbenchConfirmTimer);
+    workbenchConfirmTimer = globalThis.setTimeout(() => {
+      if (state.confirmedWorkbenchAction === action) {
+        state.confirmedWorkbenchAction = '';
+        render();
+      }
+    }, 650);
+  }
   if (button) {
     button.classList.add('is-confirmed');
     globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
@@ -1622,6 +1724,12 @@ async function handleWorkbenchAction(action, button) {
     return;
   }
 
+  if (action === 'randomize-patch') {
+    randomizeSoundLabMacros();
+    render();
+    return;
+  }
+
   if (action === 'focus-source') {
     handleWorkbenchStep('source');
     return;
@@ -1634,6 +1742,7 @@ async function handleWorkbenchAction(action, button) {
 
   if (action === 'focus-coach') {
     state.soundLabWorkflowStep = 'shape';
+    state.activeAtlasNode = 'modulation';
     state.activeWorkbenchModuleMapId = 'coach';
     state.activeAdvancedModule = 'mod-matrix';
     state.activeWorkbenchModule = 'modulation';
@@ -1650,6 +1759,7 @@ async function handleWorkbenchAction(action, button) {
   if (action === 'analyze-patch') {
     state.soundLabAnalyzerMode = 'log';
     state.soundLabWorkflowStep = 'shape';
+    state.activeAtlasNode = 'modulation';
     state.activeWorkbenchModuleMapId = 'mod-matrix';
     render();
     return;
@@ -1657,6 +1767,7 @@ async function handleWorkbenchAction(action, button) {
 
   if (action === 'new-experiment') {
     state.soundLabWorkflowStep = 'source';
+    state.activeAtlasNode = 'source';
     state.activeWorkbenchModuleMapId = 'source';
     state.activeAdvancedModule = 'advanced';
     state.activeWorkbenchModule = 'generator';
@@ -1987,6 +2098,20 @@ function updateMacroMorph(value) {
   state.soundLabMacroMorph = amount;
   const morphed = getSoundLabModel({}, { macroMorph: amount }).macroMorph.morphed;
   state.soundLabMacros = { ...state.soundLabMacros, ...morphed };
+  syncSoundLabPatchSoon();
+}
+
+function randomizeSoundLabMacros() {
+  const nextMacros = Object.fromEntries(Object.entries(state.soundLabMacros).map(([key, value]) => {
+    const drift = Math.round((Math.random() - 0.5) * 26);
+    return [key, Math.max(0, Math.min(100, Number(value) + drift))];
+  }));
+  state.soundLabMacros = { ...state.soundLabMacros, ...nextMacros };
+  state.soundLabWorkflowStep = 'shape';
+  state.activeAtlasNode = 'modulation';
+  state.activeWorkbenchModuleMapId = 'mod-matrix';
+  state.activeAdvancedModule = 'mod-matrix';
+  state.activeWorkbenchModule = 'modulation';
   syncSoundLabPatchSoon();
 }
 
@@ -2338,8 +2463,17 @@ function bindSoundLabControls() {
         effects: 'fx-chain',
         macro: 'compare',
       };
+      const atlasNodeByWorkbenchModule = {
+        generator: 'source',
+        filter: 'source',
+        modulation: 'modulation',
+        envelope: 'envelope',
+        effects: 'fx-chain',
+        macro: 'material',
+      };
       state.activeWorkbenchModule = button.dataset.moduleTab;
-      state.soundLabWorkflowStep = 'shape';
+      state.soundLabWorkflowStep = ['generator', 'filter'].includes(button.dataset.moduleTab) ? 'source' : 'shape';
+      state.activeAtlasNode = atlasNodeByWorkbenchModule[button.dataset.moduleTab] ?? state.activeAtlasNode;
       state.activeWorkbenchModuleMapId = mapByWorkbenchModule[button.dataset.moduleTab] ?? state.activeWorkbenchModuleMapId;
       render();
     });
@@ -2347,7 +2481,7 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('.workflow-step[data-workflow-step]').forEach((button) => {
     button.addEventListener('click', () => {
-      handleWorkbenchStep(button.dataset.workflowStep);
+      handleWorkbenchStep(button.dataset.workflowStep, button.dataset.atlasNode);
     });
   });
 
