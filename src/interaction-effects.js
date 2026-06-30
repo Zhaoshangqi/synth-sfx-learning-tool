@@ -7,6 +7,15 @@ const tactileSelector = [
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
+function isContinuousControl(event, target) {
+  const source = event?.target;
+  return Boolean(
+    source?.closest?.('input[type="range"], [data-xy-pad], .xy-pad-panel, .vertical-slider')
+      || target?.matches?.('.range-shell')
+      || target?.closest?.('[data-xy-pad], .xy-pad-panel'),
+  );
+}
+
 function findTactileTarget(event) {
   const target = event.target?.closest?.(tactileSelector);
   if (!target || target.matches?.(':disabled')) return null;
@@ -34,7 +43,7 @@ function addSpark(x, y) {
   globalThis.setTimeout(cleanup, 720);
 }
 
-function pulseAt(target, clientX, clientY) {
+function pulseAt(target, clientX, clientY, options = {}) {
   const rect = target.getBoundingClientRect();
   const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
   const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
@@ -42,13 +51,13 @@ function pulseAt(target, clientX, clientY) {
   target.style.setProperty('--tap-x', `${x}px`);
   target.style.setProperty('--tap-y', `${y}px`);
   addPressState(target);
-  addSpark(clientX, clientY);
+  if (options.spark !== false) addSpark(clientX, clientY);
 }
 
 document.addEventListener('pointerdown', (event) => {
   const target = findTactileTarget(event);
   if (!target) return;
-  pulseAt(target, event.clientX, event.clientY);
+  pulseAt(target, event.clientX, event.clientY, { spark: !isContinuousControl(event, target) });
 }, { passive: true });
 
 document.addEventListener('keydown', (event) => {
@@ -57,5 +66,7 @@ document.addEventListener('keydown', (event) => {
   if (!target) return;
 
   const rect = target.getBoundingClientRect();
-  pulseAt(target, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  pulseAt(target, rect.left + rect.width / 2, rect.top + rect.height / 2, {
+    spark: !isContinuousControl(event, target),
+  });
 });

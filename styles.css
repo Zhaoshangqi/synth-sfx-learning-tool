@@ -8917,7 +8917,7 @@ textarea:focus {
   }
 }
 
-.content > * {
+.content.is-view-switching > * {
   animation: v3-panel-in 420ms ease both;
 }
 
@@ -11520,4 +11520,48 @@ button:disabled,
   .atlas-roadmap-strip .route-timeline {
     grid-template-columns: repeat(5, minmax(150px, 1fr));
   }
+}
+
+/* Signal Atlas Console v4.5 interaction anti-flash pass */
+.content:not(.is-view-switching) > * {
+  animation: none;
+}
+
+.signal-atlas-console .atlas-signal-node,
+.signal-atlas-console .atlas-command-dock {
+  animation: none;
+}
+
+.tap-spark {
+  width: 6px;
+  height: 6px;
+  opacity: 0.42;
+  background:
+    radial-gradient(circle, rgba(244, 247, 251, 0.72) 0 18%, rgba(110, 231, 249, 0.24) 36%, rgba(167, 139, 250, 0.06) 64%, transparent 78%);
+  box-shadow: 0 0 12px rgba(110, 231, 249, 0.12);
+}
+
+@keyframes tap-spark {
+  0% {
+    opacity: 0.34;
+    transform: translate(-50%, -50%) scale(0.38);
+    filter: blur(0);
+  }
+
+  58% {
+    opacity: 0.14;
+    transform: translate(-50%, -50%) scale(2.4);
+    filter: blur(0.4px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(3.2);
+    filter: blur(0.8px);
+  }
+}
+
+.signal-atlas-console .range-shell,
+.signal-atlas-console [data-xy-pad] {
+  touch-action: none;
 }

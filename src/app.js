@@ -215,7 +215,6 @@ state.soundLabGitSync = { ...state.soundLabGitSync, ...(savedSoundLabLibrary.git
 state.soundLabMidiMappings = Array.isArray(savedSoundLabLibrary.midiMappings) ? savedSoundLabLibrary.midiMappings : state.soundLabMidiMappings;
 
 let patchPlayingTimer = null;
-let rangeRenderTimer = null;
 let rangeChromeFrame = 0;
 let soundLabPatchFrame = 0;
 let activeRangeInput = null;
@@ -1296,23 +1295,11 @@ function setRangeDragging(input, isDragging) {
   shell.classList.toggle('is-dragging', isDragging);
 }
 
-function scheduleRangeCommitRender() {
-  globalThis.clearTimeout(rangeRenderTimer);
-  rangeRenderTimer = globalThis.setTimeout(() => {
-    rangeRenderTimer = null;
-    render();
-  }, 90);
-}
-
 function finishSmoothRangeInput(input = activeRangeInput) {
   if (!input) return;
   setRangeDragging(input, false);
+  updateRangeChrome(input);
   activeRangeInput = null;
-  globalThis.clearTimeout(rangeRenderTimer);
-  rangeRenderTimer = globalThis.setTimeout(() => {
-    rangeRenderTimer = null;
-    render();
-  }, 70);
 }
 
 function bindSmoothRangeInput(input, onValue) {
@@ -1345,7 +1332,6 @@ function bindSmoothRangeInput(input, onValue) {
     applyImmediateControlFeedback(input);
     scheduleRangeChromeUpdate(input);
     onValue(input);
-    if (!activeRangeInput) scheduleRangeCommitRender();
   });
 
   input.addEventListener('pointerup', (event) => {
