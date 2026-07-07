@@ -10705,6 +10705,16 @@ button:disabled,
   min-width: 0;
 }
 
+.signal-atlas-console > .atlas-main-console {
+  grid-column: 1 / 2;
+  align-self: start;
+}
+
+.signal-atlas-console > .atlas-right-rail {
+  grid-column: 2 / 3;
+  align-self: start;
+}
+
 .atlas-right-rail .side-panel {
   border-color: rgba(174, 183, 198, 0.14);
   background:
@@ -12210,6 +12220,57 @@ button:disabled,
   line-height: 1.65;
 }
 
+/* Signal Atlas v4.5 collision guard */
+.signal-atlas-console > .atlas-main-console,
+.signal-atlas-console > .atlas-right-rail {
+  align-self: start;
+  min-width: 0;
+}
+
+.signal-atlas-console > .atlas-main-console {
+  grid-column: 1 / 2;
+  overflow: hidden;
+}
+
+.signal-atlas-console > .atlas-right-rail {
+  grid-column: 2 / 3;
+  margin-left: 0;
+}
+
+.signal-atlas-console .atlas-lab-stage,
+.signal-atlas-console .atlas-visual-deck,
+.signal-atlas-console .atlas-analyzer-row {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.signal-atlas-console .atlas-analyzer-row {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) 72px;
+  overflow: hidden;
+}
+
+.signal-atlas-console .atlas-analyzer-row .waveform-panel,
+.signal-atlas-console .atlas-analyzer-row .spectrum-panel,
+.signal-atlas-console .atlas-analyzer-row .output-meter-strip {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .signal-atlas-console {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-atlas-console > .atlas-main-console,
+  .signal-atlas-console > .atlas-right-rail {
+    grid-column: 1 / -1;
+  }
+
+  .signal-atlas-console > .atlas-right-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .atlas-push-button {
   width: 100%;
   min-height: 48px;
@@ -12419,4 +12480,11 @@ html.is-direct-manipulating .layer-control.is-live-editing {
   animation: none !important;
   transition: none !important;
   contain: paint;
+}
+
+.content.is-same-view-rendering .sound-lab-shell *,
+.content.is-same-view-rendering .sound-lab-shell *::before,
+.content.is-same-view-rendering .sound-lab-shell *::after {
+  animation: none !important;
+  transition-duration: 0ms !important;
 }
