@@ -156,6 +156,7 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   const stabilizeBlock = appJs.match(/function stabilizeSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
   const restoreScrollBlock = appJs.match(/function restoreSameViewScroll[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
   const releaseBlock = appJs.match(/function releaseSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction render/)?.[0] ?? '';
+  const scrollIntoViewBlock = appJs.match(/function scrollSoundLabIntoView[\s\S]*?\r?\n}\r?\n\r?\nfunction selectAdvancedModule/)?.[0] ?? '';
   const bindSoundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
   const sameViewCssBlock = css.match(/\.content\.is-same-view-rendering\s*\{[^}]*\}/)?.[0] ?? '';
   const sameViewQuietMountBlock = css.match(/\.content\.is-same-view-rendering \.sound-lab-shell,[\s\S]*?\.content\.is-same-view-rendering \.patch-doctor-card::before\s*\{[\s\S]*?\}/)?.[0] ?? '';
@@ -165,10 +166,12 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.ok(stabilizeBlock, 'same-view stabilization should be easy to audit');
   assert.ok(restoreScrollBlock, 'same-view scroll restoration should be easy to audit');
   assert.ok(releaseBlock, 'same-view release should be easy to audit');
+  assert.ok(scrollIntoViewBlock, 'programmatic Sound Lab scrolling should be easy to audit');
   assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
   assert.match(appJs, /function renderSameView\(\)/);
   assert.match(appJs, /is-same-view-rendering/);
   assert.match(appJs, /sameViewScrollLock/);
+  assert.match(appJs, /allowProgrammaticScroll/);
   assert.match(appJs, /is-local-interacting/);
   assert.match(appJs, /function\s+setLocalInteraction/);
   assert.match(appJs, /style\.minHeight/);
@@ -183,6 +186,8 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.doesNotMatch(sameViewCssBlock, /animation:/, 'same-view stabilization must not kill all animations for a frame');
   assert.doesNotMatch(sameViewCssBlock, /transition:/, 'same-view stabilization must not kill all transitions for a frame');
   assert.match(releaseBlock, /requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*requestAnimationFrame/, 'same-view stabilization must survive one painted frame before release');
+  assert.match(releaseBlock, /if \(!sameViewScrollLock\.allowProgrammaticScroll\) restoreSameViewScroll\(\)/, 'targeted module jumps must not be undone by delayed same-view scroll restoration');
+  assert.match(scrollIntoViewBlock, /allowProgrammaticScroll\s*=\s*true/, 'module jump scrolling should intentionally opt out of the delayed scroll restore');
   assert.ok(sameViewQuietMountBlock, 'same-view Sound Lab rerenders should silence newly mounted heavy panels for one frame');
   assert.match(sameViewQuietMountBlock, /animation:\s*none !important/);
   assert.match(sameViewQuietMountBlock, /transition:\s*none !important/);
@@ -205,6 +210,25 @@ test('same-view interactions do not call raw full-content render', () => {
     /\brender\(\);/,
     'only switchView and initial bootstrap may call raw render(); same-view controls must use renderSameView()',
   );
+});
+
+test('Sound Lab playback updates runtime chrome without rebuilding the page', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const refreshBlock = appJs.match(/function refreshSoundLabRuntimeUi[\s\S]*?\r?\n}\r?\n\r?\nfunction syncActiveSoundLabPatch/)?.[0] ?? '';
+  const playBlock = appJs.match(/async function playSoundLabPatch[\s\S]*?\r?\n}\r?\n\r?\nfunction bindSoundLabControls/)?.[0] ?? '';
+  const feedbackBlock = appJs.match(/function showWorkbenchActionFeedback[\s\S]*?\r?\n}\r?\n\r?\nasync function handleWorkbenchAction/)?.[0] ?? '';
+
+  assert.ok(refreshBlock, 'runtime Sound Lab UI refresh should be easy to audit');
+  assert.ok(playBlock, 'playSoundLabPatch should be easy to audit for rerender regressions');
+  assert.ok(feedbackBlock, 'workbench feedback should be easy to audit for delayed rerenders');
+  assert.match(refreshBlock, /\[data-sound-lab-play\]/, 'play buttons should update in place');
+  assert.match(refreshBlock, /\[data-output-compare\]/, 'output compare buttons should update in place');
+  assert.match(refreshBlock, /\.workbench-feedback,\s*\.atlas-dock-status small/, 'status copy should update in place');
+  assert.match(playBlock, /refreshSoundLabRuntimeUi\(model\)/);
+  assert.doesNotMatch(playBlock, /renderSameView\(\)/, 'playback start, engine status, and stop timers must not rebuild Sound Lab');
+  assert.doesNotMatch(playBlock, /render\(/, 'playback should not trigger a raw page render');
+  assert.match(feedbackBlock, /refreshSoundLabRuntimeUi\(\)/, 'small workbench feedback should update status text in place');
+  assert.doesNotMatch(feedbackBlock, /renderSameView\(\)/, 'clearing a button confirmation state must not rebuild Sound Lab after a delay');
 });
 
 test('background parallax is throttled and pauses during direct manipulation', () => {
