@@ -324,6 +324,37 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
   };
 }
 
+function normalizeOutputMode(mode = 'comfort') {
+  return ['raw', 'comfort', 'studio'].includes(mode) ? mode : 'comfort';
+}
+
+function applyOutputModeToMasterPolish(masterPolish, outputMode) {
+  if (outputMode === 'raw') {
+    return {
+      ...masterPolish,
+      enabled: false,
+      mode: 'raw',
+      glue: 0,
+      lowTighten: 0,
+      airGuard: 0,
+      transientHold: 0,
+      bodyGain: 0.96,
+      comfortBus: {
+        warmth: 0,
+        deHarsh: 0,
+        headroom: 0.035,
+        airTame: 0,
+      },
+    };
+  }
+
+  return {
+    ...masterPolish,
+    enabled: true,
+    mode: outputMode,
+  };
+}
+
 function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(values, dsp, quality)) {
   const brightness = normalize(values.brightness);
   const motion = normalize(values.motion);
@@ -592,18 +623,20 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const values = macroValues(macros);
   const familyId = family?.id ?? 'metal-impact';
   const base = FAMILY_BASES[familyId] ?? FAMILY_BASES['metal-impact'];
-  const presetDna = getPresetDnaById(options.presetId, family?.id) ?? getPresetDnaForFamily(family?.id)[0] ?? presetDnaLibrary[0];
+  const outputMode = normalizeOutputMode(options.outputMode);
+  const outputOptions = outputMode === 'studio' ? { ...options, qualityMode: 'studio' } : options;
+  const presetDna = getPresetDnaById(outputOptions.presetId, family?.id) ?? getPresetDnaForFamily(family?.id)[0] ?? presetDnaLibrary[0];
   const { seed, durationSeconds, dsp: baseDsp } = buildLegacyDsp(family, base, values);
-  const engineMode = getEngineMode(options.engineMode);
-  const performance = performanceValues(options.performance);
-  const xyPad = xyPadValues(options.xyPad);
-  const modMatrix = modMatrixValues(options.modMatrix, values, xyPad);
+  const engineMode = getEngineMode(outputOptions.engineMode);
+  const performance = performanceValues(outputOptions.performance);
+  const xyPad = xyPadValues(outputOptions.xyPad);
+  const modMatrix = modMatrixValues(outputOptions.modMatrix, values, xyPad);
   const dsp = applyModMatrixToDsp(baseDsp, modMatrix, values, xyPad, performance);
-  const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options, presetDna });
+  const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options: outputOptions, presetDna });
   const quality = getQualityMode(layerData.qualityMode);
-  const masterPolish = buildMasterPolish(values, dsp, quality, layerData);
-  const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...options, masterPolish });
-  const fxRack = orderFxRack(toneGraph.effects, options.fxOrder);
+  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, quality, layerData), outputMode);
+  const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...outputOptions, masterPolish });
+  const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
   toneGraph.effects = fxRack;
   const macroModulation = buildMacroModulation(values);
   const space = normalize(values.space);
@@ -615,6 +648,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     familyId,
     workletName: family?.workletName ?? 'modal-metal',
     engineMode,
+    outputMode,
     durationSeconds,
     macros: values,
     performance,
@@ -1063,6 +1097,33 @@ function buildAbCompare(patch, activeSlot = 'a') {
   };
 }
 
+function buildOutputCompare(patch) {
+  return {
+    activeMode: patch.outputMode ?? 'comfort',
+    practiceZh: '先听 Raw 的尖锐边缘，再听 Comfort 的 de-harsh 和 headroom，最后听 Studio 的完整抛光。',
+    modes: [
+      {
+        id: 'raw',
+        label: 'Raw',
+        titleZh: '未处理输出',
+        noteZh: '无 polish / 无 de-harsh，用来听刺耳边缘和动态拥挤。',
+      },
+      {
+        id: 'comfort',
+        label: 'Comfort',
+        titleZh: '舒适输出',
+        noteZh: 'de-harsh + 余量，听声音是否更稳、更不扎耳。',
+      },
+      {
+        id: 'studio',
+        label: 'Studio',
+        titleZh: '交付输出',
+        noteZh: 'Studio quality + polish，听完整合成器质感和交付响度。',
+      },
+    ],
+  };
+}
+
 export function formatBatchExportName(pattern = '{family}_{preset}_{date}_{version}_{variant}', values = {}) {
   const sanitize = (value) => String(value ?? '')
     .trim()
@@ -1152,6 +1213,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     qualityMode: patch.qualityMode,
     presetDnaId: patch.presetDna.id,
     performance: patch.performance,
+    outputMode: patch.outputMode,
     macros: patch.macros,
     layerMix: patch.layerMix,
     envelope: patch.envelope,
@@ -1212,6 +1274,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     xyPad: patch.xyPad,
     macroMorph: buildMacroMorph(patch.macros, options.macroMorph ?? 0),
     abCompare: buildAbCompare(patch, options.abSlot ?? 'a'),
+    outputCompare: buildOutputCompare(patch),
     library: buildWorkbenchLibraryState({
       patch,
       favoriteIds: options.favoriteIds ?? [],

@@ -254,6 +254,24 @@ test('sound quality exposes beginner-readable comfort bus metrics', () => {
   assert.ok(comfort.value >= 30);
 });
 
+test('sound lab exposes raw comfort studio output comparison for listening practice', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const rawPatch = buildSoundLabPatch(family, SOUND_LAB_MACROS, { outputMode: 'raw' });
+  const comfortPatch = buildSoundLabPatch(family, SOUND_LAB_MACROS, { outputMode: 'comfort' });
+  const studioPatch = buildSoundLabPatch(family, SOUND_LAB_MACROS, { outputMode: 'studio', qualityMode: 'studio' });
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, { outputMode: 'comfort' });
+
+  assert.equal(rawPatch.globalFx.masterPolish.enabled, false);
+  assert.equal(comfortPatch.globalFx.masterPolish.enabled, true);
+  assert.ok(comfortPatch.globalFx.masterPolish.comfortBus.deHarsh > 0.1);
+  assert.equal(studioPatch.qualityMode, 'studio');
+  assert.ok(studioPatch.globalFx.masterPolish.comfortBus.headroom >= comfortPatch.globalFx.masterPolish.comfortBus.headroom);
+  assert.deepEqual(model.outputCompare.modes.map((mode) => mode.id), ['raw', 'comfort', 'studio']);
+  assert.match(model.outputCompare.modes.find((mode) => mode.id === 'raw').noteZh, /未处理|Raw|polish/i);
+  assert.match(model.outputCompare.modes.find((mode) => mode.id === 'comfort').noteZh, /de-harsh|余量|舒适/i);
+  assert.match(model.outputCompare.practiceZh, /先听 Raw|Comfort|Studio/);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',

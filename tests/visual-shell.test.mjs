@@ -73,6 +73,7 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.doesNotMatch(bindRangeBlock, /scheduleRangeCommitRender/, 'input updates should stay local while dragging or typing');
   assert.doesNotMatch(css, /\.content\.is-view-switching\s*\{[\s\S]*animation:/, 'view transition must not animate the whole content surface');
   assert.doesNotMatch(css, /\.content > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'default content children should not animate on every rerender');
+  assert.match(css, /\.content:not\(\.is-view-switching\) \*,[\s\S]*\.content:not\(\.is-view-switching\) \*::before,[\s\S]*\.content:not\(\.is-view-switching\) \*::after[\s\S]*animation:\s*none !important/, 'same-view renders must suppress nested animation restarts');
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'view transitions should keep a scoped soft entrance');
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
 });
@@ -98,6 +99,7 @@ test('tactile effects use class-only feedback and cannot flash the viewport', ()
   assert.doesNotMatch(css, /\.tap-spark/, 'obsolete click spark CSS should not survive as an accidental viewport flash layer');
   assert.doesNotMatch(css, /@keyframes tap-spark/, 'obsolete click spark keyframes should not survive');
   assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
+  assert.match(interactionJs, /is-local-interacting/, 'ordinary click feedback should enter the shared local interaction state');
   assert.match(interactionJs, /classList\.add\('is-pressing'\)/, 'tactile feedback should still provide local press state');
   assert.match(css, /\.is-pressing\s*\{[\s\S]*box-shadow/, 'press feedback should remain a local style, not a viewport layer');
 });
@@ -116,6 +118,8 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   assert.match(draggingBlock, /filter:\s*none/);
   assert.doesNotMatch(rangeShellBlock, /transition:\s*filter/, 'range drag should not animate filter because it repaints a wide control strip');
   assert.doesNotMatch(draggingFillBlock, /filter:/, 'range fill should not brighten via filter while dragging');
+  assert.match(css, /html\.is-direct-manipulating \.range-shell::after\s*\{[\s\S]*transition:\s*none !important/, 'dragging should update the range fill without delayed rail animation');
+  assert.match(css, /html\.is-local-interacting \.space-glow,[\s\S]*html\.is-direct-manipulating \.signal-field span[\s\S]*animation-play-state:\s*paused !important/, 'background ambience should pause during local interactions');
   assert.ok(signalRangeBlock, 'Signal Atlas should keep its own range input transition block auditable');
   assert.doesNotMatch(signalRangeBlock, /filter/, 'Signal Atlas range input transitions must not include filter because it flashes during dragging');
 });
@@ -130,6 +134,8 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
   assert.match(appJs, /function renderSameView\(\)/);
   assert.match(appJs, /is-same-view-rendering/);
+  assert.match(appJs, /is-local-interacting/);
+  assert.match(appJs, /function\s+setLocalInteraction/);
   assert.match(appJs, /style\.minHeight/);
   assert.match(appJs, /requestAnimationFrame/);
   assert.match(bindSoundLabBlock, /renderSameView\(\)/);
@@ -407,6 +413,24 @@ test('sound lab app wires preset DNA, quality mode, and layer mixer interactions
   assert.match(appJs, /data-sound-lab-quality/);
   assert.match(appJs, /data-sound-lab-layer/);
   assert.match(appJs, /presetDna.macroHints/);
+});
+
+test('sound lab app wires raw comfort studio output comparison playback', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const soundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
+
+  assert.match(renderJs, /data-output-compare/);
+  assert.match(renderJs, /outputCompare/);
+  assert.match(css, /\.output-compare-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.output-compare-strip button:hover,[\s\S]*\.output-compare-strip button\.is-active[\s\S]*box-shadow/);
+  assert.match(soundLabBlock, /data-output-compare/);
+  assert.match(soundLabBlock, /playSoundLabPatch\(\{\},\s*buildOutputCompareOverrides/);
+  assert.match(appJs, /function buildOutputCompareOverrides/);
+  assert.match(appJs, /outputMode:\s*'raw'/);
+  assert.match(appJs, /outputMode:\s*'comfort'/);
+  assert.match(appJs, /outputMode:\s*'studio'/);
 });
 
 test('sound lab app preserves workstation module tab state across rerenders', () => {

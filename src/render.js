@@ -1980,6 +1980,8 @@ function renderWorkbenchCoach(guides = [], activeGuideId, activeSynth = 'serum')
 }
 
 function renderWorkbenchPlayback(model = {}, isPlaying = false) {
+  const outputCompare = model.outputCompare ?? {};
+  const outputModes = outputCompare.modes ?? [];
   return `
     <section class="workbench-panel playback-card" aria-label="播放控制">
       <div class="mini-panel-head"><strong>播放控制</strong><span>参考响度 -14 LUFS</span></div>
@@ -1989,6 +1991,20 @@ function renderWorkbenchPlayback(model = {}, isPlaying = false) {
         <button class="play-main-button ${isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play aria-label="试听"><span aria-hidden="true"></span></button>
         <button class="tone-button" type="button" data-sound-lab-ab="tone">Tone.js</button>
       </div>
+      <div class="output-compare-strip" aria-label="输出总线听辨">
+        ${outputModes.map((mode) => `
+          <button
+            class="${mode.id === outputCompare.activeMode ? 'is-active' : ''}"
+            type="button"
+            data-output-compare="${escapeHtml(mode.id)}"
+            title="${escapeHtml(mode.noteZh)}"
+          >
+            <strong>${escapeHtml(mode.label)}</strong>
+            <span>${escapeHtml(mode.titleZh)}</span>
+          </button>
+        `).join('')}
+      </div>
+      <p class="output-compare-hint">${escapeHtml(outputCompare.practiceZh ?? '')}</p>
       <div class="reference-volume">
         <span>参考音量</span>
         <strong>-14 LUFS</strong>
