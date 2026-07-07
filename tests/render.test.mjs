@@ -325,6 +325,30 @@ test('renderSoundLabWorkbench exposes module coaching with concrete synth steps'
   assert.match(html, /调制矩阵/);
 });
 
+test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingredients', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, {
+    brightness: 78,
+    motion: 42,
+    material: 86,
+    space: 30,
+    variation: 55,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /waveform-detective-panel/);
+  assert.match(html, /波形拆解/);
+  assert.match(html, /Sine/);
+  assert.match(html, /Square/);
+  assert.match(html, /Saw/);
+  assert.match(html, /Noise/);
+  assert.match(html, /data-workbench-action="focus-waveform"/);
+  assert.match(html, /先听纯音锚点/);
+});
+
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {
   const material = materialLabs[0];
   const materialState = buildDefaultMaterialState(material);

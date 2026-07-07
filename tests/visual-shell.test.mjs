@@ -821,6 +821,23 @@ test('workbench actions are routed through a guarded dispatcher instead of loose
   assert.match(appJs, /未识别的工作台按钮/);
 });
 
+test('sound lab waveform detective is a routed beginner module, not a dead card', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderWaveformDetectivePanel/);
+  assert.match(renderJs, /waveform-detective-panel/);
+  assert.match(renderJs, /data-workbench-action="focus-waveform"/);
+  assert.match(renderJs, /waveformFingerprint/);
+  assert.match(appJs, /focus-waveform/);
+  assert.match(appJs, /state\.activeAtlasNode = 'source'/);
+  assert.match(appJs, /scrollSoundLabIntoView\('\.waveform-detective-panel'\)/);
+  assert.match(css, /\.waveform-detective-panel\s*\{/);
+  assert.match(css, /\.waveform-ingredient-card\s*\{[\s\S]*cursor:\s*default/);
+  assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-ingredient-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+});
+
 test('workflow step binding targets only step buttons so the article state attribute cannot reset clicks', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

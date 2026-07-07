@@ -717,6 +717,70 @@ function formatQualityNumber(value) {
   return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : '0';
 }
 
+function buildWaveformFingerprint(patch) {
+  const values = patch.macros;
+  const totalGainByEngine = patch.layers.reduce((totals, layer) => {
+    totals[layer.engine] = (totals[layer.engine] ?? 0) + clamp(layer.gain ?? 0, 0, 1.4);
+    return totals;
+  }, {});
+  const modal = totalGainByEngine.modalResonator ?? 0;
+  const fm = totalGainByEngine.fmBurst ?? 0;
+  const comb = totalGainByEngine.combDelay ?? 0;
+  const filteredNoise = totalGainByEngine.filteredNoise ?? 0;
+  const sampleGrain = totalGainByEngine.sampleGrain ?? 0;
+  const brightness = normalize(values.brightness);
+  const material = normalize(values.material);
+  const variation = normalize(values.variation);
+
+  const ingredientValues = {
+    sine: clamp(18 + modal * 26 + fm * 14 + (1 - material) * 12, 4, 96),
+    square: clamp(8 + (patch.dsp.oscillator.shape === 'square' ? 38 : 0) + material * 14 + variation * 8, 3, 72),
+    saw: clamp(10 + comb * 34 + brightness * 26 + fm * 12, 6, 94),
+    triangle: clamp(8 + (1 - brightness) * 24 + modal * 10, 4, 68),
+    noise: clamp(12 + filteredNoise * 30 + sampleGrain * 34 + patch.sampleMix * 18, 8, 98),
+  };
+  const labelById = {
+    sine: 'Sine',
+    square: 'Square',
+    saw: 'Saw',
+    triangle: 'Triangle',
+    noise: 'Noise',
+  };
+  const listenById = {
+    sine: '纯音锚点、钟感、可听到的基频。',
+    square: '空心、硬边、像脉冲或电子方块感。',
+    saw: '明亮、毛边、谐波密集，容易穿透。',
+    triangle: '比 sine 更厚但仍柔和，适合支撑主体。',
+    noise: '嘶声、砂砾、瞬态、空气和颗粒。',
+  };
+  const synthCheckById = {
+    sine: 'solo modal/FM 主体，确认是否有稳定 pitch。',
+    square: '听 pulse 边缘，过强会变硬、变扁。',
+    saw: '扫低通，亮边消失得最快的部分通常是 saw/comb 贡献。',
+    triangle: '降低亮度后还留下的柔和主体通常来自 triangle/sine 区域。',
+    noise: 'solo transient/texture，确认 click、air、grain 是否来自噪声层。',
+  };
+  const ingredients = Object.entries(ingredientValues).map(([id, value]) => ({
+    id,
+    label: labelById[id],
+    value: Math.round(value),
+    listenZh: listenById[id],
+    synthCheckZh: synthCheckById[id],
+  }));
+  const primary = ingredients.slice().sort((a, b) => b.value - a.value).slice(0, 2).map((item) => item.label).join(' + ');
+
+  return {
+    beginnerSummaryZh: `基础波形不是精确答案，而是听感地图：当前 Patch 主要像 ${primary}，再叠加噪声、调制和效果形成完整音效。`,
+    ingredients,
+    listeningSteps: [
+      '先听纯音锚点：有没有稳定 pitch 或钟感主体。',
+      '再听亮边：滤波扫低后最先消失的通常是 saw、comb 或高频噪声。',
+      '检查空心感：方波/脉冲会带来硬边和 hollow 质感。',
+      '最后 solo 噪声/瞬态：click、air、grain 不属于四个基础周期波形，要单独判断。',
+    ],
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -931,6 +995,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     macros: macroList,
     meters: buildMeters(patch),
     soundQuality: buildSoundQuality(patch),
+    waveformFingerprint: buildWaveformFingerprint(patch),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,

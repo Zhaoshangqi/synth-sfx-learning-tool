@@ -66,6 +66,28 @@ test('buildSoundLabViewModel exposes meters, macro labels, evidence, and export 
   assert.match(model.reaperNotes, /REAPER/);
 });
 
+test('buildSoundLabViewModel explains the basic waveform ingredients behind a patch', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 78,
+    motion: 42,
+    material: 86,
+    space: 30,
+    variation: 55,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+
+  assert.ok(model.waveformFingerprint, 'view model should include a beginner waveform fingerprint');
+  assert.ok(model.waveformFingerprint.ingredients.length >= 4);
+  assert.ok(model.waveformFingerprint.ingredients.some((item) => item.id === 'sine' && item.value > 0));
+  assert.ok(model.waveformFingerprint.ingredients.some((item) => item.id === 'saw' && item.value > 0));
+  assert.ok(model.waveformFingerprint.ingredients.some((item) => item.id === 'noise' && item.value > 0));
+  assert.ok(model.waveformFingerprint.listeningSteps.length >= 4);
+  assert.match(model.waveformFingerprint.beginnerSummaryZh, /基础波形|听感/);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

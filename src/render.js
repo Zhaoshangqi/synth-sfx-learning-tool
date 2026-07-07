@@ -1440,6 +1440,35 @@ function renderWorkbenchOutputMeter(model = {}) {
   `;
 }
 
+function renderWaveformDetectivePanel(model = {}) {
+  const fingerprint = model.waveformFingerprint ?? {};
+  const ingredients = fingerprint.ingredients ?? [];
+  const steps = fingerprint.listeningSteps ?? [];
+  return `
+    <section class="workbench-panel waveform-detective-panel" aria-label="波形拆解">
+      <div class="mini-panel-head">
+        <strong>波形拆解</strong>
+        <button type="button" data-workbench-action="focus-waveform">听感判断</button>
+      </div>
+      <p>${escapeHtml(fingerprint.beginnerSummaryZh ?? '从基础波形和噪声层判断当前音效的来源。')}</p>
+      <div class="waveform-ingredient-grid">
+        ${ingredients.map((item) => `
+          <article class="waveform-ingredient-card" style="--ingredient:${formatNumber(item.value ?? 0)}%">
+            <span>${escapeHtml(item.label)}</span>
+            <strong>${escapeHtml(item.value ?? 0)}%</strong>
+            <i aria-hidden="true"></i>
+            <small>${escapeHtml(item.listenZh)}</small>
+            <em>${escapeHtml(item.synthCheckZh)}</em>
+          </article>
+        `).join('')}
+      </div>
+      <ol class="waveform-detective-steps">
+        ${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
+      </ol>
+    </section>
+  `;
+}
+
 function renderWorkbenchModuleTabs(activeWorkbenchModule = 'envelope') {
   const tabs = [
     ['generator', '声音生成'],
@@ -2350,6 +2379,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
             ${renderWorkbenchSpectrum(model, options.analyzerMode)}
             ${renderWorkbenchOutputMeter(model)}
           </div>
+          ${renderWaveformDetectivePanel(model)}
           ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
@@ -2434,6 +2464,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
               ${renderWorkbenchSpectrum(model, options.analyzerMode)}
               ${renderWorkbenchOutputMeter(model)}
             </div>
+            ${renderWaveformDetectivePanel(model)}
           </div>
           <div class="atlas-control-column">
             ${renderWorkbenchEnvelope(model)}
