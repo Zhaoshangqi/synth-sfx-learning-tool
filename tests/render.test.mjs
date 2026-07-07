@@ -365,6 +365,31 @@ test('renderSoundLabWorkbench exposes a guided A/B practice loop for beginners',
   assert.match(html, /data-workbench-action="compare-view"/);
 });
 
+test('renderSoundLabWorkbench exposes a beginner listening compass with routed actions', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact') ?? soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, {
+    brightness: 76,
+    motion: 44,
+    material: 88,
+    space: 66,
+    variation: 38,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    workflowStep: 'shape',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /listening-compass-panel/);
+  assert.match(html, /听辨导航/);
+  assert.match(html, /起音/);
+  assert.match(html, /主体/);
+  assert.match(html, /尾巴/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /只改一个参数/);
+});
+
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {
   const material = materialLabs[0];
   const materialState = buildDefaultMaterialState(material);
