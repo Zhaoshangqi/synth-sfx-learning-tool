@@ -781,6 +781,48 @@ function buildWaveformFingerprint(patch) {
   };
 }
 
+function buildPracticeLoop(family, patch, macroList) {
+  const familyName = family?.titleZh?.split('：')[0] ?? '目标音效';
+  const sortedMacros = macroList
+    .slice()
+    .sort((a, b) => Math.abs((b.value ?? 50) - 50) - Math.abs((a.value ?? 50) - 50));
+  const focusMacro = sortedMacros[0] ?? macroList[0] ?? { id: 'brightness', labelZh: 'Brightness', value: 50 };
+  const focusMacroId = focusMacro.id ?? 'brightness';
+  const focusMacroLabelZh = focusMacro.labelZh ?? focusMacro.label ?? focusMacroId;
+  const beforeValue = Math.round(Number(focusMacro.value ?? patch.macros?.[focusMacroId] ?? 50));
+  const afterValue = Math.max(0, Math.min(100, beforeValue + (beforeValue >= 70 ? -18 : 18)));
+  const expectedByMacro = {
+    brightness: '注意亮度、齿边和穿透力是否增加；如果只是刺耳，先退回一半。',
+    motion: '注意声音是否有移动感、速度感或机械感；如果主体不稳，降低变化幅度。',
+    material: '注意硬度、金属感和非谐波侧频；如果失去目标身份，先减小材质宏。',
+    space: '注意距离、尾巴和前后景；如果 transient 被冲淡，先保留 dry 主体。',
+    variation: '注意随机性和生命感；如果每次都不像同一个音效，减少 variation。',
+  };
+
+  return {
+    titleZh: '听辨闭环 A/B',
+    goalZh: `把「${familyName}」从 Patch 变成可验证的目标音效，而不是只记住旋钮位置。`,
+    focusMacroId,
+    focusMacroLabelZh,
+    beforeValue,
+    afterValue,
+    contrastZh: `${focusMacroLabelZh} ${beforeValue} -> ${afterValue}`,
+    expectedCueZh: expectedByMacro[focusMacroId] ?? '听感方向应明确变化，但主体身份不能丢。',
+    steps: [
+      '先按 A 听 dry/core，再按 B 听 full patch，匹配响度后再判断。',
+      `只改一个参数：把 ${focusMacroLabelZh} 从 ${beforeValue} 推到 ${afterValue}，不要同时动其它宏。`,
+      '回到频谱和波形，确认变化来自频谱、包络、空间或调制，而不是音量变大。',
+      '写一句结论：为什么改变了、有没有破坏主体、下一轮要修哪里。',
+    ],
+    checkpoints: [
+      'A/B 音量差不要超过主观 1 dB。',
+      '目标听感变化能用一个词说明。',
+      '如果更刺耳但不更清楚，先撤回一半。',
+    ],
+    reaperNoteTemplate: `A/B ${familyName}: ${focusMacroLabelZh} ${beforeValue} -> ${afterValue}; 听感变化=____; 保留/撤回=____。`,
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -996,6 +1038,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     meters: buildMeters(patch),
     soundQuality: buildSoundQuality(patch),
     waveformFingerprint: buildWaveformFingerprint(patch),
+    practiceLoop: buildPracticeLoop(family, patch, macroList),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,

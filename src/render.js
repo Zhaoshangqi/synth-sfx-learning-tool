@@ -1469,6 +1469,40 @@ function renderWaveformDetectivePanel(model = {}) {
   `;
 }
 
+function renderPracticeLoopPanel(model = {}) {
+  const loop = model.practiceLoop ?? {};
+  const steps = loop.steps ?? [];
+  const checkpoints = loop.checkpoints ?? [];
+  return `
+    <section class="side-panel practice-loop-panel" aria-label="听辨闭环">
+      <div class="atlas-inspector-heading">
+        <span aria-hidden="true">A/B</span>
+        <strong>${escapeHtml(loop.titleZh ?? '听辨闭环 A/B')}</strong>
+      </div>
+      <p>${escapeHtml(loop.goalZh ?? '先做 A/B，再只改一个参数，把听感变化写成可复盘的 REAPER 记录。')}</p>
+      <div class="practice-loop-contrast">
+        <span>本轮变量</span>
+        <strong>${escapeHtml(loop.contrastZh ?? 'Macro 50 -> 68')}</strong>
+        <small>${escapeHtml(loop.expectedCueZh ?? '听感方向应明确变化，但主体身份不能丢。')}</small>
+      </div>
+      <ol class="practice-loop-step-list">
+        ${steps.map((step, index) => `<li class="practice-loop-step"><span>${index + 1}</span>${escapeHtml(step)}</li>`).join('')}
+      </ol>
+      <div class="practice-loop-checks">
+        ${checkpoints.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}
+      </div>
+      <div class="practice-loop-note">
+        <strong>REAPER 记录句式</strong>
+        <code>${escapeHtml(loop.reaperNoteTemplate ?? 'A/B: 参数 -> 参数; 听感变化=____; 保留/撤回=____。')}</code>
+      </div>
+      <div class="practice-loop-actions">
+        <button type="button" data-workbench-action="focus-practice-loop">开始听辨闭环</button>
+        <button type="button" data-workbench-action="compare-view">打开 A/B</button>
+      </div>
+    </section>
+  `;
+}
+
 function renderWorkbenchModuleTabs(activeWorkbenchModule = 'envelope') {
   const tabs = [
     ['generator', '声音生成'],
@@ -2164,6 +2198,7 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
         </div>
         <p>${escapeHtml(theoryText)}</p>
       </section>
+      ${renderPracticeLoopPanel(model)}
       <section class="side-panel source-inspector-panel">
         <div class="side-panel-title">来源快照</div>
         <div class="video-source-row">

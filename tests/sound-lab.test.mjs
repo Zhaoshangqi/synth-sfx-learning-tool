@@ -88,6 +88,29 @@ test('buildSoundLabViewModel explains the basic waveform ingredients behind a pa
   assert.match(model.waveformFingerprint.beginnerSummaryZh, /基础波形|听感/);
 });
 
+test('buildSoundLabViewModel creates a beginner practice loop with one-change A/B guidance', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 70,
+    motion: 46,
+    material: 82,
+    space: 36,
+    variation: 44,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+
+  assert.ok(model.practiceLoop, 'view model should expose a practice loop');
+  assert.match(model.practiceLoop.titleZh, /听辨闭环|A\/B/);
+  assert.match(model.practiceLoop.goalZh, /金属|目标音效|Patch/);
+  assert.ok(model.practiceLoop.steps.length >= 4);
+  assert.ok(model.practiceLoop.steps.some((step) => /只改一个参数/.test(step)));
+  assert.ok(model.practiceLoop.checkpoints.length >= 3);
+  assert.ok(model.practiceLoop.reaperNoteTemplate.includes('A/B'));
+  assert.ok(model.practiceLoop.focusMacroId);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

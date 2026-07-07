@@ -390,14 +390,15 @@ textarea {
 
 .has-tactile {
   position: relative;
-  overflow: hidden;
+  contain: paint;
+  transform: translateZ(0);
 }
 
 .is-pressing {
   box-shadow:
-    inset 0 0 0 1px rgba(238, 255, 251, 0.08),
-    0 0 0 1px rgba(120, 225, 212, 0.22),
-    0 0 34px rgba(120, 225, 212, 0.11) !important;
+    inset 0 0 0 1px rgba(238, 255, 251, 0.07),
+    0 0 0 1px rgba(120, 225, 212, 0.16),
+    0 0 18px rgba(120, 225, 212, 0.07) !important;
 }
 
 .tap-spark {
@@ -10546,7 +10547,7 @@ button:disabled,
 
 .signal-atlas-console .range-shell.is-dragging input,
 .signal-atlas-console input[type="range"]:active {
-  filter: drop-shadow(0 0 14px rgba(110, 231, 249, 0.28));
+  box-shadow: 0 0 0 3px rgba(110, 231, 249, 0.08);
 }
 
 @keyframes atlas-node-arrive {
@@ -11100,6 +11101,122 @@ button:disabled,
   color: var(--v3-cyan);
   font-size: 9px;
   font-weight: 900;
+}
+
+.practice-loop-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.practice-loop-panel p {
+  margin: 0;
+  color: rgba(174, 183, 198, 0.84);
+  line-height: 1.62;
+}
+
+.practice-loop-contrast,
+.practice-loop-note {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.74), rgba(8, 10, 18, 0.54)),
+    radial-gradient(circle at 0% 0%, rgba(110, 231, 249, 0.08), transparent 48%);
+}
+
+.practice-loop-contrast span,
+.practice-loop-note strong {
+  color: rgba(94, 234, 212, 0.86);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.practice-loop-contrast strong {
+  color: var(--v3-text);
+  font-size: 14px;
+}
+
+.practice-loop-contrast small {
+  color: rgba(174, 183, 198, 0.82);
+  line-height: 1.5;
+}
+
+.practice-loop-step-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.practice-loop-step {
+  color: rgba(244, 247, 251, 0.84);
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 9px;
+  border: 1px solid rgba(174, 183, 198, 0.11);
+  border-radius: 8px;
+  background: rgba(8, 10, 18, 0.42);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.practice-loop-step span {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+  font-weight: 900;
+}
+
+.practice-loop-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.practice-loop-checks span {
+  padding: 5px 8px;
+  border: 1px solid rgba(110, 231, 249, 0.16);
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.06);
+  color: rgba(244, 247, 251, 0.78);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.practice-loop-note code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: rgba(244, 247, 251, 0.86);
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.practice-loop-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.practice-loop-actions button {
+  min-height: 34px;
+  border: 1px solid rgba(110, 231, 249, 0.2);
+  border-radius: 8px;
+  background: rgba(110, 231, 249, 0.07);
+  color: rgba(244, 247, 251, 0.88);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
 }
 
 @media (max-width: 880px) {

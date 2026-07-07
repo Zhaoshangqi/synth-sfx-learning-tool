@@ -2,7 +2,6 @@ const tactileSelector = [
   'button',
   '.source-link',
   '.source-pill',
-  '.range-shell',
 ].join(',');
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -28,21 +27,6 @@ function addPressState(target) {
   globalThis.setTimeout(() => target.classList.remove('is-pressing'), prefersReducedMotion ? 80 : 240);
 }
 
-function addSpark(target, x, y) {
-  if (prefersReducedMotion) return;
-
-  const spark = document.createElement('span');
-  spark.className = 'tap-spark';
-  spark.setAttribute('aria-hidden', 'true');
-  spark.style.left = `${x}px`;
-  spark.style.top = `${y}px`;
-  target.append(spark);
-
-  const cleanup = () => spark.remove();
-  spark.addEventListener('animationend', cleanup, { once: true });
-  globalThis.setTimeout(cleanup, 720);
-}
-
 function pulseAt(target, clientX, clientY) {
   const rect = target.getBoundingClientRect();
   const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
@@ -51,7 +35,6 @@ function pulseAt(target, clientX, clientY) {
   target.style.setProperty('--tap-x', `${x}px`);
   target.style.setProperty('--tap-y', `${y}px`);
   addPressState(target);
-  addSpark(target, x, y);
 }
 
 document.addEventListener('pointerdown', (event) => {
