@@ -101,6 +101,7 @@ const WORKBENCH_ACTION_MESSAGES = {
   'focus-source': '已聚焦声源和频谱：先确认目标声音是否成立。',
   'focus-waveform': '已聚焦波形拆解：先判断基础波形成分，再回到频谱验证。',
   'focus-controls': '已聚焦参数塑形：一次只改一个听感问题。',
+  'focus-practice-loop': '已聚焦听辨闭环：先做 A/B，再只改一个参数验证。',
   'focus-coach': '已聚焦合成器教练：按 Serum / Phase Plant / Vital 路由复刻。',
   'focus-export': '已聚焦交付区：复制 Patch 并检查 REAPER 导出。',
   'open-reaper-template': '正在打开 REAPER 练习区。',
@@ -219,6 +220,7 @@ let patchPlayingTimer = null;
 let rangeChromeFrame = 0;
 let soundLabPatchFrame = 0;
 let activeRangeInput = null;
+let directManipulationTimer = 0;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
 
@@ -1234,6 +1236,18 @@ function rangePercentFromInput(input) {
   return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 }
 
+function setDirectManipulation(isActive) {
+  const root = document.documentElement;
+  globalThis.clearTimeout(directManipulationTimer);
+  if (isActive) {
+    root.classList.add('is-direct-manipulating');
+    return;
+  }
+  directManipulationTimer = globalThis.setTimeout(() => {
+    root.classList.remove('is-direct-manipulating');
+  }, 80);
+}
+
 function updateVerticalRangeFromPointer(input, event) {
   if (!input?.closest('.vertical-slider')) return false;
   const rect = input.getBoundingClientRect();
@@ -1301,6 +1315,7 @@ function finishSmoothRangeInput(input = activeRangeInput) {
   setRangeDragging(input, false);
   updateRangeChrome(input);
   activeRangeInput = null;
+  setDirectManipulation(false);
 }
 
 function bindSmoothRangeInput(input, onValue) {
@@ -1320,6 +1335,7 @@ function bindSmoothRangeInput(input, onValue) {
     activeRangeInput = input;
     input.setPointerCapture?.(event.pointerId);
     setRangeDragging(input, true);
+    setDirectManipulation(true);
     applyImmediateControlFeedback(input);
     commitVerticalPointerValue(event);
   });
@@ -1738,6 +1754,17 @@ async function handleWorkbenchAction(action, button) {
     return;
   }
 
+  if (action === 'focus-practice-loop') {
+    state.soundLabWorkflowStep = 'compare';
+    state.activeAtlasNode = 'material';
+    state.activeWorkbenchModuleMapId = 'compare';
+    state.activeAdvancedModule = 'ab-compare';
+    state.activeWorkbenchModule = 'macro';
+    render();
+    scrollSoundLabIntoView('.practice-loop-panel');
+    return;
+  }
+
   if (action === 'focus-coach') {
     state.soundLabWorkflowStep = 'shape';
     state.activeAtlasNode = 'modulation';
@@ -1993,6 +2020,7 @@ function bindInteractiveLabControls() {
       state.draggingAdsrHandle = handle.dataset.adsrHandle;
       handle.classList.add('is-dragging');
       handle.setPointerCapture?.(event.pointerId);
+      setDirectManipulation(true);
       updateAdsrFromPointer(event);
     });
   });
@@ -2358,11 +2386,20 @@ function bindSoundLabControls() {
     pad.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       pad.setPointerCapture?.(event.pointerId);
+      setDirectManipulation(true);
       updateXyPadFromPointer(pad, event);
     });
     pad.addEventListener('pointermove', (event) => {
       if ((event.buttons & 1) !== 1) return;
       updateXyPadFromPointer(pad, event);
+    });
+    pad.addEventListener('pointerup', (event) => {
+      pad.releasePointerCapture?.(event.pointerId);
+      setDirectManipulation(false);
+    });
+    pad.addEventListener('pointercancel', (event) => {
+      pad.releasePointerCapture?.(event.pointerId);
+      setDirectManipulation(false);
     });
   });
 
@@ -2941,11 +2978,13 @@ document.addEventListener('pointermove', (event) => {
 document.addEventListener('pointerup', () => {
   state.draggingAdsrHandle = null;
   if (activeRangeInput) finishSmoothRangeInput(activeRangeInput);
+  setDirectManipulation(false);
 });
 
 document.addEventListener('pointercancel', () => {
   state.draggingAdsrHandle = null;
   if (activeRangeInput) finishSmoothRangeInput(activeRangeInput);
+  setDirectManipulation(false);
 });
 
 queryInput.addEventListener('input', () => {

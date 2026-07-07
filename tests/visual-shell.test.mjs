@@ -76,16 +76,39 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
 });
 
-test('tactile effects stay element-scoped and cannot flash the whole viewport', () => {
+test('tactile effects use class-only feedback and cannot flash the viewport', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const interactionJs = readFileSync(new URL('../src/interaction-effects.js', import.meta.url), 'utf8');
-  const tapSparkBlock = css.match(/\.tap-spark\s*\{[^}]*\}/)?.[0] ?? '';
 
-  assert.doesNotMatch(interactionJs, /document\.body\.append\(spark\)/, 'click feedback must not create fixed body-level flashes');
-  assert.match(interactionJs, /target\.append\(spark\)/, 'click feedback should render inside the pressed element');
+  assert.doesNotMatch(interactionJs, /document\.createElement\('span'\)/, 'ordinary click feedback must not insert animated DOM particles');
+  assert.doesNotMatch(interactionJs, /append\(spark\)/, 'click feedback must stay class-only to avoid paint flashes');
   assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
-  assert.match(tapSparkBlock, /position:\s*absolute/, 'tap spark should be clipped by its host element');
-  assert.doesNotMatch(tapSparkBlock, /position:\s*fixed/, 'tap spark must not sit on the viewport layer');
+  assert.match(interactionJs, /classList\.add\('has-tactile',\s*'is-pressing'\)/, 'tactile feedback should still provide local press state');
+  assert.match(css, /\.is-pressing\s*\{[\s\S]*box-shadow/, 'press feedback should remain a local style, not a viewport layer');
+});
+
+test('background parallax is throttled and pauses during direct manipulation', () => {
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /let\s+spaceParallaxFrame\s*=\s*0/);
+  assert.match(visualSpaceJs, /requestAnimationFrame\(\(\)\s*=>\s*\{/);
+  assert.match(visualSpaceJs, /classList\.contains\('is-direct-manipulating'\)/);
+  assert.match(appJs, /function\s+setDirectManipulation/);
+  assert.match(appJs, /setDirectManipulation\(true\)/);
+  assert.match(appJs, /setDirectManipulation\(false\)/);
+});
+
+test('Signal Atlas range drag avoids expensive filter flashes', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const activeRangeBlock = css.match(/\.signal-atlas-console \.range-shell\.is-dragging input,\s*\r?\n\.signal-atlas-console input\[type="range"\]:active\s*\{[^}]*\}/)?.[0] ?? '';
+  const activeThumbBlock = css.match(/\.signal-atlas-console input\[type="range"\]:active::-webkit-slider-thumb\s*\{[^}]*\}/)?.[0] ?? '';
+
+  assert.ok(activeRangeBlock, 'Signal Atlas should keep an explicit range dragging style');
+  assert.match(activeRangeBlock, /box-shadow/);
+  assert.doesNotMatch(activeRangeBlock, /filter:/);
+  assert.ok(activeThumbBlock, 'Signal Atlas should keep an explicit thumb active style');
+  assert.doesNotMatch(activeThumbBlock, /filter:/);
 });
 
 test('sound lab professional controls stay contained and use premium dark surfaces', () => {
@@ -294,7 +317,8 @@ test('interaction effects add pointer and keyboard tactile feedback hooks', () =
 
   assert.match(js, /pointerdown/);
   assert.match(js, /keydown/);
-  assert.match(js, /tap-spark/);
+  assert.match(js, /is-pressing/);
+  assert.match(js, /addPressState/);
   assert.match(js, /prefers-reduced-motion/);
 });
 
@@ -836,6 +860,22 @@ test('sound lab waveform detective is a routed beginner module, not a dead card'
   assert.match(css, /\.waveform-detective-panel\s*\{/);
   assert.match(css, /\.waveform-ingredient-card\s*\{[\s\S]*cursor:\s*default/);
   assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-ingredient-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+});
+
+test('sound lab practice loop has routed actions and readable dark panel styling', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderPracticeLoopPanel/);
+  assert.match(renderJs, /practice-loop-panel/);
+  assert.match(renderJs, /data-workbench-action="focus-practice-loop"/);
+  assert.match(renderJs, /practiceLoop/);
+  assert.match(appJs, /focus-practice-loop/);
+  assert.match(appJs, /state\.soundLabWorkflowStep = 'compare'/);
+  assert.match(appJs, /scrollSoundLabIntoView\('\.practice-loop-panel'\)/);
+  assert.match(css, /\.practice-loop-panel\s*\{/);
+  assert.match(css, /\.practice-loop-step\s*\{[\s\S]*color:\s*rgba\(244,\s*247,\s*251,\s*0\.84\)/);
 });
 
 test('workflow step binding targets only step buttons so the article state attribute cannot reset clicks', () => {

@@ -7,6 +7,7 @@ let particles = [];
 let signalParticles = [];
 let transitionBursts = [];
 let frameId = 0;
+let spaceParallaxFrame = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -211,6 +212,25 @@ function drawRippleField(time) {
   });
 }
 
+function scheduleSpaceParallaxCommit() {
+  if (spaceParallaxFrame || prefersReducedMotion) return;
+  spaceParallaxFrame = globalThis.requestAnimationFrame(() => {
+    spaceParallaxFrame = 0;
+    if (document.documentElement.classList.contains('is-direct-manipulating')) return;
+    document.documentElement.style.setProperty('--space-x', pointer.tx.toFixed(3));
+    document.documentElement.style.setProperty('--space-y', pointer.ty.toFixed(3));
+  });
+}
+
+function updatePointerFromEvent(event) {
+  if (document.documentElement.classList.contains('is-direct-manipulating')) return;
+  pointer.screenX = event.clientX;
+  pointer.screenY = event.clientY;
+  pointer.tx = (event.clientX / Math.max(1, width) - 0.5) * 2;
+  pointer.ty = (event.clientY / Math.max(1, height) - 0.5) * 2;
+  scheduleSpaceParallaxCommit();
+}
+
 function tick(time = 0) {
   if (!ctx || !canvas) return;
 
@@ -244,12 +264,7 @@ function init() {
   resize();
   globalThis.addEventListener('resize', resize);
   globalThis.addEventListener('pointermove', (event) => {
-    pointer.screenX = event.clientX;
-    pointer.screenY = event.clientY;
-    pointer.tx = (event.clientX / Math.max(1, width) - 0.5) * 2;
-    pointer.ty = (event.clientY / Math.max(1, height) - 0.5) * 2;
-    document.documentElement.style.setProperty('--space-x', pointer.tx.toFixed(3));
-    document.documentElement.style.setProperty('--space-y', pointer.ty.toFixed(3));
+    updatePointerFromEvent(event);
   }, { passive: true });
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);
@@ -261,4 +276,5 @@ init();
 
 globalThis.addEventListener('pagehide', () => {
   if (frameId) globalThis.cancelAnimationFrame(frameId);
+  if (spaceParallaxFrame) globalThis.cancelAnimationFrame(spaceParallaxFrame);
 });

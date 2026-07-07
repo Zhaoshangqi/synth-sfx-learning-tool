@@ -349,6 +349,22 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
   assert.match(html, /先听纯音锚点/);
 });
 
+test('renderSoundLabWorkbench exposes a guided A/B practice loop for beginners', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /practice-loop-panel/);
+  assert.match(html, /听辨闭环/);
+  assert.match(html, /只改一个参数/);
+  assert.match(html, /REAPER 记录句式/);
+  assert.match(html, /data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /data-workbench-action="compare-view"/);
+});
+
 test('renderMaterialLab includes playable material controls, visual model, and synth mappings', () => {
   const material = materialLabs[0];
   const materialState = buildDefaultMaterialState(material);
