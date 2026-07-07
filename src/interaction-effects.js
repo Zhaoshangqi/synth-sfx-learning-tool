@@ -28,7 +28,7 @@ function addPressState(target) {
   globalThis.setTimeout(() => target.classList.remove('is-pressing'), prefersReducedMotion ? 80 : 240);
 }
 
-function addSpark(x, y) {
+function addSpark(target, x, y) {
   if (prefersReducedMotion) return;
 
   const spark = document.createElement('span');
@@ -36,14 +36,14 @@ function addSpark(x, y) {
   spark.setAttribute('aria-hidden', 'true');
   spark.style.left = `${x}px`;
   spark.style.top = `${y}px`;
-  document.body.append(spark);
+  target.append(spark);
 
   const cleanup = () => spark.remove();
   spark.addEventListener('animationend', cleanup, { once: true });
   globalThis.setTimeout(cleanup, 720);
 }
 
-function pulseAt(target, clientX, clientY, options = {}) {
+function pulseAt(target, clientX, clientY) {
   const rect = target.getBoundingClientRect();
   const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
   const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
@@ -51,22 +51,22 @@ function pulseAt(target, clientX, clientY, options = {}) {
   target.style.setProperty('--tap-x', `${x}px`);
   target.style.setProperty('--tap-y', `${y}px`);
   addPressState(target);
-  if (options.spark !== false) addSpark(clientX, clientY);
+  addSpark(target, x, y);
 }
 
 document.addEventListener('pointerdown', (event) => {
   const target = findTactileTarget(event);
   if (!target) return;
-  pulseAt(target, event.clientX, event.clientY, { spark: !isContinuousControl(event, target) });
+  if (isContinuousControl(event, target)) return;
+  pulseAt(target, event.clientX, event.clientY);
 }, { passive: true });
 
 document.addEventListener('keydown', (event) => {
   if (!['Enter', ' '].includes(event.key)) return;
   const target = event.target?.closest?.(tactileSelector);
   if (!target) return;
+  if (isContinuousControl(event, target)) return;
 
   const rect = target.getBoundingClientRect();
-  pulseAt(target, rect.left + rect.width / 2, rect.top + rect.height / 2, {
-    spark: !isContinuousControl(event, target),
-  });
+  pulseAt(target, rect.left + rect.width / 2, rect.top + rect.height / 2);
 });
