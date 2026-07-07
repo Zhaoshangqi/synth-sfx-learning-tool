@@ -99,6 +99,34 @@ test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer contr
   assert.match(patch.licenseNotice, /PresetShare|public domain|procedural/i);
 });
 
+test('studio worklet patches expose unison drift and stereo spread for realistic synth tone', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 74,
+    motion: 58,
+    material: 82,
+    space: 52,
+    variation: 68,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const tonalLayers = patch.layers.filter((layer) => ['fmBurst', 'combDelay'].includes(layer.engine));
+
+  assert.ok(tonalLayers.length >= 2, 'test preset should expose FM and comb tonal layers');
+  for (const layer of tonalLayers) {
+    assert.ok(layer.unison?.voices >= 3, `${layer.id} should use multiple voices in studio mode`);
+    assert.ok(layer.unison.detuneCents >= 4, `${layer.id} should detune voices enough to hear width`);
+    assert.ok(layer.unison.analogDrift > 0, `${layer.id} should have slow pitch drift`);
+    assert.ok(layer.stereoSpread > 0.12, `${layer.id} should expose stereo spread for the processor`);
+  }
+
+  const message = buildWorkletMessage(patch);
+  const payloadLayer = message.payload.layers.find((layer) => layer.engine === 'fmBurst');
+  assert.deepEqual(payloadLayer.unison, tonalLayers.find((layer) => layer.engine === 'fmBurst').unison);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',

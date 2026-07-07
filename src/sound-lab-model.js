@@ -366,6 +366,26 @@ function layerEnvelope(role, durationSeconds, material, space) {
   return { attackMs: 12, decayMs: durationSeconds * 840, sustain: 0.12, releaseMs: clamp(180 + space * 520, 120, 780) };
 }
 
+function layerStereoSpread(role, engine, quality, space, variation, index) {
+  const tonalBonus = ['fmBurst', 'combDelay'].includes(engine) ? 0.18 : 0.04;
+  const roleBonus = role === 'body' ? 0.1 : role === 'texture' ? 0.16 : role === 'tail' ? 0.2 : 0.03;
+  const qualityBonus = quality.id === 'studio' ? 0.14 : quality.id === 'balanced' ? 0.06 : 0;
+  return clamp(0.04 + tonalBonus + roleBonus + space * 0.34 + variation * 0.22 + index * 0.018 + qualityBonus, 0.02, 0.92);
+}
+
+function buildUnisonProfile(engine, quality, motion, variation, index) {
+  if (!['fmBurst', 'combDelay'].includes(engine)) return undefined;
+  const baseVoices = quality.id === 'studio' ? 3 : quality.id === 'balanced' ? 2 : 1;
+  const extraVoice = quality.id === 'studio' && engine === 'fmBurst' && variation > 0.52 ? 2 : 0;
+  const voices = clamp(baseVoices + extraVoice, 1, 5);
+  return {
+    voices,
+    detuneCents: clamp((voices > 1 ? 3.8 : 0) + variation * 9 + motion * 3 + index * 0.6, 0, 22),
+    analogDrift: clamp((voices > 1 ? 0.002 : 0) + variation * 0.018 + motion * 0.006, 0, 0.032),
+    phaseSpread: clamp(0.16 + variation * 0.28 + index * 0.04, 0.08, 0.74),
+  };
+}
+
 function buildLayer(recipe, context, index) {
   const { base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix } = context;
   const role = recipe.role;
@@ -373,6 +393,7 @@ function buildLayer(recipe, context, index) {
   const envelope = layerEnvelope(role, durationSeconds, material, space);
   const pan = clamp((index - 2) * 0.11 + (variation - 0.5) * 0.18, -0.55, 0.55);
   const sampleAsset = recipe.sampleAssetId ? getSampleAsset(recipe.sampleAssetId) : null;
+  const unison = buildUnisonProfile(recipe.engine, quality, motion, variation, index);
 
   const common = {
     id: `${role}-${recipe.engine}-${index}`,
@@ -380,8 +401,10 @@ function buildLayer(recipe, context, index) {
     engine: recipe.engine,
     gain: recipe.engine === 'sampleGrain' ? gain * sampleMix : gain,
     pan,
+    stereoSpread: layerStereoSpread(role, recipe.engine, quality, space, variation, index),
     envelope,
   };
+  if (unison) common.unison = unison;
 
   if (recipe.engine === 'sampleGrain') {
     return {
@@ -641,6 +664,59 @@ function buildMeters(patch) {
   ];
 }
 
+function buildSoundQuality(patch) {
+  const tonalLayers = patch.layers.filter((layer) => layer.unison);
+  const unisonLayers = tonalLayers.length ? tonalLayers : patch.layers;
+  const voiceCounts = unisonLayers.map((layer) => layer.unison?.voices ?? 1);
+  const maxVoices = Math.max(1, ...voiceCounts);
+  const avgDetune = tonalLayers.length
+    ? tonalLayers.reduce((total, layer) => total + (layer.unison?.detuneCents ?? 0), 0) / tonalLayers.length
+    : 0;
+  const avgDrift = tonalLayers.length
+    ? tonalLayers.reduce((total, layer) => total + (layer.unison?.analogDrift ?? 0), 0) / tonalLayers.length
+    : 0;
+  const maxSpread = Math.max(
+    patch.globalFx?.space?.width ?? 0,
+    ...patch.layers.map((layer) => layer.stereoSpread ?? 0),
+  );
+  const tailSafety = clamp((patch.globalFx?.space?.mix ?? 0) * 92 + (patch.globalFx?.softLimiter?.ceiling ?? 0.9) * 18, 0, 100);
+
+  return [
+    {
+      id: 'unison',
+      labelZh: 'Unison',
+      value: clamp(maxVoices / 5 * 100, 0, 100),
+      statusZh: `${maxVoices} voices`,
+      noteZh: `${formatQualityNumber(avgDetune)} cents detune`,
+    },
+    {
+      id: 'drift',
+      labelZh: 'Drift',
+      value: clamp(avgDrift * 3200, 0, 100),
+      statusZh: 'slow pitch',
+      noteZh: `${formatQualityNumber(avgDrift * 100)} cents motion`,
+    },
+    {
+      id: 'stereo',
+      labelZh: 'Stereo',
+      value: clamp(maxSpread * 100, 0, 100),
+      statusZh: 'wide layers',
+      noteZh: `${formatQualityNumber(maxSpread * 100)}% spread`,
+    },
+    {
+      id: 'tail',
+      labelZh: 'Tail',
+      value: tailSafety,
+      statusZh: patch.qualityMode,
+      noteZh: 'space + limiter',
+    },
+  ];
+}
+
+function formatQualityNumber(value) {
+  return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : '0';
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -825,7 +901,14 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     xyPad: patch.xyPad,
     modMatrix: patch.modMatrix,
     fxOrder: patch.fxOrder,
-    layers: patch.layers.map((layer) => ({ id: layer.id, role: layer.role, engine: layer.engine, gain: layer.gain })),
+    layers: patch.layers.map((layer) => ({
+      id: layer.id,
+      role: layer.role,
+      engine: layer.engine,
+      gain: layer.gain,
+      stereoSpread: layer.stereoSpread,
+      unison: layer.unison,
+    })),
     globalFx: patch.globalFx,
     toneGraph: patch.toneGraph,
     fxRack: patch.fxRack,
@@ -847,6 +930,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     patch,
     macros: macroList,
     meters: buildMeters(patch),
+    soundQuality: buildSoundQuality(patch),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,

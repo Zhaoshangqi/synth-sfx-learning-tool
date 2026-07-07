@@ -474,6 +474,26 @@ test('renderSoundLabWorkbench exposes HQ engine, playable keyboard, and FX rack 
   assert.match(html, /data-sound-lab-ab="tone"/);
 });
 
+test('renderSoundLabWorkbench explains synth realism controls in the quality card', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 74,
+    motion: 58,
+    material: 82,
+    space: 52,
+    variation: 68,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /Unison/);
+  assert.match(html, /Drift/);
+  assert.match(html, /Stereo/);
+  assert.match(html, /合成器真实感/);
+});
+
 test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvases', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {

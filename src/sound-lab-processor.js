@@ -22,6 +22,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   loadPatch(payload, reset) {
     const previousLayers = this.patch?.layers || [];
+    const previousVoiceSignature = previousLayers.map((layer) => layer.unison?.voices ?? 1).join('|');
     this.patch = payload;
     this.seed = Math.max(1, Math.floor(this.patch.seed || 1));
 
@@ -35,7 +36,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     }
 
     const layers = this.patch.layers || [];
-    if (layers.length !== previousLayers.length) {
+    const nextVoiceSignature = layers.map((layer) => layer.unison?.voices ?? 1).join('|');
+    if (layers.length !== previousLayers.length || nextVoiceSignature !== previousVoiceSignature) {
       this.layerStates = layers.map((layer) => this.createLayerState(layer));
     }
   }
@@ -52,6 +54,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   createLayerState(layer) {
     const delayMs = clamp(layer.delayMs || 12, 1, 60);
+    const voiceCount = Math.round(clamp(layer.unison?.voices ?? 1, 1, 7));
+    const phaseSpread = clamp(layer.unison?.phaseSpread ?? 0.24, 0.02, 0.92);
     return {
       phase: 0,
       modPhase: 0,
@@ -61,6 +65,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       pink: 0,
       brown: 0,
       dc: { x: 0, y: 0 },
+      sideDc: { x: 0, y: 0 },
+      voicePhases: Array.from({ length: voiceCount }, (_, index) => ((index + 1) / (voiceCount + 1) + phaseSpread * index) % 1),
+      voiceTri: Array.from({ length: voiceCount }, () => 0),
       combIndex: 0,
       combBuffer: new Float32Array(Math.max(8, Math.floor(sampleRate * delayMs / 1000))),
     };
@@ -139,10 +146,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return output;
   }
 
-  renderVirtualAnalogOscillator(layer, state, frequency, shape = 'sine') {
-    const phaseInc = clamp(frequency / sampleRate, 0.00001, 0.45);
-    state.phase = (state.phase + phaseInc) % 1;
-    const phase = state.phase;
+  renderOscillatorShape(state, phase, phaseInc, shape = 'sine', voiceIndex = -1) {
     if (shape === 'sawtooth') return 1 - phase * 2 - this.polyBlep(phase, phaseInc);
     if (shape === 'square') {
       const pulse = phase < 0.5 ? 1 : -1;
@@ -150,10 +154,59 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     }
     if (shape === 'triangle') {
       const square = phase < 0.5 ? 1 : -1;
+      if (voiceIndex >= 0 && state.voiceTri) {
+        state.voiceTri[voiceIndex] = this.onePole(state.voiceTri[voiceIndex] ?? 0, square, phaseInc * 4);
+        return clamp(state.voiceTri[voiceIndex] * 2.4, -1, 1);
+      }
       state.filter3 = this.onePole(state.filter3, square, phaseInc * 4);
       return clamp(state.filter3 * 2.4, -1, 1);
     }
     return Math.sin(phase * Math.PI * 2);
+  }
+
+  renderVirtualAnalogOscillator(layer, state, frequency, shape = 'sine') {
+    const phaseInc = clamp(frequency / sampleRate, 0.00001, 0.45);
+    state.phase = (state.phase + phaseInc) % 1;
+    return this.renderOscillatorShape(state, state.phase, phaseInc, shape);
+  }
+
+  renderUnisonOscillator(layer, state, frequency, shape = 'sine', t = 0) {
+    const unison = layer.unison || {};
+    const voices = Math.round(clamp(unison.voices ?? 1, 1, 7));
+    if (!state.voicePhases || state.voicePhases.length !== voices) {
+      const phaseSpread = clamp(unison.phaseSpread ?? 0.24, 0.02, 0.92);
+      state.voicePhases = Array.from({ length: voices }, (_, index) => ((index + 1) / (voices + 1) + phaseSpread * index) % 1);
+      state.voiceTri = Array.from({ length: voices }, () => 0);
+    }
+
+    if (voices <= 1) {
+      return {
+        mono: this.renderVirtualAnalogOscillator(layer, state, frequency, shape),
+        side: 0,
+      };
+    }
+
+    const detuneCents = clamp(unison.detuneCents ?? 0, 0, 36);
+    const driftDepth = clamp(unison.analogDrift ?? 0, 0, 0.08) * 100;
+    const stereoSpread = clamp(layer.stereoSpread ?? 0, 0, 1);
+    let mono = 0;
+    let side = 0;
+
+    for (let voice = 0; voice < voices; voice += 1) {
+      const centered = voices === 1 ? 0 : (voice / (voices - 1)) * 2 - 1;
+      const drift = Math.sin(t * Math.PI * 2 * (0.13 + voice * 0.047) + (voice + 1) * 1.73) * driftDepth;
+      const detunedFrequency = frequency * Math.pow(2, (centered * detuneCents + drift) / 1200);
+      const phaseInc = clamp(detunedFrequency / sampleRate, 0.00001, 0.45);
+      state.voicePhases[voice] = (state.voicePhases[voice] + phaseInc) % 1;
+      const sample = this.renderOscillatorShape(state, state.voicePhases[voice], phaseInc, shape, voice);
+      mono += sample;
+      side += sample * centered;
+    }
+
+    return {
+      mono: mono / voices,
+      side: (side / Math.max(1, voices - 1)) * stereoSpread,
+    };
   }
 
   renderAllpassSpace(input, channel = 'left') {
@@ -190,8 +243,11 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const fmDepth = clamp(osc.fmDepth || 0, 0, 2000) / 900;
     state.modPhase = (state.modPhase + clamp((frequency * fmRatio) / sampleRate, 0.00001, 0.45)) % 1;
     const mod = Math.sin(state.modPhase * Math.PI * 2) * fmDepth;
-    const carrier = this.renderVirtualAnalogOscillator(layer, state, frequency * (1 + mod * 0.018), osc.shape);
-    return this.dcBlock(state.dc, carrier * env * layer.gain);
+    const carrier = this.renderUnisonOscillator(layer, state, frequency * (1 + mod * 0.018), osc.shape, t);
+    return {
+      mono: this.dcBlock(state.dc, carrier.mono * env * layer.gain),
+      side: this.dcBlock(state.sideDc, carrier.side * env * layer.gain),
+    };
   }
 
   renderModalResonator(layer, state, t, duration) {
@@ -228,14 +284,19 @@ class SoundLabProcessor extends AudioWorkletProcessor {
   renderCombDelay(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
     const frequency = clamp(layer.sourceFrequency || 800, 30, 8000);
-    const excite = (this.renderVirtualAnalogOscillator(layer, state, frequency, 'sawtooth') * 0.45 + this.colorNoise(state, 'pink') * 0.18) * env;
+    const oscillator = this.renderUnisonOscillator(layer, state, frequency, 'sawtooth', t);
+    const excite = (oscillator.mono * 0.45 + this.colorNoise(state, 'pink') * 0.18) * env;
+    const exciteSide = oscillator.side * 0.45 * env;
     const delayed = state.combBuffer[state.combIndex] || 0;
     const feedback = clamp(layer.feedback || 0.35, 0, 0.9);
     const damping = clamp(layer.damping || 0.6, 0.05, 0.96);
     const next = (excite + delayed * feedback) * damping;
     state.combBuffer[state.combIndex] = next;
     state.combIndex = (state.combIndex + 1) % state.combBuffer.length;
-    return this.dcBlock(state.dc, (delayed + excite * 0.38) * layer.gain);
+    return {
+      mono: this.dcBlock(state.dc, (delayed + excite * 0.38) * layer.gain),
+      side: this.dcBlock(state.sideDc, (exciteSide + delayed * clamp(layer.stereoSpread ?? 0, 0, 1) * 0.08) * layer.gain),
+    };
   }
 
   renderLayer(layer, state, t, duration) {
@@ -314,10 +375,12 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       if (layers.length) {
         for (let layerIndex = 0; layerIndex < layers.length; layerIndex += 1) {
           const layer = layers[layerIndex];
-          const value = this.renderLayer(layer, this.layerStates[layerIndex], t, duration);
+          const rendered = this.renderLayer(layer, this.layerStates[layerIndex], t, duration);
+          const value = typeof rendered === 'number' ? rendered : rendered.mono;
+          const side = typeof rendered === 'number' ? 0 : rendered.side;
           const pan = clamp(layer.pan || 0, -1, 1);
-          mixedLeft += value * clamp(1 - pan * 0.58, 0.35, 1.35);
-          mixedRight += value * clamp(1 + pan * 0.58, 0.35, 1.35);
+          mixedLeft += (value - side) * clamp(1 - pan * 0.58, 0.35, 1.35);
+          mixedRight += (value + side) * clamp(1 + pan * 0.58, 0.35, 1.35);
         }
       } else {
         const value = this.renderLegacy(t, duration);
