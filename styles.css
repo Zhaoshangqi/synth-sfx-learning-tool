@@ -11454,6 +11454,147 @@ button:disabled,
   line-height: 1.42;
 }
 
+.patch-doctor-panel {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(167, 139, 250, 0.2);
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.9), rgba(8, 10, 18, 0.76)),
+    radial-gradient(circle at 8% 0%, rgba(167, 139, 250, 0.12), transparent 38%),
+    radial-gradient(circle at 100% 16%, rgba(110, 231, 249, 0.1), transparent 34%);
+}
+
+.patch-doctor-panel p {
+  margin: 0;
+  color: rgba(174, 183, 198, 0.86);
+  line-height: 1.62;
+}
+
+.patch-doctor-stack {
+  display: grid;
+  gap: 9px;
+}
+
+.patch-doctor-card {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(16, 24, 38, 0.86), rgba(8, 10, 18, 0.72)),
+    linear-gradient(90deg, rgba(167, 139, 250, 0.07), rgba(110, 231, 249, 0.045));
+  color: rgba(244, 247, 251, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.patch-doctor-card::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0.86) 0 var(--doctor-score), rgba(174, 183, 198, 0.12) var(--doctor-score) 100%);
+}
+
+.patch-doctor-card-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.patch-doctor-card-head span {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid rgba(167, 139, 250, 0.26);
+  background: rgba(167, 139, 250, 0.12);
+  color: rgba(244, 247, 251, 0.94);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.patch-doctor-card-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--v3-text);
+  font-size: 12px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.patch-doctor-card-head em {
+  color: rgba(94, 234, 212, 0.9);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.patch-doctor-card dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.patch-doctor-card dl div {
+  display: grid;
+  gap: 3px;
+}
+
+.patch-doctor-card dt {
+  color: rgba(110, 231, 249, 0.84);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.patch-doctor-card dd {
+  margin: 0;
+  color: rgba(244, 247, 251, 0.82);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.patch-doctor-card dd span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(174, 183, 198, 0.86);
+}
+
+.patch-doctor-card dd b {
+  display: inline-block;
+  min-width: 72px;
+  color: rgba(244, 247, 251, 0.9);
+  font-weight: 950;
+}
+
+.patch-doctor-card small {
+  color: rgba(174, 183, 198, 0.78);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.patch-doctor-card button {
+  min-height: 34px;
+  border: 1px solid rgba(110, 231, 249, 0.26);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(110, 231, 249, 0.14), rgba(167, 139, 250, 0.1));
+  color: var(--v3-text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.patch-doctor-card button:hover,
+.patch-doctor-card button:focus-visible {
+  border-color: rgba(110, 231, 249, 0.44);
+  box-shadow: 0 0 22px rgba(110, 231, 249, 0.12);
+}
+
 .practice-loop-panel p {
   margin: 0;
   color: rgba(174, 183, 198, 0.84);

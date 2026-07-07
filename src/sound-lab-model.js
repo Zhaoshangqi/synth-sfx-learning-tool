@@ -1075,6 +1075,106 @@ function buildListeningCompass(family, patch, macroList, workflowStep = 'source'
   };
 }
 
+function buildPatchDoctor(family, patch, macroList = []) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
+  const macroById = Object.fromEntries((macroList ?? []).map((macro) => [macro.id, macro]));
+  const familyName = family?.titleZh?.split('：')[0] ?? '目标音效';
+  const brightness = values.brightness ?? 50;
+  const material = values.material ?? 50;
+  const motion = values.motion ?? 50;
+  const space = values.space ?? 50;
+  const variation = values.variation ?? 50;
+  const transientMix = layerMix.transient ?? 50;
+  const bodyMix = layerMix.body ?? 50;
+  const textureMix = layerMix.texture ?? 50;
+  const tailMix = layerMix.tail ?? 50;
+  const deHarsh = (comfortBus.deHarsh ?? 0) * 100;
+  const tailDuck = (comfortBus.tailDuck ?? 0) * 100;
+  const monoAnchor = (comfortBus.monoAnchor ?? 0) * 100;
+
+  const macroLabel = (id, fallback) => macroById[id]?.labelZh ?? fallback;
+  const candidates = [
+    {
+      id: 'harsh-edge',
+      score: clamp(brightness * 0.48 + material * 0.28 + textureMix * 0.18 + deHarsh * 0.18, 0, 100),
+      labelZh: '刺耳边缘',
+      listenZh: `先听 ${familyName} 的 3k-8k 是否扎耳，亮度是否来自材质而不是单纯高频噪声。`,
+      whyZh: `${macroLabel('brightness', 'Brightness')} ${Math.round(brightness)} / ${macroLabel('material', 'Material')} ${Math.round(material)}，容易把金属感推成薄亮。`,
+      action: 'analyze-patch',
+      actionLabelZh: '看频谱',
+      synthTargets: {
+        serum: 'Serum: 先看 Filter drive、Noise level 和 wavetable position，再少量 de-harsh。',
+        phasePlant: 'Phase Plant: 把 noise / modal 分层进单独 EQ 或 filter lane，先关掉过亮层 A/B。',
+        vital: 'Vital: 检查 spectral warp、filter resonance 和 noise oscillator 高通位置。',
+      },
+      reaperCheckZh: 'REAPER 中先匹配 -14 LUFS，再 A/B dry 与 full，确认刺耳不是响度错觉。',
+    },
+    {
+      id: 'tail-mask',
+      score: clamp(space * 0.36 + tailMix * 0.34 + transientMix * 0.12 + tailDuck * 0.42, 0, 100),
+      labelZh: '尾巴遮挡',
+      listenZh: '听第一下 hit/click 后，reverb 或 delay 是否立刻盖住主体，导致动作边缘变糊。',
+      whyZh: `Space ${Math.round(space)} / Tail ${Math.round(tailMix)}，空间已经足够，下一步要验证 tail 是否服务动作。`,
+      action: 'focus-practice-loop',
+      actionLabelZh: '做 A/B',
+      synthTargets: {
+        serum: 'Serum: 用 FX rack 的 Reverb/Delay mix 和 predelay 做 dry/full/tail-only 对照。',
+        phasePlant: 'Phase Plant: 把 tail 放到独立 lane，用 envelope 或 ducking 控制起音期音量。',
+        vital: 'Vital: 调低 reverb mix，保留短 early reflection，再用 macro 控制尾巴长度。',
+      },
+      reaperCheckZh: 'REAPER 导出 dry / full / tail-only 三版，A/B 听 tail 是否遮挡 transient。',
+    },
+    {
+      id: 'transient-body',
+      score: clamp(Math.abs(transientMix - bodyMix) * 0.65 + material * 0.18 + monoAnchor * 0.32, 0, 100),
+      labelZh: '瞬态/主体平衡',
+      listenZh: '先听第一下和后面主体是不是同一种材质；如果 click 很硬但 body 很空，声音会像两段拼接。',
+      whyZh: `Transient ${Math.round(transientMix)} / Body ${Math.round(bodyMix)}，层级比例需要用一个参数一轮验证。`,
+      action: 'focus-controls',
+      actionLabelZh: '调层级',
+      synthTargets: {
+        serum: 'Serum: 用 Env1/Env2 分开控制 click 与 body，先固定音量再改 decay。',
+        phasePlant: 'Phase Plant: transient generator 和 body generator 分组，分别映射 Macro。',
+        vital: 'Vital: 用 Osc/Noise 独立 ADSR，先调 decay 再调 filter envelope amount。',
+      },
+      reaperCheckZh: 'REAPER 用同一 MIDI item 渲染两版，只改 transient 或 body 一个参数写进 item notes。',
+    },
+    {
+      id: 'motion-life',
+      score: clamp((100 - motion) * 0.26 + Math.abs(variation - 45) * 0.42 + textureMix * 0.12, 0, 100),
+      labelZh: '运动生命感',
+      listenZh: '听声音是否太静态，或者随机太多导致每次触发像不同音色。',
+      whyZh: `Motion ${Math.round(motion)} / Variation ${Math.round(variation)}，需要把运动限制在可复现的范围里。`,
+      action: 'focus-coach',
+      actionLabelZh: '看调制',
+      synthTargets: {
+        serum: 'Serum: 用 LFO 或 Chaos 只调一个目标，例如 wavetable 或 filter cutoff。',
+        phasePlant: 'Phase Plant: 用 random modulator 轻推 texture lane，不要同时调音高和音量。',
+        vital: 'Vital: 用 random LFO 做小幅 pan/filter 变化，保持主频和主体包络稳定。',
+      },
+      reaperCheckZh: 'REAPER 连续渲染 3 次，A/B 判断 variation 是否还像同一个 Patch。',
+    },
+  ];
+
+  const diagnostics = candidates
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((item, index) => ({
+      ...item,
+      priority: index + 1,
+      score: Math.round(item.score),
+    }));
+
+  return {
+    titleZh: 'Patch Doctor 下一步诊断',
+    summaryZh: '先听分数最高的问题，只改一个参数，再回到 A/B 验证。这样初学者不会在所有旋钮之间迷路。',
+    diagnostics,
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -1321,6 +1421,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     waveformFingerprint: buildWaveformFingerprint(patch),
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
+    patchDoctor: buildPatchDoctor(family, patch, macroList),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,

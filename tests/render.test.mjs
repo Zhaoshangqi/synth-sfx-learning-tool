@@ -623,6 +623,32 @@ test('renderSoundLabWorkbench renders perceptual calibration as beginner quality
   assert.match(html, /Raw|Comfort|Studio|-14 LUFS/);
 });
 
+test('renderSoundLabWorkbench renders Patch Doctor diagnostics with routed actions', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 91,
+    motion: 34,
+    material: 86,
+    space: 72,
+    variation: 38,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 86, body: 62, texture: 72, tail: 78 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /patch-doctor-panel/);
+  assert.match(html, /Patch Doctor|下一步诊断/);
+  assert.match(html, /先听|为什么|去修改/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /data-workbench-action="focus-controls"|data-workbench-action="analyze-patch"|data-workbench-action="focus-practice-loop"/);
+});
+
 test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvases', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {

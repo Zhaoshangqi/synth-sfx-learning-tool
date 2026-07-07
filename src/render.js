@@ -1535,6 +1535,58 @@ function renderListeningCompassPanel(model = {}) {
   `;
 }
 
+function renderPatchDoctorPanel(model = {}) {
+  const doctor = model.patchDoctor ?? {};
+  const diagnostics = doctor.diagnostics ?? [];
+  if (!diagnostics.length) return '';
+  const synthLabels = {
+    serum: 'Serum',
+    phasePlant: 'Phase Plant',
+    vital: 'Vital',
+  };
+
+  return `
+    <section class="side-panel patch-doctor-panel" aria-label="Patch Doctor 下一步诊断">
+      <div class="atlas-inspector-heading">
+        <span aria-hidden="true">Dx</span>
+        <strong>${escapeHtml(doctor.titleZh ?? 'Patch Doctor 下一步诊断')}</strong>
+      </div>
+      <p>${escapeHtml(doctor.summaryZh ?? '先听最重要的问题，只改一个参数，再回到 A/B 验证。')}</p>
+      <div class="patch-doctor-stack">
+        ${diagnostics.map((diagnostic) => `
+          <article class="patch-doctor-card" style="--doctor-score:${formatNumber(diagnostic.score ?? 0)}%">
+            <div class="patch-doctor-card-head">
+              <span>${escapeHtml(String(diagnostic.priority ?? 1).padStart(2, '0'))}</span>
+              <strong>${escapeHtml(diagnostic.labelZh)}</strong>
+              <em>${escapeHtml(String(diagnostic.score ?? 0))}</em>
+            </div>
+            <dl>
+              <div>
+                <dt>先听</dt>
+                <dd>${escapeHtml(diagnostic.listenZh)}</dd>
+              </div>
+              <div>
+                <dt>为什么</dt>
+                <dd>${escapeHtml(diagnostic.whyZh)}</dd>
+              </div>
+              <div>
+                <dt>去修改</dt>
+                <dd>
+                  ${Object.entries(diagnostic.synthTargets ?? {}).map(([synth, target]) => `
+                    <span><b>${escapeHtml(synthLabels[synth] ?? synth)}</b>${escapeHtml(target)}</span>
+                  `).join('')}
+                </dd>
+              </div>
+            </dl>
+            <small>${escapeHtml(diagnostic.reaperCheckZh ?? '')}</small>
+            <button type="button" data-workbench-action="${escapeHtml(diagnostic.action)}">${escapeHtml(diagnostic.actionLabelZh ?? '去处理')}</button>
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderWorkbenchModuleTabs(activeWorkbenchModule = 'envelope') {
   const tabs = [
     ['generator', '声音生成'],
@@ -2327,6 +2379,7 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
         <p>${escapeHtml(theoryText)}</p>
       </section>
       ${renderListeningCompassPanel(model)}
+      ${renderPatchDoctorPanel(model)}
       ${renderPracticeLoopPanel(model)}
       <section class="side-panel source-inspector-panel">
         <div class="side-panel-title">来源快照</div>

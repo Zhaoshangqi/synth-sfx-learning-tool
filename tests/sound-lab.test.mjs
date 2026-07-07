@@ -136,6 +136,32 @@ test('buildSoundLabViewModel creates a dynamic listening compass for transient b
   assert.match(model.listeningCompass.nextAction.noteZh, /只改一个参数|一个听感/);
 });
 
+test('buildSoundLabViewModel creates a Patch Doctor with prioritized next edits', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 91,
+    motion: 34,
+    material: 86,
+    space: 72,
+    variation: 38,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 86, body: 62, texture: 72, tail: 78 },
+  });
+
+  assert.ok(model.patchDoctor, 'view model should expose a beginner next-edit diagnosis');
+  assert.match(model.patchDoctor.titleZh, /Patch Doctor|诊断/);
+  assert.match(model.patchDoctor.summaryZh, /下一步|先听|只改一个/);
+  assert.equal(model.patchDoctor.diagnostics.length, 3);
+  assert.ok(model.patchDoctor.diagnostics.every((item) => item.priority >= 1 && item.listenZh && item.whyZh && item.action));
+  assert.ok(model.patchDoctor.diagnostics.some((item) => /刺耳|空间|尾巴|瞬态/.test(item.labelZh + item.listenZh)));
+  assert.ok(model.patchDoctor.diagnostics.every((item) => item.synthTargets?.serum && item.synthTargets?.phasePlant && item.synthTargets?.vital));
+  assert.ok(model.patchDoctor.diagnostics.every((item) => /REAPER|A\/B|dry|full|tail/i.test(item.reaperCheckZh)));
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

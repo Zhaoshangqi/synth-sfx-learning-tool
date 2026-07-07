@@ -1001,6 +1001,9 @@ test('workbench actions are routed through a guarded dispatcher instead of loose
   assert.match(appJs, /showWorkbenchActionFeedback\(WORKBENCH_ACTION_MESSAGES\[action\]/);
   assert.match(appJs, /if \(action === 'focus-coach'\)\s*\{[\s\S]*state\.activeAdvancedModule = 'mod-matrix'/);
   assert.match(appJs, /if \(action === 'focus-coach'\)\s*\{[\s\S]*state\.activeWorkbenchModule = 'modulation'/);
+  assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*state\.activeAdvancedModule = 'mod-matrix'/);
+  assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*state\.activeWorkbenchModule = 'modulation'/);
+  assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*scrollSoundLabIntoView\('\.modulation-panel'\)/);
   assert.match(appJs, /未识别的工作台按钮/);
 });
 
@@ -1035,6 +1038,25 @@ test('sound lab practice loop has routed actions and readable dark panel styling
   assert.match(appJs, /scrollSoundLabIntoView\('\.practice-loop-panel'\)/);
   assert.match(css, /\.practice-loop-panel\s*\{/);
   assert.match(css, /\.practice-loop-step\s*\{[\s\S]*color:\s*rgba\(244,\s*247,\s*251,\s*0\.84\)/);
+});
+
+test('sound lab Patch Doctor is routed, readable, and not a dead card', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /buildPatchDoctor/);
+  assert.match(modelJs, /synthTargets/);
+  assert.match(renderJs, /renderPatchDoctorPanel/);
+  assert.match(renderJs, /patch-doctor-panel/);
+  assert.match(renderJs, /data-workbench-action="\$\{escapeHtml\(diagnostic\.action\)\}"/);
+  assert.match(appJs, /focus-controls/);
+  assert.match(appJs, /analyze-patch/);
+  assert.match(appJs, /focus-practice-loop/);
+  assert.match(css, /\.patch-doctor-panel\s*\{/);
+  assert.match(css, /\.patch-doctor-card\s*\{[\s\S]*background:/);
+  assert.match(css, /\.patch-doctor-card button\s*\{[\s\S]*cursor:\s*pointer/);
 });
 
 test('sound lab listening compass stays readable and routes to existing workbench actions', () => {
