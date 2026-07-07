@@ -10,6 +10,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     this.spaceState = this.createSpaceState();
     this.polishLeft = this.createPolishState();
     this.polishRight = this.createPolishState();
+    this.outputStageLeft = this.createOutputStageState();
+    this.outputStageRight = this.createOutputStageState();
     this.outputDcLeft = { x: 0, y: 0 };
     this.outputDcRight = { x: 0, y: 0 };
     this.port.onmessage = (event) => {
@@ -34,6 +36,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       this.spaceState = this.createSpaceState();
       this.polishLeft = this.createPolishState();
       this.polishRight = this.createPolishState();
+      this.outputStageLeft = this.createOutputStageState();
+      this.outputStageRight = this.createOutputStageState();
       this.outputDcLeft = { x: 0, y: 0 };
       this.outputDcRight = { x: 0, y: 0 };
       return;
@@ -63,6 +67,14 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       harsh: 0,
       edge: 0,
       prev: 0,
+    };
+  }
+
+  createOutputStageState() {
+    return {
+      pre: 0,
+      de: 0,
+      slew: 0,
     };
   }
 
@@ -321,12 +333,31 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return this.renderFilteredNoise(layer, state, t, duration);
   }
 
-  softLimiter(sample) {
+  applyAnalogOutputSaturation(sample, drive, state) {
+    if (!state) return sample;
+    const preCoeff = 0.18 + drive * 0.06;
+    state.pre = this.onePole(state.pre, sample, preCoeff);
+    const preEmphasis = sample + (sample - state.pre) * clamp(0.1 + drive * 0.11, 0.08, 0.28);
+
+    const firstAmount = 1.05 + drive * 2.45;
+    const firstStage = Math.tanh(preEmphasis * firstAmount) / Math.tanh(firstAmount);
+    const maxStep = clamp(0.24 - drive * 0.045, 0.14, 0.26);
+    const slewDelta = clamp(firstStage - state.slew, -maxStep, maxStep);
+    state.slew += slewDelta;
+
+    state.de = this.onePole(state.de, state.slew, 0.055 + drive * 0.028);
+    const deEmphasis = state.slew - (state.slew - state.de) * clamp(0.08 + drive * 0.08, 0.06, 0.2);
+    const secondAmount = 1.02 + drive * 1.35;
+    return Math.tanh(deEmphasis * secondAmount) / Math.tanh(secondAmount);
+  }
+
+  softLimiter(sample, state = null) {
     const globalFx = this.patch?.globalFx || {};
     const drive = clamp(globalFx.dynamics?.drive ?? this.patch?.waveshaper?.drive ?? 0.4, 0, 1.4);
     const ceiling = clamp(globalFx.softLimiter?.ceiling ?? this.patch?.safety?.limiter ?? 0.92, 0.5, 0.98);
     const amount = 1.2 + drive * 4.2;
-    return Math.tanh(sample * amount) / Math.tanh(amount) * ceiling;
+    const rounded = this.applyAnalogOutputSaturation(sample, drive, state);
+    return Math.tanh(rounded * amount) / Math.tanh(amount) * ceiling;
   }
 
   applyMasterPolish(sample, state) {
@@ -475,8 +506,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width;
       const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width;
       this.applyStereoComfortBus(finalLeft * (1 - tailMotion), finalRight * (1 + tailMotion), t, duration);
-      left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft));
-      right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight));
+      left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft), this.outputStageLeft);
+      right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight), this.outputStageRight);
     }
 
     this.frame += left.length;
