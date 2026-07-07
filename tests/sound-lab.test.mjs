@@ -218,12 +218,40 @@ test('studio patches expose master polish for tighter finished synth tone', () =
   assert.ok(patch.globalFx.masterPolish.airGuard > 0.2);
   assert.ok(patch.globalFx.masterPolish.transientHold > 0.2);
   assert.ok(patch.globalFx.masterPolish.bodyGain <= 1);
+  assert.ok(patch.globalFx.masterPolish.comfortBus, 'master polish should expose a comfort bus for smoother listening');
+  assert.ok(patch.globalFx.masterPolish.comfortBus.warmth > 0.08);
+  assert.ok(patch.globalFx.masterPolish.comfortBus.deHarsh > 0.18);
+  assert.ok(patch.globalFx.masterPolish.comfortBus.headroom >= 0.04);
+  assert.ok(patch.globalFx.masterPolish.comfortBus.airTame > 0.08);
   assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.type === 'polish'));
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.comfortBus));
   assert.ok(patch.fxOrder.indexOf('polish') > patch.fxOrder.indexOf('reverb'));
   assert.ok(patch.fxOrder.indexOf('polish') < patch.fxOrder.indexOf('limiter'));
 
   const message = buildWorkletMessage(patch);
   assert.deepEqual(message.payload.globalFx.masterPolish, patch.globalFx.masterPolish);
+});
+
+test('sound quality exposes beginner-readable comfort bus metrics', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 42,
+    material: 56,
+    space: 62,
+    variation: 38,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-crystal-sparkle',
+    qualityMode: 'studio',
+    layerMix: { transient: 48, body: 58, texture: 74, tail: 66 },
+  });
+
+  const comfort = model.soundQuality.find((item) => item.id === 'comfort');
+  assert.ok(comfort, 'quality card should expose comfort as a first-class synth realism metric');
+  assert.match(comfort.statusZh, /舒适|smooth|comfort/i);
+  assert.match(comfort.noteZh, /de-harsh|headroom|刺耳|余量/i);
+  assert.ok(comfort.value >= 30);
 });
 
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {

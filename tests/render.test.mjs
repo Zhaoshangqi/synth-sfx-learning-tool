@@ -556,8 +556,10 @@ test('renderSoundLabWorkbench explains synth realism controls in the quality car
   assert.match(html, /Unison/);
   assert.match(html, /Drift/);
   assert.match(html, /Stereo/);
+  assert.match(html, /Comfort|舒适度/);
   assert.match(html, /Polish/);
   assert.match(html, /glue \+ guard|后级|抛光/i);
+  assert.match(html, /de-harsh|刺耳|headroom|余量/i);
   assert.match(html, /合成器真实感/);
 });
 
