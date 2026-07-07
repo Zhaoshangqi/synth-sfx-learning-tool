@@ -8,6 +8,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     this.seed = 1;
     this.layerStates = [];
     this.spaceState = this.createSpaceState();
+    this.polishLeft = this.createPolishState();
+    this.polishRight = this.createPolishState();
     this.outputDcLeft = { x: 0, y: 0 };
     this.outputDcRight = { x: 0, y: 0 };
     this.port.onmessage = (event) => {
@@ -30,6 +32,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       this.frame = 0;
       this.layerStates = (this.patch.layers || []).map((layer) => this.createLayerState(layer));
       this.spaceState = this.createSpaceState();
+      this.polishLeft = this.createPolishState();
+      this.polishRight = this.createPolishState();
       this.outputDcLeft = { x: 0, y: 0 };
       this.outputDcRight = { x: 0, y: 0 };
       return;
@@ -49,6 +53,14 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       right: new Float32Array(Math.max(32, Math.floor(sampleRate * 0.043))),
       indexLeft: 0,
       indexRight: 0,
+    };
+  }
+
+  createPolishState() {
+    return {
+      low: 0,
+      edge: 0,
+      prev: 0,
     };
   }
 
@@ -315,6 +327,28 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return Math.tanh(sample * amount) / Math.tanh(amount) * ceiling;
   }
 
+  applyMasterPolish(sample, state) {
+    const polish = this.patch?.globalFx?.masterPolish || {};
+    const glue = clamp(polish.glue ?? 0, 0, 1);
+    const lowTighten = clamp(polish.lowTighten ?? 0, 0, 1);
+    const airGuard = clamp(polish.airGuard ?? 0, 0, 1);
+    const transientHold = clamp(polish.transientHold ?? 0.28, 0, 1);
+    const bodyGain = clamp(polish.bodyGain ?? 0.94, 0.72, 1.04);
+
+    state.low = this.onePole(state.low, sample, 0.018);
+    const tightened = sample - state.low * lowTighten * 0.24;
+    const edge = tightened - state.prev;
+    state.edge = this.onePole(state.edge, edge, 0.22);
+    state.prev = tightened;
+
+    const guardAmount = clamp(Math.abs(state.edge) * airGuard * 2.8, 0, 0.22);
+    const guarded = tightened - state.edge * guardAmount;
+    const drive = 1 + glue * 1.7;
+    const glued = Math.tanh(guarded * drive) / Math.tanh(drive);
+    const transientRestore = edge * transientHold * 0.045;
+    return clamp((glued + transientRestore) * bodyGain, -1.2, 1.2);
+  }
+
   renderLegacy(t, duration) {
     const osc = this.patch.oscillator;
     const resonators = this.patch.resonators || [];
@@ -395,8 +429,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const spacedRight = this.renderAllpassSpace(mixedRight, 'right');
       const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width;
       const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width;
-      left[index] = this.softLimiter(this.dcBlock(this.outputDcLeft, finalLeft * (1 - tailMotion)));
-      right[index] = this.softLimiter(this.dcBlock(this.outputDcRight, finalRight * (1 + tailMotion)));
+      left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, finalLeft * (1 - tailMotion)), this.polishLeft));
+      right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, finalRight * (1 + tailMotion)), this.polishRight));
     }
 
     this.frame += left.length;

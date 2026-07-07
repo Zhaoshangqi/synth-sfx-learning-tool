@@ -409,6 +409,21 @@ test('sound lab processor renders layered engines with global soft limiter', () 
   assert.match(processorJs, /softLimiter/);
 });
 
+test('sound lab processor applies master polish before the final limiter', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /masterPolish/);
+  assert.match(modelJs, /polish/);
+  assert.match(processorJs, /createPolishState/);
+  assert.match(processorJs, /applyMasterPolish/);
+  assert.match(processorJs, /masterPolish/);
+  assert.match(processorJs, /lowTighten/);
+  assert.match(processorJs, /airGuard/);
+  assert.match(processorJs, /transientHold/);
+  assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish/);
+});
+
 test('audio player fallback schedules layered sound lab patches when AudioWorklet is unavailable', () => {
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
 

@@ -1976,7 +1976,7 @@ function renderWorkbenchQuality(model = {}) {
       statusZh: (item.amount ?? 0) > 0.66 ? '优秀' : '良好',
       noteZh: item.type ?? 'FX',
     }))
-  ).slice(0, 4);
+  ).slice(0, 5);
   return `
     <section class="workbench-panel patch-quality-card" aria-label="合成器真实感">
       <div class="mini-panel-head"><strong>合成器真实感</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>

@@ -172,6 +172,35 @@ test('studio worklet patches expose unison drift and stereo spread for realistic
   assert.deepEqual(payloadLayer.unison, tonalLayers.find((layer) => layer.engine === 'fmBurst').unison);
 });
 
+test('studio patches expose master polish for tighter finished synth tone', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 82,
+    motion: 46,
+    material: 88,
+    space: 34,
+    variation: 54,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    layerMix: { transient: 92, body: 80, texture: 58, tail: 28 },
+  });
+
+  assert.ok(patch.globalFx.masterPolish, 'global bus should expose a final polish stage');
+  assert.ok(patch.globalFx.masterPolish.glue > 0.18);
+  assert.ok(patch.globalFx.masterPolish.lowTighten > 0.1);
+  assert.ok(patch.globalFx.masterPolish.airGuard > 0.2);
+  assert.ok(patch.globalFx.masterPolish.transientHold > 0.2);
+  assert.ok(patch.globalFx.masterPolish.bodyGain <= 1);
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.type === 'polish'));
+  assert.ok(patch.fxOrder.indexOf('polish') > patch.fxOrder.indexOf('reverb'));
+  assert.ok(patch.fxOrder.indexOf('polish') < patch.fxOrder.indexOf('limiter'));
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish, patch.globalFx.masterPolish);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',
