@@ -10903,6 +10903,7 @@ button:disabled,
 .signal-atlas-console .workbench-panel,
 .signal-atlas-console .side-panel,
 .signal-atlas-console .route-progress-panel,
+.signal-atlas-console .waveform-detective-panel,
 .signal-atlas-console .challenge-panel,
 .signal-atlas-console .quick-entry-panel,
 .signal-atlas-console .workbench-module-map,
@@ -10922,6 +10923,7 @@ button:disabled,
 .signal-atlas-console .material-tile,
 .signal-atlas-console .quality-row,
 .signal-atlas-console .fx-chain-row,
+.signal-atlas-console .waveform-ingredient-card,
 .signal-atlas-console .dna-card,
 .signal-atlas-console .coach-card,
 .signal-atlas-console .coach-synth-focus,
@@ -10941,6 +10943,7 @@ button:disabled,
 .signal-atlas-console .advanced-module-pill:hover,
 .signal-atlas-console .macro-tile:hover,
 .signal-atlas-console .material-tile:hover,
+.signal-atlas-console .waveform-ingredient-card:hover,
 .signal-atlas-console .dna-card:hover,
 .signal-atlas-console .coach-card:hover,
 .signal-atlas-console .export-check-card:hover,
@@ -10962,6 +10965,8 @@ button:disabled,
 .signal-atlas-console .mod-source-card small,
 .signal-atlas-console .material-tile small,
 .signal-atlas-console .quality-row small,
+.signal-atlas-console .waveform-ingredient-card small,
+.signal-atlas-console .waveform-ingredient-card em,
 .signal-atlas-console .coach-card small,
 .signal-atlas-console .export-check-card small {
   color: rgba(174, 183, 198, 0.82) !important;
@@ -10973,6 +10978,144 @@ button:disabled,
 .signal-atlas-console .macro-tile span,
 .signal-atlas-console .material-tile span {
   color: var(--v3-cyan) !important;
+}
+
+.waveform-detective-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.waveform-detective-panel p {
+  margin: 0;
+  color: rgba(174, 183, 198, 0.84);
+  line-height: 1.65;
+}
+
+.waveform-detective-panel .mini-panel-head button {
+  min-height: 30px;
+  border: 1px solid rgba(110, 231, 249, 0.24);
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.08);
+  color: var(--v3-cyan);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.waveform-ingredient-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.waveform-ingredient-card {
+  cursor: default;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(18, 24, 38, 0.8), rgba(8, 10, 18, 0.62)),
+    radial-gradient(circle at 20% 0%, rgba(110, 231, 249, 0.08), transparent 42%);
+}
+
+.waveform-ingredient-card span,
+.waveform-ingredient-card strong {
+  color: var(--v3-text);
+}
+
+.waveform-ingredient-card span {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.waveform-ingredient-card strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.waveform-ingredient-card i {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--v3-cyan) 0 var(--ingredient), rgba(174, 183, 198, 0.14) var(--ingredient) 100%);
+  box-shadow: 0 0 16px rgba(110, 231, 249, 0.1);
+}
+
+.waveform-ingredient-card small,
+.waveform-ingredient-card em {
+  overflow-wrap: anywhere;
+  color: rgba(174, 183, 198, 0.8);
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.waveform-ingredient-card em {
+  color: rgba(94, 234, 212, 0.82);
+}
+
+.waveform-detective-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.waveform-detective-steps li {
+  min-width: 0;
+  padding: 10px 10px 10px 30px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 10, 18, 0.46);
+  color: rgba(244, 247, 251, 0.82);
+  font-size: 11px;
+  line-height: 1.55;
+  counter-increment: detective-step;
+  position: relative;
+}
+
+.waveform-detective-steps {
+  counter-reset: detective-step;
+}
+
+.waveform-detective-steps li::before {
+  content: counter(detective-step);
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-cyan);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+@media (max-width: 880px) {
+  .waveform-ingredient-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .waveform-detective-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .waveform-ingredient-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .signal-atlas-console .atlas-command-dock {

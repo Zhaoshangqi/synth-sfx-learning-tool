@@ -99,6 +99,7 @@ const WORKBENCH_ACTION_MESSAGES = {
   'toggle-more': '更多工具已切换。',
   'randomize-patch': '已生成一个轻微变化版本：宏参数只做小幅偏移，方便继续 A/B。',
   'focus-source': '已聚焦声源和频谱：先确认目标声音是否成立。',
+  'focus-waveform': '已聚焦波形拆解：先判断基础波形成分，再回到频谱验证。',
   'focus-controls': '已聚焦参数塑形：一次只改一个听感问题。',
   'focus-coach': '已聚焦合成器教练：按 Serum / Phase Plant / Vital 路由复刻。',
   'focus-export': '已聚焦交付区：复制 Patch 并检查 REAPER 导出。',
@@ -1718,6 +1719,17 @@ async function handleWorkbenchAction(action, button) {
 
   if (action === 'focus-source') {
     handleWorkbenchStep('source');
+    return;
+  }
+
+  if (action === 'focus-waveform') {
+    state.soundLabWorkflowStep = 'source';
+    state.activeAtlasNode = 'source';
+    state.activeWorkbenchModuleMapId = 'source';
+    state.activeAdvancedModule = 'advanced';
+    state.activeWorkbenchModule = 'generator';
+    render();
+    scrollSoundLabIntoView('.waveform-detective-panel');
     return;
   }
 
