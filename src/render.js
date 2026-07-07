@@ -1904,16 +1904,26 @@ function renderWorkbenchPlayback(model = {}, isPlaying = false) {
 }
 
 function renderWorkbenchQuality(model = {}) {
-  const fx = (model.fxRack ?? []).slice(0, 3);
+  const qualityItems = (model.soundQuality?.length
+    ? model.soundQuality
+    : (model.fxRack ?? []).map((item) => ({
+      id: item.id,
+      labelZh: item.labelZh.split('/')[0].trim(),
+      value: (item.amount ?? 0) * 100,
+      statusZh: (item.amount ?? 0) > 0.66 ? '优秀' : '良好',
+      noteZh: item.type ?? 'FX',
+    }))
+  ).slice(0, 4);
   return `
-    <section class="workbench-panel patch-quality-card" aria-label="补丁质量">
-      <div class="mini-panel-head"><strong>补丁质量</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>
+    <section class="workbench-panel patch-quality-card" aria-label="合成器真实感">
+      <div class="mini-panel-head"><strong>合成器真实感</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>
       <div class="quality-knob-row">
-        ${fx.map((item) => `
-          <div class="mini-quality-knob" style="--knob-value:${formatNumber((item.amount ?? 0) * 100)}%">
+        ${qualityItems.map((item) => `
+          <div class="mini-quality-knob" style="--knob-value:${formatNumber(item.value ?? 0)}%">
             <span></span>
-            <strong>${escapeHtml(item.labelZh.split('/')[0].trim())}</strong>
-            <small>${(item.amount ?? 0) > 0.66 ? '优秀' : '良好'}</small>
+            <strong>${escapeHtml(item.labelZh)}</strong>
+            <small>${escapeHtml(item.statusZh ?? item.noteZh ?? 'ready')}</small>
+            <em>${escapeHtml(item.noteZh ?? '')}</em>
           </div>
         `).join('')}
       </div>

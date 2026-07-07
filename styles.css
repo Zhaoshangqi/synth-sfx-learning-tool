@@ -6873,7 +6873,7 @@ textarea {
 .mini-quality-knob {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
-  grid-template-rows: auto auto;
+  grid-template-rows: auto auto auto;
   align-items: center;
   column-gap: 8px;
   min-width: 0;
@@ -6887,7 +6887,7 @@ textarea {
 }
 
 .mini-quality-knob span {
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -6910,6 +6910,17 @@ textarea {
   min-width: 0;
   color: #718293;
   font-size: 10px;
+}
+
+.mini-quality-knob em {
+  min-width: 0;
+  overflow: hidden;
+  color: #52687a;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .professional-control-grid {
@@ -9553,6 +9564,7 @@ textarea:focus {
 .layer-control small,
 .performance-control small,
 .mini-quality-knob small,
+.mini-quality-knob em,
 .coach-explain p,
 .coach-route-panel p,
 .coach-synth-focus p,

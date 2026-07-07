@@ -418,6 +418,17 @@ test('native sound lab processor includes virtual analog oscillators, stereo FX,
   assert.match(processorJs, /onePole/);
 });
 
+test('native sound lab processor renders unison voices with analog drift and stereo spread', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /renderUnisonOscillator/);
+  assert.match(processorJs, /voicePhases/);
+  assert.match(processorJs, /voiceTri/);
+  assert.match(processorJs, /analogDrift/);
+  assert.match(processorJs, /stereoSpread/);
+  assert.match(processorJs, /layer\.unison/);
+});
+
 test('sound lab app wires advanced controls and live analyzer drawing', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
