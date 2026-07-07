@@ -888,10 +888,17 @@ test('dashboard launchpad makes the first four actions visually obvious and touc
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
   assert.match(appJs, /dashboard-launchpad/);
+  assert.match(appJs, /dashboard-starter-strip/);
   assert.match(appJs, /launchpad-button/);
   assert.match(appJs, /从这里开始/);
+  assert.match(appJs, /新手今日路径/);
   assert.match(appJs, /data-dashboard-primary-view="soundlab"/);
   assert.match(appJs, /data-dashboard-primary-view="interactive"/);
+  assert.match(appJs, /data-dashboard-primary-view="daily"/);
+  assert.match(css, /\.dashboard-starter-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.dashboard-starter-strip button\s*\{[\s\S]*min-height:\s*62px/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*font-size:\s*clamp\(36px,\s*5\.2vw,\s*64px\)/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*min-height:\s*380px/);
   assert.match(css, /\.dashboard-launchpad\s*\{/);
   assert.match(css, /\.launchpad-button\s*\{[\s\S]*cursor:\s*pointer/);
   assert.match(css, /\.launchpad-button\s*\{[\s\S]*min-height:\s*74px/);

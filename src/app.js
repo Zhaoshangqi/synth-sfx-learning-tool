@@ -385,6 +385,23 @@ function renderDashboard() {
         <div class="card-kicker">今日练习控制台</div>
         <h3>把“听得懂教程”推进到“能交付音效”</h3>
         <p>先选一个目标声音，再用可听、可看、可验证的步骤练习。这里把资料证据、实时合成实验、深度解析和 REAPER 交付放在同一条信号链里。</p>
+        <div class="dashboard-starter-strip" aria-label="新手今日路径">
+          <button type="button" data-dashboard-primary-view="soundlab">
+            <span>01</span>
+            <strong>先听目标</strong>
+            <small>打开 Sound Lab</small>
+          </button>
+          <button type="button" data-dashboard-primary-view="interactive">
+            <span>02</span>
+            <strong>拖一个参数</strong>
+            <small>波形 / ADSR / FM</small>
+          </button>
+          <button type="button" data-dashboard-primary-view="daily">
+            <span>03</span>
+            <strong>看教程复刻</strong>
+            <small>YouTube 转中文练习</small>
+          </button>
+        </div>
         <div class="hero-status-strip" aria-label="当前学习状态">
           <span class="status-chip">Serum / Phase Plant / Vital</span>
           <span class="status-chip">四基础波形</span>
