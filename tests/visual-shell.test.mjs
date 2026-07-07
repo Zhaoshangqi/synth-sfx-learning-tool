@@ -107,6 +107,7 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   const rangeShellBlock = css.match(/\.range-shell\s*\{[^}]*\}/)?.[0] ?? '';
   const draggingBlock = css.match(/\.range-shell\.is-dragging\s*\{[^}]*\}/)?.[0] ?? '';
   const draggingFillBlock = css.match(/\.range-shell\.is-dragging::after\s*\{[^}]*\}/)?.[0] ?? '';
+  const signalRangeBlock = css.match(/\.signal-atlas-console \.range-shell input,\s*\r?\n\.signal-atlas-console input\[type="range"\]\s*\{[^}]*\}/)?.[0] ?? '';
 
   assert.match(css, /Same-view interaction anti-flash guard/);
   assert.match(css, /\.content:not\(\.is-view-switching\) \.signal-atlas-console::after,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-orb,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-signal-node,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-command-dock,[\s\S]*animation:\s*none !important/);
@@ -115,6 +116,27 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   assert.match(draggingBlock, /filter:\s*none/);
   assert.doesNotMatch(rangeShellBlock, /transition:\s*filter/, 'range drag should not animate filter because it repaints a wide control strip');
   assert.doesNotMatch(draggingFillBlock, /filter:/, 'range fill should not brighten via filter while dragging');
+  assert.ok(signalRangeBlock, 'Signal Atlas should keep its own range input transition block auditable');
+  assert.doesNotMatch(signalRangeBlock, /filter/, 'Signal Atlas range input transitions must not include filter because it flashes during dragging');
+});
+
+test('same-view Sound Lab rerenders keep layout stable and suppress animation restarts', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const renderBlock = appJs.match(/function render\([\s\S]*?\r?\n}\r?\n\r?\nfunction switchView/)?.[0] ?? '';
+  const bindSoundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
+
+  assert.ok(renderBlock, 'render should be easy to audit for same-view stability');
+  assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
+  assert.match(appJs, /function renderSameView\(\)/);
+  assert.match(appJs, /is-same-view-rendering/);
+  assert.match(appJs, /style\.minHeight/);
+  assert.match(appJs, /requestAnimationFrame/);
+  assert.match(bindSoundLabBlock, /renderSameView\(\)/);
+  assert.doesNotMatch(bindSoundLabBlock, /render\(\);/, 'Sound Lab button clicks should use quiet same-view render instead of a raw full repaint');
+  assert.match(css, /\.content\.is-same-view-rendering/);
+  assert.match(css, /\.content\.is-same-view-rendering[\s\S]*animation:\s*none !important/);
+  assert.match(css, /\.content\.is-same-view-rendering[\s\S]*transition:\s*none !important/);
 });
 
 test('background parallax is throttled and pauses during direct manipulation', () => {
