@@ -1,6 +1,35 @@
-export const DAILY_VIDEO_FEED_UPDATED_AT = "2026-07-06T06:49:25.599Z";
+export const DAILY_VIDEO_FEED_UPDATED_AT = "2026-07-07T06:27:02.406Z";
 
 export const dailyVideoFeed = [
+  {
+    "id": "daily-youtube-z6r7bhwq-io",
+    "platform": "YouTube",
+    "videoId": "z6r7BhWq-Io",
+    "title": "How To Design Slow Motion Sound Effects Booms | Whooshes | Sub Downs",
+    "creator": "Aftertouch Audio",
+    "url": "https://www.youtube.com/watch?v=z6r7BhWq-Io",
+    "publishedAt": "",
+    "discoveredAt": "2026-07-07T06:27:02.406Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
+    "durationSeconds": 627,
+    "durationLabel": "10:27",
+    "difficulty": "advanced",
+    "tags": [
+      "whoosh",
+      "impact",
+      "SFX"
+    ],
+    "statusZh": "待精读",
+    "translationStatusZh": "待翻译",
+    "learningNoteZh": "适合练运动型音效：重点听噪声源、滤波扫频、音高包络和空间尾巴如何制造方向与速度。",
+    "practicePromptZh": "在 Serum / Phase Plant / Vital 中用噪声、滤波扫频和 pitch envelope 做 3 个速度版本，再用 REAPER 对齐 transient。",
+    "sync": {
+      "query": "synth sound design resampling impact whoosh game audio tutorial",
+      "source": "yt-dlp",
+      "seenCount": 1
+    },
+    "score": 27
+  },
   {
     "id": "daily-youtube-5ijasrymz3u",
     "platform": "YouTube",
@@ -128,7 +157,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=acZPLjnha9o",
     "publishedAt": "",
     "discoveredAt": "2026-07-02T06:12:48.092Z",
-    "lastSeenAt": "2026-07-02T06:12:48.092Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 246,
     "durationLabel": "4:06",
     "difficulty": "advanced",
@@ -145,7 +174,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "synth sound design resampling impact whoosh game audio tutorial",
       "source": "yt-dlp",
-      "seenCount": 1
+      "seenCount": 2
     },
     "score": 43
   },
@@ -486,7 +515,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=E1OBcf4ZsYQ",
     "publishedAt": "",
     "discoveredAt": "2026-06-21T07:12:54.289Z",
-    "lastSeenAt": "2026-06-29T07:10:00.280Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 2831,
     "durationLabel": "47:11",
     "difficulty": "beginner",
@@ -496,16 +525,17 @@ export const dailyVideoFeed = [
       "impact",
       "UI",
       "laser",
-      "SFX"
+      "SFX",
+      "Phase Plant"
     ],
     "statusZh": "待精读",
     "translationStatusZh": "待翻译",
     "learningNoteZh": "适合练短音效：关注 attack、短 decay、亮度和尾巴长度，避免按钮声拖泥带水。",
     "practicePromptZh": "先在 Serum 里复刻 1 个核心听感轴，再把参数、听感检查和 REAPER 渲染备注写进资料卡。",
     "sync": {
-      "query": "synth sound design resampling impact whoosh game audio tutorial",
+      "query": "Phase Plant game audio SFX sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 8
+      "seenCount": 9
     },
     "score": 53
   },
@@ -668,7 +698,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=AbzKK0lWMfI",
     "publishedAt": "",
     "discoveredAt": "2026-06-18T07:13:30.964Z",
-    "lastSeenAt": "2026-06-18T07:13:30.964Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 533,
     "durationLabel": "8:53",
     "difficulty": "advanced",
@@ -684,7 +714,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant whoosh riser synth sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 1
+      "seenCount": 2
     },
     "score": 37
   },
@@ -697,7 +727,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=9sq4SVQ0roE",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T07:46:29.794Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 351,
     "durationLabel": "5:51",
     "difficulty": "intermediate",
@@ -716,7 +746,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum metallic sound design FM comb filter tutorial",
       "source": "yt-dlp",
-      "seenCount": 14
+      "seenCount": 15
     },
     "score": 48
   },
@@ -729,7 +759,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=gRh9BL-W8kQ",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T07:46:29.794Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 464,
     "durationLabel": "7:44",
     "difficulty": "advanced",
@@ -746,7 +776,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital metallic friction sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 19
+      "seenCount": 20
     },
     "score": 40
   },
@@ -816,7 +846,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=xlBInB7BOzE",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T07:46:29.794Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1152,
     "durationLabel": "19:12",
     "difficulty": "beginner",
@@ -831,7 +861,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital synth beginner sound design tutorial SFX",
       "source": "yt-dlp",
-      "seenCount": 21
+      "seenCount": 22
     },
     "score": 30
   },
@@ -874,7 +904,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=u3KnqpDgxGg",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 306,
     "durationLabel": "5:06",
     "difficulty": "intermediate",
@@ -893,7 +923,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "synth sound design resampling impact whoosh game audio tutorial",
       "source": "yt-dlp",
-      "seenCount": 39
+      "seenCount": 41
     },
     "score": 53
   },
@@ -937,7 +967,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=NDQVaYBoDEc",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 142,
     "durationLabel": "2:22",
     "difficulty": "intermediate",
@@ -956,7 +986,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum metallic sound design FM comb filter tutorial",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 48
   },
@@ -969,7 +999,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=ZPyXOLf6RsY",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1042,
     "durationLabel": "17:22",
     "difficulty": "intermediate",
@@ -988,7 +1018,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum metallic sound design FM comb filter tutorial",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 48
   },
@@ -1001,7 +1031,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=NTzPlVQB1Oc",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 525,
     "durationLabel": "8:45",
     "difficulty": "intermediate",
@@ -1020,7 +1050,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum metallic sound design FM comb filter tutorial",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 48
   },
@@ -1065,7 +1095,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=M7fEMi8VSy4",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 458,
     "durationLabel": "7:38",
     "difficulty": "advanced",
@@ -1082,7 +1112,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital metallic friction sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 21
+      "seenCount": 22
     },
     "score": 44
   },
@@ -1125,7 +1155,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=vLNDd7e7K9c",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 791,
     "durationLabel": "13:11",
     "difficulty": "beginner",
@@ -1141,7 +1171,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant game audio SFX sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 5
+      "seenCount": 6
     },
     "score": 41
   },
@@ -1154,7 +1184,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=zxfbE0exXKk",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-04T05:56:40.960Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1002,
     "durationLabel": "16:42",
     "difficulty": "intermediate",
@@ -1171,7 +1201,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum UI click game audio sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 9
+      "seenCount": 10
     },
     "score": 40
   },
@@ -1184,7 +1214,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=vSQoK7JuEO0",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 22,
     "durationLabel": "22",
     "difficulty": "intermediate",
@@ -1201,7 +1231,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant whoosh riser synth sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 39
+      "seenCount": 40
     },
     "score": 40
   },
@@ -1214,7 +1244,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=98sH7-tkiKQ",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 61,
     "durationLabel": "1:01",
     "difficulty": "intermediate",
@@ -1230,7 +1260,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant whoosh riser synth sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 42
+      "seenCount": 44
     },
     "score": 37
   },
@@ -1243,7 +1273,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=9iNSjoORavY",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 639,
     "durationLabel": "10:39",
     "difficulty": "intermediate",
@@ -1259,7 +1289,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant whoosh riser synth sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 37
   },
@@ -1272,7 +1302,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=xWJIS9uFDSA",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 204,
     "durationLabel": "3:24",
     "difficulty": "intermediate",
@@ -1288,7 +1318,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital metallic friction sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 16
+      "seenCount": 17
     },
     "score": 37
   },
@@ -1301,7 +1331,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=b4edTjKVPig",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 358,
     "durationLabel": "5:58",
     "difficulty": "intermediate",
@@ -1317,7 +1347,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum UI click game audio sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 35
   },
@@ -1330,7 +1360,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=eALAJcKt1K0",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1283,
     "durationLabel": "21:23",
     "difficulty": "intermediate",
@@ -1346,7 +1376,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Serum UI click game audio sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 12
+      "seenCount": 13
     },
     "score": 35
   },
@@ -1417,7 +1447,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=-LUod-3Ut7E",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-06-30T06:35:18.357Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 2132,
     "durationLabel": "35:32",
     "difficulty": "beginner",
@@ -1433,7 +1463,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital synth beginner sound design tutorial SFX",
       "source": "yt-dlp",
-      "seenCount": 2
+      "seenCount": 3
     },
     "score": 35
   },
@@ -1475,7 +1505,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=77vn6E-VlV8",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1303,
     "durationLabel": "21:43",
     "difficulty": "beginner",
@@ -1490,7 +1520,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Phase Plant game audio SFX sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 21
+      "seenCount": 22
     },
     "score": 30
   },
@@ -1503,7 +1533,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=yFzcoeWHVCQ",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 904,
     "durationLabel": "15:04",
     "difficulty": "beginner",
@@ -1518,7 +1548,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital synth beginner sound design tutorial SFX",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 30
   },
@@ -1531,7 +1561,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=7qQX6YGBQEA",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 1814,
     "durationLabel": "30:14",
     "difficulty": "beginner",
@@ -1546,7 +1576,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital synth beginner sound design tutorial SFX",
       "source": "yt-dlp",
-      "seenCount": 22
+      "seenCount": 23
     },
     "score": 30
   },
@@ -1559,7 +1589,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=hkJsTCQb00I",
     "publishedAt": "",
     "discoveredAt": "2026-06-16T02:28:02.033Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 487,
     "durationLabel": "8:07",
     "difficulty": "advanced",
@@ -1576,7 +1606,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "synth sound design resampling impact whoosh game audio tutorial",
       "source": "yt-dlp",
-      "seenCount": 7
+      "seenCount": 8
     },
     "score": 30
   },
@@ -1714,7 +1744,7 @@ export const dailyVideoFeed = [
     "url": "https://www.youtube.com/watch?v=EvTcHTCLRg0",
     "publishedAt": "2026-05-24",
     "discoveredAt": "2026-06-15T00:00:00.000Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 0,
     "durationLabel": "",
     "difficulty": "intermediate",
@@ -1734,7 +1764,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital metallic friction sound design tutorial",
       "source": "yt-dlp",
-      "seenCount": 23
+      "seenCount": 24
     },
     "score": 40
   },
@@ -1844,7 +1874,7 @@ export const dailyVideoFeed = [
     "url": "https://www.bilibili.com/video/BV1jZhtzKE8J",
     "publishedAt": "2025-08-02",
     "discoveredAt": "2026-06-16T02:24:34.481Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 5762,
     "durationLabel": "96:2",
     "difficulty": "intermediate",
@@ -1859,7 +1889,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital 合成器 音效 设计 教程 B站",
       "source": "bilibili-search",
-      "seenCount": 12
+      "seenCount": 13
     },
     "score": 30
   },
@@ -2053,7 +2083,7 @@ export const dailyVideoFeed = [
     "url": "https://www.bilibili.com/video/BV1CG4y1D7Go",
     "publishedAt": "2023-01-23",
     "discoveredAt": "2026-06-16T02:24:34.481Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 351,
     "durationLabel": "5:51",
     "difficulty": "intermediate",
@@ -2068,7 +2098,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital 合成器 音效 设计 教程 B站",
       "source": "bilibili-search",
-      "seenCount": 8
+      "seenCount": 9
     },
     "score": 30
   },
@@ -2231,7 +2261,7 @@ export const dailyVideoFeed = [
     "url": "https://www.bilibili.com/video/BV1aa411w7E4",
     "publishedAt": "2020-11-29",
     "discoveredAt": "2026-06-16T02:24:34.481Z",
-    "lastSeenAt": "2026-07-06T06:49:25.599Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 312,
     "durationLabel": "5:12",
     "difficulty": "intermediate",
@@ -2246,7 +2276,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital 合成器 音效 设计 教程 B站",
       "source": "bilibili-search",
-      "seenCount": 9
+      "seenCount": 10
     },
     "score": 30
   },
@@ -2259,7 +2289,7 @@ export const dailyVideoFeed = [
     "url": "https://www.bilibili.com/video/BV1xK411V79W",
     "publishedAt": "2020-11-26",
     "discoveredAt": "2026-06-20T06:43:27.887Z",
-    "lastSeenAt": "2026-07-05T06:16:18.567Z",
+    "lastSeenAt": "2026-07-07T06:27:02.406Z",
     "durationSeconds": 637,
     "durationLabel": "10:37",
     "difficulty": "intermediate",
@@ -2275,7 +2305,7 @@ export const dailyVideoFeed = [
     "sync": {
       "query": "Vital 合成器 音效 设计 教程 B站",
       "source": "bilibili-search",
-      "seenCount": 6
+      "seenCount": 7
     },
     "score": 38
   },
