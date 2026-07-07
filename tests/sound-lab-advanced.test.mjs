@@ -44,7 +44,7 @@ test('advanced sound lab model exposes professional modules and editable routing
   assert.equal(model.xyPad.y, 34);
   assert.equal(model.macroMorph.amount, 41);
   assert.equal(model.abCompare.activeSlot, 'b');
-  assert.deepEqual(model.fxChain.slots.map((slot) => slot.id), ['filter', 'drive', 'chorus', 'delay', 'reverb', 'limiter']);
+  assert.deepEqual(model.fxChain.slots.map((slot) => slot.id), ['filter', 'drive', 'chorus', 'delay', 'reverb', 'polish', 'limiter']);
 });
 
 test('patch builder applies mod matrix, editable envelope, and reordered FX chain to the playable patch', () => {
@@ -69,7 +69,7 @@ test('patch builder applies mod matrix, editable envelope, and reordered FX chai
   assert.equal(patch.toneGraph.envelope.decay, 0.42);
   assert.equal(patch.toneGraph.envelope.sustain, 0.38);
   assert.equal(patch.toneGraph.envelope.release, 0.74);
-  assert.deepEqual(patch.fxRack.map((slot) => slot.id), ['filter', 'drive', 'delay', 'reverb', 'chorus', 'limiter']);
+  assert.deepEqual(patch.fxRack.map((slot) => slot.id), ['filter', 'drive', 'delay', 'reverb', 'chorus', 'polish', 'limiter']);
   assert.ok(patch.modMatrix.some((route) => route.id === 'test-route'));
   assert.ok(patch.dsp.filter.frequency > 1000, 'XY/mod route should keep the cutoff in a playable range');
 });

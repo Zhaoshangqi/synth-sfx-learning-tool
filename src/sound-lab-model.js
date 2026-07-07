@@ -62,7 +62,7 @@ export const SOUND_LAB_ADVANCED_MODULES = [
   { id: 'batch-export', labelZh: 'Batch Export', noteZh: '批量导出命名规则和 REAPER 备注。' },
 ];
 
-export const SOUND_LAB_FX_ORDER = ['drive', 'filter', 'chorus', 'delay', 'reverb', 'limiter'];
+export const SOUND_LAB_FX_ORDER = ['drive', 'filter', 'chorus', 'delay', 'reverb', 'polish', 'limiter'];
 
 export const SOUND_LAB_MOD_SOURCES = [
   { id: 'lfo-1', labelZh: 'LFO 1' },
@@ -287,10 +287,36 @@ function orderFxRack(fxRack, requestedOrder = SOUND_LAB_FX_ORDER) {
       byId.delete(slotId);
     }
   }
-  return [...ordered, ...byId.values()].map((slot, index) => ({ ...slot, order: index }));
+  const nextOrder = [...ordered, ...byId.values()];
+  const polishIndex = nextOrder.findIndex((slot) => slot.id === 'polish');
+  const limiterIndex = nextOrder.findIndex((slot) => slot.id === 'limiter');
+  if (polishIndex > -1 && limiterIndex > -1 && polishIndex > limiterIndex) {
+    const [polish] = nextOrder.splice(polishIndex, 1);
+    nextOrder.splice(limiterIndex, 0, polish);
+  }
+  return nextOrder.map((slot, index) => ({ ...slot, order: index }));
 }
 
-function buildFxRack(values, dsp, quality) {
+function buildMasterPolish(values, dsp, quality, layerData = {}) {
+  const brightness = normalize(values.brightness);
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const space = normalize(values.space);
+  const variation = normalize(values.variation);
+  const transientMix = clamp((layerData.layerMix?.transient ?? SOUND_LAB_LAYER_MIX.transient) / 100, 0, 1);
+  const textureMix = clamp((layerData.layerMix?.texture ?? SOUND_LAB_LAYER_MIX.texture) / 100, 0, 1);
+  const studioBonus = quality.id === 'studio' ? 0.13 : quality.id === 'balanced' ? 0.06 : 0;
+
+  return {
+    glue: clamp(0.12 + material * 0.22 + motion * 0.09 + studioBonus, 0.08, 0.62),
+    lowTighten: clamp(0.1 + material * 0.16 + (1 - space) * 0.1 + dsp.waveshaper.drive * 0.08, 0.06, 0.45),
+    airGuard: clamp(0.12 + brightness * 0.3 + textureMix * 0.1 + variation * 0.07, 0.08, 0.6),
+    transientHold: clamp(0.16 + transientMix * 0.3 + material * 0.13, 0.12, 0.72),
+    bodyGain: clamp(0.98 - studioBonus * 0.12 - material * 0.05, 0.86, 1),
+  };
+}
+
+function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(values, dsp, quality)) {
   const brightness = normalize(values.brightness);
   const motion = normalize(values.motion);
   const material = normalize(values.material);
@@ -302,6 +328,7 @@ function buildFxRack(values, dsp, quality) {
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -316,7 +343,7 @@ function buildToneGraph(family, values, dsp, quality, performance, options = {})
     'servo-tick': 'Synth pulse + PitchShift',
     'energy-charge': 'FMSynth + AMSynth + PolySynth',
   };
-  const fxRack = orderFxRack(buildFxRack(values, dsp, quality), options.fxOrder);
+  const fxRack = orderFxRack(buildFxRack(values, dsp, quality, options.masterPolish), options.fxOrder);
   const brightness = normalize(values.brightness);
   const motion = normalize(values.motion);
   const material = normalize(values.material);
@@ -566,7 +593,8 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const dsp = applyModMatrixToDsp(baseDsp, modMatrix, values, xyPad, performance);
   const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options, presetDna });
   const quality = getQualityMode(layerData.qualityMode);
-  const toneGraph = buildToneGraph(family, values, dsp, quality, performance, options);
+  const masterPolish = buildMasterPolish(values, dsp, quality, layerData);
+  const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...options, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, options.fxOrder);
   toneGraph.effects = fxRack;
   const macroModulation = buildMacroModulation(values);
@@ -605,6 +633,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         ceiling: layerData.qualityMode === 'studio' ? 0.94 : 0.92,
         releaseMs: layerData.qualityMode === 'draft' ? 55 : 90,
       },
+      masterPolish,
     },
     toneGraph,
     fxRack,
@@ -680,6 +709,15 @@ function buildSoundQuality(patch) {
     ...patch.layers.map((layer) => layer.stereoSpread ?? 0),
   );
   const tailSafety = clamp((patch.globalFx?.space?.mix ?? 0) * 92 + (patch.globalFx?.softLimiter?.ceiling ?? 0.9) * 18, 0, 100);
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const polishScore = clamp(
+    (polish.glue ?? 0) * 42
+      + (polish.lowTighten ?? 0) * 28
+      + (polish.airGuard ?? 0) * 42
+      + (polish.transientHold ?? 0) * 24,
+    0,
+    100,
+  );
 
   return [
     {
@@ -709,6 +747,13 @@ function buildSoundQuality(patch) {
       value: tailSafety,
       statusZh: patch.qualityMode,
       noteZh: 'space + limiter',
+    },
+    {
+      id: 'polish',
+      labelZh: 'Polish',
+      value: polishScore,
+      statusZh: '后级抛光',
+      noteZh: 'glue + guard',
     },
   ];
 }
