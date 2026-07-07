@@ -564,6 +564,23 @@ test('sound lab processor applies master polish before the final limiter', () =>
   assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish/);
 });
 
+test('native sound lab processor rounds hot synth output with an analog-style output stage', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /createOutputStageState/);
+  assert.match(processorJs, /outputStageLeft/);
+  assert.match(processorJs, /outputStageRight/);
+  assert.match(processorJs, /applyAnalogOutputSaturation/);
+  assert.match(processorJs, /preEmphasis/);
+  assert.match(processorJs, /deEmphasis/);
+  assert.match(processorJs, /slew/);
+  assert.match(processorJs, /firstStage/);
+  assert.match(processorJs, /secondAmount/);
+  assert.match(processorJs, /softLimiter\(sample,\s*state\s*=\s*null\)/);
+  assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish\([\s\S]*this\.outputStageLeft\)/);
+  assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish\([\s\S]*this\.outputStageRight\)/);
+});
+
 test('audio player fallback schedules layered sound lab patches when AudioWorklet is unavailable', () => {
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
 
