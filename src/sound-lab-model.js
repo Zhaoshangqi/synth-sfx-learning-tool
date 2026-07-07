@@ -1094,6 +1094,9 @@ function buildPatchDoctor(family, patch, macroList = []) {
   const deHarsh = (comfortBus.deHarsh ?? 0) * 100;
   const tailDuck = (comfortBus.tailDuck ?? 0) * 100;
   const monoAnchor = (comfortBus.monoAnchor ?? 0) * 100;
+  const transientIsForward = transientMix >= bodyMix;
+  const motionDelta = motion < 48 ? 8 : -4;
+  const variationDelta = variation > 52 ? -6 : 6;
 
   const macroLabel = (id, fallback) => macroById[id]?.labelZh ?? fallback;
   const candidates = [
@@ -1105,6 +1108,20 @@ function buildPatchDoctor(family, patch, macroList = []) {
       whyZh: `${macroLabel('brightness', 'Brightness')} ${Math.round(brightness)} / ${macroLabel('material', 'Material')} ${Math.round(material)}，容易把金属感推成薄亮。`,
       action: 'analyze-patch',
       actionLabelZh: '看频谱',
+      applyAction: {
+        id: 'harsh-edge',
+        labelZh: '试调去刺耳',
+        summaryZh: '小幅降低 Brightness / Material / Texture，再用 Raw 与 Comfort A/B 判断是否只是音量错觉。',
+        feedbackZh: '已小幅降低 Brightness、Material 和 Texture。现在先听 A/B：如果金属感还在但不扎耳，就保留这次方向。',
+        macroDelta: { brightness: -8, material: -4 },
+        layerDelta: { texture: -6 },
+        targetModule: 'macro',
+        targetAdvancedModule: 'ab-compare',
+        targetModuleMap: 'compare',
+        targetWorkflowStep: 'compare',
+        targetAtlasNode: 'material',
+        targetSelector: '.practice-loop-panel',
+      },
       synthTargets: {
         serum: 'Serum: 先看 Filter drive、Noise level 和 wavetable position，再少量 de-harsh。',
         phasePlant: 'Phase Plant: 把 noise / modal 分层进单独 EQ 或 filter lane，先关掉过亮层 A/B。',
@@ -1120,6 +1137,20 @@ function buildPatchDoctor(family, patch, macroList = []) {
       whyZh: `Space ${Math.round(space)} / Tail ${Math.round(tailMix)}，空间已经足够，下一步要验证 tail 是否服务动作。`,
       action: 'focus-practice-loop',
       actionLabelZh: '做 A/B',
+      applyAction: {
+        id: 'tail-mask',
+        labelZh: '试调收尾巴',
+        summaryZh: '小幅减少 Space / Tail，先保留主体，再判断尾音是否仍然服务动作。',
+        feedbackZh: '已小幅减少 Space 和 Tail。现在听 dry/full/tail-only：尾巴应该退后，但动作边缘不能变小。',
+        macroDelta: { space: -10 },
+        layerDelta: { tail: -12 },
+        targetModule: 'macro',
+        targetAdvancedModule: 'ab-compare',
+        targetModuleMap: 'compare',
+        targetWorkflowStep: 'compare',
+        targetAtlasNode: 'material',
+        targetSelector: '.practice-loop-panel',
+      },
       synthTargets: {
         serum: 'Serum: 用 FX rack 的 Reverb/Delay mix 和 predelay 做 dry/full/tail-only 对照。',
         phasePlant: 'Phase Plant: 把 tail 放到独立 lane，用 envelope 或 ducking 控制起音期音量。',
@@ -1135,6 +1166,27 @@ function buildPatchDoctor(family, patch, macroList = []) {
       whyZh: `Transient ${Math.round(transientMix)} / Body ${Math.round(bodyMix)}，层级比例需要用一个参数一轮验证。`,
       action: 'focus-controls',
       actionLabelZh: '调层级',
+      applyAction: {
+        id: 'transient-body',
+        labelZh: '试调层级',
+        summaryZh: transientIsForward
+          ? '小幅降低 Transient、补一点 Body，让 click 和主体更像同一种材质。'
+          : '小幅增加 Transient、补一点 Body，避免主体有了但起音不清楚。',
+        feedbackZh: transientIsForward
+          ? '已把 Transient 稍微后退，并补一点 Body。现在听第一下和主体是否更像同一个材质。'
+          : '已把 Transient 稍微提前，并补一点 Body。现在听起音是否更清楚但不刺耳。',
+        macroDelta: { material: material > 72 ? -3 : 4 },
+        layerDelta: {
+          transient: transientIsForward ? -8 : 6,
+          body: transientIsForward ? 6 : 4,
+        },
+        targetModule: 'macro',
+        targetAdvancedModule: 'ab-compare',
+        targetModuleMap: 'compare',
+        targetWorkflowStep: 'compare',
+        targetAtlasNode: 'material',
+        targetSelector: '.practice-loop-panel',
+      },
       synthTargets: {
         serum: 'Serum: 用 Env1/Env2 分开控制 click 与 body，先固定音量再改 decay。',
         phasePlant: 'Phase Plant: transient generator 和 body generator 分组，分别映射 Macro。',
@@ -1150,6 +1202,20 @@ function buildPatchDoctor(family, patch, macroList = []) {
       whyZh: `Motion ${Math.round(motion)} / Variation ${Math.round(variation)}，需要把运动限制在可复现的范围里。`,
       action: 'focus-coach',
       actionLabelZh: '看调制',
+      applyAction: {
+        id: 'motion-life',
+        labelZh: '试调运动',
+        summaryZh: '小幅调整 Motion / Variation，让声音有运动但仍然可复现。',
+        feedbackZh: '已小幅调整 Motion 和 Variation。现在连续触发 3 次，确认变化还像同一个 Patch。',
+        macroDelta: { motion: motionDelta, variation: variationDelta },
+        layerDelta: {},
+        targetModule: 'modulation',
+        targetAdvancedModule: 'mod-matrix',
+        targetModuleMap: 'coach',
+        targetWorkflowStep: 'shape',
+        targetAtlasNode: 'modulation',
+        targetSelector: '.workbench-coach-panel',
+      },
       synthTargets: {
         serum: 'Serum: 用 LFO 或 Chaos 只调一个目标，例如 wavetable 或 filter cutoff。',
         phasePlant: 'Phase Plant: 用 random modulator 轻推 texture lane，不要同时调音高和音量。',

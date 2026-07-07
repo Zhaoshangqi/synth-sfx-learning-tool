@@ -1211,9 +1211,11 @@ function stabilizeSameViewRender() {
 
 function releaseSameViewRender() {
   quietRenderFrame = globalThis.requestAnimationFrame(() => {
-    app.classList.remove('is-same-view-rendering');
-    app.style.minHeight = '';
-    quietRenderFrame = 0;
+    quietRenderFrame = globalThis.requestAnimationFrame(() => {
+      app.classList.remove('is-same-view-rendering');
+      app.style.minHeight = '';
+      quietRenderFrame = 0;
+    });
   });
 }
 
@@ -1296,7 +1298,6 @@ function rangePercentFromInput(input) {
 function setDirectManipulation(isActive) {
   const root = document.documentElement;
   globalThis.clearTimeout(directManipulationTimer);
-  setLocalInteraction(isActive, 140);
   if (isActive) {
     root.classList.add('is-direct-manipulating');
     return;
@@ -2312,6 +2313,42 @@ function randomizeSoundLabMacros() {
   syncSoundLabPatchSoon();
 }
 
+function applyDeltaMap(baseValues, deltaValues = {}) {
+  return Object.fromEntries(Object.entries(deltaValues).map(([key, delta]) => [
+    key,
+    clampPercent((baseValues[key] ?? 0) + Number(delta || 0)),
+  ]));
+}
+
+function applyPatchDoctorSuggestion(diagnosticId, button) {
+  const model = getSoundLabModel();
+  const diagnostic = model.patchDoctor?.diagnostics?.find((item) => item.id === diagnosticId);
+  const applyAction = diagnostic?.applyAction;
+  if (!applyAction) {
+    state.workbenchActionFeedback = '这个诊断暂时没有可试调的参数；先按“去处理”进入对应模块。';
+    renderSameView();
+    return;
+  }
+
+  const nextMacros = applyDeltaMap(state.soundLabMacros, applyAction.macroDelta);
+  const nextLayers = applyDeltaMap(state.soundLabLayerMix, applyAction.layerDelta);
+  state.soundLabMacros = { ...state.soundLabMacros, ...nextMacros };
+  state.soundLabLayerMix = { ...state.soundLabLayerMix, ...nextLayers };
+  state.soundLabWorkflowStep = applyAction.targetWorkflowStep ?? 'compare';
+  state.activeAtlasNode = applyAction.targetAtlasNode ?? 'material';
+  state.activeWorkbenchModule = applyAction.targetModule ?? 'macro';
+  state.activeAdvancedModule = applyAction.targetAdvancedModule ?? 'ab-compare';
+  state.activeWorkbenchModuleMapId = applyAction.targetModuleMap ?? 'compare';
+  state.workbenchActionFeedback = applyAction.feedbackZh ?? '已小幅试调。现在用 A/B 验证这次变化是否真的更接近目标。';
+  if (button) {
+    button.classList.add('is-confirmed');
+    globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
+  }
+  syncSoundLabPatchSoon();
+  renderSameView();
+  scrollSoundLabIntoView(applyAction.targetSelector ?? '.practice-loop-panel');
+}
+
 function setAbSlot(slot) {
   state.soundLabAbSlot = slot === 'b' ? 'b' : 'a';
   renderSameView();
@@ -2752,6 +2789,12 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-guide-preview]').forEach((button) => {
     button.addEventListener('click', () => {
       applySynthModGuide(button.dataset.guidePreview, { loadPatch: true, play: true });
+    });
+  });
+
+  document.querySelectorAll('[data-doctor-apply]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applyPatchDoctorSuggestion(button.dataset.doctorApply, button);
     });
   });
 
