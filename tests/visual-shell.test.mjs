@@ -98,6 +98,11 @@ test('tactile effects use class-only feedback and cannot flash the viewport', ()
   assert.doesNotMatch(interactionJs, /has-tactile/, 'ordinary click feedback should not add a new compositing class at pointerdown');
   assert.doesNotMatch(css, /\.tap-spark/, 'obsolete click spark CSS should not survive as an accidental viewport flash layer');
   assert.doesNotMatch(css, /@keyframes tap-spark/, 'obsolete click spark keyframes should not survive');
+  assert.doesNotMatch(
+    css,
+    /html\.is-(?:local-interacting|direct-manipulating)\s+#particle-canvas[\s\S]*opacity:/,
+    'local interaction states must not dim the full particle canvas because that reads as a viewport flash',
+  );
   assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
   assert.match(interactionJs, /is-local-interacting/, 'ordinary click feedback should enter the shared local interaction state');
   assert.match(interactionJs, /classList\.add\('is-pressing'\)/, 'tactile feedback should still provide local press state');
@@ -946,6 +951,24 @@ test('sound lab has a command center with current task, next action, and click f
   assert.match(css, /\.workbench-command-actions button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
   assert.match(css, /\.workbench-feedback\s*\{[\s\S]*min-height:\s*34px/);
   assert.match(css, /\.synth-workbench-layout\[data-workflow-step="deliver"\] \.sound-lab-export\s*\{[\s\S]*display:\s*grid/);
+});
+
+test('sound lab first-screen session dock exposes listen compare and guided jump actions', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderSessionTransportDock/);
+  assert.match(renderJs, /session-transport-dock/);
+  assert.match(renderJs, /data-session-jump="playback"/);
+  assert.match(renderJs, /data-session-jump="coach"/);
+  assert.match(renderJs, /data-output-compare="\$\{escapeHtml\(mode\.id\)\}"/);
+  assert.match(appJs, /data-session-jump/);
+  assert.match(appJs, /handleSessionJump/);
+  assert.match(appJs, /scrollSoundLabIntoView/);
+  assert.match(css, /\.session-transport-dock\s*\{[\s\S]*grid-template-columns:\s*minmax\(220px,\s*1fr\)\s+auto\s+minmax\(240px,\s*0\.9fr\)/);
+  assert.match(css, /\.session-output-compare\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(76px,\s*1fr\)\)/);
+  assert.match(css, /\.session-jump-actions button\s*\{[\s\S]*cursor:\s*pointer/);
 });
 
 test('workbench actions are routed through a guarded dispatcher instead of loose dead buttons', () => {

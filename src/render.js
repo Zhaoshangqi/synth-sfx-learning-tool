@@ -2014,6 +2014,52 @@ function renderWorkbenchPlayback(model = {}, isPlaying = false) {
   `;
 }
 
+function renderSessionTransportDock(family = {}, model = {}, options = {}) {
+  const outputCompare = model.outputCompare ?? {};
+  const outputModes = outputCompare.modes ?? [];
+  const activeStep = options.activeWorkflowStep ?? 'source';
+  const stepLabel = {
+    source: '先听目标声源',
+    shape: '只改一个参数',
+    compare: '对照 Raw / Comfort / Studio',
+    deliver: '整理 REAPER 交付',
+  }[activeStep] ?? '先听目标声源';
+
+  return `
+    <section class="session-transport-dock" aria-label="Current Sound Lab session">
+      <div class="session-current">
+        <span>当前练习</span>
+        <strong>${escapeHtml(stepLabel)}</strong>
+        <p>先听 ${escapeHtml(model.patch?.nameZh ?? family.titleZh ?? '当前 Patch')}，再用一个明确参数验证听感变化。</p>
+      </div>
+      <div class="session-main-actions" aria-label="试听与输出对照">
+        <button class="session-play-button ${options.isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play>
+          <span aria-hidden="true"></span>
+          <strong>${options.isPlaying ? '播放中' : '试听'}</strong>
+        </button>
+        <div class="session-output-compare" aria-label="Raw Comfort Studio">
+          ${outputModes.map((mode) => `
+            <button
+              class="${mode.id === outputCompare.activeMode ? 'is-active' : ''}"
+              type="button"
+              data-output-compare="${escapeHtml(mode.id)}"
+              title="${escapeHtml(mode.noteZh)}"
+            >
+              <strong>${escapeHtml(mode.label)}</strong>
+              <span>${escapeHtml(mode.titleZh)}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      <div class="session-jump-actions" aria-label="快速跳转">
+        <button type="button" data-session-jump="playback">听输出</button>
+        <button type="button" data-session-jump="controls">改参数</button>
+        <button type="button" data-session-jump="coach">看复刻</button>
+      </div>
+    </section>
+  `;
+}
+
 function renderWorkbenchQuality(model = {}) {
   const qualityItems = (model.soundQuality?.length
     ? model.soundQuality
@@ -2535,6 +2581,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
+      ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
       <main class="atlas-main-console">
         ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
         <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">
