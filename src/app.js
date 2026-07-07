@@ -226,7 +226,7 @@ let directManipulationTimer = 0;
 let localInteractionTimer = 0;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
-const sameViewScrollLock = { x: 0, y: 0 };
+const sameViewScrollLock = { x: 0, y: 0, allowProgrammaticScroll: false };
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -1223,9 +1223,10 @@ function releaseSameViewRender() {
   restoreSameViewScroll();
   quietRenderFrame = globalThis.requestAnimationFrame(() => {
     quietRenderFrame = globalThis.requestAnimationFrame(() => {
-      restoreSameViewScroll();
+      if (!sameViewScrollLock.allowProgrammaticScroll) restoreSameViewScroll();
       app.classList.remove('is-same-view-rendering');
       app.style.minHeight = '';
+      sameViewScrollLock.allowProgrammaticScroll = false;
       quietRenderFrame = 0;
     });
   });
@@ -1543,6 +1544,33 @@ function drawSoundLabAnalyserFrame(frame) {
   });
 }
 
+function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
+  if (state.view !== 'soundlab') return;
+  const isPlaying = Boolean(state.isSoundLabPlaying);
+  document.querySelectorAll('.sound-lab-workbench').forEach((workbench) => {
+    workbench.classList.toggle('is-playing', isPlaying);
+  });
+  document.querySelectorAll('[data-sound-lab-play]').forEach((button) => {
+    button.classList.toggle('is-playing', isPlaying);
+    if (button.hasAttribute('aria-label')) {
+      button.setAttribute('aria-label', isPlaying ? '播放中' : '试听');
+    }
+    button.querySelectorAll('strong').forEach((label) => {
+      label.textContent = isPlaying ? '播放中' : '试听';
+    });
+  });
+  document.querySelectorAll('[data-output-compare]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.outputCompare === state.soundLabOutputMode);
+  });
+  const outputHint = model.outputCompare?.practiceZh ?? '';
+  document.querySelectorAll('.output-compare-hint').forEach((hint) => {
+    hint.textContent = outputHint;
+  });
+  document.querySelectorAll('.workbench-feedback, .atlas-dock-status small').forEach((status) => {
+    status.textContent = state.workbenchActionFeedback;
+  });
+}
+
 function syncActiveSoundLabPatch() {
   if (!state.isSoundLabPlaying) return;
   const patch = getSoundLabModel().patch;
@@ -1559,6 +1587,7 @@ function syncSoundLabPatchSoon() {
 }
 
 function scrollSoundLabIntoView(selector) {
+  sameViewScrollLock.allowProgrammaticScroll = true;
   globalThis.requestAnimationFrame?.(() => {
     document.querySelector(selector)?.scrollIntoView({ block: 'center', inline: 'nearest' });
   });
@@ -1817,7 +1846,9 @@ function showWorkbenchActionFeedback(message, button) {
     workbenchConfirmTimer = globalThis.setTimeout(() => {
       if (state.confirmedWorkbenchAction === action) {
         state.confirmedWorkbenchAction = '';
-        renderSameView();
+        document.querySelectorAll('[data-workbench-action]').forEach((candidate) => {
+          if (candidate.dataset.workbenchAction === action) candidate.classList.remove('is-confirmed');
+        });
       }
     }, 650);
   }
@@ -1825,6 +1856,7 @@ function showWorkbenchActionFeedback(message, button) {
     button.classList.add('is-confirmed');
     globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
   }
+  refreshSoundLabRuntimeUi();
 }
 
 async function handleWorkbenchAction(action, button) {
@@ -1836,7 +1868,7 @@ async function handleWorkbenchAction(action, button) {
     state.workbenchActionFeedback = copied
       ? WORKBENCH_ACTION_MESSAGES[action]
       : '复制受限：浏览器没有开放剪贴板权限，可以从下方 Patch JSON / REAPER Notes 手动复制。';
-    renderSameView();
+    refreshSoundLabRuntimeUi();
     return;
   }
 
@@ -2478,7 +2510,7 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   const patch = model.patch;
   state.isSoundLabPlaying = true;
   state.isAuditioning = false;
-  renderSameView();
+  refreshSoundLabRuntimeUi(model);
 
   try {
     const result = await audioPlayer.playSoundLabPatch(patch, {
@@ -2493,12 +2525,12 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
     state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
   }
 
-  renderSameView();
+  refreshSoundLabRuntimeUi(model);
 
   globalThis.clearTimeout(patchPlayingTimer);
   patchPlayingTimer = globalThis.setTimeout(() => {
     state.isSoundLabPlaying = false;
-    renderSameView();
+    refreshSoundLabRuntimeUi(model);
   }, Math.max(520, patch.durationSeconds * 1000 + 520));
 }
 
