@@ -11579,6 +11579,24 @@ button:disabled,
   line-height: 1.45;
 }
 
+.patch-doctor-trial {
+  margin: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(94, 234, 212, 0.14);
+  border-radius: 8px;
+  background: rgba(94, 234, 212, 0.055);
+  color: rgba(220, 252, 245, 0.86);
+  font-size: 10.5px;
+  line-height: 1.48;
+}
+
+.patch-doctor-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 7px;
+  align-items: stretch;
+}
+
 .patch-doctor-card button {
   min-height: 34px;
   border: 1px solid rgba(110, 231, 249, 0.26);
@@ -11589,10 +11607,23 @@ button:disabled,
   font-weight: 900;
 }
 
+.patch-doctor-card .patch-doctor-apply-button {
+  border-color: rgba(94, 234, 212, 0.36);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.22), rgba(110, 231, 249, 0.13));
+  color: rgba(244, 247, 251, 0.98);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 18px rgba(94, 234, 212, 0.08);
+}
+
 .patch-doctor-card button:hover,
 .patch-doctor-card button:focus-visible {
   border-color: rgba(110, 231, 249, 0.44);
   box-shadow: 0 0 22px rgba(110, 231, 249, 0.12);
+}
+
+.patch-doctor-card .patch-doctor-apply-button:hover,
+.patch-doctor-card .patch-doctor-apply-button:focus-visible {
+  border-color: rgba(94, 234, 212, 0.58);
+  box-shadow: 0 0 24px rgba(94, 234, 212, 0.14);
 }
 
 .practice-loop-panel p {
@@ -12376,4 +12407,16 @@ html.is-direct-manipulating .layer-control.is-live-editing {
 .content:not(.is-view-switching) .signal-atlas-console .atlas-dock-actions button.is-confirmed,
 .content:not(.is-view-switching) .signal-atlas-console [data-workbench-action].is-confirmed {
   animation: none !important;
+}
+
+.content.is-same-view-rendering .sound-lab-shell,
+.content.is-same-view-rendering .sound-lab-workbench,
+.content.is-same-view-rendering .signal-atlas-console,
+.content.is-same-view-rendering .advanced-module-dock,
+.content.is-same-view-rendering .professional-module-panel,
+.content.is-same-view-rendering .patch-doctor-card,
+.content.is-same-view-rendering .patch-doctor-card::before {
+  animation: none !important;
+  transition: none !important;
+  contain: paint;
 }

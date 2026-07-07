@@ -1578,8 +1578,12 @@ function renderPatchDoctorPanel(model = {}) {
                 </dd>
               </div>
             </dl>
+            ${diagnostic.applyAction?.summaryZh ? `<p class="patch-doctor-trial">${escapeHtml(diagnostic.applyAction.summaryZh)}</p>` : ''}
             <small>${escapeHtml(diagnostic.reaperCheckZh ?? '')}</small>
-            <button type="button" data-workbench-action="${escapeHtml(diagnostic.action)}">${escapeHtml(diagnostic.actionLabelZh ?? '去处理')}</button>
+            <div class="patch-doctor-actions">
+              <button type="button" data-workbench-action="${escapeHtml(diagnostic.action)}">${escapeHtml(diagnostic.actionLabelZh ?? '去处理')}</button>
+              <button class="patch-doctor-apply-button" type="button" data-doctor-apply="${escapeHtml(diagnostic.id)}">${escapeHtml(diagnostic.applyAction?.labelZh ?? '试调一次')}</button>
+            </div>
           </article>
         `).join('')}
       </div>

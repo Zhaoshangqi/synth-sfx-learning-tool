@@ -154,11 +154,14 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const renderBlock = appJs.match(/function render\([\s\S]*?\r?\n}\r?\n\r?\nfunction switchView/)?.[0] ?? '';
   const stabilizeBlock = appJs.match(/function stabilizeSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
+  const releaseBlock = appJs.match(/function releaseSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction render/)?.[0] ?? '';
   const bindSoundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
   const sameViewCssBlock = css.match(/\.content\.is-same-view-rendering\s*\{[^}]*\}/)?.[0] ?? '';
+  const sameViewQuietMountBlock = css.match(/\.content\.is-same-view-rendering \.sound-lab-shell,[\s\S]*?\.content\.is-same-view-rendering \.patch-doctor-card::before\s*\{[\s\S]*?\}/)?.[0] ?? '';
 
   assert.ok(renderBlock, 'render should be easy to audit for same-view stability');
   assert.ok(stabilizeBlock, 'same-view stabilization should be easy to audit');
+  assert.ok(releaseBlock, 'same-view release should be easy to audit');
   assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
   assert.match(appJs, /function renderSameView\(\)/);
   assert.match(appJs, /is-same-view-rendering/);
@@ -172,6 +175,13 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.ok(sameViewCssBlock, 'same-view stabilization should keep an auditable scoped CSS rule');
   assert.doesNotMatch(sameViewCssBlock, /animation:/, 'same-view stabilization must not kill all animations for a frame');
   assert.doesNotMatch(sameViewCssBlock, /transition:/, 'same-view stabilization must not kill all transitions for a frame');
+  assert.match(releaseBlock, /requestAnimationFrame\(\(\)\s*=>\s*\{[\s\S]*requestAnimationFrame/, 'same-view stabilization must survive one painted frame before release');
+  assert.ok(sameViewQuietMountBlock, 'same-view Sound Lab rerenders should silence newly mounted heavy panels for one frame');
+  assert.match(sameViewQuietMountBlock, /animation:\s*none !important/);
+  assert.match(sameViewQuietMountBlock, /transition:\s*none !important/);
+  assert.match(sameViewQuietMountBlock, /contain:\s*paint/);
+  assert.doesNotMatch(sameViewQuietMountBlock, /filter:/, 'quiet mount should not visibly remove filters');
+  assert.doesNotMatch(sameViewQuietMountBlock, /box-shadow:/, 'quiet mount should not visibly remove panel shadows');
 });
 
 test('same-view interactions do not call raw full-content render', () => {
@@ -189,6 +199,7 @@ test('same-view interactions do not call raw full-content render', () => {
 test('background parallax is throttled and pauses during direct manipulation', () => {
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const directManipulationBlock = appJs.match(/function setDirectManipulation[\s\S]*?\r?\n}\r?\n\r?\nfunction setLocalInteraction/)?.[0] ?? '';
 
   assert.match(visualSpaceJs, /let\s+spaceParallaxFrame\s*=\s*0/);
   assert.match(visualSpaceJs, /requestAnimationFrame\(\(\)\s*=>\s*\{/);
@@ -196,6 +207,8 @@ test('background parallax is throttled and pauses during direct manipulation', (
   assert.match(appJs, /function\s+setDirectManipulation/);
   assert.match(appJs, /setDirectManipulation\(true\)/);
   assert.match(appJs, /setDirectManipulation\(false\)/);
+  assert.ok(directManipulationBlock, 'direct manipulation should be easy to audit');
+  assert.doesNotMatch(directManipulationBlock, /setLocalInteraction\(isActive/, 'dragging sliders or XY pads must not pulse ordinary click feedback');
 });
 
 test('Signal Atlas range drag avoids expensive filter flashes', () => {
@@ -1054,14 +1067,24 @@ test('sound lab Patch Doctor is routed, readable, and not a dead card', () => {
 
   assert.match(modelJs, /buildPatchDoctor/);
   assert.match(modelJs, /synthTargets/);
+  assert.match(modelJs, /applyAction/);
+  assert.match(modelJs, /macroDelta/);
+  assert.match(modelJs, /layerDelta/);
   assert.match(renderJs, /renderPatchDoctorPanel/);
   assert.match(renderJs, /patch-doctor-panel/);
   assert.match(renderJs, /data-workbench-action="\$\{escapeHtml\(diagnostic\.action\)\}"/);
+  assert.match(renderJs, /data-doctor-apply="\$\{escapeHtml\(diagnostic\.id\)\}"/);
+  assert.match(appJs, /function applyPatchDoctorSuggestion\(diagnosticId,\s*button\)/);
+  assert.match(appJs, /\[data-doctor-apply\]/);
+  assert.match(appJs, /state\.soundLabMacros/);
+  assert.match(appJs, /state\.soundLabLayerMix/);
   assert.match(appJs, /focus-controls/);
   assert.match(appJs, /analyze-patch/);
   assert.match(appJs, /focus-practice-loop/);
   assert.match(css, /\.patch-doctor-panel\s*\{/);
   assert.match(css, /\.patch-doctor-card\s*\{[\s\S]*background:/);
+  assert.match(css, /\.patch-doctor-actions\s*\{/);
+  assert.match(css, /\.patch-doctor-apply-button\s*\{/);
   assert.match(css, /\.patch-doctor-card button\s*\{[\s\S]*cursor:\s*pointer/);
 });
 

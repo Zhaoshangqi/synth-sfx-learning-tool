@@ -647,6 +647,10 @@ test('renderSoundLabWorkbench renders Patch Doctor diagnostics with routed actio
   assert.match(html, /Phase Plant/);
   assert.match(html, /Vital/);
   assert.match(html, /data-workbench-action="focus-controls"|data-workbench-action="analyze-patch"|data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /data-doctor-apply="/);
+  assert.match(html, /patch-doctor-actions/);
+  assert.match(html, /patch-doctor-apply-button/);
+  assert.match(html, /试调|小幅|A\/B/);
 });
 
 test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvases', () => {

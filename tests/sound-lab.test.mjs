@@ -162,6 +162,39 @@ test('buildSoundLabViewModel creates a Patch Doctor with prioritized next edits'
   assert.ok(model.patchDoctor.diagnostics.every((item) => /REAPER|A\/B|dry|full|tail/i.test(item.reaperCheckZh)));
 });
 
+test('Patch Doctor diagnostics expose safe one-click trial adjustments', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 94,
+    motion: 24,
+    material: 90,
+    space: 78,
+    variation: 28,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 92, body: 52, texture: 82, tail: 84 },
+  });
+
+  assert.equal(model.patchDoctor.diagnostics.length, 3);
+  assert.ok(model.patchDoctor.diagnostics.every((item) => item.applyAction?.id === item.id));
+  assert.ok(model.patchDoctor.diagnostics.every((item) => item.applyAction?.labelZh && item.applyAction?.feedbackZh));
+  assert.ok(model.patchDoctor.diagnostics.every((item) => item.applyAction?.targetModule && item.applyAction?.targetSelector));
+
+  const allDeltas = model.patchDoctor.diagnostics.flatMap((item) => [
+    ...Object.values(item.applyAction?.macroDelta ?? {}),
+    ...Object.values(item.applyAction?.layerDelta ?? {}),
+  ]);
+  assert.ok(allDeltas.length >= 3, 'Patch Doctor should suggest actual parameter changes');
+  assert.ok(allDeltas.every((value) => Number.isFinite(value) && Math.abs(value) <= 12), 'trial adjustments should stay small enough for A/B learning');
+
+  const harsh = model.patchDoctor.diagnostics.find((item) => item.id === 'harsh-edge');
+  assert.ok(harsh?.applyAction?.macroDelta?.brightness < 0, 'harsh-edge should try lowering brightness first');
+  assert.ok(harsh.applyAction.layerDelta?.texture <= 0, 'harsh-edge should reduce texture instead of adding more high-frequency material');
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
