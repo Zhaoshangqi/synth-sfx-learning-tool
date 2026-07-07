@@ -129,6 +129,24 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   assert.doesNotMatch(signalRangeBlock, /filter/, 'Signal Atlas range input transitions must not include filter because it flashes during dragging');
 });
 
+test('sound lab calibration panel connects quality guidance to real Worklet controls', () => {
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /buildPolishCalibration/);
+  assert.match(modelJs, /loudnessMatch/);
+  assert.match(modelJs, /monoAnchor/);
+  assert.match(modelJs, /tailDuck/);
+  assert.match(processorJs, /applyStereoComfortBus/);
+  assert.match(processorJs, /monoAnchor/);
+  assert.match(processorJs, /tailDuck/);
+  assert.match(renderJs, /polish-calibration-panel/);
+  assert.match(css, /\.polish-calibration-panel\s*\{/);
+  assert.match(css, /\.calibration-step-grid\s*\{/);
+});
+
 test('same-view Sound Lab rerenders keep layout stable and suppress animation restarts', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');

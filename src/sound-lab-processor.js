@@ -366,6 +366,34 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return clamp((glued + transientRestore) * outputGain, -1.2 + headroom, 1.2 - headroom);
   }
 
+  applyStereoComfortBus(leftSample, rightSample, t, duration) {
+    const polish = this.patch?.globalFx?.masterPolish || {};
+    if (polish.enabled === false) {
+      this.stereoBusLeft = leftSample;
+      this.stereoBusRight = rightSample;
+      return;
+    }
+
+    const comfortBus = polish.comfortBus || {};
+    const loudnessMatch = clamp(comfortBus.loudnessMatch ?? 1, 0.72, 1.08);
+    const monoAnchor = clamp(comfortBus.monoAnchor ?? 0, 0, 1);
+    const widthTrim = clamp(comfortBus.widthTrim ?? 0, 0, 1);
+    const tailDuck = clamp(comfortBus.tailDuck ?? 0, 0, 1);
+    const mid = (leftSample + rightSample) * 0.5;
+    const side = (leftSample - rightSample) * 0.5;
+    const transientWindow = Math.exp(-t * 18);
+    const tailWindow = clamp(t / Math.max(0.12, duration * 0.7), 0, 1);
+    const sideScale = clamp(
+      1 - monoAnchor * (0.2 + transientWindow * 0.28) - widthTrim * 0.16 - tailDuck * transientWindow * 0.12 + tailWindow * 0.04,
+      0.42,
+      1.08,
+    );
+    const duck = 1 - tailDuck * transientWindow * 0.08;
+
+    this.stereoBusLeft = (mid + side * sideScale) * loudnessMatch * duck;
+    this.stereoBusRight = (mid - side * sideScale) * loudnessMatch * duck;
+  }
+
   renderLegacy(t, duration) {
     const osc = this.patch.oscillator;
     const resonators = this.patch.resonators || [];
@@ -446,8 +474,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const spacedRight = this.renderAllpassSpace(mixedRight, 'right');
       const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width;
       const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width;
-      left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, finalLeft * (1 - tailMotion)), this.polishLeft));
-      right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, finalRight * (1 + tailMotion)), this.polishRight));
+      this.applyStereoComfortBus(finalLeft * (1 - tailMotion), finalRight * (1 + tailMotion), t, duration);
+      left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft));
+      right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight));
     }
 
     this.frame += left.length;
