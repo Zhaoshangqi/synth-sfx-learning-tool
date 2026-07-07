@@ -10208,7 +10208,7 @@ button:disabled,
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.34fr);
   gap: 16px;
-  overflow: hidden;
+  overflow: visible;
   padding: 16px;
   border: 1px solid rgba(174, 183, 198, 0.16);
   border-radius: 8px;
@@ -10698,11 +10698,33 @@ button:disabled,
 }
 
 .atlas-right-rail {
+  position: sticky;
+  top: 92px;
   grid-column: 2;
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
   min-width: 0;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-color: rgba(110, 231, 249, 0.36) rgba(18, 24, 38, 0.24);
+  scrollbar-width: thin;
+}
+
+.atlas-right-rail::-webkit-scrollbar {
+  width: 6px;
+}
+
+.atlas-right-rail::-webkit-scrollbar-track {
+  background: rgba(18, 24, 38, 0.24);
+  border-radius: 999px;
+}
+
+.atlas-right-rail::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(110, 231, 249, 0.48), rgba(167, 139, 250, 0.34));
 }
 
 .signal-atlas-console > .atlas-main-console {
@@ -10833,6 +10855,11 @@ button:disabled,
 
   .atlas-right-rail {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .atlas-lab-stage {
