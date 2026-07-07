@@ -1274,7 +1274,7 @@ function updateRangeChrome(input) {
   if (!input?.isConnected) return;
   const shell = input.closest('.range-shell');
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
-  const output = control?.querySelector('output, strong') ?? input.closest('label')?.querySelector('output, strong');
+  const output = control?.querySelector('output') ?? input.closest('label')?.querySelector('output');
   shell?.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
   if (output) output.textContent = `${input.value}${input.dataset.controlUnit ?? ''}`;
 }

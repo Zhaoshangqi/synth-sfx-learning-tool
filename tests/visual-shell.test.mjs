@@ -77,6 +77,16 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
 });
 
+test('range chrome updates value outputs without rewriting control labels', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const updateRangeBlock = appJs.match(/function updateRangeChrome[\s\S]*?\r?\n}\r?\n\r?\nfunction applyImmediateControlFeedback/)?.[0] ?? '';
+
+  assert.ok(updateRangeBlock, 'updateRangeChrome should remain the single live range chrome updater');
+  assert.match(updateRangeBlock, /querySelector\('output'\)/, 'live range updates should target numeric output elements');
+  assert.doesNotMatch(updateRangeBlock, /querySelector\('output,\s*strong'\)/, 'range updates must not overwrite strong labels such as Attack or Decay');
+  assert.doesNotMatch(updateRangeBlock, /querySelector\('strong,\s*output'\)/, 'range updates must not use strong labels as value outputs');
+});
+
 test('tactile effects use class-only feedback and cannot flash the viewport', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const interactionJs = readFileSync(new URL('../src/interaction-effects.js', import.meta.url), 'utf8');
@@ -538,7 +548,8 @@ test('app maps vertical envelope pointer movement to real Sound Lab parameter up
   assert.match(appJs, /closest\('\.vertical-slider'\)/);
   assert.match(appJs, /rect\.bottom - event\.clientY/);
   assert.match(appJs, /setPointerCapture/);
-  assert.match(appJs, /querySelector\('output, strong'\)/);
+  assert.match(appJs, /querySelector\('output'\)/);
+  assert.doesNotMatch(appJs, /querySelector\('output,\s*strong'\)/);
 });
 
 test('dashboard CTA buttons use clear high-contrast clickable states', () => {
