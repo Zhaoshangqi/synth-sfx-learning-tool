@@ -1756,6 +1756,47 @@ function handleWorkbenchModuleJump(moduleId) {
   scrollSoundLabIntoView(target.selector);
 }
 
+function handleSessionJump(target) {
+  const route = {
+    playback: {
+      step: 'compare',
+      atlasNode: 'material',
+      workbenchModule: 'macro',
+      advancedModule: 'ab-compare',
+      moduleMap: 'compare',
+      selector: '.playback-card',
+      feedback: '已跳到输出对照：先听 Raw，再听 Comfort / Studio，确认变化不是音量错觉。',
+    },
+    controls: {
+      step: 'shape',
+      atlasNode: 'envelope',
+      workbenchModule: 'envelope',
+      advancedModule: 'envelope-editor',
+      moduleMap: 'envelope',
+      selector: '.atlas-control-column, .envelope-panel',
+      feedback: '已跳到参数区：一次只动一个参数，听 Attack、Decay、材质或空间的变化。',
+    },
+    coach: {
+      step: 'shape',
+      atlasNode: 'modulation',
+      workbenchModule: 'modulation',
+      advancedModule: 'mod-matrix',
+      moduleMap: 'coach',
+      selector: '.workbench-coach-panel',
+      feedback: '已跳到合成器复刻：按 Serum / Phase Plant / Vital 的路由一步步对应。',
+    },
+  }[target] ?? null;
+  if (!route) return;
+  state.soundLabWorkflowStep = route.step;
+  state.activeAtlasNode = route.atlasNode;
+  state.activeWorkbenchModule = route.workbenchModule;
+  state.activeAdvancedModule = route.advancedModule;
+  state.activeWorkbenchModuleMapId = route.moduleMap;
+  state.workbenchActionFeedback = route.feedback;
+  renderSameView();
+  scrollSoundLabIntoView(route.selector);
+}
+
 function showWorkbenchActionFeedback(message, button) {
   state.workbenchActionFeedback = message || '未识别的工作台按钮：这次点击没有可执行目标。';
   const action = button?.dataset?.workbenchAction ?? '';
@@ -2678,6 +2719,12 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-workbench-module-jump]').forEach((button) => {
     button.addEventListener('click', () => {
       handleWorkbenchModuleJump(button.dataset.workbenchModuleJump);
+    });
+  });
+
+  document.querySelectorAll('[data-session-jump]').forEach((button) => {
+    button.addEventListener('click', () => {
+      handleSessionJump(button.dataset.sessionJump);
     });
   });
 

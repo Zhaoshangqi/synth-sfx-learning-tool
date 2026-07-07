@@ -234,6 +234,36 @@ test('renderSoundLabWorkbench exposes AudioWorklet controls, A/B comparison, and
   assert.match(html, /来源依据/);
 });
 
+test('renderSoundLabWorkbench keeps core listening controls in a first-screen session dock', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    outputMode: 'comfort',
+    workflowStep: 'source',
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkflowStep: 'source',
+    isPlaying: false,
+  });
+  const dockIndex = html.indexOf('session-transport-dock');
+  const analyzerIndex = html.indexOf('atlas-lab-stage');
+  const supportIndex = html.indexOf('atlas-support-grid');
+
+  assert.ok(dockIndex > -1, 'session dock should render near the top of Sound Lab');
+  assert.ok(analyzerIndex > -1, 'main analyzer stage should still render');
+  assert.ok(supportIndex > -1, 'secondary support grid should still render');
+  assert.ok(dockIndex < analyzerIndex, 'session dock should appear before the deep analyzer stage');
+  assert.ok(dockIndex < supportIndex, 'session dock should appear before lower support modules');
+  assert.match(html, /data-sound-lab-play/);
+  assert.match(html, /data-output-compare="raw"/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /data-output-compare="studio"/);
+  assert.match(html, /data-session-jump="playback"/);
+  assert.match(html, /data-session-jump="coach"/);
+  assert.match(html, /当前练习|Current Session/);
+  assert.match(html, /先听|Raw|Comfort|Studio/);
+});
+
 test('renderSoundLabWorkbench matches the premium synth workstation reference modules', () => {
   const family = soundLabFamilies[0];
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {

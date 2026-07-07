@@ -10218,6 +10218,147 @@ button:disabled,
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 22px 70px rgba(0, 0, 0, 0.28);
 }
 
+.session-transport-dock {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(240px, 0.9fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(174, 183, 198, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(18, 24, 38, 0.84), rgba(8, 10, 18, 0.68)),
+    radial-gradient(circle at 18% 0%, rgba(110, 231, 249, 0.08), transparent 36%),
+    radial-gradient(circle at 86% 100%, rgba(167, 139, 250, 0.06), transparent 40%);
+  backdrop-filter: blur(22px) saturate(1.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 18px 46px rgba(0, 0, 0, 0.28);
+}
+
+.session-current {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.session-current span,
+.session-jump-actions button {
+  color: var(--v3-dim);
+  font-size: 11px;
+  font-weight: 840;
+  letter-spacing: 0;
+}
+
+.session-current strong {
+  color: var(--v3-text);
+  font-size: 15px;
+}
+
+.session-current p {
+  margin: 0;
+  color: var(--v3-body);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.session-main-actions {
+  display: grid;
+  grid-template-columns: 86px minmax(252px, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.session-play-button,
+.session-output-compare button,
+.session-jump-actions button {
+  min-height: 48px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(18, 24, 38, 0.88), rgba(10, 15, 27, 0.74));
+  color: var(--v3-text);
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.session-play-button {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+}
+
+.session-play-button span {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--v3-cyan);
+  box-shadow: 0 0 18px rgba(110, 231, 249, 0.34);
+}
+
+.session-play-button strong {
+  font-size: 12px;
+}
+
+.session-output-compare {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(76px, 1fr));
+  gap: 8px;
+}
+
+.session-output-compare button {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.session-output-compare strong,
+.session-output-compare span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-output-compare strong {
+  font-size: 12px;
+  font-weight: 860;
+}
+
+.session-output-compare span {
+  color: var(--v3-body);
+  font-size: 10px;
+}
+
+.session-output-compare button:hover,
+.session-output-compare button:focus-visible,
+.session-output-compare button.is-active,
+.session-play-button:hover,
+.session-play-button:focus-visible,
+.session-play-button.is-playing,
+.session-jump-actions button:hover,
+.session-jump-actions button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(110, 231, 249, 0.38);
+  background: linear-gradient(180deg, rgba(24, 32, 50, 0.92), rgba(12, 19, 33, 0.78));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26), 0 0 20px rgba(110, 231, 249, 0.08);
+}
+
+.session-play-button:active,
+.session-output-compare button:active,
+.session-jump-actions button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.session-jump-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.session-jump-actions button {
+  padding: 0 10px;
+  color: var(--v3-text);
+}
+
 .atlas-lab-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
@@ -10503,6 +10644,14 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 
+  .session-transport-dock {
+    grid-template-columns: 1fr;
+  }
+
+  .session-main-actions {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
   .atlas-main-console,
   .atlas-right-rail {
     grid-column: 1 / -1;
@@ -10526,6 +10675,9 @@ button:disabled,
   .atlas-command-dock,
   .atlas-dock-actions,
   .atlas-morph-control,
+  .session-main-actions,
+  .session-output-compare,
+  .session-jump-actions,
   .atlas-right-rail {
     grid-template-columns: 1fr;
   }
@@ -11913,11 +12065,6 @@ html.is-local-interacting .signal-field span,
 html.is-direct-manipulating .space-glow,
 html.is-direct-manipulating .signal-field span {
   animation-play-state: paused !important;
-}
-
-html.is-local-interacting #particle-canvas,
-html.is-direct-manipulating #particle-canvas {
-  opacity: 0.22;
 }
 
 html.is-direct-manipulating .range-shell::after {
