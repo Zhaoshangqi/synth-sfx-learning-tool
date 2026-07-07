@@ -1503,6 +1503,38 @@ function renderPracticeLoopPanel(model = {}) {
   `;
 }
 
+function renderListeningCompassPanel(model = {}) {
+  const compass = model.listeningCompass ?? {};
+  const stages = compass.stages ?? [];
+  const nextAction = compass.nextAction ?? {};
+  return `
+    <section class="side-panel listening-compass-panel" aria-label="听辨导航">
+      <div class="atlas-inspector-heading">
+        <span aria-hidden="true">Ear</span>
+        <strong>${escapeHtml(compass.titleZh ?? '听辨导航')}</strong>
+      </div>
+      <p>${escapeHtml(compass.summaryZh ?? '把声音拆成起音、主体和尾巴三段听，再用 A/B 验证。')}</p>
+      <div class="listening-compass-grid">
+        ${stages.map((stage) => `
+          <article class="listening-compass-step" style="--compass-meter:${formatNumber(stage.meter ?? 0)}%">
+            <div>
+              <strong>${escapeHtml(stage.labelZh)}</strong>
+              <button type="button" data-workbench-action="${escapeHtml(stage.action)}">${escapeHtml(stage.actionLabelZh ?? '聚焦')}</button>
+            </div>
+            <p>${escapeHtml(stage.listenForZh)}</p>
+            <small>${escapeHtml(stage.checkZh)}</small>
+            <i aria-hidden="true"></i>
+          </article>
+        `).join('')}
+      </div>
+      <button class="listening-compass-next" type="button" data-workbench-action="${escapeHtml(nextAction.action ?? 'focus-practice-loop')}">
+        <strong>${escapeHtml(nextAction.labelZh ?? '下一步 A/B 验证')}</strong>
+        <span>${escapeHtml(nextAction.noteZh ?? '只改一个参数，先听一个听感问题。')}</span>
+      </button>
+    </section>
+  `;
+}
+
 function renderWorkbenchModuleTabs(activeWorkbenchModule = 'envelope') {
   const tabs = [
     ['generator', '声音生成'],
@@ -2198,6 +2230,7 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
         </div>
         <p>${escapeHtml(theoryText)}</p>
       </section>
+      ${renderListeningCompassPanel(model)}
       ${renderPracticeLoopPanel(model)}
       <section class="side-panel source-inspector-panel">
         <div class="side-panel-title">来源快照</div>

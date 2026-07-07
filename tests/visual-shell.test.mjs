@@ -102,6 +102,21 @@ test('tactile effects use class-only feedback and cannot flash the viewport', ()
   assert.match(css, /\.is-pressing\s*\{[\s\S]*box-shadow/, 'press feedback should remain a local style, not a viewport layer');
 });
 
+test('same-view Sound Lab interactions do not restart atlas entrance or glow animations', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const rangeShellBlock = css.match(/\.range-shell\s*\{[^}]*\}/)?.[0] ?? '';
+  const draggingBlock = css.match(/\.range-shell\.is-dragging\s*\{[^}]*\}/)?.[0] ?? '';
+  const draggingFillBlock = css.match(/\.range-shell\.is-dragging::after\s*\{[^}]*\}/)?.[0] ?? '';
+
+  assert.match(css, /Same-view interaction anti-flash guard/);
+  assert.match(css, /\.content:not\(\.is-view-switching\) \.signal-atlas-console::after,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-orb,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-signal-node,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-command-dock,[\s\S]*animation:\s*none !important/);
+  assert.match(css, /\.content:not\(\.is-view-switching\) \.signal-atlas-console \.atlas-dock-actions button\.is-confirmed,[\s\S]*\.content:not\(\.is-view-switching\) \.signal-atlas-console \[data-workbench-action\]\.is-confirmed[\s\S]*animation:\s*none !important/);
+  assert.match(rangeShellBlock, /filter:\s*none/);
+  assert.match(draggingBlock, /filter:\s*none/);
+  assert.doesNotMatch(rangeShellBlock, /transition:\s*filter/, 'range drag should not animate filter because it repaints a wide control strip');
+  assert.doesNotMatch(draggingFillBlock, /filter:/, 'range fill should not brighten via filter while dragging');
+});
+
 test('background parallax is throttled and pauses during direct manipulation', () => {
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
@@ -917,6 +932,21 @@ test('sound lab practice loop has routed actions and readable dark panel styling
   assert.match(appJs, /scrollSoundLabIntoView\('\.practice-loop-panel'\)/);
   assert.match(css, /\.practice-loop-panel\s*\{/);
   assert.match(css, /\.practice-loop-step\s*\{[\s\S]*color:\s*rgba\(244,\s*247,\s*251,\s*0\.84\)/);
+});
+
+test('sound lab listening compass stays readable and routes to existing workbench actions', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderListeningCompassPanel/);
+  assert.match(renderJs, /listening-compass-panel/);
+  assert.match(renderJs, /listeningCompass/);
+  assert.match(renderJs, /data-workbench-action="\$\{escapeHtml\(stage\.action\)\}"/);
+  assert.match(appJs, /focus-controls/);
+  assert.match(appJs, /focus-practice-loop/);
+  assert.match(css, /\.listening-compass-panel\s*\{/);
+  assert.match(css, /\.listening-compass-step\s*\{[\s\S]*color:\s*rgba\(244,\s*247,\s*251,\s*0\.86\)/);
 });
 
 test('workflow step binding targets only step buttons so the article state attribute cannot reset clicks', () => {

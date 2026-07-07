@@ -111,6 +111,31 @@ test('buildSoundLabViewModel creates a beginner practice loop with one-change A/
   assert.ok(model.practiceLoop.focusMacroId);
 });
 
+test('buildSoundLabViewModel creates a dynamic listening compass for transient body and tail', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 76,
+    motion: 44,
+    material: 88,
+    space: 66,
+    variation: 38,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    workflowStep: 'shape',
+  });
+
+  assert.ok(model.listeningCompass, 'view model should expose a beginner listening compass');
+  assert.match(model.listeningCompass.titleZh, /听辨导航/);
+  assert.match(model.listeningCompass.summaryZh, /起音|主体|尾巴/);
+  assert.equal(model.listeningCompass.stages.length, 3);
+  assert.deepEqual(model.listeningCompass.stages.map((stage) => stage.id), ['transient', 'body', 'tail']);
+  assert.ok(model.listeningCompass.stages.every((stage) => stage.listenForZh && stage.action));
+  assert.ok(model.listeningCompass.stages.some((stage) => /金属|材质/.test(stage.listenForZh)));
+  assert.match(model.listeningCompass.nextAction.labelZh, /A\/B|验证|下一步/);
+  assert.match(model.listeningCompass.nextAction.noteZh, /只改一个参数|一个听感/);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

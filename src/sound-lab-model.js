@@ -868,6 +868,88 @@ function buildPracticeLoop(family, patch, macroList) {
   };
 }
 
+function buildListeningCompass(family, patch, macroList, workflowStep = 'source') {
+  const familyName = family?.titleZh?.split('：')[0] ?? '目标音效';
+  const macros = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const macroById = Object.fromEntries((macroList ?? []).map((macro) => [macro.id, macro]));
+  const brightness = Math.round(macros.brightness ?? 50);
+  const material = Math.round(macros.material ?? 50);
+  const motion = Math.round(macros.motion ?? 50);
+  const space = Math.round(macros.space ?? 50);
+  const transientMix = Math.round(layerMix.transient ?? 0);
+  const bodyMix = Math.round(layerMix.body ?? 0);
+  const tailMix = Math.round(layerMix.tail ?? 0);
+  const materialMacro = macroById.material?.labelZh ?? 'Material';
+  const brightnessMacro = macroById.brightness?.labelZh ?? 'Brightness';
+  const spaceMacro = macroById.space?.labelZh ?? 'Space';
+
+  const stages = [
+    {
+      id: 'transient',
+      labelZh: '1 起音',
+      listenForZh: transientMix >= 62
+        ? '先听第一下是否够快、够硬；如果 click 抢主体，降低 transient 或 attack 相关层。'
+        : '先听起音是不是太软；如果目标是 hit / UI click，把 attack 和瞬态层推清楚。',
+      checkZh: `Transient ${transientMix}% / ${brightnessMacro} ${brightness}`,
+      action: 'focus-controls',
+      actionLabelZh: '调起音',
+      meter: clamp(transientMix, 0, 100),
+    },
+    {
+      id: 'body',
+      labelZh: '2 主体',
+      listenForZh: `再听主体是不是像「${familyName}」：金属、玻璃、空气或机械材质应该来自频谱关系，而不是单纯变响。`,
+      checkZh: `${materialMacro} ${material} / Body ${bodyMix}% / Motion ${motion}`,
+      action: 'focus-waveform',
+      actionLabelZh: '拆主体',
+      meter: clamp((bodyMix + material) * 0.5, 0, 100),
+    },
+    {
+      id: 'tail',
+      labelZh: '3 尾巴',
+      listenForZh: space >= 60
+        ? '最后听尾巴是否服务动作；空间够大时要确认 transient 没被冲淡。'
+        : '最后听尾巴是否太短；如果声音结束太干，少量加空间或 tail 层再做 A/B。',
+      checkZh: `${spaceMacro} ${space} / Tail ${tailMix}%`,
+      action: 'focus-practice-loop',
+      actionLabelZh: '验尾巴',
+      meter: clamp((tailMix + space) * 0.5, 0, 100),
+    },
+  ];
+
+  const actionByWorkflow = {
+    source: {
+      action: 'focus-waveform',
+      labelZh: '下一步：拆基础波形',
+      noteZh: '先判断主体像 sine、saw、noise 还是它们的组合，再动材质参数。',
+    },
+    shape: {
+      action: 'focus-practice-loop',
+      labelZh: '下一步 A/B 验证',
+      noteZh: '只改一个参数，先听一个听感问题，再决定保留还是撤回。',
+    },
+    compare: {
+      action: 'compare-view',
+      labelZh: '下一步：打开 A/B',
+      noteZh: '匹配响度后判断 dry/core 与 full patch 的差异，不要被音量骗。',
+    },
+    deliver: {
+      action: 'focus-export',
+      labelZh: '下一步：写交付记录',
+      noteZh: '把 dry、full、tail-only 三版导出，并写清楚本轮只改一个参数。',
+    },
+  };
+
+  return {
+    titleZh: '听辨导航',
+    summaryZh: '把声音拆成起音、主体和尾巴三段听：先判断形状，再动参数，最后用 A/B 证明变化。',
+    currentFocus: workflowStep,
+    stages,
+    nextAction: actionByWorkflow[workflowStep] ?? actionByWorkflow.source,
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -1084,6 +1166,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     soundQuality: buildSoundQuality(patch),
     waveformFingerprint: buildWaveformFingerprint(patch),
     practiceLoop: buildPracticeLoop(family, patch, macroList),
+    listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,
