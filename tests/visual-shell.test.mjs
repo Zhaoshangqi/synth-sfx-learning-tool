@@ -154,21 +154,28 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const renderBlock = appJs.match(/function render\([\s\S]*?\r?\n}\r?\n\r?\nfunction switchView/)?.[0] ?? '';
   const stabilizeBlock = appJs.match(/function stabilizeSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
+  const restoreScrollBlock = appJs.match(/function restoreSameViewScroll[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
   const releaseBlock = appJs.match(/function releaseSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction render/)?.[0] ?? '';
   const bindSoundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
   const sameViewCssBlock = css.match(/\.content\.is-same-view-rendering\s*\{[^}]*\}/)?.[0] ?? '';
   const sameViewQuietMountBlock = css.match(/\.content\.is-same-view-rendering \.sound-lab-shell,[\s\S]*?\.content\.is-same-view-rendering \.patch-doctor-card::before\s*\{[\s\S]*?\}/)?.[0] ?? '';
+  const sameViewSoundLabChildrenBlock = css.match(/\.content\.is-same-view-rendering \.sound-lab-shell \*,[\s\S]*?\.content\.is-same-view-rendering \.sound-lab-shell \*::after\s*\{[\s\S]*?\}/)?.[0] ?? '';
 
   assert.ok(renderBlock, 'render should be easy to audit for same-view stability');
   assert.ok(stabilizeBlock, 'same-view stabilization should be easy to audit');
+  assert.ok(restoreScrollBlock, 'same-view scroll restoration should be easy to audit');
   assert.ok(releaseBlock, 'same-view release should be easy to audit');
   assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
   assert.match(appJs, /function renderSameView\(\)/);
   assert.match(appJs, /is-same-view-rendering/);
+  assert.match(appJs, /sameViewScrollLock/);
   assert.match(appJs, /is-local-interacting/);
   assert.match(appJs, /function\s+setLocalInteraction/);
   assert.match(appJs, /style\.minHeight/);
   assert.match(appJs, /requestAnimationFrame/);
+  assert.match(stabilizeBlock, /globalThis\.scrollX/);
+  assert.match(stabilizeBlock, /globalThis\.scrollY/);
+  assert.match(restoreScrollBlock, /globalThis\.scrollTo\(\{\s*left:\s*x,\s*top:\s*y,\s*behavior:\s*'auto'\s*\}\)/);
   assert.doesNotMatch(stabilizeBlock, /setLocalInteraction\(true\)/, 'same-view rendering should not pulse the global interaction state');
   assert.match(bindSoundLabBlock, /renderSameView\(\)/);
   assert.doesNotMatch(bindSoundLabBlock, /render\(\);/, 'Sound Lab button clicks should use quiet same-view render instead of a raw full repaint');
@@ -182,6 +189,10 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.match(sameViewQuietMountBlock, /contain:\s*paint/);
   assert.doesNotMatch(sameViewQuietMountBlock, /filter:/, 'quiet mount should not visibly remove filters');
   assert.doesNotMatch(sameViewQuietMountBlock, /box-shadow:/, 'quiet mount should not visibly remove panel shadows');
+  assert.ok(sameViewSoundLabChildrenBlock, 'same-view Sound Lab child animations should be guarded while the new DOM mounts');
+  assert.match(sameViewSoundLabChildrenBlock, /animation:\s*none !important/);
+  assert.match(sameViewSoundLabChildrenBlock, /transition-duration:\s*0ms !important/);
+  assert.doesNotMatch(sameViewSoundLabChildrenBlock, /opacity:/, 'anti-flash guard must not dim the whole Sound Lab surface');
 });
 
 test('same-view interactions do not call raw full-content render', () => {
@@ -1164,10 +1175,19 @@ test('signal atlas console fuses the primary lab with a guided signal path', () 
   assert.match(css, /Signal Atlas Console v4/);
   assert.match(css, /Signal Atlas Console v4\.1 fidelity pass/);
   assert.match(css, /Signal Atlas Console v4\.4 Stitch inspector fusion/);
+  assert.match(css, /Signal Atlas v4\.5 collision guard/);
   assert.match(css, /\.atlas-goal-panel/);
   assert.match(css, /\.atlas-push-button/);
   assert.match(css, /\.signal-atlas-console\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(280px,\s*0\.34fr\)/);
   assert.match(css, /\.atlas-signal-ribbon\s*\{[\s\S]*display:\s*grid/);
+  assert.match(css, /\.signal-atlas-console > \.atlas-main-console\s*\{[\s\S]*grid-column:\s*1\s*\/\s*2/);
+  assert.match(css, /\.signal-atlas-console > \.atlas-right-rail\s*\{[\s\S]*grid-column:\s*2\s*\/\s*3/);
+  assert.match(css, /\.signal-atlas-console > \.atlas-main-console,[\s\S]*\.signal-atlas-console > \.atlas-right-rail\s*\{[\s\S]*align-self:\s*start/);
+  assert.match(css, /\.signal-atlas-console \.atlas-lab-stage,[\s\S]*\.signal-atlas-console \.atlas-analyzer-row\s*\{[\s\S]*width:\s*100%/);
+  assert.match(css, /\.signal-atlas-console \.atlas-lab-stage,[\s\S]*\.signal-atlas-console \.atlas-analyzer-row\s*\{[\s\S]*max-width:\s*100%/);
+  assert.match(css, /\.signal-atlas-console \.atlas-analyzer-row\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1\.08fr\)\s+minmax\(0,\s*0\.92fr\)\s+72px/);
+  assert.match(css, /\.signal-atlas-console \.atlas-analyzer-row \.waveform-panel,[\s\S]*\.signal-atlas-console \.atlas-analyzer-row \.output-meter-strip\s*\{[\s\S]*min-width:\s*0/);
+  assert.match(css, /@media \(max-width:\s*1180px\)[\s\S]*\.signal-atlas-console > \.atlas-main-console,[\s\S]*\.signal-atlas-console > \.atlas-right-rail\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
   assert.match(css, /\.atlas-lab-stage\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(300px,\s*0\.72fr\)/);
   assert.match(css, /\.atlas-command-dock\s*\{[\s\S]*backdrop-filter:\s*blur\(24px\)/);
   assert.match(css, /@keyframes atlas-node-arrive/);

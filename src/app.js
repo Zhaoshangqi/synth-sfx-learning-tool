@@ -226,6 +226,7 @@ let directManipulationTimer = 0;
 let localInteractionTimer = 0;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
+const sameViewScrollLock = { x: 0, y: 0 };
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -1204,14 +1205,25 @@ function stabilizeSameViewRender() {
     quietRenderFrame = 0;
   }
 
+  sameViewScrollLock.x = globalThis.scrollX ?? 0;
+  sameViewScrollLock.y = globalThis.scrollY ?? 0;
   const currentHeight = app.getBoundingClientRect?.().height ?? 0;
   app.classList.add('is-same-view-rendering');
   if (currentHeight > 0) app.style.minHeight = `${Math.ceil(currentHeight)}px`;
 }
 
+function restoreSameViewScroll() {
+  const x = Number.isFinite(sameViewScrollLock.x) ? sameViewScrollLock.x : 0;
+  const y = Number.isFinite(sameViewScrollLock.y) ? sameViewScrollLock.y : 0;
+  if (Math.abs((globalThis.scrollX ?? 0) - x) < 1 && Math.abs((globalThis.scrollY ?? 0) - y) < 1) return;
+  globalThis.scrollTo({ left: x, top: y, behavior: 'auto' });
+}
+
 function releaseSameViewRender() {
+  restoreSameViewScroll();
   quietRenderFrame = globalThis.requestAnimationFrame(() => {
     quietRenderFrame = globalThis.requestAnimationFrame(() => {
+      restoreSameViewScroll();
       app.classList.remove('is-same-view-rendering');
       app.style.minHeight = '';
       quietRenderFrame = 0;
