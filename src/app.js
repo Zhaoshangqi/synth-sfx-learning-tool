@@ -1204,7 +1204,6 @@ function stabilizeSameViewRender() {
     quietRenderFrame = 0;
   }
 
-  setLocalInteraction(true);
   const currentHeight = app.getBoundingClientRect?.().height ?? 0;
   app.classList.add('is-same-view-rendering');
   if (currentHeight > 0) app.style.minHeight = `${Math.ceil(currentHeight)}px`;
@@ -1214,7 +1213,6 @@ function releaseSameViewRender() {
   quietRenderFrame = globalThis.requestAnimationFrame(() => {
     app.classList.remove('is-same-view-rendering');
     app.style.minHeight = '';
-    setLocalInteraction(false, 180);
     quietRenderFrame = 0;
   });
 }

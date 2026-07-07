@@ -12281,13 +12281,6 @@ button:disabled,
   }
 }
 
-/* Signal Atlas Console v4.5 interaction anti-flash pass */
-.content:not(.is-view-switching) *,
-.content:not(.is-view-switching) *::before,
-.content:not(.is-view-switching) *::after {
-  animation: none !important;
-}
-
 .signal-atlas-console .atlas-signal-node,
 .signal-atlas-console .atlas-command-dock {
   animation: none;
@@ -12359,17 +12352,8 @@ button:disabled,
 }
 
 /* Same-view interaction anti-flash guard */
-.content.is-same-view-rendering,
-.content.is-same-view-rendering * {
-  animation: none !important;
-  transition: none !important;
-}
-
-html.is-local-interacting .space-glow,
-html.is-local-interacting .signal-field span,
-html.is-direct-manipulating .space-glow,
-html.is-direct-manipulating .signal-field span {
-  animation-play-state: paused !important;
+.content.is-same-view-rendering {
+  overflow-anchor: none;
 }
 
 html.is-direct-manipulating .range-shell::after {

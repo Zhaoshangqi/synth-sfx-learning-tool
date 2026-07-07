@@ -73,7 +73,7 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.doesNotMatch(bindRangeBlock, /scheduleRangeCommitRender/, 'input updates should stay local while dragging or typing');
   assert.doesNotMatch(css, /\.content\.is-view-switching\s*\{[\s\S]*animation:/, 'view transition must not animate the whole content surface');
   assert.doesNotMatch(css, /\.content > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'default content children should not animate on every rerender');
-  assert.match(css, /\.content:not\(\.is-view-switching\) \*,[\s\S]*\.content:not\(\.is-view-switching\) \*::before,[\s\S]*\.content:not\(\.is-view-switching\) \*::after[\s\S]*animation:\s*none !important/, 'same-view renders must suppress nested animation restarts');
+  assert.doesNotMatch(css, /\.content:not\(\.is-view-switching\) \*,[\s\S]*animation:\s*none !important/, 'same-view renders must not blanket-disable every nested animation because that reads as a screen flash');
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'view transitions should keep a scoped soft entrance');
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
 });
@@ -124,7 +124,9 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   assert.doesNotMatch(rangeShellBlock, /transition:\s*filter/, 'range drag should not animate filter because it repaints a wide control strip');
   assert.doesNotMatch(draggingFillBlock, /filter:/, 'range fill should not brighten via filter while dragging');
   assert.match(css, /html\.is-direct-manipulating \.range-shell::after\s*\{[\s\S]*transition:\s*none !important/, 'dragging should update the range fill without delayed rail animation');
-  assert.match(css, /html\.is-local-interacting \.space-glow,[\s\S]*html\.is-direct-manipulating \.signal-field span[\s\S]*animation-play-state:\s*paused !important/, 'background ambience should pause during local interactions');
+  assert.doesNotMatch(css, /html\.is-local-interacting \.space-glow/, 'ordinary clicks must not pause broad background layers because that looks like a viewport flash');
+  assert.doesNotMatch(css, /html\.is-direct-manipulating \.space-glow/, 'dragging controls must not pause broad background layers because that looks like a viewport flash');
+  assert.doesNotMatch(css, /html\.is-(?:local-interacting|direct-manipulating)[\s\S]*\.signal-field span[\s\S]*animation-play-state:\s*paused !important/, 'interaction states should not stop global signal-field animation');
   assert.ok(signalRangeBlock, 'Signal Atlas should keep its own range input transition block auditable');
   assert.doesNotMatch(signalRangeBlock, /filter/, 'Signal Atlas range input transitions must not include filter because it flashes during dragging');
 });
@@ -151,9 +153,12 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const renderBlock = appJs.match(/function render\([\s\S]*?\r?\n}\r?\n\r?\nfunction switchView/)?.[0] ?? '';
+  const stabilizeBlock = appJs.match(/function stabilizeSameViewRender[\s\S]*?\r?\n}\r?\n\r?\nfunction releaseSameViewRender/)?.[0] ?? '';
   const bindSoundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
+  const sameViewCssBlock = css.match(/\.content\.is-same-view-rendering\s*\{[^}]*\}/)?.[0] ?? '';
 
   assert.ok(renderBlock, 'render should be easy to audit for same-view stability');
+  assert.ok(stabilizeBlock, 'same-view stabilization should be easy to audit');
   assert.ok(bindSoundLabBlock, 'Sound Lab binding block should be easy to audit for same-view render paths');
   assert.match(appJs, /function renderSameView\(\)/);
   assert.match(appJs, /is-same-view-rendering/);
@@ -161,11 +166,12 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.match(appJs, /function\s+setLocalInteraction/);
   assert.match(appJs, /style\.minHeight/);
   assert.match(appJs, /requestAnimationFrame/);
+  assert.doesNotMatch(stabilizeBlock, /setLocalInteraction\(true\)/, 'same-view rendering should not pulse the global interaction state');
   assert.match(bindSoundLabBlock, /renderSameView\(\)/);
   assert.doesNotMatch(bindSoundLabBlock, /render\(\);/, 'Sound Lab button clicks should use quiet same-view render instead of a raw full repaint');
-  assert.match(css, /\.content\.is-same-view-rendering/);
-  assert.match(css, /\.content\.is-same-view-rendering[\s\S]*animation:\s*none !important/);
-  assert.match(css, /\.content\.is-same-view-rendering[\s\S]*transition:\s*none !important/);
+  assert.ok(sameViewCssBlock, 'same-view stabilization should keep an auditable scoped CSS rule');
+  assert.doesNotMatch(sameViewCssBlock, /animation:/, 'same-view stabilization must not kill all animations for a frame');
+  assert.doesNotMatch(sameViewCssBlock, /transition:/, 'same-view stabilization must not kill all transitions for a frame');
 });
 
 test('same-view interactions do not call raw full-content render', () => {
