@@ -25,9 +25,9 @@ test('styles include premium button feel and custom range rails', () => {
   assert.match(css, /::-webkit-slider-thumb/);
   assert.match(css, /::-moz-range-thumb/);
   assert.match(css, /linear-gradient\(90deg/);
-  assert.match(css, /\.tap-spark/);
   assert.match(css, /\.is-pressing/);
-  assert.match(css, /@keyframes tap-spark/);
+  assert.doesNotMatch(css, /\.tap-spark/);
+  assert.doesNotMatch(css, /@keyframes tap-spark/);
   assert.match(css, /\.deep-dive-card/);
   assert.match(css, /\.deep-module-button/);
   assert.match(css, /\.deep-signal-flow/);
@@ -71,6 +71,7 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.ok(bindRangeBlock, 'bindSmoothRangeInput should remain the shared range binding');
   assert.doesNotMatch(finishRangeBlock, /render\(/, 'range commit must not rebuild the whole app');
   assert.doesNotMatch(bindRangeBlock, /scheduleRangeCommitRender/, 'input updates should stay local while dragging or typing');
+  assert.doesNotMatch(css, /\.content\.is-view-switching\s*\{[\s\S]*animation:/, 'view transition must not animate the whole content surface');
   assert.doesNotMatch(css, /\.content > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'default content children should not animate on every rerender');
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'view transitions should keep a scoped soft entrance');
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
@@ -82,8 +83,12 @@ test('tactile effects use class-only feedback and cannot flash the viewport', ()
 
   assert.doesNotMatch(interactionJs, /document\.createElement\('span'\)/, 'ordinary click feedback must not insert animated DOM particles');
   assert.doesNotMatch(interactionJs, /append\(spark\)/, 'click feedback must stay class-only to avoid paint flashes');
+  assert.doesNotMatch(interactionJs, /setProperty\('--tap-/, 'ordinary click feedback should not mutate per-click geometry variables');
+  assert.doesNotMatch(interactionJs, /has-tactile/, 'ordinary click feedback should not add a new compositing class at pointerdown');
+  assert.doesNotMatch(css, /\.tap-spark/, 'obsolete click spark CSS should not survive as an accidental viewport flash layer');
+  assert.doesNotMatch(css, /@keyframes tap-spark/, 'obsolete click spark keyframes should not survive');
   assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
-  assert.match(interactionJs, /classList\.add\('has-tactile',\s*'is-pressing'\)/, 'tactile feedback should still provide local press state');
+  assert.match(interactionJs, /classList\.add\('is-pressing'\)/, 'tactile feedback should still provide local press state');
   assert.match(css, /\.is-pressing\s*\{[\s\S]*box-shadow/, 'press feedback should remain a local style, not a viewport layer');
 });
 
@@ -145,8 +150,8 @@ test('visual shell uses a premium dark glass tone and view transition motion', (
   assert.match(css, /--bg:\s*#080A12/);
   assert.match(css, /--surface:\s*#10131F/);
   assert.doesNotMatch(css, /--bg:\s*#050910/);
-  assert.match(css, /\.content\.is-view-switching/);
-  assert.match(css, /@keyframes view-soft-swap/);
+  assert.match(css, /\.content\.is-view-switching > \*/);
+  assert.doesNotMatch(css, /@keyframes view-soft-swap/);
   assert.match(appJs, /synth:view-transition/);
   assert.match(appJs, /is-view-switching/);
 });
@@ -320,6 +325,16 @@ test('interaction effects add pointer and keyboard tactile feedback hooks', () =
   assert.match(js, /is-pressing/);
   assert.match(js, /addPressState/);
   assert.match(js, /prefers-reduced-motion/);
+});
+
+test('ADSR handle dragging updates the current lab surface without full rerender flashes', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const dragBlock = appJs.match(/function updateAdsrFromPointer[\s\S]*?\r?\n}\r?\n\r?\nasync function startAudition/)?.[0] ?? '';
+
+  assert.ok(dragBlock, 'ADSR drag handler should be easy to audit');
+  assert.doesNotMatch(dragBlock, /render\(/, 'ADSR pointermove should not rebuild the entire app');
+  assert.match(appJs, /function syncInteractiveAdsrSurface/);
+  assert.match(appJs, /function finishAdsrDrag/);
 });
 
 

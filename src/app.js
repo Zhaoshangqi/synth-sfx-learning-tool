@@ -1849,6 +1849,62 @@ function svgPointFromPointer(event) {
   };
 }
 
+function formatSvgNumber(value) {
+  return Number.parseFloat(value).toFixed(2).replace(/\.?0+$/, '');
+}
+
+function formatSvgPoints(points = []) {
+  return points.map(([x, y]) => `${formatSvgNumber(x)},${formatSvgNumber(y)}`).join(' ');
+}
+
+function syncInteractiveAdsrSurface(lab, labState) {
+  const model = buildLabVisualModel(lab, labState);
+  const card = document.querySelector('.interactive-lab-card');
+  const svg = card?.querySelector('.lab-svg-adsr');
+  if (!svg || model.type !== 'adsr') return;
+
+  const points = formatSvgPoints(model.pathPoints);
+  const envelope = svg.querySelector('.svg-envelope');
+  envelope?.setAttribute('points', points);
+  envelope?.setAttribute('data-visual-path', points);
+
+  model.handles.forEach((handle) => {
+    const node = svg.querySelector(`[data-adsr-handle="${handle.id}"]`);
+    node?.setAttribute('cx', formatSvgNumber(handle.x));
+    node?.setAttribute('cy', formatSvgNumber(handle.y));
+  });
+
+  svg.querySelectorAll('.svg-label').forEach((labelNode, index) => {
+    const label = model.labels[index];
+    if (!label) return;
+    labelNode.setAttribute('x', formatSvgNumber(label.x));
+    labelNode.setAttribute('y', formatSvgNumber(label.y));
+    labelNode.textContent = label.text;
+  });
+
+  lab.controls.forEach((control) => {
+    const input = card?.querySelector(`[data-lab-control="${control.id}"]`);
+    if (!input) return;
+    input.value = String(labState[control.id] ?? control.defaultValue);
+    updateRangeChrome(input);
+  });
+
+  const explanations = card?.querySelector('.lab-explanations ul');
+  if (explanations) {
+    explanations.innerHTML = model.activeExplanations.map((item) => (
+      `<li><strong>${escapeHtml(item.labelZh)} ${escapeHtml(item.value)}${escapeHtml(item.unit)}</strong>：${escapeHtml(item.explanationZh)}</li>`
+    )).join('');
+  }
+}
+
+function finishAdsrDrag() {
+  state.draggingAdsrHandle = null;
+  document.querySelectorAll('[data-adsr-handle].is-dragging').forEach((handle) => {
+    handle.classList.remove('is-dragging');
+  });
+  setDirectManipulation(false);
+}
+
 function updateAdsrFromPointer(event) {
   if (!state.draggingAdsrHandle) return;
   const lab = getActiveLab();
@@ -1856,12 +1912,13 @@ function updateAdsrFromPointer(event) {
   const point = svgPointFromPointer(event);
   if (!point) return;
 
+  const nextLabState = updateAdsrStateFromDrag(lab, getActiveLabState(lab), state.draggingAdsrHandle, point.x, point.y);
   state.labStates = {
     ...state.labStates,
-    [lab.id]: updateAdsrStateFromDrag(lab, getActiveLabState(lab), state.draggingAdsrHandle, point.x, point.y),
+    [lab.id]: nextLabState,
   };
   refreshAuditionPatch();
-  render();
+  syncInteractiveAdsrSurface(lab, nextLabState);
 }
 
 async function startAudition() {
@@ -2976,13 +3033,13 @@ document.addEventListener('pointermove', (event) => {
 });
 
 document.addEventListener('pointerup', () => {
-  state.draggingAdsrHandle = null;
+  finishAdsrDrag();
   if (activeRangeInput) finishSmoothRangeInput(activeRangeInput);
   setDirectManipulation(false);
 });
 
 document.addEventListener('pointercancel', () => {
-  state.draggingAdsrHandle = null;
+  finishAdsrDrag();
   if (activeRangeInput) finishSmoothRangeInput(activeRangeInput);
   setDirectManipulation(false);
 });

@@ -388,54 +388,11 @@ textarea {
   transform: translateY(1px) scale(0.992);
 }
 
-.has-tactile {
-  position: relative;
-  contain: paint;
-  transform: translateZ(0);
-}
-
 .is-pressing {
   box-shadow:
     inset 0 0 0 1px rgba(238, 255, 251, 0.07),
     0 0 0 1px rgba(120, 225, 212, 0.16),
     0 0 18px rgba(120, 225, 212, 0.07) !important;
-}
-
-.tap-spark {
-  position: absolute;
-  left: var(--tap-x, 50%);
-  top: var(--tap-y, 50%);
-  z-index: 1;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(241, 255, 251, 0.92) 0 16%, rgba(120, 225, 212, 0.48) 28%, rgba(160, 139, 255, 0.1) 58%, transparent 72%);
-  box-shadow: 0 0 18px rgba(120, 225, 212, 0.22);
-  mix-blend-mode: normal;
-  transform: translate(-50%, -50%) scale(0.35);
-  animation: tap-spark 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes tap-spark {
-  0% {
-    opacity: 0.72;
-    transform: translate(-50%, -50%) scale(0.35);
-    filter: blur(0);
-  }
-
-  56% {
-    opacity: 0.34;
-    transform: translate(-50%, -50%) scale(7.6);
-    filter: blur(0.5px);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(11);
-    filter: blur(1.4px);
-  }
 }
 
 .workspace {
@@ -491,24 +448,6 @@ textarea {
 .content {
   width: min(1280px, 100%);
   padding: 24px;
-}
-
-.content.is-view-switching {
-  animation: view-soft-swap 460ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes view-soft-swap {
-  0% {
-    opacity: 0.84;
-    filter: blur(3px);
-    transform: translate3d(0, 4px, 0) scale(0.998);
-  }
-
-  100% {
-    opacity: 1;
-    filter: blur(0);
-    transform: translate3d(0, 0, 0) scale(1);
-  }
 }
 
 .view-header {
@@ -3504,15 +3443,9 @@ textarea {
   .audition-button.is-playing .audition-dot,
   .live-scope span,
   .dashboard-hero::after,
-  .quality-meter span,
-  .tap-spark,
-  .content.is-view-switching {
+  .quality-meter span {
     animation: none;
     transition: none;
-  }
-
-  .tap-spark {
-    display: none;
   }
 }
 
@@ -7584,13 +7517,6 @@ textarea {
   gap: 10px;
 }
 
-.tap-spark {
-  mix-blend-mode: normal;
-  background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 18%, rgba(23, 167, 163, 0.38) 32%, rgba(116, 103, 214, 0.08) 62%, transparent 74%);
-  box-shadow: 0 0 18px rgba(23, 167, 163, 0.18);
-}
-
 @media (max-width: 1180px) {
   .workbench-command-center {
     grid-template-columns: 1fr;
@@ -8909,12 +8835,6 @@ textarea:focus {
   border-color: rgba(110, 231, 249, 0.24);
   background: rgba(18, 24, 38, 0.68);
   color: var(--v3-cyan);
-}
-
-.tap-spark {
-  background:
-    radial-gradient(circle, rgba(244, 247, 251, 0.9) 0 14%, rgba(110, 231, 249, 0.42) 32%, rgba(167, 139, 250, 0.1) 62%, transparent 74%);
-  box-shadow: 0 0 24px rgba(110, 231, 249, 0.2);
 }
 
 @keyframes v3-panel-in {
@@ -11802,35 +11722,6 @@ button:disabled,
 .signal-atlas-console .atlas-signal-node,
 .signal-atlas-console .atlas-command-dock {
   animation: none;
-}
-
-.tap-spark {
-  width: 6px;
-  height: 6px;
-  opacity: 0.42;
-  background:
-    radial-gradient(circle, rgba(244, 247, 251, 0.72) 0 18%, rgba(110, 231, 249, 0.24) 36%, rgba(167, 139, 250, 0.06) 64%, transparent 78%);
-  box-shadow: 0 0 12px rgba(110, 231, 249, 0.12);
-}
-
-@keyframes tap-spark {
-  0% {
-    opacity: 0.34;
-    transform: translate(-50%, -50%) scale(0.38);
-    filter: blur(0);
-  }
-
-  58% {
-    opacity: 0.14;
-    transform: translate(-50%, -50%) scale(2.4);
-    filter: blur(0.4px);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(3.2);
-    filter: blur(0.8px);
-  }
 }
 
 .signal-atlas-console .range-shell,
