@@ -419,6 +419,19 @@ function buildToneGraph(family, values, dsp, quality, performance, options = {})
   };
 }
 
+function buildControlSmoothing(performance, quality) {
+  const glide = clamp(performance.glide ?? 12, 0, 100) / 100;
+  const studioExtra = quality.id === 'studio' ? 12 : 0;
+  return {
+    enabled: true,
+    parameterMs: Math.round(12 + glide * 118 + studioExtra),
+    gainMs: Math.round(8 + glide * 72 + studioExtra * 0.5),
+    spaceMs: Math.round(28 + glide * 180 + studioExtra),
+    visualMs: Math.round(80 + glide * 170),
+    noteGlide: Number(glide.toFixed(2)),
+  };
+}
+
 function buildMacroModulation(values) {
   return [
     { source: 'brightness', target: 'filter.frequency + oscillator partial brightness', amount: normalize(values.brightness) },
@@ -642,6 +655,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const dsp = applyModMatrixToDsp(baseDsp, modMatrix, values, xyPad, performance);
   const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options: outputOptions, presetDna });
   const quality = getQualityMode(layerData.qualityMode);
+  const controlSmoothing = buildControlSmoothing(performance, quality);
   const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, quality, layerData), outputMode);
   const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...outputOptions, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
@@ -660,6 +674,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     durationSeconds,
     macros: values,
     performance,
+    controlSmoothing,
     presetDna,
     qualityMode: layerData.qualityMode,
     sampleMix: layerData.sampleMix,
@@ -683,6 +698,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         ceiling: layerData.qualityMode === 'studio' ? 0.94 : 0.92,
         releaseMs: layerData.qualityMode === 'draft' ? 55 : 90,
       },
+      controlSmoothing,
       masterPolish,
     },
     toneGraph,
@@ -722,6 +738,7 @@ export function buildWorkletMessage(patch) {
       modMatrix: patch.modMatrix,
       fxOrder: patch.fxOrder,
       globalFx: patch.globalFx,
+      controlSmoothing: patch.controlSmoothing,
       engineMode: patch.engineMode,
       performance: patch.performance,
       toneGraph: patch.toneGraph,
@@ -1446,6 +1463,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     qualityMode: patch.qualityMode,
     presetDnaId: patch.presetDna.id,
     performance: patch.performance,
+    controlSmoothing: patch.controlSmoothing,
     outputMode: patch.outputMode,
     macros: patch.macros,
     layerMix: patch.layerMix,
