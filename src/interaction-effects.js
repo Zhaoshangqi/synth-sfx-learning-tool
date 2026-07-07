@@ -23,17 +23,11 @@ function findTactileTarget(event) {
 }
 
 function addPressState(target) {
-  target.classList.add('has-tactile', 'is-pressing');
+  target.classList.add('is-pressing');
   globalThis.setTimeout(() => target.classList.remove('is-pressing'), prefersReducedMotion ? 80 : 240);
 }
 
-function pulseAt(target, clientX, clientY) {
-  const rect = target.getBoundingClientRect();
-  const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-  const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
-
-  target.style.setProperty('--tap-x', `${x}px`);
-  target.style.setProperty('--tap-y', `${y}px`);
+function pulseAt(target) {
   addPressState(target);
 }
 
@@ -41,7 +35,7 @@ document.addEventListener('pointerdown', (event) => {
   const target = findTactileTarget(event);
   if (!target) return;
   if (isContinuousControl(event, target)) return;
-  pulseAt(target, event.clientX, event.clientY);
+  pulseAt(target);
 }, { passive: true });
 
 document.addEventListener('keydown', (event) => {
@@ -49,7 +43,5 @@ document.addEventListener('keydown', (event) => {
   const target = event.target?.closest?.(tactileSelector);
   if (!target) return;
   if (isContinuousControl(event, target)) return;
-
-  const rect = target.getBoundingClientRect();
-  pulseAt(target, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  pulseAt(target);
 });
