@@ -139,6 +139,18 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.match(css, /\.content\.is-same-view-rendering[\s\S]*transition:\s*none !important/);
 });
 
+test('same-view interactions do not call raw full-content render', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const withoutSwitchView = appJs.replace(/function switchView[\s\S]*?\r?\n}\r?\n\r?\nfunction rangePercentFromInput/, 'function rangePercentFromInput');
+  const withoutBootstrap = withoutSwitchView.replace(/\r?\nrender\(\);\s*$/, '');
+
+  assert.doesNotMatch(
+    withoutBootstrap,
+    /\brender\(\);/,
+    'only switchView and initial bootstrap may call raw render(); same-view controls must use renderSameView()',
+  );
+});
+
 test('background parallax is throttled and pauses during direct manipulation', () => {
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');

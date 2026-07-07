@@ -1966,7 +1966,7 @@ function stopAudition({ rerender = true } = {}) {
   audioPlayer.stop();
   state.isAuditioning = false;
   updateLiveMeter(0);
-  if (rerender) render();
+  if (rerender) renderSameView();
 }
 
 function bindDynamicForms() {
@@ -2024,7 +2024,7 @@ function bindSourceForm() {
     ];
     saveUserSources(userSources);
     sourceForm.reset();
-    render();
+    renderSameView();
   });
 }
 
@@ -2077,7 +2077,7 @@ function bindInteractiveLabControls() {
     button.addEventListener('click', () => {
       state.activeLabId = button.dataset.labId;
       refreshAuditionPatch();
-      render();
+      renderSameView();
     });
   });
 
@@ -2085,7 +2085,7 @@ function bindInteractiveLabControls() {
     button.addEventListener('click', () => {
       state.activeWaveform = button.dataset.waveform;
       refreshAuditionPatch();
-      render();
+      renderSameView();
     });
   });
 
@@ -2132,7 +2132,7 @@ function bindInteractiveLabControls() {
         [lab.id]: applyLabPreset(lab, button.dataset.labPreset),
       };
       refreshAuditionPatch();
-      render();
+      renderSameView();
     });
   });
 
@@ -2146,7 +2146,7 @@ function bindInteractiveLabControls() {
         [lab.id]: applyLabMacro(lab, currentState, button.dataset.labMacro),
       };
       refreshAuditionPatch();
-      render();
+      renderSameView();
     });
   });
 }
@@ -2358,7 +2358,7 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
     state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
   }
 
-  render();
+  renderSameView();
 
   globalThis.clearTimeout(patchPlayingTimer);
   patchPlayingTimer = globalThis.setTimeout(() => {
@@ -2755,7 +2755,7 @@ function bindMaterialControls() {
       } catch (error) {
         state.isPatchPlaying = false;
         state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
-        render();
+        renderSameView();
       }
     });
   });
@@ -2882,7 +2882,7 @@ function bindCommunityTechniqueControls() {
     button.addEventListener('click', () => {
       state.activeCommunityTechniqueId = button.dataset.communityTechnique;
       state.activeCommunitySynthRoute = 'serum';
-      render();
+      renderSameView();
     });
   });
 
@@ -2904,7 +2904,7 @@ function bindCommunityTechniqueControls() {
           ...preset.values,
         },
       };
-      render();
+      renderSameView();
     });
   });
 
@@ -2919,14 +2919,14 @@ function bindCommunityTechniqueControls() {
           ...scene.values,
         },
       };
-      render();
+      renderSameView();
     });
   });
 
   document.querySelectorAll('[data-community-synth-route]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeCommunitySynthRoute = button.dataset.communitySynthRoute || 'serum';
-      render();
+      renderSameView();
     });
   });
 
@@ -2944,7 +2944,7 @@ function bindDeepDiveControls() {
   document.querySelectorAll('[data-deep-id]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeDeepDiveId = button.dataset.deepId;
-      render();
+      renderSameView();
     });
   });
 }
