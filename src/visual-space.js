@@ -216,14 +216,14 @@ function scheduleSpaceParallaxCommit() {
   if (spaceParallaxFrame || prefersReducedMotion) return;
   spaceParallaxFrame = globalThis.requestAnimationFrame(() => {
     spaceParallaxFrame = 0;
-    if (document.documentElement.classList.contains('is-direct-manipulating')) return;
+    if (globalThis.__synthDirectManipulating) return;
     document.documentElement.style.setProperty('--space-x', pointer.tx.toFixed(3));
     document.documentElement.style.setProperty('--space-y', pointer.ty.toFixed(3));
   });
 }
 
 function updatePointerFromEvent(event) {
-  if (document.documentElement.classList.contains('is-direct-manipulating')) return;
+  if (globalThis.__synthDirectManipulating) return;
   pointer.screenX = event.clientX;
   pointer.screenY = event.clientY;
   pointer.tx = (event.clientX / Math.max(1, width) - 0.5) * 2;

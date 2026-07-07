@@ -104,7 +104,8 @@ test('tactile effects use class-only feedback and cannot flash the viewport', ()
     'local interaction states must not dim the full particle canvas because that reads as a viewport flash',
   );
   assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
-  assert.match(interactionJs, /is-local-interacting/, 'ordinary click feedback should enter the shared local interaction state');
+  assert.doesNotMatch(interactionJs, /document\.documentElement\.classList/, 'ordinary click feedback must not touch the html element because that can invalidate the whole viewport');
+  assert.doesNotMatch(interactionJs, /is-local-interacting/, 'ordinary click feedback should stay local to the pressed target');
   assert.match(interactionJs, /classList\.add\('is-pressing'\)/, 'tactile feedback should still provide local press state');
   assert.match(css, /\.is-pressing\s*\{[\s\S]*box-shadow/, 'press feedback should remain a local style, not a viewport layer');
 });
@@ -123,7 +124,7 @@ test('same-view Sound Lab interactions do not restart atlas entrance or glow ani
   assert.match(draggingBlock, /filter:\s*none/);
   assert.doesNotMatch(rangeShellBlock, /transition:\s*filter/, 'range drag should not animate filter because it repaints a wide control strip');
   assert.doesNotMatch(draggingFillBlock, /filter:/, 'range fill should not brighten via filter while dragging');
-  assert.match(css, /html\.is-direct-manipulating \.range-shell::after\s*\{[\s\S]*transition:\s*none !important/, 'dragging should update the range fill without delayed rail animation');
+  assert.match(css, /\.range-shell\.is-dragging::after\s*\{[\s\S]*transition:\s*none !important/, 'dragging should update the range fill without delayed rail animation');
   assert.doesNotMatch(css, /html\.is-local-interacting \.space-glow/, 'ordinary clicks must not pause broad background layers because that looks like a viewport flash');
   assert.doesNotMatch(css, /html\.is-direct-manipulating \.space-glow/, 'dragging controls must not pause broad background layers because that looks like a viewport flash');
   assert.doesNotMatch(css, /html\.is-(?:local-interacting|direct-manipulating)[\s\S]*\.signal-field span[\s\S]*animation-play-state:\s*paused !important/, 'interaction states should not stop global signal-field animation');
@@ -172,8 +173,8 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.match(appJs, /is-same-view-rendering/);
   assert.match(appJs, /sameViewScrollLock/);
   assert.match(appJs, /allowProgrammaticScroll/);
-  assert.match(appJs, /is-local-interacting/);
-  assert.match(appJs, /function\s+setLocalInteraction/);
+  assert.doesNotMatch(appJs, /is-local-interacting/);
+  assert.doesNotMatch(appJs, /function\s+setLocalInteraction/);
   assert.match(appJs, /style\.minHeight/);
   assert.match(appJs, /requestAnimationFrame/);
   assert.match(stabilizeBlock, /globalThis\.scrollX/);
@@ -194,10 +195,7 @@ test('same-view Sound Lab rerenders keep layout stable and suppress animation re
   assert.match(sameViewQuietMountBlock, /contain:\s*paint/);
   assert.doesNotMatch(sameViewQuietMountBlock, /filter:/, 'quiet mount should not visibly remove filters');
   assert.doesNotMatch(sameViewQuietMountBlock, /box-shadow:/, 'quiet mount should not visibly remove panel shadows');
-  assert.ok(sameViewSoundLabChildrenBlock, 'same-view Sound Lab child animations should be guarded while the new DOM mounts');
-  assert.match(sameViewSoundLabChildrenBlock, /animation:\s*none !important/);
-  assert.match(sameViewSoundLabChildrenBlock, /transition-duration:\s*0ms !important/);
-  assert.doesNotMatch(sameViewSoundLabChildrenBlock, /opacity:/, 'anti-flash guard must not dim the whole Sound Lab surface');
+  assert.strictEqual(sameViewSoundLabChildrenBlock, '', 'same-view guards must not blanket-disable every child transition because that reads as a screen flash');
 });
 
 test('same-view interactions do not call raw full-content render', () => {
@@ -234,16 +232,17 @@ test('Sound Lab playback updates runtime chrome without rebuilding the page', ()
 test('background parallax is throttled and pauses during direct manipulation', () => {
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  const directManipulationBlock = appJs.match(/function setDirectManipulation[\s\S]*?\r?\n}\r?\n\r?\nfunction setLocalInteraction/)?.[0] ?? '';
+  const directManipulationBlock = appJs.match(/function setDirectManipulation[\s\S]*?\r?\n}\r?\n\r?\nfunction updateVerticalRangeFromPointer/)?.[0] ?? '';
 
   assert.match(visualSpaceJs, /let\s+spaceParallaxFrame\s*=\s*0/);
   assert.match(visualSpaceJs, /requestAnimationFrame\(\(\)\s*=>\s*\{/);
-  assert.match(visualSpaceJs, /classList\.contains\('is-direct-manipulating'\)/);
+  assert.match(visualSpaceJs, /__synthDirectManipulating/);
   assert.match(appJs, /function\s+setDirectManipulation/);
   assert.match(appJs, /setDirectManipulation\(true\)/);
   assert.match(appJs, /setDirectManipulation\(false\)/);
   assert.ok(directManipulationBlock, 'direct manipulation should be easy to audit');
-  assert.doesNotMatch(directManipulationBlock, /setLocalInteraction\(isActive/, 'dragging sliders or XY pads must not pulse ordinary click feedback');
+  assert.match(directManipulationBlock, /__synthDirectManipulating/, 'dragging should pause parallax through a JS flag instead of a root CSS class');
+  assert.doesNotMatch(directManipulationBlock, /document\.documentElement\.classList/, 'dragging sliders or XY pads must not invalidate the whole document style tree');
 });
 
 test('Signal Atlas range drag avoids expensive filter flashes', () => {
@@ -275,6 +274,7 @@ test('sound lab controls expose larger touch targets and immediate tactile feedb
 
   assert.match(appJs, /applyImmediateControlFeedback/);
   assert.match(appJs, /data-live-value/);
+  assert.doesNotMatch(appJs, /classList\.add\('is-live-editing'\)/, 'range dragging should not repaint whole control cards on every input frame');
   assert.match(appJs, /syncSoundLabPatchSoon/);
   assert.match(css, /\.fx-chain-slot button[\s\S]*min-width:\s*34px/);
   assert.match(css, /\.library-sync-grid button[\s\S]*min-height:\s*38px/);
