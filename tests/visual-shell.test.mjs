@@ -10,6 +10,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.match(html, /class="signal-field"/);
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
+  assert.match(html, /rel="icon"/);
   assert.match(html, /src="\.\/src\/visual-space\.js"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
 });
@@ -73,6 +74,18 @@ test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
   assert.doesNotMatch(css, /\.content > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'default content children should not animate on every rerender');
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'view transitions should keep a scoped soft entrance');
   assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
+});
+
+test('tactile effects stay element-scoped and cannot flash the whole viewport', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const interactionJs = readFileSync(new URL('../src/interaction-effects.js', import.meta.url), 'utf8');
+  const tapSparkBlock = css.match(/\.tap-spark\s*\{[^}]*\}/)?.[0] ?? '';
+
+  assert.doesNotMatch(interactionJs, /document\.body\.append\(spark\)/, 'click feedback must not create fixed body-level flashes');
+  assert.match(interactionJs, /target\.append\(spark\)/, 'click feedback should render inside the pressed element');
+  assert.match(interactionJs, /if\s*\(isContinuousControl\(event,\s*target\)\)\s*return/, 'continuous controls should not run global tactile feedback');
+  assert.match(tapSparkBlock, /position:\s*absolute/, 'tap spark should be clipped by its host element');
+  assert.doesNotMatch(tapSparkBlock, /position:\s*fixed/, 'tap spark must not sit on the viewport layer');
 });
 
 test('sound lab professional controls stay contained and use premium dark surfaces', () => {
