@@ -58,6 +58,23 @@ test('range controls use smooth drag state and animation-frame chrome updates', 
   assert.match(css, /cursor:\s*grabbing/);
 });
 
+test('continuous Sound Lab controls avoid whole-page rerender flashes', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const interactionJs = readFileSync(new URL('../src/interaction-effects.js', import.meta.url), 'utf8');
+
+  const finishRangeBlock = appJs.match(/function finishSmoothRangeInput[\s\S]*?\r?\n}\r?\n\r?\nfunction bindSmoothRangeInput/)?.[0] ?? '';
+  const bindRangeBlock = appJs.match(/function bindSmoothRangeInput[\s\S]*?\r?\n}\r?\n\r?\nfunction getActiveLab/)?.[0] ?? '';
+
+  assert.ok(finishRangeBlock, 'finishSmoothRangeInput should remain an explicit range commit boundary');
+  assert.ok(bindRangeBlock, 'bindSmoothRangeInput should remain the shared range binding');
+  assert.doesNotMatch(finishRangeBlock, /render\(/, 'range commit must not rebuild the whole app');
+  assert.doesNotMatch(bindRangeBlock, /scheduleRangeCommitRender/, 'input updates should stay local while dragging or typing');
+  assert.doesNotMatch(css, /\.content > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'default content children should not animate on every rerender');
+  assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*v3-panel-in/, 'view transitions should keep a scoped soft entrance');
+  assert.match(interactionJs, /isContinuousControl/, 'tactile effects should skip continuous controls such as range sliders and XY pads');
+});
+
 test('sound lab professional controls stay contained and use premium dark surfaces', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
