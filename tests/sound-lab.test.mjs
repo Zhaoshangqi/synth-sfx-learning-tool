@@ -254,6 +254,35 @@ test('sound quality exposes beginner-readable comfort bus metrics', () => {
   assert.ok(comfort.value >= 30);
 });
 
+test('sound lab exposes perceptual calibration for gain-matched comfortable synthesis', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 86,
+    motion: 54,
+    material: 88,
+    space: 46,
+    variation: 48,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    layerMix: { transient: 88, body: 76, texture: 58, tail: 42 },
+  });
+
+  const bus = model.patch.globalFx.masterPolish.comfortBus;
+  assert.ok(bus.loudnessMatch > 0.72 && bus.loudnessMatch <= 1.05, 'comfort bus should keep loudness comparable');
+  assert.ok(bus.monoAnchor > 0.05, 'comfort bus should anchor low/body energy for translation');
+  assert.ok(bus.tailDuck > 0.04, 'comfort bus should keep reverb/tail away from the transient');
+  assert.ok(bus.widthTrim >= 0.02, 'comfort bus should trim excessive side width before limiting');
+
+  assert.ok(model.polishCalibration, 'view model should expose a beginner-facing quality calibration checklist');
+  assert.deepEqual(model.polishCalibration.steps.map((step) => step.id), ['level', 'harsh', 'transient', 'stereo', 'tail']);
+  assert.ok(model.polishCalibration.steps.every((step) => step.listenZh && step.actionZh && typeof step.value === 'number'));
+  assert.match(model.polishCalibration.summaryZh, /响度|刺耳|声像|尾巴/);
+  assert.match(model.polishCalibration.steps.find((step) => step.id === 'level').actionZh, /Raw|Comfort|Studio|-14 LUFS/);
+});
+
 test('sound lab exposes raw comfort studio output comparison for listening practice', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const rawPatch = buildSoundLabPatch(family, SOUND_LAB_MACROS, { outputMode: 'raw' });

@@ -312,6 +312,10 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     deHarsh: clamp(0.14 + brightness * 0.24 + textureMix * 0.18 + material * 0.08 + studioBonus * 0.52, 0.08, 0.62),
     headroom: clamp(0.045 + transientMix * 0.026 + material * 0.024 + (quality.id === 'studio' ? 0.038 : 0.018), 0.035, 0.15),
     airTame: clamp(0.08 + brightness * 0.16 + variation * 0.1 + textureMix * 0.08, 0.05, 0.46),
+    loudnessMatch: clamp(0.99 - transientMix * 0.035 - material * 0.032 - tailMix * 0.018 + studioBonus * 0.04, 0.82, 1.03),
+    monoAnchor: clamp(0.07 + material * 0.12 + transientMix * 0.12 + (1 - space) * 0.04 + studioBonus * 0.18, 0.04, 0.36),
+    widthTrim: clamp(0.03 + space * 0.08 + tailMix * 0.05 + studioBonus * 0.12, 0.02, 0.24),
+    tailDuck: clamp(0.05 + transientMix * 0.14 + tailMix * 0.08 + material * 0.04 + studioBonus * 0.12, 0.04, 0.3),
   };
 
   return {
@@ -344,6 +348,10 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
         deHarsh: 0,
         headroom: 0.035,
         airTame: 0,
+        loudnessMatch: 1,
+        monoAnchor: 0,
+        widthTrim: 0,
+        tailDuck: 0,
       },
     };
   }
@@ -816,6 +824,65 @@ function buildSoundQuality(patch) {
   ];
 }
 
+function buildPolishCalibration(patch) {
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
+  const percent = (value, scale = 1) => Math.round(clamp((value ?? 0) * scale, 0, 1) * 100);
+  const loudness = clamp(comfortBus.loudnessMatch ?? 1, 0.72, 1.05);
+  const headroom = clamp(comfortBus.headroom ?? 0, 0, 0.22);
+  const deHarsh = clamp(comfortBus.deHarsh ?? 0, 0, 1);
+  const transientHold = clamp(polish.transientHold ?? 0, 0, 1);
+  const stereoSafety = clamp((comfortBus.monoAnchor ?? 0) * 0.62 + (comfortBus.widthTrim ?? 0) * 0.88, 0, 1);
+  const tailDuck = clamp(comfortBus.tailDuck ?? 0, 0, 1);
+
+  return {
+    mode: polish.mode ?? patch.outputMode ?? 'comfort',
+    summaryZh: '把响度、刺耳边缘、瞬态、声像和尾巴拆开检查，避免只因为更大声就误以为音质更好。',
+    steps: [
+      {
+        id: 'level',
+        labelZh: '响度匹配',
+        value: Math.round(loudness * 100),
+        listenZh: 'Raw / Comfort / Studio 切换时，主体大小应接近，只听质感差异。',
+        actionZh: '在 REAPER 用 -14 LUFS 参考响度 A/B；先匹配音量，再判断 Comfort 或 Studio 是否真的更稳。',
+      },
+      {
+        id: 'harsh',
+        labelZh: '刺耳控制',
+        value: percent(deHarsh, 1.6),
+        listenZh: '重点听 3k-8k 是否扎耳，金属噪声是否只剩薄亮。',
+        actionZh: '调低 brightness、air 或 de-harsh 相关宏；Serum / Vital 里优先检查 filter drive 与高频 noise。',
+      },
+      {
+        id: 'transient',
+        labelZh: '瞬态保留',
+        value: percent(transientHold, 1.2),
+        listenZh: '确认 click / hit 的第一下没有被空间和 limiter 吃掉。',
+        actionZh: '先保留 dry transient，再加 body 和 tail；Phase Plant 可把 transient layer 单独进短包络。',
+      },
+      {
+        id: 'stereo',
+        labelZh: '声像锚定',
+        value: percent(stereoSafety, 2.4),
+        listenZh: '低频和主体应在中间，宽度主要来自 texture 与 tail。',
+        actionZh: '用 mono 检查低频居中；需要宽时只扩高频、颗粒或 reverb return，不扩整个 body。',
+      },
+      {
+        id: 'tail',
+        labelZh: '尾巴避让',
+        value: percent(tailDuck, 2.8),
+        listenZh: '空间尾巴不应盖住起音，尾音应在瞬态之后自然浮出来。',
+        actionZh: '给 reverb/delay 做 predelay 或 duck；导出 dry / full / tail-only 三版做对照。',
+      },
+    ],
+    meters: [
+      { id: 'headroom', labelZh: 'Headroom', value: percent(headroom, 7.2), detailZh: `${formatQualityNumber(headroom * 100)}% safety` },
+      { id: 'match', labelZh: 'Match', value: Math.round(loudness * 100), detailZh: `${formatQualityNumber(loudness)}x` },
+      { id: 'mono', labelZh: 'Mono', value: percent(comfortBus.monoAnchor ?? 0, 3.2), detailZh: 'body anchor' },
+    ],
+  };
+}
+
 function formatQualityNumber(value) {
   return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : '0';
 }
@@ -1250,6 +1317,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     macros: macroList,
     meters: buildMeters(patch),
     soundQuality: buildSoundQuality(patch),
+    polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint: buildWaveformFingerprint(patch),
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),

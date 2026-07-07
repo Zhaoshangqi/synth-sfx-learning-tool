@@ -599,6 +599,30 @@ test('renderSoundLabWorkbench explains synth realism controls in the quality car
   assert.match(html, /合成器真实感/);
 });
 
+test('renderSoundLabWorkbench renders perceptual calibration as beginner quality guidance', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 86,
+    motion: 54,
+    material: 88,
+    space: 46,
+    variation: 48,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /polish-calibration-panel/);
+  assert.match(html, /Perceptual Calibration|音质校准/);
+  assert.match(html, /响度匹配/);
+  assert.match(html, /刺耳控制/);
+  assert.match(html, /低频居中|声像锚定/);
+  assert.match(html, /尾巴避让/);
+  assert.match(html, /Raw|Comfort|Studio|-14 LUFS/);
+});
+
 test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvases', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {

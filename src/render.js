@@ -2071,6 +2071,9 @@ function renderWorkbenchQuality(model = {}) {
       noteZh: item.type ?? 'FX',
     }))
   ).slice(0, 6);
+  const calibration = model.polishCalibration ?? {};
+  const calibrationSteps = calibration.steps ?? [];
+  const calibrationMeters = calibration.meters ?? [];
   return `
     <section class="workbench-panel patch-quality-card" aria-label="合成器真实感">
       <div class="mini-panel-head"><strong>合成器真实感</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>
@@ -2084,6 +2087,37 @@ function renderWorkbenchQuality(model = {}) {
           </div>
         `).join('')}
       </div>
+      ${calibrationSteps.length ? `
+        <div class="polish-calibration-panel" aria-label="Perceptual Calibration 音质校准">
+          <div class="calibration-panel-head">
+            <span>Perceptual Calibration</span>
+            <strong>音质校准</strong>
+            <p>${escapeHtml(calibration.summaryZh ?? '')}</p>
+          </div>
+          <div class="calibration-meter-row">
+            ${calibrationMeters.map((meter) => `
+              <div class="calibration-meter" style="--calibration-value:${formatNumber(meter.value ?? 0)}%">
+                <span>${escapeHtml(meter.labelZh)}</span>
+                <strong>${escapeHtml(String(meter.value ?? 0))}</strong>
+                <small>${escapeHtml(meter.detailZh ?? '')}</small>
+              </div>
+            `).join('')}
+          </div>
+          <div class="calibration-step-grid">
+            ${calibrationSteps.map((step, index) => `
+              <div class="calibration-step">
+                <div>
+                  <span>${String(index + 1).padStart(2, '0')}</span>
+                  <strong>${escapeHtml(step.labelZh)}</strong>
+                  <em>${escapeHtml(String(step.value ?? 0))}%</em>
+                </div>
+                <p>${escapeHtml(step.listenZh)}</p>
+                <small>${escapeHtml(step.actionZh)}</small>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
     </section>
   `;
 }
