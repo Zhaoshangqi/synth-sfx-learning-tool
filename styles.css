@@ -12559,17 +12559,8 @@ button:disabled,
   overflow-anchor: none;
 }
 
-html.is-direct-manipulating .range-shell::after {
+.range-shell.is-dragging::after {
   transition: none !important;
-}
-
-html.is-direct-manipulating .lab-control.is-live-editing,
-html.is-direct-manipulating .macro-knob.is-live-editing,
-html.is-direct-manipulating .mod-matrix-row.is-live-editing,
-html.is-direct-manipulating .macro-morph-card.is-live-editing,
-html.is-direct-manipulating .performance-control.is-live-editing,
-html.is-direct-manipulating .layer-control.is-live-editing {
-  box-shadow: none;
 }
 
 .content:not(.is-view-switching) .signal-atlas-console::after,
@@ -12591,11 +12582,4 @@ html.is-direct-manipulating .layer-control.is-live-editing {
   animation: none !important;
   transition: none !important;
   contain: paint;
-}
-
-.content.is-same-view-rendering .sound-lab-shell *,
-.content.is-same-view-rendering .sound-lab-shell *::before,
-.content.is-same-view-rendering .sound-lab-shell *::after {
-  animation: none !important;
-  transition-duration: 0ms !important;
 }

@@ -223,7 +223,6 @@ let soundLabPatchFrame = 0;
 let quietRenderFrame = 0;
 let activeRangeInput = null;
 let directManipulationTimer = 0;
-let localInteractionTimer = 0;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
 const sameViewScrollLock = { x: 0, y: 0, allowProgrammaticScroll: false };
@@ -1326,27 +1325,14 @@ function rangePercentFromInput(input) {
 }
 
 function setDirectManipulation(isActive) {
-  const root = document.documentElement;
   globalThis.clearTimeout(directManipulationTimer);
+  globalThis.__synthDirectManipulating = Boolean(isActive);
   if (isActive) {
-    root.classList.add('is-direct-manipulating');
     return;
   }
   directManipulationTimer = globalThis.setTimeout(() => {
-    root.classList.remove('is-direct-manipulating');
+    globalThis.__synthDirectManipulating = false;
   }, 80);
-}
-
-function setLocalInteraction(isActive, holdMs = 120) {
-  const root = document.documentElement;
-  globalThis.clearTimeout(localInteractionTimer);
-  if (isActive) {
-    root.classList.add('is-local-interacting');
-    return;
-  }
-  localInteractionTimer = globalThis.setTimeout(() => {
-    root.classList.remove('is-local-interacting');
-  }, holdMs);
 }
 
 function updateVerticalRangeFromPointer(input, event) {
@@ -1386,13 +1372,6 @@ function applyImmediateControlFeedback(input) {
   const unit = input.dataset.controlUnit ?? '';
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
   control?.setAttribute('data-live-value', `${input.value}${unit}`);
-  control?.classList.add('is-live-editing');
-  globalThis.clearTimeout(control?._liveEditingTimer);
-  if (control) {
-    control._liveEditingTimer = globalThis.setTimeout(() => {
-      control.classList.remove('is-live-editing');
-    }, 160);
-  }
 }
 
 function scheduleRangeChromeUpdate(input) {
