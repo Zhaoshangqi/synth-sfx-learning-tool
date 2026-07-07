@@ -1899,7 +1899,10 @@ async function handleWorkbenchAction(action, button) {
     state.soundLabWorkflowStep = 'shape';
     state.activeAtlasNode = 'modulation';
     state.activeWorkbenchModuleMapId = 'mod-matrix';
+    state.activeAdvancedModule = 'mod-matrix';
+    state.activeWorkbenchModule = 'modulation';
     renderSameView();
+    scrollSoundLabIntoView('.modulation-panel');
     return;
   }
 
