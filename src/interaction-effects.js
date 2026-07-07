@@ -5,6 +5,15 @@ const tactileSelector = [
 ].join(',');
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+let localInteractionTimer = 0;
+
+function pulseLocalInteraction() {
+  globalThis.clearTimeout(localInteractionTimer);
+  document.documentElement.classList.add('is-local-interacting');
+  localInteractionTimer = globalThis.setTimeout(() => {
+    document.documentElement.classList.remove('is-local-interacting');
+  }, prefersReducedMotion ? 100 : 220);
+}
 
 function isContinuousControl(event, target) {
   const source = event?.target;
@@ -23,6 +32,7 @@ function findTactileTarget(event) {
 }
 
 function addPressState(target) {
+  pulseLocalInteraction();
   target.classList.add('is-pressing');
   globalThis.setTimeout(() => target.classList.remove('is-pressing'), prefersReducedMotion ? 80 : 240);
 }

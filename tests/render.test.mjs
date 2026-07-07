@@ -220,6 +220,12 @@ test('renderSoundLabWorkbench exposes AudioWorklet controls, A/B comparison, and
   assert.match(html, /data-sound-lab-play/);
   assert.match(html, /data-sound-lab-ab="a"/);
   assert.match(html, /data-sound-lab-ab="b"/);
+  assert.match(html, /data-output-compare="raw"/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /data-output-compare="studio"/);
+  assert.match(html, /Raw/);
+  assert.match(html, /Comfort/);
+  assert.match(html, /Studio/);
   assert.match(html, /data-sound-lab-control="brightness"/);
   assert.match(html, /data-sound-lab-control="material"/);
   assert.match(html, /AudioWorklet/);

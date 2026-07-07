@@ -162,6 +162,7 @@ const state = {
   activeSoundFamilyId: soundLabFamilies[0]?.id,
   activeSoundPresetDnaId: getPresetDnaForFamily(soundLabFamilies[0]?.id)[0]?.id,
   soundLabQualityMode: 'balanced',
+  soundLabOutputMode: 'comfort',
   soundLabLayerMix: { ...SOUND_LAB_LAYER_MIX },
   soundLabSampleMix: 0.58,
   soundLabEngineMode: 'hq',
@@ -222,6 +223,7 @@ let soundLabPatchFrame = 0;
 let quietRenderFrame = 0;
 let activeRangeInput = null;
 let directManipulationTimer = 0;
+let localInteractionTimer = 0;
 let midiAccess = null;
 const pendingRangeInputs = new Set();
 
@@ -726,6 +728,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.activeSoundFamilyId = family.id;
   state.activeSoundPresetDnaId = presetDna?.id;
   state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
+  state.soundLabOutputMode = 'comfort';
   state.soundLabPerformance = { ...SOUND_LAB_PERFORMANCE_DEFAULTS };
   state.soundLabEnvelope = {};
   state.soundLabFxOrder = [...SOUND_LAB_FX_ORDER];
@@ -747,6 +750,7 @@ function getSoundLabOptions(optionOverrides = {}) {
   return {
     presetId: state.activeSoundPresetDnaId,
     qualityMode: state.soundLabQualityMode,
+    outputMode: state.soundLabOutputMode,
     sampleMix: state.soundLabSampleMix,
     layerMix: state.soundLabLayerMix,
     engineMode: state.soundLabEngineMode,
@@ -783,6 +787,31 @@ function getSoundLabModel(macroOverrides = {}, optionOverrides = {}) {
     { ...state.soundLabMacros, ...macroOverrides },
     getSoundLabOptions(optionOverrides),
   );
+}
+
+function buildOutputCompareOverrides(mode = 'comfort') {
+  if (mode === 'raw') {
+    return {
+      outputMode: 'raw',
+      engineMode: 'webaudio',
+      qualityMode: 'draft',
+      layerMix: { ...state.soundLabLayerMix, texture: 0, tail: Math.min(state.soundLabLayerMix.tail ?? 0, 18) },
+    };
+  }
+
+  if (mode === 'studio') {
+    return {
+      outputMode: 'studio',
+      engineMode: 'hq',
+      qualityMode: 'studio',
+    };
+  }
+
+  return {
+    outputMode: 'comfort',
+    engineMode: state.soundLabEngineMode,
+    qualityMode: state.soundLabQualityMode,
+  };
 }
 
 function renderSoundLabView() {
@@ -1175,6 +1204,7 @@ function stabilizeSameViewRender() {
     quietRenderFrame = 0;
   }
 
+  setLocalInteraction(true);
   const currentHeight = app.getBoundingClientRect?.().height ?? 0;
   app.classList.add('is-same-view-rendering');
   if (currentHeight > 0) app.style.minHeight = `${Math.ceil(currentHeight)}px`;
@@ -1184,6 +1214,7 @@ function releaseSameViewRender() {
   quietRenderFrame = globalThis.requestAnimationFrame(() => {
     app.classList.remove('is-same-view-rendering');
     app.style.minHeight = '';
+    setLocalInteraction(false, 180);
     quietRenderFrame = 0;
   });
 }
@@ -1267,6 +1298,7 @@ function rangePercentFromInput(input) {
 function setDirectManipulation(isActive) {
   const root = document.documentElement;
   globalThis.clearTimeout(directManipulationTimer);
+  setLocalInteraction(isActive, 140);
   if (isActive) {
     root.classList.add('is-direct-manipulating');
     return;
@@ -1274,6 +1306,18 @@ function setDirectManipulation(isActive) {
   directManipulationTimer = globalThis.setTimeout(() => {
     root.classList.remove('is-direct-manipulating');
   }, 80);
+}
+
+function setLocalInteraction(isActive, holdMs = 120) {
+  const root = document.documentElement;
+  globalThis.clearTimeout(localInteractionTimer);
+  if (isActive) {
+    root.classList.add('is-local-interacting');
+    return;
+  }
+  localInteractionTimer = globalThis.setTimeout(() => {
+    root.classList.remove('is-local-interacting');
+  }, holdMs);
 }
 
 function updateVerticalRangeFromPointer(input, event) {
@@ -2570,6 +2614,19 @@ function bindSoundLabControls() {
           ? { engineMode: 'webaudio', qualityMode: 'draft', layerMix: { ...state.soundLabLayerMix, texture: 0, tail: 0 } }
           : { engineMode: state.soundLabEngineMode },
       );
+    });
+  });
+
+  document.querySelectorAll('[data-output-compare]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.outputCompare ?? 'comfort';
+      state.soundLabOutputMode = ['raw', 'comfort', 'studio'].includes(mode) ? mode : 'comfort';
+      state.workbenchActionFeedback = {
+        raw: 'Raw 输出：关闭 polish，专门听刺耳边缘、动态拥挤和未整理的频段。',
+        comfort: 'Comfort 输出：开启 de-harsh 和 headroom，听声音是否更稳、更不扎耳。',
+        studio: 'Studio 输出：使用高质量抛光链，检查最终交付质感和响度。',
+      }[state.soundLabOutputMode];
+      playSoundLabPatch({}, buildOutputCompareOverrides(state.soundLabOutputMode));
     });
   });
 

@@ -331,6 +331,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   applyMasterPolish(sample, state) {
     const polish = this.patch?.globalFx?.masterPolish || {};
+    if (polish.enabled === false) return clamp(sample * clamp(polish.bodyGain ?? 0.96, 0.72, 1.04), -1.2, 1.2);
     const glue = clamp(polish.glue ?? 0, 0, 1);
     const lowTighten = clamp(polish.lowTighten ?? 0, 0, 1);
     const airGuard = clamp(polish.airGuard ?? 0, 0, 1);

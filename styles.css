@@ -11825,8 +11825,10 @@ button:disabled,
 }
 
 /* Signal Atlas Console v4.5 interaction anti-flash pass */
-.content:not(.is-view-switching) > * {
-  animation: none;
+.content:not(.is-view-switching) *,
+.content:not(.is-view-switching) *::before,
+.content:not(.is-view-switching) *::after {
+  animation: none !important;
 }
 
 .signal-atlas-console .atlas-signal-node,
@@ -11839,11 +11841,96 @@ button:disabled,
   touch-action: none;
 }
 
+.output-compare-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.output-compare-strip button {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid rgba(174, 183, 198, 0.14);
+  border-radius: 7px;
+  background: rgba(18, 24, 38, 0.58);
+  color: var(--v3-body);
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.output-compare-strip button:hover,
+.output-compare-strip button:focus-visible,
+.output-compare-strip button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(110, 231, 249, 0.42);
+  background: rgba(110, 231, 249, 0.12);
+  color: var(--v3-text);
+  box-shadow: 0 12px 24px rgba(4, 10, 18, 0.2), 0 0 20px rgba(110, 231, 249, 0.08);
+}
+
+.output-compare-strip button:active {
+  transform: translateY(1px) scale(0.992);
+}
+
+.output-compare-strip strong,
+.output-compare-strip span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.output-compare-strip strong {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.output-compare-strip span,
+.output-compare-hint {
+  color: rgba(174, 183, 198, 0.76);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.output-compare-hint {
+  margin: 8px 0 0;
+}
+
 /* Same-view interaction anti-flash guard */
 .content.is-same-view-rendering,
 .content.is-same-view-rendering * {
   animation: none !important;
   transition: none !important;
+}
+
+html.is-local-interacting .space-glow,
+html.is-local-interacting .signal-field span,
+html.is-direct-manipulating .space-glow,
+html.is-direct-manipulating .signal-field span {
+  animation-play-state: paused !important;
+}
+
+html.is-local-interacting #particle-canvas,
+html.is-direct-manipulating #particle-canvas {
+  opacity: 0.22;
+}
+
+html.is-direct-manipulating .range-shell::after {
+  transition: none !important;
+}
+
+html.is-direct-manipulating .lab-control.is-live-editing,
+html.is-direct-manipulating .macro-knob.is-live-editing,
+html.is-direct-manipulating .mod-matrix-row.is-live-editing,
+html.is-direct-manipulating .macro-morph-card.is-live-editing,
+html.is-direct-manipulating .performance-control.is-live-editing,
+html.is-direct-manipulating .layer-control.is-live-editing {
+  box-shadow: none;
 }
 
 .content:not(.is-view-switching) .signal-atlas-console::after,
