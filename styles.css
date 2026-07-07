@@ -10461,7 +10461,7 @@ button:disabled,
 
 .signal-atlas-console .range-shell input,
 .signal-atlas-console input[type="range"] {
-  transition: filter 160ms ease, transform 160ms ease;
+  transition: transform 120ms ease;
 }
 
 .signal-atlas-console .range-shell.is-dragging input,
@@ -11840,6 +11840,12 @@ button:disabled,
 }
 
 /* Same-view interaction anti-flash guard */
+.content.is-same-view-rendering,
+.content.is-same-view-rendering * {
+  animation: none !important;
+  transition: none !important;
+}
+
 .content:not(.is-view-switching) .signal-atlas-console::after,
 .content:not(.is-view-switching) .signal-atlas-console .atlas-orb,
 .content:not(.is-view-switching) .signal-atlas-console .atlas-signal-node,

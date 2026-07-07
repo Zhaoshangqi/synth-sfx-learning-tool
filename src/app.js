@@ -219,6 +219,7 @@ state.soundLabMidiMappings = Array.isArray(savedSoundLabLibrary.midiMappings) ? 
 let patchPlayingTimer = null;
 let rangeChromeFrame = 0;
 let soundLabPatchFrame = 0;
+let quietRenderFrame = 0;
 let activeRangeInput = null;
 let directManipulationTimer = 0;
 let midiAccess = null;
@@ -739,7 +740,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.activeWorkbenchModule = 'generator';
   state.workbenchActionFeedback = `已切换到 ${family.titleZh.split('：')[0]}：先听 dry 主体，再进入参数塑形。`;
   syncSoundLabPatchSoon();
-  if (shouldRender) render();
+  if (shouldRender) renderSameView();
 }
 
 function getSoundLabOptions(optionOverrides = {}) {
@@ -1168,7 +1169,29 @@ function renderIntegrationsView() {
   `;
 }
 
-function render() {
+function stabilizeSameViewRender() {
+  if (quietRenderFrame) {
+    globalThis.cancelAnimationFrame(quietRenderFrame);
+    quietRenderFrame = 0;
+  }
+
+  const currentHeight = app.getBoundingClientRect?.().height ?? 0;
+  app.classList.add('is-same-view-rendering');
+  if (currentHeight > 0) app.style.minHeight = `${Math.ceil(currentHeight)}px`;
+}
+
+function releaseSameViewRender() {
+  quietRenderFrame = globalThis.requestAnimationFrame(() => {
+    app.classList.remove('is-same-view-rendering');
+    app.style.minHeight = '';
+    quietRenderFrame = 0;
+  });
+}
+
+function render(options = {}) {
+  const quiet = options.quiet === true;
+  if (quiet) stabilizeSameViewRender();
+
   tabs.forEach((tab) => {
     const isActive = tab.dataset.view === state.view;
     tab.classList.toggle('is-active', isActive);
@@ -1198,6 +1221,11 @@ function render() {
   };
   app.innerHTML = views[state.view]();
   bindDynamicForms();
+  if (quiet) releaseSameViewRender();
+}
+
+function renderSameView() {
+  render({ quiet: true });
 }
 
 function switchView(nextView, options = {}) {
@@ -1530,7 +1558,7 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
   if (moduleId === 'fx-chain') state.activeWorkbenchModule = 'effects';
   if (moduleId === 'mod-matrix') state.activeWorkbenchModule = 'modulation';
   if (moduleId === 'envelope-editor') state.activeWorkbenchModule = 'envelope';
-  if (shouldRender) render();
+  if (shouldRender) renderSameView();
 }
 
 function handleWorkbenchStep(step, atlasNode = '') {
@@ -1585,7 +1613,7 @@ function handleWorkbenchStep(step, atlasNode = '') {
     state.activeWorkbenchModule = target.workbenchModule;
     state.activeAdvancedModule = target.advancedModule;
     state.activeWorkbenchModuleMapId = target.moduleMap;
-    render();
+    renderSameView();
     scrollSoundLabIntoView(target.selector);
     return;
   }
@@ -1624,7 +1652,7 @@ function handleWorkbenchStep(step, atlasNode = '') {
   state.activeWorkbenchModule = moduleByStep[step] ?? state.activeWorkbenchModule;
   state.activeAdvancedModule = advancedByStep[step] ?? state.activeAdvancedModule;
   state.activeWorkbenchModuleMapId = mapByStep[step] ?? state.activeWorkbenchModuleMapId;
-  render();
+  renderSameView();
   scrollSoundLabIntoView(scrollByStep[step] ?? '.sound-lab-workbench');
 }
 
@@ -1680,7 +1708,7 @@ function handleWorkbenchModuleJump(moduleId) {
   state.activeWorkbenchModule = target.workbenchModule;
   state.activeAdvancedModule = target.advancedModule;
   state.activeWorkbenchModuleMapId = moduleId;
-  render();
+  renderSameView();
   scrollSoundLabIntoView(target.selector);
 }
 
@@ -1693,7 +1721,7 @@ function showWorkbenchActionFeedback(message, button) {
     workbenchConfirmTimer = globalThis.setTimeout(() => {
       if (state.confirmedWorkbenchAction === action) {
         state.confirmedWorkbenchAction = '';
-        render();
+        renderSameView();
       }
     }, 650);
   }
@@ -1712,7 +1740,7 @@ async function handleWorkbenchAction(action, button) {
     state.workbenchActionFeedback = copied
       ? WORKBENCH_ACTION_MESSAGES[action]
       : '复制受限：浏览器没有开放剪贴板权限，可以从下方 Patch JSON / REAPER Notes 手动复制。';
-    render();
+    renderSameView();
     return;
   }
 
@@ -1723,13 +1751,13 @@ async function handleWorkbenchAction(action, button) {
 
   if (action === 'toggle-more') {
     state.soundLabMoreOpen = !state.soundLabMoreOpen;
-    render();
+    renderSameView();
     return;
   }
 
   if (action === 'randomize-patch') {
     randomizeSoundLabMacros();
-    render();
+    renderSameView();
     return;
   }
 
@@ -1744,7 +1772,7 @@ async function handleWorkbenchAction(action, button) {
     state.activeWorkbenchModuleMapId = 'source';
     state.activeAdvancedModule = 'advanced';
     state.activeWorkbenchModule = 'generator';
-    render();
+    renderSameView();
     scrollSoundLabIntoView('.waveform-detective-panel');
     return;
   }
@@ -1760,7 +1788,7 @@ async function handleWorkbenchAction(action, button) {
     state.activeWorkbenchModuleMapId = 'compare';
     state.activeAdvancedModule = 'ab-compare';
     state.activeWorkbenchModule = 'macro';
-    render();
+    renderSameView();
     scrollSoundLabIntoView('.practice-loop-panel');
     return;
   }
@@ -1771,7 +1799,7 @@ async function handleWorkbenchAction(action, button) {
     state.activeWorkbenchModuleMapId = 'coach';
     state.activeAdvancedModule = 'mod-matrix';
     state.activeWorkbenchModule = 'modulation';
-    render();
+    renderSameView();
     scrollSoundLabIntoView('.workbench-coach-panel');
     return;
   }
@@ -1786,7 +1814,7 @@ async function handleWorkbenchAction(action, button) {
     state.soundLabWorkflowStep = 'shape';
     state.activeAtlasNode = 'modulation';
     state.activeWorkbenchModuleMapId = 'mod-matrix';
-    render();
+    renderSameView();
     return;
   }
 
@@ -1796,7 +1824,7 @@ async function handleWorkbenchAction(action, button) {
     state.activeWorkbenchModuleMapId = 'source';
     state.activeAdvancedModule = 'advanced';
     state.activeWorkbenchModule = 'generator';
-    render();
+    renderSameView();
     scrollSoundLabIntoView('.sound-family-rail');
     return;
   }
@@ -1808,7 +1836,7 @@ async function handleWorkbenchAction(action, button) {
   }
 
   state.workbenchActionFeedback = '未识别的工作台按钮：这次点击没有可执行目标。';
-  render();
+  renderSameView();
 }
 
 function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
@@ -1827,7 +1855,7 @@ function applySynthModGuide(guideId, { loadPatch = false, play = false } = {}) {
     state.soundLabMacros = { ...state.soundLabMacros, ...(guide.macroHints ?? {}) };
     state.soundLabLayerMix = { ...state.soundLabLayerMix, ...(guide.layerMix ?? {}) };
   }
-  render();
+  renderSameView();
   scrollSoundLabIntoView('.workbench-coach-panel');
   if (play) playSoundLabPatch();
 }
@@ -1931,7 +1959,7 @@ async function startAudition() {
     state.isAuditioning = false;
     state.audioError = error instanceof Error ? error.message : 'Audio could not start.';
   }
-  render();
+  renderSameView();
 }
 
 function stopAudition({ rerender = true } = {}) {
@@ -2016,7 +2044,7 @@ function bindDailyVideoControls() {
   document.querySelectorAll('[data-daily-filter]').forEach((button) => {
     button.addEventListener('click', () => {
       state.dailyVideoFilter = button.dataset.dailyFilter || 'all';
-      render();
+      renderSameView();
     });
   });
 
@@ -2162,7 +2190,7 @@ function moveFxSlot(slotId, direction) {
   order.splice(nextIndex, 0, slot);
   state.soundLabFxOrder = order;
   syncActiveSoundLabPatch();
-  render();
+  renderSameView();
 }
 
 function updateXyPadFromPointer(pad, event) {
@@ -2200,7 +2228,7 @@ function randomizeSoundLabMacros() {
 
 function setAbSlot(slot) {
   state.soundLabAbSlot = slot === 'b' ? 'b' : 'a';
-  render();
+  renderSameView();
 }
 
 function toggleFavoritePatch() {
@@ -2210,7 +2238,7 @@ function toggleFavoritePatch() {
     ? state.soundLabFavorites.filter((id) => id !== patchKey)
     : [patchKey, ...state.soundLabFavorites];
   saveSoundLabLibrary();
-  render();
+  renderSameView();
 }
 
 function saveCurrentPatchToProject() {
@@ -2227,7 +2255,7 @@ function saveCurrentPatchToProject() {
     ];
   }
   saveSoundLabLibrary();
-  render();
+  renderSameView();
 }
 
 function utf8ToBase64(value) {
@@ -2307,7 +2335,7 @@ async function runGitPresetSync(action, button) {
   }
   button.textContent = original;
   globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
-  render();
+  renderSameView();
 }
 
 async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
@@ -2315,7 +2343,7 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   const patch = model.patch;
   state.isSoundLabPlaying = true;
   state.isAuditioning = false;
-  render();
+  renderSameView();
 
   try {
     const result = await audioPlayer.playSoundLabPatch(patch, {
@@ -2335,7 +2363,7 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   globalThis.clearTimeout(patchPlayingTimer);
   patchPlayingTimer = globalThis.setTimeout(() => {
     state.isSoundLabPlaying = false;
-    render();
+    renderSameView();
   }, Math.max(520, patch.durationSeconds * 1000 + 520));
 }
 
@@ -2358,7 +2386,7 @@ function bindSoundLabControls() {
       if (!(synthId in WORKBENCH_SYNTH_TO_COACH_SYNTH)) return;
       state.activeWorkbenchSynth = synthId;
       state.activeCoachSynth = WORKBENCH_SYNTH_TO_COACH_SYNTH[synthId];
-      render();
+      renderSameView();
     });
   });
 
@@ -2366,7 +2394,7 @@ function bindSoundLabControls() {
     button.addEventListener('click', () => {
       state.soundLabEngineMode = button.dataset.soundLabEngine;
       state.soundLabEngineUsed = button.dataset.soundLabEngine;
-      render();
+      renderSameView();
     });
   });
 
@@ -2381,14 +2409,14 @@ function bindSoundLabControls() {
       const presetDna = getPresetDnaById(button.dataset.soundLabDna, getActiveSoundFamily().id);
       state.activeSoundPresetDnaId = presetDna.id;
       state.soundLabMacros = { ...state.soundLabMacros, ...presetDna.macroHints };
-      render();
+      renderSameView();
     });
   });
 
   document.querySelectorAll('[data-sound-lab-quality]').forEach((button) => {
     button.addEventListener('click', () => {
       state.soundLabQualityMode = button.dataset.soundLabQuality;
-      render();
+      renderSameView();
     });
   });
 
@@ -2501,7 +2529,7 @@ function bindSoundLabControls() {
         hold: !state.soundLabPerformance.hold,
       };
       syncActiveSoundLabPatch();
-      render();
+      renderSameView();
     });
   });
 
@@ -2521,7 +2549,7 @@ function bindSoundLabControls() {
       const preset = family.presets.find((item) => item.id === button.dataset.soundLabPreset);
       if (!preset) return;
       state.soundLabMacros = { ...state.soundLabMacros, ...preset.values };
-      render();
+      renderSameView();
     });
   });
 
@@ -2567,7 +2595,7 @@ function bindSoundLabControls() {
       state.soundLabWorkflowStep = ['generator', 'filter'].includes(button.dataset.moduleTab) ? 'source' : 'shape';
       state.activeAtlasNode = atlasNodeByWorkbenchModule[button.dataset.moduleTab] ?? state.activeAtlasNode;
       state.activeWorkbenchModuleMapId = mapByWorkbenchModule[button.dataset.moduleTab] ?? state.activeWorkbenchModuleMapId;
-      render();
+      renderSameView();
     });
   });
 
@@ -2580,7 +2608,7 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-analyzer-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       state.soundLabAnalyzerMode = button.dataset.analyzerMode;
-      render();
+      renderSameView();
     });
   });
 
@@ -2605,7 +2633,7 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-coach-synth]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeCoachSynth = button.dataset.coachSynth;
-      render();
+      renderSameView();
       scrollSoundLabIntoView('.workbench-coach-panel');
     });
   });
@@ -2633,7 +2661,7 @@ function bindMicroRouteControls() {
   document.querySelectorAll('[data-micro-track-id]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeMicroTrackId = button.dataset.microTrackId;
-      render();
+      renderSameView();
     });
   });
 }
@@ -2642,7 +2670,7 @@ function bindChallengeControls() {
   document.querySelectorAll('[data-challenge-id]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeChallengeId = button.dataset.challengeId;
-      render();
+      renderSameView();
     });
   });
 
@@ -2671,7 +2699,7 @@ function bindChallengeControls() {
           result,
         },
       };
-      render();
+      renderSameView();
     });
   });
 }
@@ -2681,7 +2709,7 @@ function markPatchPlaying(patch) {
   globalThis.clearTimeout(patchPlayingTimer);
   patchPlayingTimer = globalThis.setTimeout(() => {
     state.isPatchPlaying = false;
-    render();
+    renderSameView();
   }, Math.max(480, patch.durationSeconds * 1000 + 460));
 }
 
@@ -2689,7 +2717,7 @@ function bindMaterialControls() {
   document.querySelectorAll('[data-material-id]').forEach((button) => {
     button.addEventListener('click', () => {
       state.activeMaterialId = button.dataset.materialId;
-      render();
+      renderSameView();
     });
   });
 
@@ -2711,7 +2739,7 @@ function bindMaterialControls() {
         ...state.materialStates,
         [material.id]: applyMaterialPreset(material, button.dataset.materialPreset),
       };
-      render();
+      renderSameView();
     });
   });
 
@@ -2720,7 +2748,7 @@ function bindMaterialControls() {
       const material = getActiveMaterial();
       const patch = buildMaterialAudioPatch(material, getActiveMaterialState(material));
       markPatchPlaying(patch);
-      render();
+      renderSameView();
       try {
         await audioPlayer.playPatch(patch, { onLevel: (level) => updateSurfaceMeter('.material-lab-card', level) });
         state.audioError = '';
@@ -2925,7 +2953,7 @@ async function connectMidi() {
   if (!globalThis.navigator?.requestMIDIAccess) {
     state.integrationStatus = 'unsupported';
     state.integrationMessage = '当前浏览器没有开放 Web MIDI。建议在 Chrome 系浏览器和 localhost/https 环境中测试。';
-    render();
+    renderSameView();
     return;
   }
 
@@ -2962,14 +2990,14 @@ async function connectMidi() {
             updateSoundLabControl(mapping.controlId, Math.round((data2 / 127) * 100));
           }
         }
-        if (state.view === 'integrations') render();
+        if (state.view === 'integrations') renderSameView();
       };
     });
   } catch {
     state.integrationStatus = 'denied';
     state.integrationMessage = '浏览器拒绝了 MIDI 权限，或当前环境不允许访问 MIDI。';
   }
-  render();
+  renderSameView();
 }
 
 async function bindIntegrationCopy(action) {
@@ -2984,7 +3012,7 @@ async function bindIntegrationCopy(action) {
     state.integrationStatus = 'error';
     state.integrationMessage = '复制失败。浏览器可能要求页面处于焦点中或使用 https/localhost。';
   }
-  render();
+  renderSameView();
 }
 
 function bindIntegrationControls() {
@@ -3046,22 +3074,22 @@ document.addEventListener('pointercancel', () => {
 
 queryInput.addEventListener('input', () => {
   state.query = queryInput.value;
-  render();
+  renderSameView();
 });
 
 synthFilter.addEventListener('change', () => {
   state.synth = synthFilter.value;
-  render();
+  renderSameView();
 });
 
 difficultyFilter.addEventListener('change', () => {
   state.difficulty = difficultyFilter.value;
-  render();
+  renderSameView();
 });
 
 tagFilter.addEventListener('change', () => {
   state.tag = tagFilter.value;
-  render();
+  renderSameView();
 });
 
 populateTagFilter();
