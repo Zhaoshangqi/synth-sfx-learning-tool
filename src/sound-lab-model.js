@@ -305,7 +305,14 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
   const variation = normalize(values.variation);
   const transientMix = clamp((layerData.layerMix?.transient ?? SOUND_LAB_LAYER_MIX.transient) / 100, 0, 1);
   const textureMix = clamp((layerData.layerMix?.texture ?? SOUND_LAB_LAYER_MIX.texture) / 100, 0, 1);
+  const tailMix = clamp((layerData.layerMix?.tail ?? SOUND_LAB_LAYER_MIX.tail) / 100, 0, 1);
   const studioBonus = quality.id === 'studio' ? 0.13 : quality.id === 'balanced' ? 0.06 : 0;
+  const comfortBus = {
+    warmth: clamp(0.1 + (1 - brightness) * 0.12 + material * 0.08 + tailMix * 0.05 + studioBonus * 0.5, 0.06, 0.42),
+    deHarsh: clamp(0.14 + brightness * 0.24 + textureMix * 0.18 + material * 0.08 + studioBonus * 0.52, 0.08, 0.62),
+    headroom: clamp(0.045 + transientMix * 0.026 + material * 0.024 + (quality.id === 'studio' ? 0.038 : 0.018), 0.035, 0.15),
+    airTame: clamp(0.08 + brightness * 0.16 + variation * 0.1 + textureMix * 0.08, 0.05, 0.46),
+  };
 
   return {
     glue: clamp(0.12 + material * 0.22 + motion * 0.09 + studioBonus, 0.08, 0.62),
@@ -313,6 +320,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     airGuard: clamp(0.12 + brightness * 0.3 + textureMix * 0.1 + variation * 0.07, 0.08, 0.6),
     transientHold: clamp(0.16 + transientMix * 0.3 + material * 0.13, 0.12, 0.72),
     bodyGain: clamp(0.98 - studioBonus * 0.12 - material * 0.05, 0.86, 1),
+    comfortBus,
   };
 }
 
@@ -328,7 +336,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -710,11 +718,20 @@ function buildSoundQuality(patch) {
   );
   const tailSafety = clamp((patch.globalFx?.space?.mix ?? 0) * 92 + (patch.globalFx?.softLimiter?.ceiling ?? 0.9) * 18, 0, 100);
   const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
       + (polish.lowTighten ?? 0) * 28
       + (polish.airGuard ?? 0) * 42
       + (polish.transientHold ?? 0) * 24,
+    0,
+    100,
+  );
+  const comfortScore = clamp(
+    (comfortBus.warmth ?? 0) * 28
+      + (comfortBus.deHarsh ?? 0) * 54
+      + (comfortBus.headroom ?? 0) * 360
+      + (comfortBus.airTame ?? 0) * 28,
     0,
     100,
   );
@@ -747,6 +764,13 @@ function buildSoundQuality(patch) {
       value: tailSafety,
       statusZh: patch.qualityMode,
       noteZh: 'space + limiter',
+    },
+    {
+      id: 'comfort',
+      labelZh: 'Comfort',
+      value: comfortScore,
+      statusZh: '舒适余量',
+      noteZh: 'de-harsh + headroom',
     },
     {
       id: 'polish',

@@ -480,6 +480,10 @@ test('sound lab processor applies master polish before the final limiter', () =>
   assert.match(processorJs, /lowTighten/);
   assert.match(processorJs, /airGuard/);
   assert.match(processorJs, /transientHold/);
+  assert.match(processorJs, /comfortBus/);
+  assert.match(processorJs, /deHarsh/);
+  assert.match(processorJs, /headroom/);
+  assert.match(processorJs, /warmth/);
   assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish/);
 });
 

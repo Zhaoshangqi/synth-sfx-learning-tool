@@ -59,6 +59,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
   createPolishState() {
     return {
       low: 0,
+      warm: 0,
+      harsh: 0,
       edge: 0,
       prev: 0,
     };
@@ -334,6 +336,11 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const airGuard = clamp(polish.airGuard ?? 0, 0, 1);
     const transientHold = clamp(polish.transientHold ?? 0.28, 0, 1);
     const bodyGain = clamp(polish.bodyGain ?? 0.94, 0.72, 1.04);
+    const comfortBus = polish.comfortBus || {};
+    const warmth = clamp(comfortBus.warmth ?? 0, 0, 1);
+    const deHarsh = clamp(comfortBus.deHarsh ?? 0, 0, 1);
+    const headroom = clamp(comfortBus.headroom ?? 0.055, 0, 0.22);
+    const airTame = clamp(comfortBus.airTame ?? 0, 0, 1);
 
     state.low = this.onePole(state.low, sample, 0.018);
     const tightened = sample - state.low * lowTighten * 0.24;
@@ -343,10 +350,19 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
     const guardAmount = clamp(Math.abs(state.edge) * airGuard * 2.8, 0, 0.22);
     const guarded = tightened - state.edge * guardAmount;
+    state.warm = this.onePole(state.warm, guarded, 0.006 + warmth * 0.018);
+    const warmed = guarded + state.warm * warmth * 0.16;
+    const previousHarsh = state.harsh;
+    state.harsh = this.onePole(state.harsh, warmed, 0.06 + airTame * 0.05);
+    const harshBand = warmed - state.harsh;
+    const harshMotion = harshBand - previousHarsh * 0.18;
+    const deHarshAmount = clamp(Math.abs(harshMotion) * deHarsh * 2.4 + airTame * 0.035, 0, 0.2);
+    const comforted = warmed - harshBand * deHarshAmount;
     const drive = 1 + glue * 1.7;
-    const glued = Math.tanh(guarded * drive) / Math.tanh(drive);
+    const glued = Math.tanh(comforted * drive) / Math.tanh(drive);
     const transientRestore = edge * transientHold * 0.045;
-    return clamp((glued + transientRestore) * bodyGain, -1.2, 1.2);
+    const outputGain = bodyGain * (1 - headroom * 0.34);
+    return clamp((glued + transientRestore) * outputGain, -1.2 + headroom, 1.2 - headroom);
   }
 
   renderLegacy(t, duration) {
