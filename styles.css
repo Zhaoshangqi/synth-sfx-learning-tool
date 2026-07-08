@@ -21537,6 +21537,165 @@ body.is-direct-manipulating .visual-spotlight {
   box-shadow: 0 0 0 1px rgba(117, 197, 222, 0.28), 0 22px 54px rgba(117, 197, 222, 0.1) !important;
 }
 
+.practice-focus-strip {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(117, 197, 222, 0.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(117, 197, 222, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(244, 241, 232, 0.08), rgba(244, 241, 232, 0.035)),
+    rgba(11, 15, 26, 0.36);
+  box-shadow: 0 20px 56px rgba(6, 18, 28, 0.22);
+  overflow: hidden;
+}
+
+.practice-focus-strip::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 18%, rgba(117, 197, 222, 0.22) 36%, rgba(244, 241, 232, 0.22) 46%, rgba(94, 234, 212, 0.14) 58%, transparent 76%),
+    radial-gradient(circle at 88% 18%, rgba(117, 197, 222, 0.16), transparent 0 9px, transparent 10px);
+  background-size: 260% 100%, 120px 120px;
+  opacity: 0.28;
+  transform: translate3d(-34%, 0, 0) skewX(-5deg);
+  animation: practice-focus-current 13s cubic-bezier(0.21, 0.61, 0.35, 1) infinite alternate;
+}
+
+.practice-focus-strip > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.is-direct-manipulating .practice-focus-strip::before {
+  animation-play-state: paused !important;
+  opacity: 0.12 !important;
+  transition: none !important;
+}
+
+@keyframes practice-focus-current {
+  from {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(-34%, 0, 0) skewX(-5deg);
+  }
+  to {
+    background-position: 100% 50%, 48px 28px;
+    transform: translate3d(24%, 0, 0) skewX(-5deg);
+  }
+}
+
+.practice-focus-head {
+  display: grid;
+  gap: 5px;
+}
+
+.practice-focus-head span {
+  color: rgba(117, 197, 222, 0.92) !important;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.practice-focus-head strong {
+  color: var(--ref-paper, #f4f1e8) !important;
+  font-size: clamp(17px, 2vw, 22px);
+  line-height: 1.15;
+}
+
+.practice-focus-head p,
+.practice-focus-proof p {
+  margin: 0;
+  color: rgba(244, 241, 232, 0.72) !important;
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.practice-focus-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.practice-focus-step {
+  display: grid;
+  min-height: 126px;
+  align-content: start;
+  gap: 8px;
+  padding: 13px !important;
+  border: 1px solid rgba(244, 241, 232, 0.1) !important;
+  border-radius: 18px !important;
+  background: rgba(244, 241, 232, 0.065) !important;
+  text-align: left;
+  transition: transform 170ms ease, border-color 170ms ease, background 170ms ease, box-shadow 170ms ease !important;
+}
+
+.practice-focus-step:hover,
+.practice-focus-step:focus-visible,
+.practice-focus-step.is-active {
+  border-color: rgba(117, 197, 222, 0.52) !important;
+  background: rgba(117, 197, 222, 0.13) !important;
+  box-shadow: inset 0 0 0 1px rgba(117, 197, 222, 0.12);
+  transform: translateY(-1px);
+}
+
+.practice-focus-step span {
+  display: inline-flex;
+  width: max-content;
+  min-width: 34px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(117, 197, 222, 0.18);
+  color: rgba(244, 241, 232, 0.94) !important;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.practice-focus-step strong {
+  color: var(--ref-paper, #f4f1e8) !important;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.practice-focus-step small {
+  display: block;
+  color: rgba(244, 241, 232, 0.68) !important;
+  font-size: 12px;
+  line-height: 1.52;
+}
+
+.practice-focus-proof {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.52fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.practice-focus-proof code {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid rgba(117, 197, 222, 0.18);
+  border-radius: 14px;
+  background: rgba(7, 10, 16, 0.28);
+  color: rgba(244, 241, 232, 0.78) !important;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.signal-atlas-console[data-focus-mode="guided"] .practice-focus-strip {
+  box-shadow: 0 0 0 1px rgba(117, 197, 222, 0.28), 0 22px 54px rgba(117, 197, 222, 0.11) !important;
+}
+
 .signal-atlas-console[data-focus-mode="studio"] .atlas-control-column {
   box-shadow: inset 0 0 0 1px rgba(117, 197, 222, 0.18);
 }
@@ -21558,6 +21717,20 @@ body.is-direct-manipulating .visual-spotlight {
 
   .mode-switch-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .practice-focus-steps,
+  .practice-focus-proof {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-focus-strip::before {
+    animation-name: practice-focus-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
   }
 }
 

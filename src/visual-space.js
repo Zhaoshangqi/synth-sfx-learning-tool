@@ -7,6 +7,7 @@ let particles = [];
 let signalParticles = [];
 let aetherStreams = [];
 let aetherCurrentPackets = [];
+let aetherFlowNodes = [];
 let transitionBursts = [];
 let frameId = 0;
 let spaceParallaxFrame = 0;
@@ -21,6 +22,8 @@ const AETHER_WEB_STRIDE = 6;
 const AETHER_STREAM_COUNT = 5;
 const AETHER_STREAM_SEGMENTS = 72;
 const AETHER_CURRENT_PACKET_COUNT = 28;
+const AETHER_FLOW_NODE_COUNT = 34;
+const AETHER_NODE_CONNECTION_RADIUS = 176;
 
 function isAetherFlowPaused() {
   return Boolean(globalThis.__synthDirectManipulating || document.body?.classList.contains('is-direct-manipulating'));
@@ -66,6 +69,19 @@ function createAetherCurrentPacket(index) {
     z: random(0.42, 1),
     phase: random(0, Math.PI * 2),
     color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
+  };
+}
+
+function createAetherFlowNode(index) {
+  return {
+    x: random(0, width),
+    y: random(height * 0.08, height * 0.92),
+    vx: random(-0.075, 0.075),
+    vy: random(-0.052, 0.052),
+    z: random(0.38, 1),
+    r: random(0.72, 1.9),
+    phase: random(0, Math.PI * 2),
+    color: index % 4 === 0 ? '167, 139, 250' : index % 5 === 0 ? '94, 234, 212' : '117, 197, 222',
   };
 }
 
@@ -121,6 +137,8 @@ function resize() {
   aetherStreams = Array.from({ length: streamCount }, (_, index) => createAetherStream(index));
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
+  const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
+  aetherFlowNodes = Array.from({ length: nodeCount }, (_, index) => createAetherFlowNode(index));
   transitionBursts = [];
 }
 
@@ -281,6 +299,85 @@ function drawAetherCurrentPackets(time) {
   ctx.restore();
 }
 
+function aetherNodeConnections(flowNodes, time) {
+  for (let i = 0; i < flowNodes.length; i += 1) {
+    const a = flowNodes[i];
+    for (let j = i + 1; j < flowNodes.length; j += 1) {
+      const b = flowNodes[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      if (distance > AETHER_NODE_CONNECTION_RADIUS) continue;
+
+      const midpointDistance = Math.hypot(
+        (a.viewX + b.viewX) * 0.5 - pointer.screenX,
+        (a.viewY + b.viewY) * 0.5 - pointer.screenY,
+      );
+      const pointerBoost = Math.max(0, 1 - midpointDistance / (AETHER_MOUSE_RADIUS * 1.08));
+      const phase = 0.55 + Math.sin(time * 0.0011 + a.phase + b.phase) * 0.22;
+      const alpha = Math.min(0.16, (1 - distance / AETHER_NODE_CONNECTION_RADIUS) * 0.045 + pointerBoost * 0.095 + phase * 0.012);
+      if (alpha < 0.01) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.78})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.42 + pointerBoost * 0.62;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * 22,
+        (a.viewY + b.viewY) * 0.5 + pointer.y * 14,
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+}
+
+function drawAetherNodeCurrents(time) {
+  if (prefersReducedMotion || isAetherFlowPaused()) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const flowNodes = aetherFlowNodes.map((node) => {
+    node.x += node.vx * (0.64 + node.z);
+    node.y += node.vy * (0.54 + node.z);
+    node.phase += 0.0024;
+    if (node.x < -24) node.x = width + 24;
+    if (node.x > width + 24) node.x = -24;
+    if (node.y < -24) node.y = height + 24;
+    if (node.y > height + 24) node.y = -24;
+
+    const driftX = Math.sin(time * 0.00021 + node.phase) * 18 * node.z;
+    const driftY = Math.cos(time * 0.00017 + node.phase * 0.8) * 13 * node.z;
+    const flow = aetherRepel(
+      node.x + driftX + pointer.x * node.z * 20,
+      node.y + driftY + pointer.y * node.z * 15,
+      node.z,
+    );
+    node.viewX = flow.x;
+    node.viewY = flow.y;
+    node.force = flow.force;
+    return node;
+  });
+
+  aetherNodeConnections(flowNodes, time);
+
+  flowNodes.forEach((node) => {
+    const pulse = 0.56 + Math.sin(time * 0.0018 + node.phase) * 0.24 + node.force * 0.3;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${node.color}, ${0.1 + pulse * 0.14})`;
+    ctx.shadowColor = `rgba(${node.color}, ${0.12 + node.force * 0.18})`;
+    ctx.shadowBlur = 8 + node.z * 9;
+    ctx.arc(node.viewX, node.viewY, node.r + node.force * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -417,6 +514,7 @@ function tick(time = 0) {
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
+  if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
   particles.forEach((particle) => {
     particle.x += particle.vx * particle.z;
     particle.y += particle.vy * particle.z;

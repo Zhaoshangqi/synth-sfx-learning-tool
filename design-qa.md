@@ -491,3 +491,17 @@ Passed for this iteration. The prompted Aether-style flow layer remains active a
 
 ## Result
 Passed for this iteration. The attached Aether Flow prompt is now represented as native, cache-busted, drag-safe canvas/CSS motion, and Sound Lab controls still update teaching feedback without rebuilding the page.
+
+## 2026-07-08 - Aether Flow focused node currents and Practice Focus rail
+
+- Goal: extend the pasted `AetherFlowHero` prompt with a more visible but still restrained flow layer, adapted to the existing static ES-module app rather than adding React, Tailwind, shadcn, framer-motion, or lucide.
+- Visual upgrade: `src/visual-space.js` now adds adaptive node currents on top of the existing ribbons and packet streams. `styles-reference.css` adds a slow `signal-field::before` node-current mesh, while `styles.css` adds a low-opacity `practice-focus-current` sheen on the new Practice Focus rail.
+- Stability constraint: all new flow layers pause under `body.is-direct-manipulating`, preserving the previous no-flash behavior while dragging ranges or knobs.
+- Cache stability: static module URLs now use `?v=20260708-flow-focus`, including `styles.css`, `styles-reference.css`, `visual-space.js`, `app.js`, `sound-lab-model.js`, `audio-player.js`, `view-model.js`, `render.js`, and the Sound Lab Worklet module.
+- Local browser QA: `http://localhost:5177/?qa=flow-focus-1783516169#soundlab`.
+- Browser checks: passed. `visual-space.js?v=20260708-flow-focus` and `app.js?v=20260708-flow-focus` loaded, `#particle-canvas` rendered at `1440 x 980`, canvas pixel energy was `37184`, `signal-field::before` used `ref9-node-current`, and `.practice-focus-strip::before` used `practice-focus-current`.
+- Drag stability: passed. Dragging a visible range changed `4 -> 60`; `#app.is-view-switching=false`, `body.is-direct-manipulating=false` after release, splash stayed `display:none`, horizontal overflow stayed `0`, and console/page errors were `0`.
+- Screenshots:
+  - Sound Lab flow focus: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-focus-soundlab.png`
+  - Sound Lab after drag: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-focus-after-drag.png`
+- Tests: `npm.cmd test` passed, 236 tests.

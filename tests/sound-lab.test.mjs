@@ -271,6 +271,36 @@ test('buildSoundLabViewModel exposes a beginner mission brief with routed listen
   assert.equal(model.missionBrief.primaryDiagnosticId, model.patchDoctor.diagnostics[0].id);
 });
 
+test('buildSoundLabViewModel exposes a first-screen practice focus rail for beginners', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 34,
+    material: 88,
+    space: 72,
+    variation: 42,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 90, body: 58, texture: 82, tail: 78 },
+  });
+
+  const focus = model.practiceFocus;
+  assert.ok(focus, 'view model should expose a compact practice focus rail');
+  assert.match(focus.titleZh, /练习焦点|Practice Focus|Focus Rail/);
+  assert.match(focus.summaryZh, /先听|只改一个|A\/B|REAPER/);
+  assert.equal(focus.steps.length, 4);
+  assert.deepEqual(focus.steps.map((step) => step.id), ['listen', 'isolate', 'adjust', 'verify']);
+  assert.ok(focus.steps.every((step) => step.labelZh && step.bodyZh));
+  assert.ok(focus.steps.some((step) => step.action === 'focus-source' || step.playAction === 'current'));
+  assert.ok(focus.steps.some((step) => step.layerAudition || step.action === 'focus-practice-loop'));
+  assert.ok(focus.steps.some((step) => step.applyDiagnosticId === model.patchDoctor.diagnostics[0].id));
+  assert.match(focus.passCriteriaZh, /A\/B|dry|full|tail|只改一个|REAPER/i);
+  assert.match(focus.reaperNoteTemplate, /A\/B|REAPER|保留|撤回/);
+});
+
 test('buildSoundLabViewModel exposes a target match coach with one-change guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

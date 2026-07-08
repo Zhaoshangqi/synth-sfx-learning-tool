@@ -1071,6 +1071,56 @@ body.is-direct-manipulating .audio-space::after {
   }
 }
 
+/* Reference aether node current v9.4
+   Adds a secondary signal mesh inspired by the pasted Aether Flow component,
+   kept subtle so the learning content remains readable. */
+
+.signal-field::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(95deg, transparent 0 22%, rgba(117, 197, 222, 0.16) 34%, rgba(255, 255, 255, 0.2) 43%, transparent 56%),
+    linear-gradient(0deg, transparent 0 47%, rgba(167, 139, 250, 0.12) 49%, transparent 53%),
+    radial-gradient(circle at 22% 38%, rgba(117, 197, 222, 0.2), transparent 0 5px, transparent 6px),
+    radial-gradient(circle at 72% 56%, rgba(94, 234, 212, 0.16), transparent 0 4px, transparent 5px);
+  background-size: 320% 100%, 100% 130px, 190px 190px, 240px 240px;
+  border-radius: 40px;
+  filter: blur(0.2px);
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+  transform: translate3d(calc(var(--space-x, 0) * 10px), calc(var(--space-y, 0) * 7px), 0);
+  animation: ref9-node-current 24s cubic-bezier(0.21, 0.61, 0.35, 1) infinite alternate;
+}
+
+body.is-direct-manipulating .signal-field::before {
+  animation-play-state: paused !important;
+  opacity: 0.16 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-node-current {
+  0% {
+    background-position: 0% 50%, 0 0, 0 0, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 0 84px, 64px -48px, -86px 42px;
+    transform: translate3d(calc(var(--space-x, 0) * 12px), calc(var(--space-y, 0) * 8px), 0) scale(1.025);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-field::before {
+    animation-name: ref9-node-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
 .ear-triage-panel {
   border-color: rgba(117, 197, 222, 0.24) !important;
 }

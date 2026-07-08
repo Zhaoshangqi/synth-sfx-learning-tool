@@ -2325,6 +2325,71 @@ function buildMissionBrief(family, patch, patchDoctor, workflowStep = 'source') 
   };
 }
 
+function buildPracticeFocus(family, patch, patchDoctor, practiceLoop, earTriage, workflowStep = 'source') {
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前音效';
+  const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const triageSteps = earTriage?.steps ?? [];
+  const isolateStep = triageSteps.find((step) => step.id === 'isolate') ?? {};
+  const adjustStep = triageSteps.find((step) => step.id === 'adjust') ?? {};
+  const verifyOutputMode = patch.outputMode === 'raw' ? 'comfort' : patch.outputMode ?? 'comfort';
+  const focusByWorkflow = {
+    source: 'listen',
+    shape: 'adjust',
+    compare: 'verify',
+    deliver: 'verify',
+  };
+  const steps = [
+    {
+      id: 'listen',
+      labelZh: '01 先听',
+      titleZh: '听当前 Patch',
+      bodyZh: `先听 ${familyName} 的 dry/core，再听 full；只判断起音、主体、质感和尾巴哪一段最不对。`,
+      action: 'focus-source',
+      actionLabelZh: '看声源',
+      playAction: 'current',
+    },
+    {
+      id: 'isolate',
+      labelZh: '02 Solo',
+      titleZh: isolateStep.actionLabelZh ?? 'Solo 一层',
+      bodyZh: isolateStep.bodyZh ?? 'Solo transient / body / texture / tail 其中一层，确认问题到底来自哪一层。',
+      action: 'focus-practice-loop',
+      actionLabelZh: isolateStep.actionLabelZh ?? '分层试听',
+      layerAudition: isolateStep.layerAudition ?? 'full',
+    },
+    {
+      id: 'adjust',
+      labelZh: '03 只改一次',
+      titleZh: adjustStep.actionLabelZh ?? diagnostic.applyAction?.labelZh ?? '试调一次',
+      bodyZh: adjustStep.bodyZh ?? diagnostic.applyAction?.summaryZh ?? '只动 Patch Doctor 建议的一处参数，避免同时改宏、层级和效果。',
+      action: diagnostic.action ?? 'focus-controls',
+      actionLabelZh: diagnostic.applyAction?.labelZh ?? '试调一次',
+      applyDiagnosticId: diagnostic.id ?? '',
+    },
+    {
+      id: 'verify',
+      labelZh: '04 验收',
+      titleZh: 'A/B 写结论',
+      bodyZh: `切 dry / full / ${verifyOutputMode}，响度匹配后决定保留或撤回：${practiceLoop?.expectedCueZh ?? '听感必须能用一句话说明。'}`,
+      action: 'focus-practice-loop',
+      actionLabelZh: 'A/B 验证',
+      outputMode: verifyOutputMode,
+    },
+  ];
+
+  return {
+    id: 'practice-focus',
+    titleZh: 'Practice Focus 练习焦点',
+    summaryZh: `这一轮只处理「${diagnostic.labelZh ?? '最高优先听感'}」：先听、solo 一层、只改一个参数，再用 A/B 和 REAPER 记录验收。`,
+    currentStepId: focusByWorkflow[workflowStep] ?? 'listen',
+    problemId: diagnostic.id ?? '',
+    problemZh: diagnostic.labelZh ?? '最高优先听感',
+    steps,
+    passCriteriaZh: '过关标准：dry / full / tail-only 或 Raw / Comfort / Studio A/B 后，能写下只改一个参数的保留/撤回理由。',
+    reaperNoteTemplate: practiceLoop?.reaperNoteTemplate ?? `REAPER A/B ${familyName}: 只改一个参数；保留/撤回=____；理由=____。`,
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -2615,6 +2680,16 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
   });
   const patchDoctor = buildPatchDoctor(family, patch, macroList);
   const missionBrief = buildMissionBrief(family, patch, patchDoctor, options.workflowStep ?? options.activeWorkflowStep ?? 'source');
+  const practiceLoop = buildPracticeLoop(family, patch, macroList);
+  const earTriage = buildEarTriage(family, patch, patchDoctor, macroList);
+  const practiceFocus = buildPracticeFocus(
+    family,
+    patch,
+    patchDoctor,
+    practiceLoop,
+    earTriage,
+    options.workflowStep ?? options.activeWorkflowStep ?? 'source',
+  );
   const presetDnaOptions = getPresetDnaForFamily(family?.id);
   const patchJson = JSON.stringify({
     familyId: patch.familyId,
@@ -2664,11 +2739,12 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint: buildWaveformFingerprint(patch),
     materialResonanceMap: buildMaterialResonanceMap(family, patch),
-    practiceLoop: buildPracticeLoop(family, patch, macroList),
+    practiceLoop,
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor,
-    earTriage: buildEarTriage(family, patch, patchDoctor, macroList),
+    earTriage,
     missionBrief,
+    practiceFocus,
     targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),

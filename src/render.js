@@ -2369,6 +2369,56 @@ function renderSessionTransportDock(family = {}, model = {}, options = {}) {
   `;
 }
 
+function renderPracticeFocusStrip(model = {}) {
+  const focus = model.practiceFocus ?? {};
+  const steps = focus.steps ?? [];
+  if (!steps.length) return '';
+
+  const renderStepAttributes = (step) => {
+    const attrs = [`data-practice-focus-step="${escapeHtml(step.id)}"`];
+    if (step.playAction) {
+      attrs.push('data-sound-lab-play');
+    } else if (step.layerAudition) {
+      attrs.push(`data-layer-audition="${escapeHtml(step.layerAudition)}"`);
+    } else if (step.applyDiagnosticId) {
+      attrs.push(`data-doctor-apply="${escapeHtml(step.applyDiagnosticId)}"`);
+    } else if (step.outputMode) {
+      attrs.push(`data-output-compare="${escapeHtml(step.outputMode)}"`);
+    } else {
+      attrs.push(`data-workbench-action="${escapeHtml(step.action ?? 'focus-source')}"`);
+    }
+    return attrs.join(' ');
+  };
+
+  return `
+    <section class="practice-focus-strip" aria-label="Practice Focus 练习焦点">
+      <div class="practice-focus-head">
+        <span>Practice Focus</span>
+        <strong>${escapeHtml(focus.titleZh ?? 'Practice Focus 练习焦点')}</strong>
+        <p>${escapeHtml(focus.summaryZh ?? '')}</p>
+      </div>
+      <div class="practice-focus-steps">
+        ${steps.map((step) => `
+          <button
+            class="practice-focus-step ${step.id === focus.currentStepId ? 'is-active' : ''}"
+            type="button"
+            ${renderStepAttributes(step)}
+            aria-pressed="${step.id === focus.currentStepId ? 'true' : 'false'}"
+          >
+            <span>${escapeHtml(step.labelZh ?? '')}</span>
+            <strong>${escapeHtml(step.titleZh ?? '')}</strong>
+            <small>${escapeHtml(step.bodyZh ?? '')}</small>
+          </button>
+        `).join('')}
+      </div>
+      <div class="practice-focus-proof">
+        <p>${escapeHtml(focus.passCriteriaZh ?? '')}</p>
+        <code>${escapeHtml(focus.reaperNoteTemplate ?? '')}</code>
+      </div>
+    </section>
+  `;
+}
+
 function renderMissionBriefPanel(model = {}) {
   const mission = model.missionBrief ?? {};
   const steps = mission.steps ?? [];
@@ -3041,6 +3091,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
+      ${renderPracticeFocusStrip(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
       <div class="synth-tab-row">
@@ -3136,6 +3187,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
       </header>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
       ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
+      ${renderPracticeFocusStrip(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
       <main class="atlas-main-console">
