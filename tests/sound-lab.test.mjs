@@ -675,6 +675,22 @@ test('sound lab processor applies spatial image after temporal masking and befor
   assert.match(processorJs, /applyTemporalMasking[\s\S]*applySpatialImage[\s\S]*applyStereoComfortBus/);
 });
 
+test('sound lab processor renders modal body diffusion with detune damping and stereo side', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  const modalBlock = processorJs.match(/renderModalResonator\([\s\S]*?\n  }\n\n  renderFilteredNoise/)?.[0] ?? '';
+  assert.ok(modalBlock, 'modal resonator renderer should be easy to audit');
+  assert.match(modalBlock, /materialBody/);
+  assert.match(modalBlock, /detuneCents/);
+  assert.match(modalBlock, /damping/);
+  assert.match(modalBlock, /stereoSmear/);
+  assert.match(modalBlock, /excitationBlend/);
+  assert.match(modalBlock, /phaseSkew/);
+  assert.match(modalBlock, /side/);
+  assert.match(modalBlock, /mono:/);
+  assert.match(modalBlock, /side:/);
+});
+
 test('sound quality exposes beginner-readable comfort bus metrics', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
   const model = buildSoundLabViewModel(family, {
@@ -875,6 +891,66 @@ test('sound lab explains material resonators as audible synthesis targets', () =
   assert.match(model.materialResonanceMap.phasePlantZh, /Phase Plant|Resonator|Comb|modal/i);
   assert.match(model.materialResonanceMap.vitalZh, /Vital|spectral|filter|FM/i);
   assert.match(model.materialResonanceMap.reaperZh, /REAPER|EQ|spectrum|body-only/i);
+});
+
+test('studio material patches expose modal body diffusion for more realistic resonators', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 82,
+    motion: 46,
+    material: 92,
+    space: 42,
+    variation: 58,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 86, body: 78, texture: 62, tail: 44 },
+  });
+
+  const modalLayer = patch.layers.find((layer) => layer.engine === 'modalResonator');
+  assert.ok(modalLayer?.materialBody, 'modal layer should expose a material body model');
+  assert.ok(modalLayer.materialBody.peakSpreadCents > 0, 'modal peaks need slight pitch spread instead of static sine peaks');
+  assert.ok(modalLayer.materialBody.dampingTilt > 0, 'modal peaks need damping so higher modes decay differently');
+  assert.ok(modalLayer.materialBody.stereoSmear > 0.08, 'modal body needs subtle stereo smear for physical width');
+  assert.ok(modalLayer.materialBody.excitationBlend > 0.02, 'modal body needs a short strike excitation to feel less synthetic');
+  assert.ok(modalLayer.resonators.every((resonator) => Number.isFinite(resonator.detuneCents)));
+  assert.ok(modalLayer.resonators.some((resonator) => Math.abs(resonator.pan) > 0.02));
+  assert.ok(modalLayer.resonators.every((resonator) => resonator.damping > 0));
+
+  const message = buildWorkletMessage(patch);
+  const payloadModal = message.payload.layers.find((layer) => layer.engine === 'modalResonator');
+  assert.deepEqual(payloadModal.materialBody, modalLayer.materialBody);
+  assert.deepEqual(payloadModal.resonators, modalLayer.resonators);
+});
+
+test('material resonance map teaches modal body diffusion as an audible quality target', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 46,
+    material: 92,
+    space: 42,
+    variation: 58,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 86, body: 78, texture: 62, tail: 44 },
+  });
+
+  const bodyModel = model.materialResonanceMap.bodyModel;
+  assert.ok(bodyModel, 'material resonance panel should expose a modal body model for beginners');
+  assert.match(bodyModel.titleZh, /Modal Body|material body|modal/i);
+  assert.match(bodyModel.beginnerZh, /detune|damping|stereo|strike|diffusion|modal/i);
+  assert.ok(bodyModel.metrics.some((metric) => metric.id === 'spread' && metric.value > 0));
+  assert.ok(bodyModel.metrics.some((metric) => metric.id === 'damping' && metric.value > 0));
+  assert.ok(bodyModel.metrics.some((metric) => metric.id === 'stereo' && metric.value > 0));
+  assert.ok(bodyModel.metrics.some((metric) => metric.id === 'excitation' && metric.value > 0));
+  assert.match(bodyModel.synthZh, /Serum|Phase Plant|Vital/);
+  assert.match(bodyModel.reaperZh, /REAPER|body-only|spectrum|A\/B/i);
 });
 
 test('target match coach exposes playable reference targets and a small nudge path', () => {

@@ -767,6 +767,18 @@ function buildLayerPerformanceFeel(role, index, performanceFeel, variation) {
   };
 }
 
+function buildMaterialBodyModel({ material, brightness, motion, space, variation, quality, role, index }) {
+  const qualityLift = quality.id === 'studio' ? 1 : quality.id === 'balanced' ? 0.55 : 0.18;
+  const roleLift = role === 'body' ? 1 : role === 'tail' ? 0.62 : 0.42;
+  return {
+    peakSpreadCents: Number(clamp(0.8 + material * 4.4 + variation * 6.8 + qualityLift * 2.2 + index * 0.18, 0.4, 16).toFixed(2)),
+    dampingTilt: Number(clamp(0.12 + material * 0.38 + brightness * 0.18 + qualityLift * 0.16, 0.08, 0.92).toFixed(3)),
+    stereoSmear: Number(clamp((0.07 + space * 0.24 + variation * 0.22 + qualityLift * 0.12) * roleLift, 0.04, 0.72).toFixed(3)),
+    excitationBlend: Number(clamp((0.028 + material * 0.09 + brightness * 0.045 + motion * 0.022) * roleLift, 0.012, 0.22).toFixed(3)),
+    strikeTightness: Number(clamp(42 + material * 52 + brightness * 18 + qualityLift * 20, 32, 142).toFixed(1)),
+  };
+}
+
 function buildLayer(recipe, context, index) {
   const { base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix, performanceFeel } = context;
   const role = recipe.role;
@@ -825,14 +837,21 @@ function buildLayer(recipe, context, index) {
   }
 
   if (recipe.engine === 'modalResonator') {
+    const materialBody = buildMaterialBodyModel({ material, brightness, motion, space, variation, quality, role, index });
     return {
       ...common,
       baseFrequency: base.baseFrequency,
+      materialBody,
       resonators: dsp.resonators.map((resonator, resonatorIndex) => ({
         ratio: resonator.ratio + index * 0.018,
         gain: clamp(resonator.gain * (0.76 + brightness * 0.36), 0.04, 1),
         decay: clamp(resonator.decay * (role === 'tail' ? 1.32 + space : 0.8 + material * 0.44), 0.035, 2.8),
         q: clamp(8 + dsp.filter.q * 1.5 + resonatorIndex * 1.8, 2, 34),
+        detuneCents: Number(clamp((resonatorIndex - 1.5) * materialBody.peakSpreadCents * 0.24 + (index - 2) * 0.42, -18, 18).toFixed(2)),
+        pan: Number(clamp((resonatorIndex % 2 === 0 ? -1 : 1) * (0.035 + materialBody.stereoSmear * 0.28) + (index - 2) * 0.018, -0.54, 0.54).toFixed(3)),
+        damping: Number(clamp(materialBody.dampingTilt * (0.5 + resonatorIndex * 0.22), 0.035, 1.4).toFixed(3)),
+        phaseSkew: Number((resonatorIndex * 0.37 + index * 0.11 + variation * 0.32).toFixed(3)),
+        excitation: Number(clamp(materialBody.excitationBlend * (1 - resonatorIndex * 0.11), 0.006, 0.28).toFixed(3)),
       })),
     };
   }
@@ -1406,6 +1425,13 @@ function buildMaterialResonanceMap(family, patch) {
     ? modalLayer.resonators
     : patch.dsp.resonators;
   const baseFrequency = modalLayer.baseFrequency ?? patch.dsp.oscillator?.baseFrequency ?? 180;
+  const materialBody = modalLayer.materialBody ?? {
+    peakSpreadCents: 0,
+    dampingTilt: 0,
+    stereoSmear: 0,
+    excitationBlend: 0,
+    strikeTightness: 0,
+  };
   const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前材质';
   const material = Math.round(patch.macros?.material ?? 50);
   const brightness = Math.round(patch.macros?.brightness ?? 50);
@@ -1439,11 +1465,45 @@ function buildMaterialResonanceMap(family, patch) {
     };
   });
 
+  const bodyModel = {
+    titleZh: 'Modal Body material body model',
+    beginnerZh: `Modal body diffusion = detune spread ${formatQualityNumber(materialBody.peakSpreadCents ?? 0)} cents, damping tilt ${formatQualityNumber((materialBody.dampingTilt ?? 0) * 100)}%, stereo smear ${formatQualityNumber((materialBody.stereoSmear ?? 0) * 100)}%, strike excitation ${formatQualityNumber((materialBody.excitationBlend ?? 0) * 100)}%. 先听 body-only：如果它只有一个死板正弦，就不像真实材质；如果 detune、damping、stereo 和 strike 都很小，金属/玻璃会变薄。`,
+    metrics: [
+      {
+        id: 'spread',
+        labelZh: 'Detune Spread',
+        value: Math.round(clamp((materialBody.peakSpreadCents ?? 0) * 6.4, 0, 100)),
+        detailZh: `${formatQualityNumber(materialBody.peakSpreadCents ?? 0)} cents`,
+      },
+      {
+        id: 'damping',
+        labelZh: 'Damping Tilt',
+        value: Math.round(clamp((materialBody.dampingTilt ?? 0) * 118, 0, 100)),
+        detailZh: `${formatQualityNumber((materialBody.dampingTilt ?? 0) * 100)}%`,
+      },
+      {
+        id: 'stereo',
+        labelZh: 'Stereo Smear',
+        value: Math.round(clamp((materialBody.stereoSmear ?? 0) * 150, 0, 100)),
+        detailZh: `${formatQualityNumber((materialBody.stereoSmear ?? 0) * 100)}%`,
+      },
+      {
+        id: 'excitation',
+        labelZh: 'Strike Excitation',
+        value: Math.round(clamp((materialBody.excitationBlend ?? 0) * 420, 0, 100)),
+        detailZh: `${formatQualityNumber((materialBody.excitationBlend ?? 0) * 100)}%`,
+      },
+    ],
+    synthZh: 'Serum: FM + comb/filter 做 detune spread；Phase Plant: Resonator lane 每个 peak 做不同 decay/damping；Vital: FM/spectral warp 加短 strike，再用两个高 Q peak 做 modal body。',
+    reaperZh: 'REAPER: 导出 body-only 与 full A/B，看 spectrum 峰是否稳定、左右是否轻微扩散、strike 是否只出现在前 30ms。',
+  };
+
   return {
     titleZh: 'Material Resonance 材质共振地图',
     familyNameZh: familyName,
     beginnerZh: `${familyName} 的金属/玻璃感不是来自一个波形，而是多个不等距共振峰一起衰减：Material ${material} 控制峰的硬度，Brightness ${brightness} 决定这些峰露出来多少。`,
     peaks,
+    bodyModel,
     serumZh: 'Serum: 用 FM/Noise 进 comb 或高 Q filter，按上面 Hz 做 2-4 个峰；Macro Material 同时推 FM depth 和 filter resonance。',
     phasePlantZh: 'Phase Plant: 用 Resonator/Comb Filter lane 做 modal body；每个 peak 单独 envelope，body-only 听是否还有材质身份。',
     vitalZh: 'Vital: 用 spectral warp/FM 加短 decay，再用两个高 Q filter 峰模拟 modal；Macro 只控制峰值和 decay，不要同时加空间。',

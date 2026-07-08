@@ -19858,6 +19858,95 @@ body {
   line-height: 1.68;
 }
 
+.material-body-model {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(360px, 1.2fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(117, 197, 222, 0.18);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(117, 197, 222, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(17, 17, 17, 0.34), rgba(24, 31, 42, 0.28));
+  box-shadow: inset 0 1px 0 rgba(244, 241, 232, 0.06);
+}
+
+.material-body-model > div:first-child {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+}
+
+.material-body-model > div:first-child strong {
+  color: var(--v68-paper) !important;
+  font-size: 15px;
+}
+
+.material-body-model > div:first-child p {
+  margin: 0;
+  color: rgba(244, 241, 232, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.62;
+}
+
+.material-body-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.material-body-metrics article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(244, 241, 232, 0.1);
+  border-radius: 14px;
+  background: rgba(244, 241, 232, 0.055);
+}
+
+.material-body-metrics span {
+  color: rgba(244, 241, 232, 0.78) !important;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.material-body-metrics strong {
+  color: var(--v68-paper) !important;
+  font-size: 17px;
+}
+
+.material-body-metrics i {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, var(--v68-cyan) 0 var(--body-metric, 0%), rgba(244, 241, 232, 0.12) var(--body-metric, 0%) 100%);
+}
+
+.material-body-metrics small {
+  color: rgba(244, 241, 232, 0.54) !important;
+  font-size: 10px;
+}
+
+.material-body-proof {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.material-body-proof span {
+  padding: 10px 11px;
+  border: 1px solid rgba(244, 241, 232, 0.09);
+  border-radius: 13px;
+  background: rgba(17, 17, 17, 0.2);
+  color: rgba(244, 241, 232, 0.68) !important;
+  font-size: 11px;
+  line-height: 1.58;
+}
+
 .resonance-peak-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
@@ -20066,6 +20155,10 @@ body.is-direct-manipulating #particle-canvas {
   .resonance-synth-map {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .material-body-model {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 680px) {
@@ -20100,6 +20193,11 @@ body.is-direct-manipulating #particle-canvas {
 
   .resonance-peak-grid,
   .resonance-synth-map {
+    grid-template-columns: 1fr;
+  }
+
+  .material-body-metrics,
+  .material-body-proof {
     grid-template-columns: 1fr;
   }
 }
@@ -23511,3 +23609,62 @@ body.is-direct-manipulating .audio-space {
     line-height: 1.06 !important;
   }
 }
+
+/* v10.1 modal body material resonance contrast lock
+   Keeps the material-body teaching module in the dark premium Sound Lab
+   system after all light showcase overrides. */
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-resonance-panel,
+.content .sound-lab-workbench.synth-workbench-layout .material-resonance-panel {
+  border-color: rgba(110, 231, 249, 0.22) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(110, 231, 249, 0.15), transparent 34%),
+    radial-gradient(circle at 86% 12%, rgba(167, 139, 250, 0.12), transparent 32%),
+    linear-gradient(135deg, rgba(8, 10, 18, 0.92), rgba(14, 20, 35, 0.9)) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 22px 60px rgba(0, 0, 0, 0.28) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-body-model,
+.content .sound-lab-workbench.synth-workbench-layout .material-body-model {
+  border-color: rgba(110, 231, 249, 0.2) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(110, 231, 249, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(9, 13, 24, 0.82), rgba(18, 25, 42, 0.76)) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .resonance-peak-card,
+.content .sound-lab-workbench.synth-workbench-layout .resonance-peak-card {
+  border-color: rgba(244, 241, 232, 0.12) !important;
+  background:
+    radial-gradient(circle at 50% 100%, rgba(110, 231, 249, 0.1), transparent 48%),
+    rgba(13, 18, 30, 0.86) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-body-metrics article,
+.content .sound-lab-workbench.synth-workbench-layout .material-body-metrics article,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-body-proof span,
+.content .sound-lab-workbench.synth-workbench-layout .material-body-proof span {
+  border-color: rgba(244, 241, 232, 0.12) !important;
+  background: rgba(12, 18, 31, 0.78) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-resonance-panel :where(h2, h3, h4, h5, strong, b, dd),
+.content .sound-lab-workbench.synth-workbench-layout .material-resonance-panel :where(h2, h3, h4, h5, strong, b, dd) {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-resonance-panel :where(p, li, small, span, em, label, dt, dd),
+.content .sound-lab-workbench.synth-workbench-layout .material-resonance-panel :where(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.76) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .material-body-metrics i,
+.content .sound-lab-workbench.synth-workbench-layout .material-body-metrics i,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .resonance-peak-card::before,
+.content .sound-lab-workbench.synth-workbench-layout .resonance-peak-card::before {
+  background:
+    linear-gradient(90deg, rgba(110, 231, 249, 0.95), rgba(94, 234, 212, 0.42), rgba(167, 139, 250, 0.18)) !important;
+}
+
