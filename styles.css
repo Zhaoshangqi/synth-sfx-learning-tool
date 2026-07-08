@@ -24528,3 +24528,40 @@ body.is-direct-manipulating .translation-check-card {
   }
 }
 
+/* Macro hot-zone handfeel v9.24 */
+.signal-atlas-console .macro-knob,
+.synth-workbench-layout .macro-knob {
+  cursor: grab !important;
+  touch-action: none !important;
+  user-select: none !important;
+}
+
+.signal-atlas-console .macro-knob .knob-face,
+.synth-workbench-layout .macro-knob .knob-face,
+.signal-atlas-console .macro-knob strong,
+.synth-workbench-layout .macro-knob strong,
+.signal-atlas-console .macro-knob small,
+.synth-workbench-layout .macro-knob small,
+.signal-atlas-console .macro-knob output,
+.synth-workbench-layout .macro-knob output {
+  pointer-events: none;
+}
+
+.signal-atlas-console .macro-knob.is-dragging,
+.synth-workbench-layout .macro-knob.is-dragging {
+  cursor: grabbing !important;
+  transform: translate3d(0, -1px, 0) !important;
+  border-color: rgba(94, 234, 212, 0.46) !important;
+  box-shadow: 0 12px 26px rgba(8, 12, 24, 0.2), inset 0 0 0 1px rgba(244, 241, 232, 0.08) !important;
+}
+
+.signal-atlas-console .macro-knob.is-dragging input,
+.synth-workbench-layout .macro-knob.is-dragging input {
+  cursor: grabbing !important;
+}
+
+body.is-direct-manipulating .macro-knob.is-dragging {
+  transition: none !important;
+  filter: none !important;
+}
+

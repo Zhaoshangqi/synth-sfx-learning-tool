@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-flow-field';
+} from './sound-lab-model.js?v=20260709-macro-hotzone';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-flow-field';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-macro-hotzone';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-flow-field';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-macro-hotzone';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-flow-field';
+} from './render.js?v=20260709-macro-hotzone';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -1803,6 +1803,37 @@ function updateHorizontalRangeFromPointer(input, event) {
   return writeRangeValue(input, steppedRangeValue(rawValue, min, max, step));
 }
 
+function macroHotZoneRectForInput(input) {
+  const macroKnob = input?.closest('.macro-knob');
+  const inputRect = input?.getBoundingClientRect?.();
+  const macroRect = macroKnob?.getBoundingClientRect?.();
+  if (!macroKnob || !macroRect?.width) return inputRect;
+
+  const horizontalInset = Math.min(18, Math.max(10, macroRect.width * 0.06));
+  const left = macroRect.left + horizontalInset;
+  const right = macroRect.right - horizontalInset;
+  return {
+    left,
+    right,
+    width: Math.max(1, right - left),
+    top: Math.min(macroRect.top, inputRect?.top ?? macroRect.top),
+    bottom: Math.max(macroRect.bottom, inputRect?.bottom ?? macroRect.bottom),
+  };
+}
+
+function updateMacroRangeFromHotZone(input, event) {
+  const rect = macroHotZoneRectForInput(input);
+  if (!rect?.width) return false;
+  const min = Number(input.min || 0);
+  const max = Number(input.max || 100);
+  const step = Number(input.step || 1);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max === min) return false;
+
+  const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  const rawValue = min + ratio * (max - min);
+  return writeRangeValue(input, steppedRangeValue(rawValue, min, max, step));
+}
+
 function updateRangeChrome(input) {
   if (!input?.isConnected) return;
   const shell = input.closest('.range-shell');
@@ -1903,10 +1934,17 @@ function scheduleRangeChromeUpdate(input) {
   });
 }
 
+function commitSmoothRangeFeedback(input, onValue) {
+  applyImmediateControlFeedback(input);
+  scheduleRangeChromeUpdate(input);
+  onValue(input);
+}
+
 function setRangeDragging(input, isDragging) {
   const shell = input?.closest?.('.range-shell');
-  if (!shell) return;
-  shell.classList.toggle('is-dragging', isDragging);
+  const macroKnob = input?.closest?.('.macro-knob');
+  shell?.classList.toggle('is-dragging', isDragging);
+  macroKnob?.classList.toggle('is-dragging', isDragging);
 }
 
 function finishSmoothRangeInput(input = activeRangeInput) {
@@ -1925,9 +1963,7 @@ function bindSmoothRangeInput(input, onValue) {
       ? updateVerticalRangeFromPointer(input, event)
       : updateHorizontalRangeFromPointer(input, event);
     if (!changed) return false;
-    applyImmediateControlFeedback(input);
-    scheduleRangeChromeUpdate(input);
-    onValue(input);
+    commitSmoothRangeFeedback(input, onValue);
     return true;
   };
   const commitKeyboardRangeValue = (event) => {
@@ -1951,9 +1987,7 @@ function bindSmoothRangeInput(input, onValue) {
     event.preventDefault();
     const changed = writeRangeValue(input, steppedRangeValue(nextByKey[event.key], min, max, step));
     if (!changed) return;
-    applyImmediateControlFeedback(input);
-    scheduleRangeChromeUpdate(input);
-    onValue(input);
+    commitSmoothRangeFeedback(input, onValue);
   };
 
   input.addEventListener('pointerdown', (event) => {
@@ -1971,9 +2005,7 @@ function bindSmoothRangeInput(input, onValue) {
   });
 
   input.addEventListener('input', () => {
-    applyImmediateControlFeedback(input);
-    scheduleRangeChromeUpdate(input);
-    onValue(input);
+    commitSmoothRangeFeedback(input, onValue);
   });
 
   input.addEventListener('pointerup', (event) => {
@@ -2000,6 +2032,49 @@ function bindSmoothRangeInput(input, onValue) {
     input.closest('.range-shell')?.classList.remove('is-focused');
     if (input === activeRangeInput) finishSmoothRangeInput(input);
   });
+
+  bindMacroKnobHotZone(input, onValue);
+}
+
+function bindMacroKnobHotZone(input, onValue) {
+  const macroKnob = input.closest('.macro-knob');
+  if (!macroKnob) return;
+  let activeMacroPointerId = null;
+
+  const commitMacroRangeValue = (event) => {
+    event.preventDefault();
+    const changed = updateMacroRangeFromHotZone(input, event);
+    if (!changed) return false;
+    commitSmoothRangeFeedback(input, onValue);
+    return true;
+  };
+
+  macroKnob.addEventListener('pointerdown', (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target === input) return;
+    activeRangeInput = input;
+    activeMacroPointerId = event.pointerId;
+    macroKnob.setPointerCapture?.(event.pointerId);
+    setRangeDragging(input, true);
+    setDirectManipulation(true);
+    applyImmediateControlFeedback(input);
+    commitMacroRangeValue(event);
+  });
+
+  macroKnob.addEventListener('pointermove', (event) => {
+    if (activeRangeInput !== input || activeMacroPointerId !== event.pointerId) return;
+    commitMacroRangeValue(event);
+  });
+
+  const finishMacroRangeValue = (event) => {
+    if (activeMacroPointerId !== event.pointerId) return;
+    macroKnob.releasePointerCapture?.(event.pointerId);
+    activeMacroPointerId = null;
+    finishSmoothRangeInput(input);
+  };
+
+  macroKnob.addEventListener('pointerup', finishMacroRangeValue);
+  macroKnob.addEventListener('pointercancel', finishMacroRangeValue);
 }
 
 function getActiveLab() {
