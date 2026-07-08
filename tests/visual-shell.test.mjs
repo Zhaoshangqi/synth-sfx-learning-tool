@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-pressure"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-flow"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -357,6 +357,29 @@ test('aether flow prompt adds pressure pulses and surface currents without click
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-surface-stream/);
 });
 
+test('aether flow prompt adds magnetic particle flow lanes and transition-safe edge currents', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(js, /aetherMagneticLinks/);
+  assert.match(js, /AETHER_MAGNETIC_LINK_COUNT/);
+  assert.match(js, /createAetherMagneticLink/);
+  assert.match(js, /drawAetherMagneticLinks/);
+  assert.match(js, /drawAetherNodeCurrents\(time\)[\s\S]*drawAetherMagneticLinks\(time\)/);
+  assert.match(js, /synth:view-transition[\s\S]*spawnAetherPressurePulse[\s\S]*hue: 'cyan'/);
+  assert.doesNotMatch(js, /ctx\.fillStyle\s*=\s*['"]black['"]/, 'Aether flow must not repaint the viewport black like the pasted React demo');
+
+  assert.match(css, /Reference aether magnetic flow v9\.7/);
+  assert.match(css, /\.content\.is-view-switching::after/);
+  assert.match(css, /@keyframes ref9-route-current/);
+  assert.match(css, /@keyframes ref9-magnetic-edge/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
+  assert.match(html, /visual-space\.js\?v=20260708-aether-flow/);
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -370,11 +393,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-pressure"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-pressure'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-pressure'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-pressure'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-pressure'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-flow"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-flow'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-flow'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-flow'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-flow'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
