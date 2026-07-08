@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-audio-flow"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-aether-flow12/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
+  assert.match(html, /visual-space\.js\?v=20260709-audio-flow/);
+  assert.match(html, /styles-reference\.css\?v=20260709-audio-flow/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -393,7 +393,7 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-dynamic-detail"/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-audio-flow"/);
   assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-dynamic-detail'/);
   assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-dynamic-detail'/);
   assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-dynamic-detail'/);
@@ -2024,8 +2024,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12/);
+  assert.match(html, /styles-reference\.css\?v=20260709-audio-flow/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-audio-flow/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -2045,8 +2045,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12/);
+  assert.match(html, /styles-reference\.css\?v=20260709-audio-flow/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-audio-flow/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2146,6 +2146,33 @@ test('pasted aether flow prompt adds liquid filaments and stage glints without R
   assert.match(css, /\.hero-sound-visual\.aether-flow-stage\s+\.hero-reveal-layer::after\s*\{[\s\S]*animation:\s*ref9-aether-orbit-glint/);
   assert.match(css, /body\.is-direct-manipulating\s+\.aether-flow-stage\s+\.hero-copy::after[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-text-glint/);
+});
+
+test('aether flow prompt adds audio-synced currents without slider flash', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherAudioRipples/);
+  assert.match(visualSpaceJs, /AETHER_AUDIO_RIPPLE_MAX/);
+  assert.match(visualSpaceJs, /spawnAetherAudioRipple/);
+  assert.match(visualSpaceJs, /drawAetherAudioRipples/);
+  assert.match(visualSpaceJs, /synth:audio-pulse/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherAudioRipples\(time\)/);
+
+  assert.match(appJs, /lastSynthAudioPulseAt/);
+  assert.match(appJs, /emitSynthAudioPulse/);
+  assert.match(appJs, /new CustomEvent\('synth:audio-pulse'/);
+  assert.match(appJs, /emitSynthAudioPulse\(\{ selector, level: safeLevel/);
+
+  assert.match(css, /Reference aether audio reactive flow v9\.14/);
+  assert.match(css, /\.sound-lab-workbench\.is-playing::before\s*\{[\s\S]*animation:\s*ref9-audio-current-breathe/);
+  assert.match(css, /\.sound-lab-workbench\.is-playing\s+:where\([\s\S]*\.atlas-play-button[\s\S]*\)::after/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.sound-lab-workbench\.is-playing::before[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-audio-current-breathe/);
+  assert.match(css, /Reference aether audio reactive cascade lock v9\.15/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\.is-playing::before[\s\S]*animation:\s*ref9-audio-current-breathe 3\.4s ease-in-out infinite alternate !important/);
+  assert.match(css, /body\.is-direct-manipulating \.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\.is-playing::before[\s\S]*opacity:\s*0\.08 !important/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

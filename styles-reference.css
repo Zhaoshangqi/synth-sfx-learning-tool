@@ -2652,3 +2652,157 @@ body.is-direct-manipulating .aether-flow-stage .hero-reveal-layer::after {
     animation-play-state: paused !important;
   }
 }
+
+/* Reference aether audio reactive flow v9.14
+   Couples the native Aether Flow layer to real playback energy: restrained
+   current breathing while Sound Lab plays, with direct manipulation paused. */
+
+.sound-lab-workbench.is-playing {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+}
+
+.sound-lab-workbench.is-playing::before {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at calc(28% + var(--space-x, 0) * 3%) calc(34% + var(--space-y, 0) * 3%), rgba(117, 197, 222, 0.16), transparent 0 12%, transparent 34%),
+    radial-gradient(circle at calc(74% - var(--space-x, 0) * 2%) calc(68% - var(--space-y, 0) * 2%), rgba(167, 139, 250, 0.12), transparent 0 13%, transparent 36%),
+    linear-gradient(104deg, transparent 0 30%, rgba(117, 197, 222, 0.13) 44%, rgba(255, 255, 255, 0.18) 50%, rgba(94, 234, 212, 0.09) 58%, transparent 72%),
+    repeating-linear-gradient(116deg, transparent 0 58px, rgba(117, 197, 222, 0.035) 59px, transparent 62px);
+  background-size: 100% 100%, 100% 100%, 280% 100%, 148px 148px;
+  opacity: 0.3;
+  mix-blend-mode: screen;
+  filter: blur(0.2px) saturate(1.08);
+  transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.01);
+  animation: ref9-audio-current-breathe 3.4s ease-in-out infinite alternate;
+}
+
+.sound-lab-workbench.is-playing > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sound-lab-workbench.is-playing :where(
+  .atlas-play-button,
+  .command-play-button,
+  .play-main-button,
+  .session-play-button
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.sound-lab-workbench.is-playing :where(
+  .atlas-play-button,
+  .command-play-button,
+  .play-main-button,
+  .session-play-button
+)::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 28% 48%, rgba(244, 241, 232, 0.34), transparent 0 7px, transparent 8px),
+    linear-gradient(112deg, transparent 0 24%, rgba(117, 197, 222, 0.28) 42%, rgba(255, 255, 255, 0.2) 51%, rgba(167, 139, 250, 0.16) 62%, transparent 78%);
+  background-size: 180px 100%, 240% 100%;
+  opacity: 0.26;
+  mix-blend-mode: screen;
+  transform: translate3d(-22%, 0, 0);
+  animation: ref9-audio-button-current 1.8s linear infinite;
+}
+
+.sound-lab-workbench.is-playing :where(
+  .atlas-play-button,
+  .command-play-button,
+  .play-main-button,
+  .session-play-button
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.is-direct-manipulating .sound-lab-workbench.is-playing::before,
+body.is-direct-manipulating .sound-lab-workbench.is-playing :where(
+  .atlas-play-button,
+  .command-play-button,
+  .play-main-button,
+  .session-play-button
+)::after {
+  animation-play-state: paused !important;
+  opacity: 0.08 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-audio-current-breathe {
+  0% {
+    background-position: 0 0, 100% 100%, 0% 50%, 0 0;
+    opacity: 0.22;
+    transform: translate3d(calc(var(--space-x, 0) * 6px), calc(var(--space-y, 0) * 4px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 26%, 0% 74%, 100% 50%, 148px 74px;
+    opacity: 0.38;
+    transform: translate3d(calc(var(--space-x, 0) * 11px), calc(var(--space-y, 0) * 8px), 0) scale(1.025);
+  }
+}
+
+@keyframes ref9-audio-button-current {
+  0% {
+    background-position: 0 50%, 0% 50%;
+    transform: translate3d(-24%, 0, 0);
+  }
+  100% {
+    background-position: 76px 50%, 100% 50%;
+    transform: translate3d(24%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-lab-workbench.is-playing::before,
+  .sound-lab-workbench.is-playing :where(
+    .atlas-play-button,
+    .command-play-button,
+    .play-main-button,
+    .session-play-button
+  )::after {
+    animation-name: ref9-audio-current-breathe;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
+/* Reference aether audio reactive cascade lock v9.15
+   The legacy Signal Atlas shell also owns ::before; this higher-specificity
+   layer makes playback current visible without putting it above content. */
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout.is-playing::before,
+.content .sound-lab-workbench.synth-workbench-layout.is-playing::before {
+  z-index: 0 !important;
+  opacity: 0.3 !important;
+  background:
+    radial-gradient(circle at calc(28% + var(--space-x, 0) * 3%) calc(34% + var(--space-y, 0) * 3%), rgba(117, 197, 222, 0.16), transparent 0 12%, transparent 34%),
+    radial-gradient(circle at calc(74% - var(--space-x, 0) * 2%) calc(68% - var(--space-y, 0) * 2%), rgba(167, 139, 250, 0.12), transparent 0 13%, transparent 36%),
+    linear-gradient(104deg, transparent 0 30%, rgba(117, 197, 222, 0.13) 44%, rgba(255, 255, 255, 0.18) 50%, rgba(94, 234, 212, 0.09) 58%, transparent 72%),
+    repeating-linear-gradient(116deg, transparent 0 58px, rgba(117, 197, 222, 0.035) 59px, transparent 62px) !important;
+  background-size: 100% 100%, 100% 100%, 280% 100%, 148px 148px !important;
+  mix-blend-mode: screen !important;
+  animation: ref9-audio-current-breathe 3.4s ease-in-out infinite alternate !important;
+}
+
+body.is-direct-manipulating .content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout.is-playing::before,
+body.is-direct-manipulating .content .sound-lab-workbench.synth-workbench-layout.is-playing::before {
+  animation-play-state: paused !important;
+  opacity: 0.08 !important;
+  transition: none !important;
+}
