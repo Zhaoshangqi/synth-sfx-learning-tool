@@ -1,0 +1,89 @@
+const root = document.documentElement;
+const body = document.body;
+const menuButton = document.querySelector('.visual-burger-btn');
+const sidebar = document.querySelector('#site-menu');
+const app = document.querySelector('#app');
+
+const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+function setMenuOpen(isOpen) {
+  body.classList.toggle('shell-menu-open', isOpen);
+  menuButton?.classList.toggle('is-open', isOpen);
+  menuButton?.setAttribute('aria-expanded', String(isOpen));
+  menuButton?.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
+}
+
+function initMenu() {
+  if (!menuButton || !sidebar) return;
+
+  menuButton.addEventListener('click', () => {
+    setMenuOpen(!body.classList.contains('shell-menu-open'));
+  });
+
+  sidebar.querySelectorAll('.tab, button[data-view]').forEach((button) => {
+    button.addEventListener('click', () => setMenuOpen(false));
+  });
+
+  globalThis.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setMenuOpen(false);
+  });
+}
+
+function initSpotlight() {
+  if (prefersReducedMotion) return;
+  let frame = 0;
+  const pointer = { x: globalThis.innerWidth * 0.62, y: globalThis.innerHeight * 0.34 };
+  const smooth = { ...pointer };
+
+  function writeSpotlight() {
+    frame = 0;
+    smooth.x += (pointer.x - smooth.x) * 0.12;
+    smooth.y += (pointer.y - smooth.y) * 0.12;
+    root.style.setProperty('--spot-x', `${smooth.x.toFixed(1)}px`);
+    root.style.setProperty('--spot-y', `${smooth.y.toFixed(1)}px`);
+  }
+
+  globalThis.addEventListener('pointermove', (event) => {
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    if (!frame) frame = globalThis.requestAnimationFrame(writeSpotlight);
+  }, { passive: true });
+
+  writeSpotlight();
+}
+
+function revealHeadlineWords() {
+  const headline = document.querySelector('.dashboard-hero .hero-copy h3');
+  if (!headline || headline.dataset.wordRevealReady === 'true') return;
+  const text = headline.textContent?.trim();
+  if (!text) return;
+  headline.dataset.wordRevealReady = 'true';
+  headline.textContent = '';
+  const segments = /\s/.test(text)
+    ? text.split(/\s+/)
+    : Array.from(text);
+  segments.forEach((word, index) => {
+    const span = document.createElement('span');
+    span.className = 'word-reveal';
+    span.textContent = word;
+    span.style.animationDelay = `${0.14 + index * 0.026}s`;
+    headline.append(span);
+    if (/\s/.test(text)) headline.append(document.createTextNode(' '));
+  });
+}
+
+function markShellReady() {
+  body.classList.add('visual-shell-ready');
+}
+
+function observeRenderedViews() {
+  if (!app || prefersReducedMotion) return;
+  const observer = new MutationObserver(() => revealHeadlineWords());
+  observer.observe(app, { childList: true, subtree: true });
+}
+
+initMenu();
+initSpotlight();
+revealHeadlineWords();
+observeRenderedViews();
+markShellReady();

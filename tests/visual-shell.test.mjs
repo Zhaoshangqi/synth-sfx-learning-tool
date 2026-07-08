@@ -13,6 +13,32 @@ test('document shell includes premium audio-space background layers', () => {
   assert.match(html, /rel="icon"/);
   assert.match(html, /src="\.\/src\/visual-space\.js"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
+  assert.match(html, /class="visual-splash"/);
+  assert.match(html, /class="visual-burger-btn"/);
+  assert.match(html, /class="visual-spotlight"/);
+  assert.match(html, /src="\.\/src\/shell-visuals\.js"/);
+});
+
+test('studio reference shell ports the supplied splash menu CTA and spotlight motion language', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(html, /visual-splash-row-top/);
+  assert.match(html, /visual-splash-row-bottom/);
+  assert.match(html, /aria-controls="site-menu"/);
+  assert.match(css, /Studio reference visual system v4\.0/);
+  assert.match(css, /--studio-bg:\s*#E4E4E4/);
+  assert.match(css, /--studio-cyan:\s*#75C5DE/);
+  assert.match(css, /@keyframes studio-splash-top/);
+  assert.match(css, /@keyframes studio-splash-bottom/);
+  assert.match(css, /\.visual-burger-btn\.is-open/);
+  assert.match(css, /\.shell-menu-open \.sidebar/);
+  assert.match(css, /@keyframes studio-word-reveal/);
+  assert.match(css, /\.visual-spotlight/);
+  assert.match(shellJs, /setMenuOpen/);
+  assert.match(shellJs, /word-reveal/);
+  assert.match(shellJs, /--spot-x/);
 });
 
 test('styles include premium button feel and custom range rails', () => {
@@ -818,17 +844,21 @@ test('technique cards keep nested chains and validation panels readable on dark 
   assert.match(css, /\.technique-chain li::before,[\s\S]*\.deep-signal-flow li > span\s*\{[\s\S]*color:\s*var\(--v3-cyan\)/);
 });
 
-test('dark theme shared cards and practice buttons avoid washed text', () => {
+test('studio light canvas keeps cards readable while Sound Lab stays professional dark', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(css, /color-scheme:\s*dark/);
-  assert.match(css, /--surface:\s*#10131F/);
+  assert.match(css, /color-scheme:\s*light/);
+  assert.match(css, /--studio-bg:\s*#E4E4E4/);
+  assert.match(css, /--studio-paper:\s*#F4F1E8/);
+  assert.match(css, /--studio-ink:\s*#0B0B0B/);
   assert.match(css, /\.card,[\s\S]*\.daily-video-card,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*color:\s*var\(--v3-text\)/);
   assert.match(css, /\.secondary-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
   assert.match(css, /\.signal-node,[\s\S]*\.sound-lab-meter-grid\s*>\s*div,[\s\S]*\.integration-status-grid\s*>\s*div\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
   assert.match(css, /\.daily-sync-panel,[\s\S]*\.daily-sync-stats div,[\s\S]*\.daily-suggestion-card,[\s\S]*\.integration-status-grid\s*>\s*div\s*\{[\s\S]*rgba\(18,\s*24,\s*38,\s*0\.82\)/);
   assert.match(css, /\.source-card p,[\s\S]*\.notice\s*\{[\s\S]*color:\s*var\(--v3-body\)/);
-  assert.doesNotMatch(css, /color-scheme:\s*light/);
+  assert.match(css, /\.sound-lab-workbench,[\s\S]*\.synth-workbench-layout,[\s\S]*\.signal-atlas-console\s*\{[\s\S]*rgba\(17,\s*17,\s*17,\s*0\.96\)/);
+  assert.match(css, /\.sound-lab-workbench \.workbench-actions button,[\s\S]*\.signal-atlas-console \.workbench-actions button\s*\{[\s\S]*color:\s*var\(--studio-paper\)/);
+  assert.match(css, /\.visual-burger-btn/);
 });
 
 test('dark theme neutralizes nested legacy light modules across every route', () => {
