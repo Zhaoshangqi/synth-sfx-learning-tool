@@ -2367,6 +2367,50 @@ function scrollSoundLabIntoView(selector) {
   });
 }
 
+function escapeSelector(value = '') {
+  return globalThis.CSS?.escape ? globalThis.CSS.escape(String(value)) : String(value).replace(/["\\]/g, '\\$&');
+}
+
+function getWorkbenchCoachTargetSelector(targetId = '') {
+  if (!targetId) return '';
+  return [
+    `[data-sound-lab-control="${escapeSelector(targetId)}"]`,
+    `[data-envelope-control="${escapeSelector(targetId)}"]`,
+    `[data-sound-lab-layer="${escapeSelector(targetId)}"]`,
+    `[data-performance-control="${escapeSelector(targetId)}"]`,
+  ].join(', ');
+}
+
+function focusWorkbenchCoachTarget(targetId = '') {
+  const selector = getWorkbenchCoachTargetSelector(targetId);
+  if (!selector) return false;
+
+  document.querySelectorAll('.is-coach-target').forEach((item) => item.classList.remove('is-coach-target'));
+  const target = document.querySelector(selector);
+  if (!target) return false;
+
+  const highlights = [
+    target,
+    target.closest('.range-shell'),
+    target.closest('.macro-knob'),
+    target.closest('.vertical-slider'),
+    target.closest('.layer-control'),
+    target.closest('.performance-control'),
+    target.closest('.lab-control'),
+  ].filter(Boolean);
+  highlights.forEach((item) => item.classList.add('is-coach-target'));
+
+  const focusTarget = target.closest('.macro-knob, .vertical-slider, .layer-control, .performance-control, .lab-control, .range-shell') ?? target;
+  sameViewScrollLock.allowProgrammaticScroll = true;
+  focusTarget.scrollIntoView({ block: 'center', inline: 'nearest' });
+  target.focus?.({ preventScroll: true });
+
+  globalThis.setTimeout(() => {
+    highlights.forEach((item) => item.classList.remove('is-coach-target'));
+  }, 1800);
+  return true;
+}
+
 function selectAdvancedModule(moduleId, shouldRender = true) {
   const workflowByModule = {
     advanced: 'source',
@@ -2635,6 +2679,11 @@ function showWorkbenchActionFeedback(message, button) {
 
 async function handleWorkbenchAction(action, button) {
   showWorkbenchActionFeedback(WORKBENCH_ACTION_MESSAGES[action] ?? '未识别的工作台按钮：这次点击没有可执行目标。', button);
+  const coachTarget = button?.dataset?.analyzerCoachTarget || button?.dataset?.analyzerCoachLiveParameter || '';
+  if (coachTarget) {
+    const schedule = globalThis.requestAnimationFrame?.bind(globalThis) ?? ((callback) => globalThis.setTimeout(callback, 0));
+    schedule(() => schedule(() => focusWorkbenchCoachTarget(coachTarget)));
+  }
 
   if (action === 'save-patch' || action === 'export-preset') {
     const text = action === 'save-patch' ? buildPatchExportJson() : buildReaperExportText();

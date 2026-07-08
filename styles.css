@@ -1871,6 +1871,35 @@ textarea {
   box-shadow: 0 0 0 3px rgba(23, 167, 163, 0.07);
 }
 
+.is-coach-target {
+  outline: none;
+}
+
+.range-shell.is-coach-target::before,
+.vertical-slider.is-coach-target input,
+.macro-knob.is-coach-target,
+.layer-control.is-coach-target,
+.performance-control.is-coach-target,
+.lab-control.is-coach-target {
+  border-color: rgba(117, 197, 222, 0.56) !important;
+  box-shadow: 0 0 0 3px rgba(117, 197, 222, 0.13), 0 16px 34px rgba(117, 197, 222, 0.16) !important;
+}
+
+.range-shell.is-coach-target::after {
+  filter: saturate(1.18) brightness(1.08);
+  box-shadow: 0 0 20px rgba(117, 197, 222, 0.28);
+}
+
+.macro-knob.is-coach-target .knob-face,
+.vertical-slider.is-coach-target::before {
+  box-shadow: 0 0 0 4px rgba(117, 197, 222, 0.12), 0 0 30px rgba(117, 197, 222, 0.24);
+}
+
+body.is-direct-manipulating .is-coach-target {
+  filter: none !important;
+  transition: none !important;
+}
+
 .lab-control input[type="range"] {
   position: relative;
   z-index: 1;
