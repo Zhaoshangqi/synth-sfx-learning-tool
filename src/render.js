@@ -2163,6 +2163,50 @@ function renderSessionTransportDock(family = {}, model = {}, options = {}) {
   `;
 }
 
+function renderSoundQualityCoachPanel(model = {}) {
+  const coach = model.soundQualityCoach ?? {
+    titleZh: '音质听诊台',
+    summaryZh: '先听最高风险，再只改一个参数做 A/B 验证。',
+    metrics: [],
+    routine: [],
+    primaryFix: { diagnosticId: 'harsh-edge', labelZh: '一键试修优先项', feedbackZh: '只改一个参数后，用 A/B 验证。' },
+  };
+  const metrics = coach.metrics ?? [];
+  const routine = coach.routine ?? [];
+  if (!metrics.length) return '';
+
+  return `
+    <div class="sound-quality-coach-panel" aria-label="音质听诊台">
+      <div class="quality-coach-head">
+        <span>Quality Coach</span>
+        <strong>${escapeHtml(coach.titleZh ?? '音质听诊台')}</strong>
+        <p>${escapeHtml(coach.summaryZh ?? '')}</p>
+      </div>
+      <div class="quality-coach-metric-grid">
+        ${metrics.map((metric) => `
+          <article class="quality-coach-metric" style="--quality-coach-value:${formatNumber(metric.value ?? 0)}%">
+            <div>
+              <strong>${escapeHtml(metric.labelZh)}</strong>
+              <span>${escapeHtml(String(metric.value ?? 0))}</span>
+            </div>
+            <small>${escapeHtml(metric.statusZh ?? '')}</small>
+            <p>${escapeHtml(metric.listenZh)}</p>
+            <em>${escapeHtml(metric.fixZh)}</em>
+            <i aria-hidden="true"></i>
+          </article>
+        `).join('')}
+      </div>
+      <div class="quality-coach-routine">
+        ${routine.map((step, index) => `<span><b>${String(index + 1).padStart(2, '0')}</b>${escapeHtml(step)}</span>`).join('')}
+      </div>
+      <button class="quality-coach-apply-button" type="button" data-quality-coach-apply="${escapeHtml(coach.primaryFix.diagnosticId)}">
+        <strong>${escapeHtml(coach.primaryFix.labelZh ?? '一键试修优先项')}</strong>
+        <span>${escapeHtml(coach.primaryFix.feedbackZh ?? '只改一个参数后，用 A/B 验证。')}</span>
+      </button>
+    </div>
+  `;
+}
+
 function renderWorkbenchQuality(model = {}) {
   const qualityItems = (model.soundQuality?.length
     ? model.soundQuality
@@ -2221,6 +2265,7 @@ function renderWorkbenchQuality(model = {}) {
           </div>
         </div>
       ` : ''}
+      ${renderSoundQualityCoachPanel(model)}
     </section>
   `;
 }

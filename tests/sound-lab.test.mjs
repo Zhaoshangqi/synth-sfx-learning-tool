@@ -214,6 +214,34 @@ test('Patch Doctor diagnostics expose safe one-click trial adjustments', () => {
   assert.ok(harsh.applyAction.layerDelta?.texture <= 0, 'harsh-edge should reduce texture instead of adding more high-frequency material');
 });
 
+test('buildSoundLabViewModel exposes a sound quality coach tied to the safest next repair', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 96,
+    motion: 26,
+    material: 92,
+    space: 82,
+    variation: 30,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 92, body: 54, texture: 86, tail: 88 },
+  });
+
+  assert.ok(model.soundQualityCoach, 'view model should expose a beginner sound quality coach');
+  assert.match(model.soundQualityCoach.titleZh, /音质|听诊|质量/);
+  assert.match(model.soundQualityCoach.summaryZh, /响度|刺耳|主体|尾巴|A\/B/);
+  assert.equal(model.soundQualityCoach.metrics.length, 5);
+  assert.ok(model.soundQualityCoach.metrics.every((metric) => metric.id && metric.labelZh && metric.listenZh && metric.fixZh));
+  assert.ok(model.soundQualityCoach.metrics.every((metric) => Number.isFinite(metric.value) && metric.value >= 0 && metric.value <= 100));
+  assert.ok(model.soundQualityCoach.routine.length >= 3);
+  assert.equal(model.soundQualityCoach.primaryFix.diagnosticId, model.patchDoctor.diagnostics[0].id);
+  assert.match(model.soundQualityCoach.primaryFix.labelZh, /一键|试修|优先/);
+  assert.match(model.soundQualityCoach.primaryFix.feedbackZh, /A\/B|只改一个|验证/);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
