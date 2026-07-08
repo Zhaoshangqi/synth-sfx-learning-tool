@@ -648,6 +648,32 @@ test('renderSoundLabWorkbench renders a sound quality coach with a real one-clic
   assert.match(html, /只改一个|A\/B|验证/);
 });
 
+test('renderSoundLabWorkbench renders a first-screen Mission Brief with actionable beginner steps', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 36,
+    material: 84,
+    space: 64,
+    variation: 34,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'source',
+    layerMix: { transient: 86, body: 58, texture: 74, tail: 62 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /mission-brief-panel/);
+  assert.match(html, /Mission Brief|听|改|验|交付/);
+  assert.match(html, /只改一个|A\/B|REAPER|记录/);
+  assert.match(html, /data-workbench-action="focus-source"/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /data-workbench-action="focus-export"/);
+});
+
 test('renderSoundLabWorkbench renders live parameter coach with synth and REAPER guidance', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

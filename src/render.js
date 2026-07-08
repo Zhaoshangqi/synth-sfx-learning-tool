@@ -2163,6 +2163,43 @@ function renderSessionTransportDock(family = {}, model = {}, options = {}) {
   `;
 }
 
+function renderMissionBriefPanel(model = {}) {
+  const mission = model.missionBrief ?? {};
+  const steps = mission.steps ?? [];
+  if (!steps.length) return '';
+
+  return `
+    <section class="mission-brief-panel" aria-label="Mission Brief">
+      <div class="mission-brief-head">
+        <span>Mission Brief</span>
+        <strong>${escapeHtml(mission.titleZh ?? 'Mission Brief：听 / 改 / 验 / 交付')}</strong>
+        <p>${escapeHtml(mission.summaryZh ?? '')}</p>
+      </div>
+      <div class="mission-brief-step-grid">
+        ${steps.map((step, index) => `
+          <button
+            class="mission-brief-step ${step.id === mission.activeStepId ? 'is-active' : ''}"
+            type="button"
+            data-workbench-action="${escapeHtml(step.action)}"
+            aria-pressed="${step.id === mission.activeStepId ? 'true' : 'false'}"
+          >
+            <span>${escapeHtml(step.labelZh ?? String(index + 1))}</span>
+            <strong>${escapeHtml(step.titleZh ?? '')}</strong>
+            <p>${escapeHtml(step.goalZh ?? '')}</p>
+            <small>${escapeHtml(step.proofZh ?? '')}</small>
+          </button>
+        `).join('')}
+      </div>
+      <div class="mission-brief-footer">
+        <p>${escapeHtml(mission.passCriteriaZh ?? '过关标准：A/B 后能说明保留或撤回理由，并记录 REAPER note。')}</p>
+        <button class="mission-brief-action" type="button" data-workbench-action="${escapeHtml(mission.nextAction?.action ?? 'focus-source')}">
+          ${escapeHtml(mission.nextAction?.labelZh ?? '下一步：先听目标')}
+        </button>
+      </div>
+    </section>
+  `;
+}
+
 function renderSoundQualityCoachPanel(model = {}) {
   const coach = model.soundQualityCoach ?? {
     titleZh: '音质听诊台',
@@ -2677,6 +2714,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
+      ${renderMissionBriefPanel(model)}
       <div class="synth-tab-row">
         ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
@@ -2766,6 +2804,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
       </header>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
       ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
+      ${renderMissionBriefPanel(model)}
       <main class="atlas-main-console">
         ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
         <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">
