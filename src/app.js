@@ -400,6 +400,7 @@ let performanceGestureTimers = [];
 let rangeChromeFrame = 0;
 let soundLabPatchFrame = 0;
 let quietRenderFrame = 0;
+let lastSynthAudioPulseAt = 0;
 let activeRangeInput = null;
 let directManipulationTimer = 0;
 let midiAccess = null;
@@ -2013,10 +2014,21 @@ function updateLiveMeter(level) {
   updateSurfaceMeter('.interactive-lab-card', level);
 }
 
+function emitSynthAudioPulse(detail = {}) {
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? 0)));
+  const now = globalThis.performance?.now?.() ?? Date.now();
+  if (level < 0.055) return;
+  if (now - lastSynthAudioPulseAt < 115 && level < 0.78) return;
+  lastSynthAudioPulseAt = now;
+  document.dispatchEvent(new CustomEvent('synth:audio-pulse', { detail }));
+}
+
 function updateSurfaceMeter(selector, level) {
   const safeLevel = Math.max(0, Math.min(1, level));
   const card = document.querySelector(selector);
   if (!card) return;
+
+  emitSynthAudioPulse({ selector, level: safeLevel, source: selector, to: state.view });
 
   card.style.setProperty('--audio-level', safeLevel.toFixed(3));
   card.style.setProperty('--audio-glow', (0.06 + safeLevel * 0.2).toFixed(3));
@@ -3479,6 +3491,8 @@ async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   state.isSoundLabPlaying = true;
   state.isAuditioning = false;
   refreshSoundLabRuntimeUi(model);
+  document.dispatchEvent(new CustomEvent('synth:flow-pulse', { detail: { from: 'sound-lab-play', to: patch.familyId ?? 'soundlab' } }));
+  emitSynthAudioPulse({ selector: '.sound-lab-workbench', level: 0.86, source: 'sound-lab-play', to: patch.familyId ?? 'soundlab' });
 
   try {
     const result = await audioPlayer.playSoundLabPatch(patch, {

@@ -16,8 +16,10 @@ let aetherFlowFilaments = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
+let aetherAudioRipples = [];
 let frameId = 0;
 let spaceParallaxFrame = 0;
+let lastAetherAudioRippleTime = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -51,6 +53,8 @@ const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
 const AETHER_PRESSURE_RADIUS = 178;
 const AETHER_PRESSURE_MAX_PULSES = 12;
+const AETHER_AUDIO_RIPPLE_MAX = 14;
+const AETHER_AUDIO_RIPPLE_MIN_MS = 105;
 const AETHER_FLOW_SURFACE_SELECTOR = [
   '.visual-burger-btn',
   '.signal-node',
@@ -287,6 +291,57 @@ function spawnAetherPressurePulse(x = pointer.screenX, y = pointer.screenY, deta
   }
 }
 
+function getAetherPulsePoint(detail = {}) {
+  const selector = detail.selector;
+  const surface = selector ? document.querySelector(selector) : null;
+  if (surface) {
+    const rect = surface.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      return {
+        x: rect.left + rect.width * 0.54,
+        y: rect.top + rect.height * 0.5,
+      };
+    }
+  }
+
+  const seed = String(detail.to ?? detail.from ?? detail.source ?? 'audio').length;
+  return {
+    x: width * (0.34 + (seed % 5) * 0.075),
+    y: height * (0.32 + (seed % 4) * 0.105),
+  };
+}
+
+function spawnAetherAudioRipple(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+
+  const now = globalThis.performance?.now?.() ?? Date.now();
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.56)));
+  if (level < 0.055) return;
+  if (now - lastAetherAudioRippleTime < AETHER_AUDIO_RIPPLE_MIN_MS && level < 0.78) return;
+
+  lastAetherAudioRippleTime = now;
+  const point = getAetherPulsePoint(detail);
+  const seed = String(detail.to ?? detail.from ?? detail.source ?? 'audio').length;
+  const hue = detail.hue ?? (seed % 3 === 0 ? 'violet' : seed % 2 === 0 ? 'green' : 'cyan');
+
+  aetherAudioRipples.push({
+    x: point.x + random(-10, 10),
+    y: point.y + random(-8, 8),
+    vx: random(-0.18, 0.18),
+    vy: random(-0.13, 0.13),
+    age: 0,
+    ttl: random(0.82, 1.35) + level * 0.42,
+    level,
+    radius: random(82, 156) + level * 118,
+    phase: random(0, Math.PI * 2),
+    hue,
+  });
+
+  if (aetherAudioRipples.length > AETHER_AUDIO_RIPPLE_MAX) {
+    aetherAudioRipples.splice(0, aetherAudioRipples.length - AETHER_AUDIO_RIPPLE_MAX);
+  }
+}
+
 function getAetherStreamPoint(stream, progress, time, phaseOffset = 0) {
   const x = -90 + progress * (width + 180);
   const phase = stream.phase + time * stream.speed + progress * stream.frequency + pointer.x * 0.45 + phaseOffset;
@@ -356,6 +411,8 @@ function resize() {
   cursorWakeAnchor.time = 0;
   transitionBursts = [];
   aetherPressurePulses = [];
+  aetherAudioRipples = [];
+  lastAetherAudioRippleTime = 0;
 }
 
 function waveY(x, rowIndex, time) {
@@ -1055,6 +1112,53 @@ function drawAetherPressureField(time) {
   ctx.restore();
 }
 
+function drawAetherAudioRipples(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherAudioRipples.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherAudioRipples = aetherAudioRipples.filter((ripple) => ripple.age < ripple.ttl);
+  aetherAudioRipples.forEach((ripple) => {
+    ripple.age += 0.016;
+    ripple.x += ripple.vx + pointer.x * 0.035;
+    ripple.y += ripple.vy + pointer.y * 0.028;
+    ripple.vx *= 0.992;
+    ripple.vy *= 0.992;
+
+    const life = Math.max(0, 1 - ripple.age / ripple.ttl);
+    const color = ripple.hue === 'violet' ? '167, 139, 250' : ripple.hue === 'green' ? '94, 234, 212' : '117, 197, 222';
+    const shimmer = 0.6 + Math.sin(time * 0.004 + ripple.phase) * 0.24;
+    const radius = ripple.radius * (0.24 + (1 - life) * 0.86);
+    const x = ripple.x + pointer.x * 12;
+    const y = ripple.y + pointer.y * 8;
+
+    const gradient = ctx.createRadialGradient(x, y, Math.max(1, radius * 0.06), x, y, radius);
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${life * ripple.level * 0.035})`);
+    gradient.addColorStop(0.38, `rgba(${color}, ${life * ripple.level * 0.075})`);
+    gradient.addColorStop(1, `rgba(${color}, 0)`);
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let ring = 0; ring < 2; ring += 1) {
+      const ringRadius = radius * (0.62 + ring * 0.28);
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${color}, ${life * ripple.level * (0.075 - ring * 0.026) * shimmer})`;
+      ctx.lineWidth = 0.44 + ripple.level * 0.76;
+      ctx.arc(
+        x + Math.sin(ripple.phase + ring) * 5,
+        y + Math.cos(ripple.phase + ring) * 4,
+        ringRadius,
+        -Math.PI * 0.16,
+        Math.PI * (1.26 + ring * 0.18),
+      );
+      ctx.stroke();
+    }
+  });
+  ctx.restore();
+}
+
 function drawRippleField(time) {
   const centers = [
     [width * 0.18 + pointer.x * 18, height * 0.2 + pointer.y * 12],
@@ -1133,6 +1237,7 @@ function tick(time = 0) {
 
   drawRippleField(time);
   drawAetherPressureField(time);
+  if (!isAetherFlowPaused()) drawAetherAudioRipples(time);
   if (!isAetherFlowPaused()) drawAetherOrbitalCurrents(time);
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
@@ -1191,6 +1296,9 @@ function init() {
       height * (0.32 + (seed % 4) * 0.11),
       { radius: 190, strength: 0.58, ttl: 1.2, hue: seed % 2 === 0 ? 'green' : 'violet' },
     );
+  });
+  document.addEventListener('synth:audio-pulse', (event) => {
+    spawnAetherAudioRipple(event.detail);
   });
   tick();
 }
