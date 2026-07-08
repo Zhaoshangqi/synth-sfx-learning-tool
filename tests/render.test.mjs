@@ -623,6 +623,30 @@ test('renderSoundLabWorkbench renders perceptual calibration as beginner quality
   assert.match(html, /Raw|Comfort|Studio|-14 LUFS/);
 });
 
+test('renderSoundLabWorkbench renders live parameter coach with synth and REAPER guidance', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 46,
+    motion: 50,
+    material: 91,
+    space: 28,
+    variation: 20,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /parameter-coach-panel/);
+  assert.match(html, /data-live-parameter-coach/);
+  assert.match(html, /实时参数导师/);
+  assert.match(html, /data-live-coach-listen/);
+  assert.match(html, /data-live-coach-synth/);
+  assert.match(html, /data-live-coach-reaper/);
+  assert.match(html, /Serum\/Vital|Phase Plant/);
+  assert.match(html, /REAPER 验证/);
+});
+
 test('renderSoundLabWorkbench renders Patch Doctor diagnostics with routed actions', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

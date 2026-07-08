@@ -43,6 +43,7 @@ import {
   SOUND_LAB_LAYER_MIX,
   SOUND_LAB_FX_ORDER,
   SOUND_LAB_MACROS,
+  SOUND_LAB_PARAMETER_COACH,
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
@@ -1366,12 +1367,62 @@ function updateRangeChrome(input) {
   if (output) output.textContent = `${input.value}${input.dataset.controlUnit ?? ''}`;
 }
 
+function coachTopicForInput(input) {
+  if (!input) return null;
+  if (input.dataset.soundLabControl) {
+    return {
+      categoryZh: 'Macro',
+      ...(SOUND_LAB_PARAMETER_COACH.macros[input.dataset.soundLabControl] ?? {}),
+    };
+  }
+  if (input.dataset.performanceControl) {
+    return {
+      categoryZh: 'Performance',
+      ...(SOUND_LAB_PARAMETER_COACH.performance[input.dataset.performanceControl] ?? {}),
+    };
+  }
+  if (input.dataset.soundLabLayer) {
+    return {
+      categoryZh: 'Layer Mix',
+      ...(SOUND_LAB_PARAMETER_COACH.layers[input.dataset.soundLabLayer] ?? {}),
+    };
+  }
+  if (input.dataset.envelopeControl) {
+    return {
+      categoryZh: 'Envelope',
+      ...(SOUND_LAB_PARAMETER_COACH.envelope[input.dataset.envelopeControl] ?? {}),
+    };
+  }
+  if (input.dataset.macroMorph !== undefined) {
+    return { categoryZh: 'Morph', ...SOUND_LAB_PARAMETER_COACH.special.macroMorph };
+  }
+  if (input.dataset.modRouteAmount) {
+    return { categoryZh: 'Mod Matrix', ...SOUND_LAB_PARAMETER_COACH.special.modRoute };
+  }
+  return null;
+}
+
+function updateParameterCoach(topic, valueLabel = '') {
+  if (!topic?.titleZh) return;
+  document.querySelectorAll('[data-live-parameter-coach]').forEach((panel) => {
+    panel.style.setProperty('--coach-level', `${rangePercentFromInput({ min: 0, max: 100, value: Number.parseFloat(valueLabel) || 0 }).toFixed(2)}%`);
+    panel.querySelector('[data-live-coach-category]')?.replaceChildren(document.createTextNode(topic.categoryZh ?? 'Parameter'));
+    panel.querySelector('[data-live-coach-title]')?.replaceChildren(document.createTextNode(topic.titleZh));
+    panel.querySelector('[data-live-coach-value]')?.replaceChildren(document.createTextNode(valueLabel));
+    panel.querySelector('[data-live-coach-listen]')?.replaceChildren(document.createTextNode(topic.listenZh ?? ''));
+    panel.querySelector('[data-live-coach-synth]')?.replaceChildren(document.createTextNode(topic.synthZh ?? ''));
+    panel.querySelector('[data-live-coach-reaper]')?.replaceChildren(document.createTextNode(topic.reaperZh ?? ''));
+    panel.querySelector('[data-live-coach-target]')?.replaceChildren(document.createTextNode(topic.targetZh ?? ''));
+  });
+}
+
 function applyImmediateControlFeedback(input) {
   if (!input?.isConnected) return;
   updateRangeChrome(input);
   const unit = input.dataset.controlUnit ?? '';
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
   control?.setAttribute('data-live-value', `${input.value}${unit}`);
+  updateParameterCoach(coachTopicForInput(input), `${input.value}${unit}`);
 }
 
 function scheduleRangeChromeUpdate(input) {
@@ -2328,6 +2379,10 @@ function updateXyPadFromPointer(pad, event) {
   state.soundLabXyPad = { ...state.soundLabXyPad, x, y };
   pad.style.setProperty('--xy-x', `${x.toFixed(2)}%`);
   pad.style.setProperty('--xy-y', `${y.toFixed(2)}%`);
+  updateParameterCoach(
+    { categoryZh: 'XY Pad', ...SOUND_LAB_PARAMETER_COACH.special.xyPad },
+    `${Math.round(x)} / ${Math.round(y)}`,
+  );
   syncSoundLabPatchSoon();
 }
 
