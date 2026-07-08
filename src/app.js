@@ -152,6 +152,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: 'Serum / Phase Plant / Vital 里先只开一个 osc 或 noise 源，确认基础波形和音高范围。',
     reaperZh: '在 REAPER 放一个短 MIDI note，导出 dry 版本作为后续 A/B 基准。',
     proofZh: '能说出“声音由哪三段组成”，再进入下一步。',
+    soundTargetZh: '做一个 0.5 秒以内的金属 click：前 80ms 有清楚瞬态，后面只留短共振。',
+    oneKnobZh: '只动 Material 或 Brightness：听金属边缘变硬时，主体有没有变薄。',
+    mistakeZh: '一开始就叠 reverb、distortion 或很多层，会掩盖你真正听不懂的基础结构。',
+    checkpointZh: '关掉所有效果后，dry 版本仍然像一个完整的小音效。',
+    nextStepZh: '下一步进入包络塑形，把声音长度和功能感定下来。',
   },
   {
     id: 'shape-envelope',
@@ -165,6 +170,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: '把同一套 ADSR 复制到 Serum Amp Env、Phase Plant output envelope、Vital Env 1。',
     reaperZh: '渲染 click / pluck / swell 三版，文件名只改包络参数，方便回听。',
     proofZh: '不用看屏幕也能听出 Attack 和 Release 的变化。',
+    soundTargetZh: '把同一个声音做成 click、pluck、reverse swell 三个功能版本。',
+    oneKnobZh: '只动 Decay：从 80ms 到 600ms，记录声音从“点”变成“短尾”的边界。',
+    mistakeZh: '把 Sustain 当成音量用，容易让瞬态和尾巴粘成一团。',
+    checkpointZh: '闭眼回听时，能立刻分辨 Attack 变慢还是 Release 变长。',
+    nextStepZh: '下一步进入频谱运动，用滤波决定声音明暗和运动感。',
   },
   {
     id: 'spectrum-motion',
@@ -178,6 +188,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: '用 filter envelope 或 LFO 推 cutoff，先小范围调制，再加 resonance。',
     reaperZh: '用频谱仪看能量是否随参数移动，不要只靠更响判断“更好”。',
     proofZh: '能解释为什么同一个 saw 经过低通会更像 whoosh/body。',
+    soundTargetZh: '做一个从暗到亮的 whoosh/body 变化，保持响度基本一致。',
+    oneKnobZh: '只动 Cutoff 或 Motion：听明暗边界移动，不要同时改音量。',
+    mistakeZh: '把 resonance 拉太高会让声音尖，但不一定更清楚。',
+    checkpointZh: '频谱上能看到能量重心移动，听感上也能说出“变亮的位置”。',
+    nextStepZh: '下一步进入 FM 金属，把频谱运动推进到非谐波材质。',
   },
   {
     id: 'fm-metal',
@@ -196,6 +211,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: 'Serum 用 FM from B / warp，Phase Plant 用 audio-rate mod，Vital 用 FM/phase 或 spectral warp。',
     reaperZh: '导出 dry 和 changed 两版，响度匹配后判断是不是“更金属”而不是“更大声”。',
     proofZh: '能指出 carrier / modulator 比例改变后哪一段听感变了。',
+    soundTargetZh: '做一个短金属 hit：有非谐波边缘，但 3-8kHz 不刺。',
+    oneKnobZh: '只动 FM Amount：从轻微侧频到明显金属，找到刚好成立的位置。',
+    mistakeZh: 'FM 太深会变成噪声团；如果听不出主体音高，先退回一半。',
+    checkpointZh: 'A/B 响度匹配后，changed 版本更有金属材质而不是单纯更亮。',
+    nextStepZh: '下一步进入分层材质，把 transient、body、texture 和 tail 拆开。',
   },
   {
     id: 'layer-material',
@@ -214,6 +234,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: '用 noise / random / short delay 做 texture，再用 macro 控制层间比例。',
     reaperZh: '分轨渲染 dry / full / tail-only，检查每一层是否能独立说明用途。',
     proofZh: '能删除一层并准确说出声音少了什么。',
+    soundTargetZh: '做一个带电或机械质感：主体可辨认，细节层只补材质。',
+    oneKnobZh: '只动 Texture 或 Layer Mix：每次关一层，听它负责哪种信息。',
+    mistakeZh: '层数越多越容易糊；没有角色的层应该删掉，而不是再 EQ。',
+    checkpointZh: '每一层都能用一句话说明用途：点击、主体、摩擦、电流或尾巴。',
+    nextStepZh: '下一步进入 A/B 交付，把声音变成可复现、可验收的版本。',
   },
   {
     id: 'ab-deliver',
@@ -226,6 +251,11 @@ const DASHBOARD_LEARNING_PATH = [
     synthZh: '把最终 Patch 写成 macro 名称、核心参数和可复现步骤，而不是只存预设名。',
     reaperZh: '按 -14 LUFS 参考、峰值不超过 -1 dBTP、24bit/48kHz 或项目规格导出。',
     proofZh: '能把 Patch JSON、REAPER notes 和 A/B 文件一起交付。',
+    soundTargetZh: '交付 dry、full、tail-only 三版，并能解释每版用途。',
+    oneKnobZh: '只动 Output Mode 或 Comfort：响度匹配后判断质感是否真的变好。',
+    mistakeZh: '用更大声冒充更好听，是交付阶段最常见的误判。',
+    checkpointZh: '文件名、响度、峰值、采样率、Patch Notes 和 A/B 说明都能对上。',
+    nextStepZh: '回到每日新教程，选一个真实案例重新走完整路线。',
   },
 ];
 
@@ -600,6 +630,31 @@ function renderDashboard() {
           <div><strong>合成器怎么做</strong><p>${escapeHtml(activePathStep.synthZh)}</p></div>
           <div><strong>REAPER 怎么验</strong><p>${escapeHtml(activePathStep.reaperZh)}</p></div>
           <div><strong>过关标准</strong><p>${escapeHtml(activePathStep.proofZh)}</p></div>
+        </div>
+        <div class="learning-coach-grid" aria-label="本步教练任务">
+          <div class="learning-coach-card">
+            <span>声音目标</span>
+            <p>${escapeHtml(activePathStep.soundTargetZh)}</p>
+          </div>
+          <div class="learning-coach-card">
+            <span>一个旋钮</span>
+            <p>${escapeHtml(activePathStep.oneKnobZh)}</p>
+          </div>
+          <div class="learning-coach-card">
+            <span>常见误区</span>
+            <p>${escapeHtml(activePathStep.mistakeZh)}</p>
+          </div>
+          <div class="learning-coach-card">
+            <span>验收动作</span>
+            <p>${escapeHtml(activePathStep.checkpointZh)}</p>
+          </div>
+        </div>
+        <div class="learning-path-cta">
+          <button class="primary-button" type="button" data-dashboard-path-launch="${escapeHtml(activePathStep.id)}">
+            <span>开始这一步</span>
+            <small>${escapeHtml(activePathStep.view === 'soundlab' ? '加载 Sound Lab 状态' : '进入对应练习模块')}</small>
+          </button>
+          <p>${escapeHtml(activePathStep.nextStepZh)}</p>
         </div>
       </article>
     </section>
@@ -2377,17 +2432,26 @@ function applyDashboardPathStep(step) {
   }
 }
 
+function launchDashboardPathStep(step) {
+  applyDashboardPathStep(step);
+  switchView(step.view);
+}
+
 function bindDashboardLearningPathControls() {
   document.querySelectorAll('[data-dashboard-path-step]').forEach((button) => {
     button.addEventListener('click', () => {
       const step = DASHBOARD_LEARNING_PATH.find((item) => item.id === button.dataset.dashboardPathStep);
       if (!step) return;
       applyDashboardPathStep(step);
-      if (step.view === state.view) {
-        renderSameView();
-      } else {
-        switchView(step.view);
-      }
+      renderSameView();
+    });
+  });
+
+  document.querySelectorAll('[data-dashboard-path-launch]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const step = DASHBOARD_LEARNING_PATH.find((item) => item.id === button.dataset.dashboardPathLaunch);
+      if (!step) return;
+      launchDashboardPathStep(step);
     });
   });
 }
