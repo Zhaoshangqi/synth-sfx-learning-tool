@@ -11,6 +11,7 @@ let aetherFlowNodes = [];
 let aetherMagneticLinks = [];
 let aetherOrbitalFields = [];
 let aetherConstellationParticles = [];
+let aetherHeroFlowParticles = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -38,6 +39,10 @@ const AETHER_ORBITAL_SEGMENTS = 92;
 const AETHER_CONSTELLATION_COUNT = 78;
 const AETHER_CONSTELLATION_RADIUS = 164;
 const AETHER_CONSTELLATION_STRIDE = 3;
+const AETHER_HERO_FLOW_COUNT = 54;
+const AETHER_HERO_FLOW_RADIUS = 220;
+const AETHER_HERO_FLOW_CONNECTION_RADIUS = 154;
+const AETHER_HERO_FLOW_STRIDE = 2;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -167,6 +172,30 @@ function createAetherConstellationParticle(index) {
   };
 }
 
+function createAetherHeroFlowParticle(index, seed = 0) {
+  const lane = (index % 7) / 6;
+  const edgeBias = index % 3 === 0 ? 0.18 : index % 3 === 1 ? 0.5 : 0.82;
+  return {
+    x: random(width * 0.05, width * 0.95),
+    y: random(height * 0.08, height * 0.9),
+    homeX: width * (0.18 + edgeBias * 0.64) + Math.sin(seed + index * 1.7) * width * 0.045,
+    homeY: height * (0.18 + lane * 0.64) + Math.cos(seed * 0.7 + index * 1.2) * height * 0.045,
+    vx: random(-0.055, 0.055),
+    vy: random(-0.04, 0.04),
+    z: random(0.36, 1),
+    r: random(0.72, 1.75),
+    phase: random(0, Math.PI * 2) + seed * 0.11,
+    color: index % 5 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
+function resetAetherHeroFlowNetwork(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? 'aether').length;
+  const count = Math.min(AETHER_HERO_FLOW_COUNT, Math.max(width < 760 ? 20 : 34, Math.floor((width * height) / 26000)));
+  aetherHeroFlowParticles = Array.from({ length: count }, (_, index) => createAetherHeroFlowParticle(index, seed));
+}
+
 function spawnCursorWake(x, y, time = performance.now()) {
   if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
   const dx = x - cursorWakeAnchor.x;
@@ -281,6 +310,7 @@ function resize() {
   aetherOrbitalFields = Array.from({ length: orbitalFieldCount }, (_, index) => createAetherOrbitalField(index));
   const constellationCount = Math.min(AETHER_CONSTELLATION_COUNT, Math.max(width < 760 ? 24 : 44, Math.floor((width * height) / 23000)));
   aetherConstellationParticles = Array.from({ length: constellationCount }, (_, index) => createAetherConstellationParticle(index));
+  resetAetherHeroFlowNetwork();
   cursorWakeParticles = [];
   cursorWakeAnchor.x = pointer.screenX;
   cursorWakeAnchor.y = pointer.screenY;
@@ -740,6 +770,86 @@ function drawAetherConstellationMesh(time) {
   ctx.restore();
 }
 
+function drawAetherHeroFlowNetwork(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherHeroFlowParticles.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const flowParticles = aetherHeroFlowParticles.map((particle) => {
+    const homePullX = (particle.homeX - particle.x) * 0.0009;
+    const homePullY = (particle.homeY - particle.y) * 0.0009;
+    particle.vx = (particle.vx + homePullX) * 0.997;
+    particle.vy = (particle.vy + homePullY) * 0.997;
+    particle.x += particle.vx * (0.56 + particle.z) + Math.sin(time * 0.00018 + particle.phase) * 0.12;
+    particle.y += particle.vy * (0.48 + particle.z) + Math.cos(time * 0.00015 + particle.phase) * 0.09;
+    particle.phase += 0.0014;
+
+    if (particle.x < -30) particle.x = width + 30;
+    if (particle.x > width + 30) particle.x = -30;
+    if (particle.y < -30) particle.y = height + 30;
+    if (particle.y > height + 30) particle.y = -30;
+
+    const orbitX = Math.sin(time * 0.00022 + particle.phase * 0.7) * 18 * particle.z;
+    const orbitY = Math.cos(time * 0.00019 + particle.phase * 0.56) * 13 * particle.z;
+    const rawX = particle.x + orbitX + pointer.x * particle.z * 18;
+    const rawY = particle.y + orbitY + pointer.y * particle.z * 13;
+    const pointerDistance = Math.hypot(rawX - pointer.screenX, rawY - pointer.screenY);
+    const pointerBoost = Math.max(0, 1 - pointerDistance / AETHER_HERO_FLOW_RADIUS) * pointer.force;
+    const flow = aetherRepel(rawX, rawY, particle.z);
+
+    particle.viewX = flow.x;
+    particle.viewY = flow.y;
+    particle.pointerBoost = pointerBoost;
+    return particle;
+  });
+
+  for (let i = 0; i < flowParticles.length; i += AETHER_HERO_FLOW_STRIDE) {
+    const a = flowParticles[i];
+    for (let j = i + AETHER_HERO_FLOW_STRIDE; j < flowParticles.length; j += AETHER_HERO_FLOW_STRIDE) {
+      const b = flowParticles[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      const activeRadius = AETHER_HERO_FLOW_CONNECTION_RADIUS + Math.max(a.pointerBoost, b.pointerBoost) * 68;
+      if (distance > activeRadius) continue;
+
+      const linkStrength = Math.max(0, 1 - distance / activeRadius);
+      const glow = Math.max(a.pointerBoost, b.pointerBoost);
+      const shimmer = 0.5 + Math.sin(time * 0.001 + a.phase + b.phase) * 0.22;
+      const alpha = Math.min(0.18, linkStrength * 0.038 + glow * 0.11 + shimmer * 0.008);
+      if (alpha < 0.01) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.68})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.36 + glow * 0.82;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * 24,
+        (a.viewY + b.viewY) * 0.5 + pointer.y * 16,
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+
+  flowParticles.forEach((particle) => {
+    const pulse = 0.48 + Math.sin(time * 0.0015 + particle.phase) * 0.2 + particle.pointerBoost * 0.32;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${0.075 + pulse * 0.11})`;
+    ctx.shadowColor = `rgba(${particle.color}, ${0.08 + particle.pointerBoost * 0.16})`;
+    ctx.shadowBlur = 5 + particle.z * 7 + particle.pointerBoost * 9;
+    ctx.arc(particle.viewX, particle.viewY, particle.r + particle.pointerBoost * 1.1, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -939,6 +1049,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
+  if (!isAetherFlowPaused()) drawAetherHeroFlowNetwork(time);
   if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
   if (!isAetherFlowPaused()) drawAetherMagneticLinks(time);
   particles.forEach((particle) => {
@@ -971,6 +1082,7 @@ function init() {
   document.addEventListener('pointerover', handleAetherSurfaceHover, { passive: true });
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);
+    resetAetherHeroFlowNetwork(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
     aetherMagneticLinks.forEach((link, index) => {
       link.phase += 0.42 + index * 0.026;

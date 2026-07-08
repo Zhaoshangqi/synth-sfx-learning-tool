@@ -1488,6 +1488,7 @@ function renderAnalyzerCoachPanel(model = {}) {
         <span>Waveform / Spectrum / REAPER A/B</span>
       </div>
       <p class="analyzer-coach-rule">${escapeHtml(coach.beginnerRuleZh ?? '先看时间，再看频段，最后做 A/B。')}</p>
+      <small class="analyzer-coach-live-status" data-analyzer-coach-status>等待试听，播放后会用真实 waveform / spectrum 更新下方读图指标。</small>
       <div class="analyzer-coach-next">
         <div>
           <span>下一步</span>
@@ -1498,12 +1499,13 @@ function renderAnalyzerCoachPanel(model = {}) {
       </div>
       <div class="analyzer-coach-grid">
         ${bands.map((band) => `
-          <article class="analyzer-coach-band" data-analyzer-coach-band="${escapeHtml(band.id)}" style="--coach-value:${formatNumber(band.value ?? 50)}%">
+          <article class="analyzer-coach-band" data-analyzer-coach-band="${escapeHtml(band.id)}" data-analyzer-coach-live="${escapeHtml(band.id)}" data-live-status="idle" style="--coach-value:${formatNumber(band.value ?? 50)}%; --coach-live-value:${formatNumber(band.value ?? 50)}%">
             <div class="analyzer-coach-band-top">
               <span>${escapeHtml(band.rangeZh)}</span>
               <strong>${escapeHtml(band.labelZh)}</strong>
               <output>${escapeHtml(band.value ?? 50)}</output>
             </div>
+            <small class="analyzer-coach-band-status" data-analyzer-coach-band-status>等待实时信号</small>
             <div class="analyzer-coach-meter" aria-hidden="true"><i></i></div>
             <dl>
               <dt>听感</dt>

@@ -2463,3 +2463,104 @@ body.is-direct-manipulating .audio-space::before {
     animation-play-state: paused !important;
   }
 }
+
+/* Reference aether hero native network v9.12
+   Converts the pasted React/Tailwind Aether Flow hero into the existing
+   static app: native canvas nodes plus subtle stage currents, no new deps. */
+
+.dashboard-hero.aether-flow-stage,
+.hero-sound-visual.aether-flow-stage {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+}
+
+.dashboard-hero.aether-flow-stage > *,
+.hero-sound-visual.aether-flow-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-hero.aether-flow-stage::after {
+  content: "";
+  position: absolute;
+  inset: -28%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at calc(26% + var(--space-x, 0) * 4%) calc(36% + var(--space-y, 0) * 4%), rgba(117, 197, 222, 0.18), transparent 0 10%, transparent 28%),
+    radial-gradient(circle at calc(74% - var(--space-x, 0) * 3%) calc(62% - var(--space-y, 0) * 3%), rgba(167, 139, 250, 0.12), transparent 0 12%, transparent 31%),
+    linear-gradient(112deg, transparent 0 31%, rgba(17, 17, 17, 0.045) 42%, rgba(117, 197, 222, 0.14) 50%, rgba(255, 255, 255, 0.24) 56%, transparent 70%),
+    repeating-linear-gradient(115deg, transparent 0 46px, rgba(117, 197, 222, 0.038) 47px, transparent 49px);
+  background-size: 100% 100%, 100% 100%, 260% 100%, 138px 138px;
+  opacity: 0.54;
+  mix-blend-mode: multiply;
+  transform: translate3d(calc(var(--space-x, 0) * 9px), calc(var(--space-y, 0) * 7px), 0);
+  animation: ref9-aether-hero-flow 28s var(--ref9-ease, ease) infinite alternate;
+}
+
+.hero-sound-visual.aether-flow-stage::before {
+  content: "";
+  display: block !important;
+  position: absolute;
+  inset: 8%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 32px;
+  background:
+    conic-gradient(from 118deg at 52% 48%, rgba(117, 197, 222, 0.08), rgba(244, 241, 232, 0.42), rgba(167, 139, 250, 0.1), rgba(117, 197, 222, 0.08)),
+    radial-gradient(circle at 50% 48%, rgba(117, 197, 222, 0.25), transparent 0 18%, transparent 50%),
+    linear-gradient(96deg, transparent 0 34%, rgba(117, 197, 222, 0.12) 48%, rgba(255, 255, 255, 0.22) 52%, transparent 68%);
+  background-size: 100% 100%, 100% 100%, 240% 100%;
+  opacity: 0.58;
+  mix-blend-mode: multiply;
+  filter: blur(0.1px) saturate(1.08);
+  transform: translate3d(calc(var(--space-x, 0) * -5px), calc(var(--space-y, 0) * -4px), 0) scale(1.01);
+  animation: ref9-aether-core-flow 24s linear infinite;
+}
+
+.dashboard-hero.aether-flow-stage:hover::after,
+.dashboard-hero.aether-flow-stage:focus-within::after,
+.hero-sound-visual.aether-flow-stage:hover::before {
+  opacity: 0.68;
+}
+
+body.is-direct-manipulating .aether-flow-stage::after,
+body.is-direct-manipulating .aether-flow-stage::before {
+  animation-play-state: paused !important;
+  opacity: 0.16 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-aether-hero-flow {
+  0% {
+    background-position: 0 0, 100% 100%, 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) scale(1.01);
+  }
+  100% {
+    background-position: 100% 30%, 0% 70%, 100% 50%, 138px 88px;
+    transform: translate3d(calc(var(--space-x, 0) * 13px), calc(var(--space-y, 0) * 9px), 0) scale(1.035);
+  }
+}
+
+@keyframes ref9-aether-core-flow {
+  0% {
+    background-position: 50% 50%, 50% 50%, 0% 50%;
+    transform: translate3d(calc(var(--space-x, 0) * -4px), calc(var(--space-y, 0) * -3px), 0) rotate(0deg) scale(1.01);
+  }
+  100% {
+    background-position: 50% 50%, 50% 50%, 100% 50%;
+    transform: translate3d(calc(var(--space-x, 0) * -7px), calc(var(--space-y, 0) * -5px), 0) rotate(1deg) scale(1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-hero.aether-flow-stage::after,
+  .hero-sound-visual.aether-flow-stage::before {
+    animation-name: ref9-aether-hero-flow;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
