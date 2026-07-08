@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-macro-hotzone';
+} from './sound-lab-model.js?v=20260709-xy-pad';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-macro-hotzone';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-xy-pad';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-macro-hotzone';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-xy-pad';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-macro-hotzone';
+} from './render.js?v=20260709-xy-pad';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -402,6 +402,7 @@ let soundLabPatchFrame = 0;
 let quietRenderFrame = 0;
 let lastSynthAudioPulseAt = 0;
 let activeRangeInput = null;
+let activeXyPadPointerId = null;
 let directManipulationTimer = 0;
 let midiAccess = null;
 let analyzerCoachRuntimeSnapshot = null;
@@ -3314,19 +3315,67 @@ function moveFxSlot(slotId, direction) {
   renderSameView();
 }
 
+function setXyPadDragging(pad, isDragging) {
+  pad?.classList.toggle('is-dragging', Boolean(isDragging));
+}
+
+function formatXyPadValue(x, y) {
+  return `X ${Math.round(x)} / Y ${Math.round(y)}`;
+}
+
 function updateXyPadFromPointer(pad, event) {
   const rect = pad.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
   const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+  updateXyPadValues(pad, x, y);
+}
+
+function updateXyPadValues(pad, x, y) {
   state.soundLabXyPad = { ...state.soundLabXyPad, x, y };
   pad.style.setProperty('--xy-x', `${x.toFixed(2)}%`);
   pad.style.setProperty('--xy-y', `${y.toFixed(2)}%`);
+  commitXyPadFeedback(pad, x, y);
+  syncSoundLabPatchSoon();
+}
+
+function updateXyPadFromKeyboard(pad, event) {
+  const step = event.shiftKey ? 10 : 2;
+  const currentX = Number(state.soundLabXyPad.x ?? 50);
+  const currentY = Number(state.soundLabXyPad.y ?? 50);
+  const nextByKey = {
+    ArrowRight: [currentX + step, currentY],
+    ArrowLeft: [currentX - step, currentY],
+    ArrowUp: [currentX, currentY - step],
+    ArrowDown: [currentX, currentY + step],
+    PageUp: [currentX, currentY - 20],
+    PageDown: [currentX, currentY + 20],
+    Home: [50, 50],
+    End: [100, 100],
+  };
+  if (!(event.key in nextByKey)) return false;
+  event.preventDefault();
+  const [nextX, nextY] = nextByKey[event.key];
+  updateXyPadValues(
+    pad,
+    Math.max(0, Math.min(100, nextX)),
+    Math.max(0, Math.min(100, nextY)),
+  );
+  return true;
+}
+
+function commitXyPadFeedback(pad, x, y) {
+  const valueLabel = formatXyPadValue(x, y);
+  pad.querySelector('[data-xy-readout]')?.replaceChildren(document.createTextNode(valueLabel));
+  pad.setAttribute('aria-valuetext', valueLabel);
+  pad.setAttribute('data-live-value', valueLabel);
+  const topic = { categoryZh: 'XY Pad', ...SOUND_LAB_PARAMETER_COACH.special.xyPad };
   updateParameterCoach(
-    { categoryZh: 'XY Pad', ...SOUND_LAB_PARAMETER_COACH.special.xyPad },
+    topic,
     `${Math.round(x)} / ${Math.round(y)}`,
   );
-  syncSoundLabPatchSoon();
+  updateLiveControlFeedback(topic, valueLabel);
+  refreshSoundLabRuntimeUi();
 }
 
 function updateMacroMorph(value) {
@@ -3700,21 +3749,34 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-xy-pad]').forEach((pad) => {
     pad.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      pad.focus?.({ preventScroll: true });
+      activeXyPadPointerId = event.pointerId;
       pad.setPointerCapture?.(event.pointerId);
+      setXyPadDragging(pad, true);
       setDirectManipulation(true);
       updateXyPadFromPointer(pad, event);
     });
     pad.addEventListener('pointermove', (event) => {
-      if ((event.buttons & 1) !== 1) return;
+      if (activeXyPadPointerId !== event.pointerId) return;
       updateXyPadFromPointer(pad, event);
     });
-    pad.addEventListener('pointerup', (event) => {
+    const finishXyPadGesture = (event) => {
+      if (activeXyPadPointerId !== event.pointerId) return;
       pad.releasePointerCapture?.(event.pointerId);
+      activeXyPadPointerId = null;
+      setXyPadDragging(pad, false);
       setDirectManipulation(false);
-    });
-    pad.addEventListener('pointercancel', (event) => {
-      pad.releasePointerCapture?.(event.pointerId);
-      setDirectManipulation(false);
+    };
+    pad.addEventListener('pointerup', finishXyPadGesture);
+    pad.addEventListener('pointercancel', finishXyPadGesture);
+    pad.addEventListener('keydown', (event) => {
+      if (!updateXyPadFromKeyboard(pad, event)) return;
+      setXyPadDragging(pad, true);
+      setDirectManipulation(true);
+      globalThis.setTimeout(() => {
+        setXyPadDragging(pad, false);
+        setDirectManipulation(false);
+      }, 120);
     });
   });
 

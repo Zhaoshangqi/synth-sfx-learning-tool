@@ -24565,3 +24565,46 @@ body.is-direct-manipulating .macro-knob.is-dragging {
   filter: none !important;
 }
 
+/* XY Pad professional handfeel v9.25 */
+.signal-atlas-console .xy-pad,
+.synth-workbench-layout .xy-pad {
+  cursor: crosshair !important;
+  outline: none;
+  user-select: none !important;
+}
+
+.signal-atlas-console .xy-pad:focus-visible,
+.synth-workbench-layout .xy-pad:focus-visible {
+  border-color: rgba(94, 234, 212, 0.58) !important;
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.14) !important;
+}
+
+.signal-atlas-console .xy-pad.is-dragging,
+.synth-workbench-layout .xy-pad.is-dragging {
+  cursor: grabbing !important;
+  border-color: rgba(94, 234, 212, 0.5) !important;
+  box-shadow: inset 0 0 0 1px rgba(244, 241, 232, 0.08), 0 14px 30px rgba(8, 12, 24, 0.22) !important;
+}
+
+.signal-atlas-console .xy-pad output,
+.synth-workbench-layout .xy-pad output {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 4px 7px;
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 999px;
+  background: rgba(3, 7, 18, 0.46);
+  color: #f4f1e8 !important;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+body.is-direct-manipulating .xy-pad.is-dragging {
+  transition: none !important;
+  filter: none !important;
+}
+
