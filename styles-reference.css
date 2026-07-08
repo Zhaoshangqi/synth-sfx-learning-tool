@@ -3436,3 +3436,103 @@ body.is-direct-manipulating .audio-space.is-flow-field-ready .space-glow::after 
     transition: none !important;
   }
 }
+
+/* Reference aether silk current ribbons v9.27
+   Adds a soft flowing layer inspired by the pasted Aether Flow component, but
+   keeps the implementation native, dependency-free, and paused during direct
+   synth control so sliders and knobs never cause viewport flashes. */
+
+.audio-space.is-flow-field-ready::before {
+  content: "";
+  position: absolute;
+  inset: -14% -10%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(117, 197, 222, 0.13) 38%, rgba(244, 241, 232, 0.14) 49%, rgba(167, 139, 250, 0.1) 62%, transparent 78%),
+    repeating-linear-gradient(112deg, transparent 0 72px, rgba(117, 197, 222, 0.045) 73px, transparent 78px),
+    radial-gradient(ellipse at 22% 34%, rgba(94, 234, 212, 0.11), transparent 0 34%),
+    radial-gradient(ellipse at 82% 62%, rgba(167, 139, 250, 0.1), transparent 0 36%);
+  background-size: 330% 100%, 190px 190px, auto, auto;
+  opacity: 0.24;
+  mix-blend-mode: screen;
+  filter: blur(0.2px) saturate(1.08);
+  transform: translate3d(calc(var(--space-x, 0) * -8px), calc(var(--space-y, 0) * -5px), 0);
+  animation: ref9-silk-current-drift 42s ease-in-out infinite alternate;
+}
+
+.signal-atlas-console .atlas-command-dock,
+.dashboard-hero.aether-flow-stage .hero-status-strip {
+  position: relative;
+  overflow: hidden;
+}
+
+.signal-atlas-console .atlas-command-dock::before,
+.dashboard-hero.aether-flow-stage .hero-status-strip::before {
+  content: "";
+  position: absolute;
+  inset: auto 12px 8px 12px;
+  height: 1px;
+  pointer-events: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(117, 197, 222, 0.34), rgba(244, 241, 232, 0.3), rgba(167, 139, 250, 0.22), transparent);
+  box-shadow: 0 0 18px rgba(117, 197, 222, 0.12);
+  opacity: 0.48;
+  animation: ref9-silk-edge-current 9s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .audio-space.is-flow-field-ready::before {
+  animation-play-state: paused !important;
+  opacity: 0.07 !important;
+  transition: none !important;
+}
+
+body.is-direct-manipulating .signal-atlas-console .atlas-command-dock::before,
+body.is-direct-manipulating .dashboard-hero.aether-flow-stage .hero-status-strip::before {
+  animation-play-state: paused !important;
+  opacity: 0.14 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-silk-current-drift {
+  0% {
+    background-position: 0% 50%, 0 0, 0 0, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * -6px), calc(var(--space-y, 0) * -4px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 190px 96px, 0 0, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * -12px), calc(var(--space-y, 0) * -8px), 0) scale(1.018);
+  }
+}
+
+@keyframes ref9-silk-edge-current {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.32;
+  }
+  100% {
+    background-position: 100% 50%;
+    opacity: 0.56;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space.is-flow-field-ready::before {
+    animation-name: ref9-silk-current-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.08 !important;
+    transition: none !important;
+  }
+
+  .signal-atlas-console .atlas-command-dock::before,
+  .dashboard-hero.aether-flow-stage .hero-status-strip::before {
+    animation-name: ref9-silk-edge-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.16 !important;
+    transition: none !important;
+  }
+}

@@ -23,6 +23,7 @@ let aetherRelayPackets = [];
 let aetherSurfaceThreads = [];
 let aetherLaminarCurrents = [];
 let aetherFlowFieldParticles = [];
+let aetherSilkCurrents = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -37,6 +38,7 @@ let aetherSurfaceThreadEnergy = 0;
 let aetherViscousCurrentEnergy = 0;
 let aetherLaminarCurrentEnergy = 0;
 let aetherFlowFieldEnergy = 0;
+let aetherSilkCurrentEnergy = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -90,6 +92,9 @@ const AETHER_FLOW_FIELD_COUNT = 86;
 const AETHER_FLOW_FIELD_CONNECTION_RADIUS = 148;
 const AETHER_FLOW_FIELD_MOUSE_RADIUS = 238;
 const AETHER_FLOW_FIELD_STRIDE = 2;
+const AETHER_SILK_CURRENT_COUNT = 5;
+const AETHER_SILK_SEGMENTS = 112;
+const AETHER_SILK_PACKET_TAIL = 0.068;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -525,6 +530,27 @@ function createAetherFlowFieldParticle(index, seed = 0) {
   };
 }
 
+function createAetherSilkCurrent(index, seed = 0) {
+  const span = AETHER_SILK_CURRENT_COUNT + 1;
+  const direction = index % 2 === 0 ? 1 : -1;
+  const lane = (index + 1) / span + Math.sin(seed * 0.31 + index * 1.4) * 0.035;
+
+  return {
+    lane: Math.max(0.08, Math.min(0.92, lane)),
+    amplitude: random(28, 76),
+    secondaryAmplitude: random(9, 28),
+    frequency: random(0.72, 1.8),
+    phase: random(0, Math.PI * 2) + seed * 0.14,
+    speed: random(0.000018, 0.000052) * direction,
+    drift: random(-0.000008, 0.000012),
+    z: random(0.28, 0.9),
+    width: random(2.4, 5.8),
+    packet: random(0, 1),
+    packetSpeed: random(0.000018, 0.000046) * direction,
+    color: index % 4 === 0 ? '167, 139, 250' : index % 3 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function resetAetherFlowField(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'flow-field').length;
@@ -549,6 +575,30 @@ function energizeAetherFlowField(detail = {}) {
     particle.vx += Math.cos(angle) * level * 0.012;
     particle.vy += Math.sin(angle) * level * 0.008;
     particle.phase += 0.03 + level * 0.08;
+  });
+}
+
+function resetAetherSilkCurrents(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'silk-current').length;
+  const count = width < 760 ? Math.max(3, AETHER_SILK_CURRENT_COUNT - 2) : AETHER_SILK_CURRENT_COUNT;
+  aetherSilkCurrents = Array.from({ length: count }, (_, index) => createAetherSilkCurrent(index, seed));
+  aetherSilkCurrentEnergy = Math.min(1, aetherSilkCurrentEnergy + 0.16);
+}
+
+function energizeAetherSilkCurrents(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherSilkCurrents.length) resetAetherSilkCurrents(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.42)));
+  if (level < 0.04) return;
+  const seed = String(detail.selector ?? detail.source ?? detail.familyId ?? 'silk-audio').length;
+  aetherSilkCurrentEnergy = Math.min(1, aetherSilkCurrentEnergy + level * 0.3);
+  aetherSilkCurrents.forEach((current, index) => {
+    const direction = current.speed >= 0 ? 1 : -1;
+    current.phase += level * (0.035 + index * 0.004);
+    current.packet = (current.packet + direction * level * 0.012 + seed * 0.0007) % 1;
+    current.amplitude += Math.sin(seed + index) * level * 0.18;
   });
 }
 
@@ -1029,6 +1079,23 @@ function getAetherLaminarCurrentPoint(current, progress, time, phaseOffset = 0) 
   return aetherRepel(x + pointer.x * current.z * 16, y, current.z * 0.86);
 }
 
+function getAetherSilkCurrentPoint(current, progress, time, phaseOffset = 0) {
+  const easedProgress = progress * progress * (3 - progress * 2);
+  const direction = current.speed >= 0 ? 1 : -1;
+  const x = direction > 0
+    ? -160 + easedProgress * (width + 320)
+    : width + 160 - easedProgress * (width + 320);
+  const laneY = height * Math.max(0.06, Math.min(0.94, current.lane));
+  const phase = current.phase + time * current.speed + progress * current.frequency * Math.PI * 2 + phaseOffset;
+  const silkDrag = Math.sin(phase * 0.24 + current.z) * current.amplitude * 0.18;
+  const y = laneY
+    + Math.sin(phase) * current.amplitude
+    + Math.sin(phase * 0.47 + phaseOffset) * current.secondaryAmplitude
+    + silkDrag
+    + pointer.y * current.z * (14 + aetherSilkCurrentEnergy * 10);
+  return aetherRepel(x + pointer.x * current.z * (20 + aetherSilkCurrentEnergy * 12), y, current.z * 0.82);
+}
+
 function resize() {
   if (!canvas || !ctx) return;
   const ratio = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -1075,6 +1142,7 @@ function resize() {
   resetAetherViscousCurrents();
   resetAetherLaminarCurrents();
   resetAetherFlowField();
+  resetAetherSilkCurrents();
   refreshAetherSurfaceThreads();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
@@ -2255,6 +2323,73 @@ function drawAetherFlowFieldNetwork(time) {
   ctx.restore();
 }
 
+function drawAetherSilkCurrents(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherSilkCurrents.length) return;
+
+  aetherSilkCurrentEnergy *= 0.94;
+  if (aetherSilkCurrentEnergy < 0.004) aetherSilkCurrentEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  aetherSilkCurrents.forEach((current, currentIndex) => {
+    current.phase += current.drift;
+    current.packet = (current.packet + current.packetSpeed * (13 + current.z * 9 + aetherSilkCurrentEnergy * 11)) % 1;
+    const packet = current.packet < 0 ? current.packet + 1 : current.packet;
+    const pulse = 0.5 + Math.sin(time * 0.00036 + current.phase) * 0.18 + aetherSilkCurrentEnergy * 0.22;
+
+    let startPoint = null;
+    let endPoint = null;
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_SILK_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_SILK_SEGMENTS;
+      const point = getAetherSilkCurrentPoint(current, progress, time, currentIndex * 0.21);
+      if (!startPoint) startPoint = point;
+      endPoint = point;
+      if (segment === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+
+    if (!startPoint || !endPoint) return;
+    const gradient = ctx.createLinearGradient(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+    gradient.addColorStop(0, `rgba(${current.color}, 0)`);
+    gradient.addColorStop(0.24, `rgba(${current.color}, ${0.012 + pulse * 0.018})`);
+    gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.01 + pulse * 0.015 + aetherSilkCurrentEnergy * 0.018})`);
+    gradient.addColorStop(0.76, `rgba(${current.color}, ${0.014 + pulse * 0.02})`);
+    gradient.addColorStop(1, `rgba(${current.color}, 0)`);
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = current.width + aetherSilkCurrentEnergy * 0.54;
+    ctx.shadowColor = `rgba(${current.color}, ${0.035 + pulse * 0.035 + aetherSilkCurrentEnergy * 0.05})`;
+    ctx.shadowBlur = 16 + current.z * 20 + aetherSilkCurrentEnergy * 16;
+    ctx.stroke();
+
+    const head = getAetherSilkCurrentPoint(current, packet, time, currentIndex * 0.21);
+    const tail = getAetherSilkCurrentPoint(current, Math.max(0, packet - AETHER_SILK_PACKET_TAIL), time, currentIndex * 0.21);
+    const packetGradient = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    packetGradient.addColorStop(0, `rgba(${current.color}, 0)`);
+    packetGradient.addColorStop(0.64, `rgba(${current.color}, ${0.08 + pulse * 0.1 + aetherSilkCurrentEnergy * 0.08})`);
+    packetGradient.addColorStop(1, `rgba(255, 255, 255, ${0.1 + pulse * 0.13 + aetherSilkCurrentEnergy * 0.08})`);
+
+    ctx.beginPath();
+    ctx.strokeStyle = packetGradient;
+    ctx.lineWidth = Math.max(0.9, current.width * 0.24 + current.z * 0.56);
+    ctx.moveTo(tail.x, tail.y);
+    ctx.quadraticCurveTo(
+      (tail.x + head.x) * 0.5 + pointer.x * current.z * 18,
+      (tail.y + head.y) * 0.5 + pointer.y * current.z * 12,
+      head.x,
+      head.y,
+    );
+    ctx.stroke();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawAetherSurfaceThreads(time) {
   if (prefersReducedMotion || isAetherFlowPaused() || !aetherSurfaceThreads.length) return;
 
@@ -2573,6 +2708,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherViscousCurrents(time);
   if (!isAetherFlowPaused()) drawAetherLaminarCurrents(time);
   if (!isAetherFlowPaused()) drawAetherFlowFieldNetwork(time);
+  if (!isAetherFlowPaused()) drawAetherSilkCurrents(time);
   if (!isAetherFlowPaused()) drawAetherSurfaceThreads(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
@@ -2622,6 +2758,7 @@ function init() {
     resetAetherViscousCurrents(event.detail);
     resetAetherLaminarCurrents(event.detail);
     resetAetherFlowField(event.detail);
+    resetAetherSilkCurrents(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
     refreshAetherSurfaceThreads(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
@@ -2651,6 +2788,7 @@ function init() {
     energizeAetherSurfaceThreads(event.detail);
     energizeAetherLaminarCurrents(event.detail);
     energizeAetherFlowField(event.detail);
+    energizeAetherSilkCurrents(event.detail);
   });
   tick();
 }

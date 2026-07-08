@@ -3126,10 +3126,20 @@ function renderFxChainEditor(model = {}) {
   return `
     <section class="workbench-panel professional-module-panel fx-chain-editor" data-advanced-panel="fx-chain" aria-label="FX Chain reorder">
       <div class="mini-panel-head"><strong>FX Chain reorder</strong><span>Drag order · rebuild graph</span></div>
-      <div class="fx-chain-list">
+      <div class="fx-chain-list" data-fx-chain-list role="listbox" aria-label="FX Chain order" data-fx-order="${escapeHtml(slots.map((slot) => slot.id).join('>'))}">
         ${slots.map((slot, index) => `
-          <div class="fx-chain-slot" draggable="true" data-fx-chain-slot="${escapeHtml(slot.id)}">
-            <span>${index + 1}</span>
+          <div
+            class="fx-chain-slot"
+            draggable="true"
+            tabindex="0"
+            role="option"
+            aria-grabbed="false"
+            aria-posinset="${index + 1}"
+            aria-setsize="${slots.length}"
+            data-fx-chain-slot="${escapeHtml(slot.id)}"
+            data-fx-order="${index + 1}"
+          >
+            <span data-fx-index>${index + 1}</span>
             <strong>${escapeHtml(slot.labelZh)}</strong>
             <small>${formatNumber((slot.amount ?? slot.ceiling ?? 0) * 100)}%</small>
             <button type="button" data-fx-move="${escapeHtml(slot.id)}" data-fx-direction="-1" aria-label="Move up">↑</button>
