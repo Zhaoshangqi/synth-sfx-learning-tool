@@ -1446,3 +1446,24 @@ test('target match coach is routed, readable, and visually integrated with Signa
   assert.match(css, /\.signal-atlas-console \.target-match-coach-panel\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
   assert.match(css, /\.target-match-challenge button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
 });
+
+test('product stability pass contains overflow, menu hit areas, and Sound Lab controls', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Product stability pass v5\.4/);
+  assert.match(css, /html,\s*\nbody\s*\{[\s\S]*overflow-x:\s*clip/);
+  assert.match(css, /\.visual-logo-wrapper\s*\{[\s\S]*max-width:\s*min\(440px,\s*calc\(100vw - 116px\)\)/);
+  assert.match(css, /\.signal-field\s*\{[\s\S]*max-width:\s*calc\(100vw - 36px\)/);
+  assert.match(css, /\.signal-field\s*\{[\s\S]*contain:\s*paint/);
+  assert.match(css, /\.signal-field\s*\{[\s\S]*transform:\s*translate3d/);
+  assert.match(css, /\.shell-menu-open \.sidebar,[\s\S]*\.shell-menu-open \.sidebar \.daily-suggestion-card button\s*\{[\s\S]*pointer-events:\s*auto/);
+  assert.match(css, /\.notification-button span\s*\{[\s\S]*background:\s*#b91c2b/);
+  assert.match(css, /\.quality-panel \.card-kicker,[\s\S]*\.quality-panel > span\s*\{[\s\S]*color:\s*#064c5b !important/);
+  assert.match(css, /\.signal-atlas-console,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*#111315 !important/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*#111315 !important/);
+  assert.match(css, /\.signal-atlas-console \.macro-knob input,[\s\S]*\.synth-workbench-layout \.macro-knob input\s*\{[\s\S]*left:\s*10px/);
+  assert.match(css, /\.signal-atlas-console \.macro-knob input,[\s\S]*\.synth-workbench-layout \.macro-knob input\s*\{[\s\S]*width:\s*auto/);
+  assert.match(css, /\.signal-atlas-console \.macro-knob input,[\s\S]*\.synth-workbench-layout \.macro-knob input\s*\{[\s\S]*max-width:\s*calc\(100% - 20px\)/);
+  assert.match(css, /\.signal-atlas-console \.vertical-slider input,[\s\S]*\.synth-workbench-layout \.vertical-slider input\s*\{[\s\S]*width:\s*44px/);
+  assert.match(css, /\.signal-atlas-console \.range-shell,[\s\S]*\.synth-workbench-layout \.range-shell\s*\{[\s\S]*max-width:\s*100%/);
+});
