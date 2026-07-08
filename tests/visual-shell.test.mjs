@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-flow-ribbons"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-mask"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -271,6 +271,24 @@ test('aether flow prompt adds continuous stream ribbons and restrained hover cur
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-capsule-current/);
 });
 
+test('aether flow prompt adds packet currents and a drag-safe ambient field', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+
+  assert.match(js, /aetherCurrentPackets/);
+  assert.match(js, /AETHER_CURRENT_PACKET_COUNT/);
+  assert.match(js, /createAetherCurrentPacket/);
+  assert.match(js, /getAetherStreamPoint/);
+  assert.match(js, /drawAetherCurrentPackets/);
+  assert.match(js, /globalCompositeOperation = 'lighter'/);
+  assert.match(js, /drawAetherStreamRibbons\(time\)[\s\S]*drawAetherCurrentPackets\(time\)/);
+  assert.match(css, /Reference aether packet field v9\.3/);
+  assert.match(css, /\.audio-space::after/);
+  assert.match(css, /@keyframes ref9-aether-field-drift/);
+  assert.match(css, /body\.is-direct-manipulating \.audio-space::after[\s\S]*animation-play-state:\s*paused/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.audio-space::after/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -284,8 +302,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-ribbons"/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-ribbons'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-mask"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-mask'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-mask'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-mask'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-mask'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {

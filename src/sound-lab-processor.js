@@ -478,6 +478,37 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return clamp((glued + transientRestore) * outputGain, -1.2 + headroom, 1.2 - headroom);
   }
 
+  applyTemporalMasking(dryLeft, dryRight, wetLeft, wetRight, t, duration) {
+    const polish = this.patch?.globalFx?.masterPolish || {};
+    const temporalMasking = polish.temporalMasking || {};
+    if (polish.enabled === false) {
+      return {
+        left: dryLeft + wetLeft,
+        right: dryRight + wetRight,
+      };
+    }
+
+    const attackHold = clamp((temporalMasking.attackHoldMs ?? 0) / 1000, 0, 0.12);
+    const release = clamp((temporalMasking.releaseMs ?? 120) / 1000, 0.04, Math.max(0.08, duration));
+    const wetDuck = clamp(temporalMasking.wetDuck ?? 0, 0, 0.72);
+    const transientProtect = clamp(temporalMasking.transientProtect ?? 0, 0, 0.5);
+    const sideDuck = clamp(temporalMasking.sideDuck ?? 0, 0, 0.42);
+    const recoveryT = Math.max(0, t - attackHold);
+    const transientWindow = t <= attackHold ? 1 : Math.exp(-recoveryT / release);
+    const duck = 1 - wetDuck * transientWindow;
+    const sideScale = 1 - sideDuck * transientWindow;
+    const wetMid = (wetLeft + wetRight) * 0.5;
+    const wetSide = (wetLeft - wetRight) * 0.5;
+    const maskedWetLeft = wetMid * duck + wetSide * sideScale * duck;
+    const maskedWetRight = wetMid * duck - wetSide * sideScale * duck;
+    const dryLift = 1 + transientProtect * transientWindow * 0.045;
+
+    return {
+      left: dryLeft * dryLift + maskedWetLeft,
+      right: dryRight * dryLift + maskedWetRight,
+    };
+  }
+
   applyStereoComfortBus(leftSample, rightSample, t, duration) {
     const polish = this.patch?.globalFx?.masterPolish || {};
     if (polish.enabled === false) {
@@ -603,9 +634,12 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const spaceFade = t < spacePreDelay ? 0 : clamp((t - spacePreDelay) * 24, 0, 1);
       const spacedLeft = this.renderAllpassSpace(mixedLeft * diffusion, 'left');
       const spacedRight = this.renderAllpassSpace(mixedRight * diffusion, 'right');
-      const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width * spaceFade;
-      const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width * spaceFade;
-      this.applyStereoComfortBus(finalLeft * (1 - tailMotion), finalRight * (1 + tailMotion), t, duration);
+      const dryLeft = mixedLeft * (1 - spaceMix * 0.32);
+      const dryRight = mixedRight * (1 - spaceMix * 0.32);
+      const wetLeft = spacedLeft * spaceMix * width * spaceFade;
+      const wetRight = spacedRight * spaceMix * width * spaceFade;
+      const masked = this.applyTemporalMasking(dryLeft, dryRight, wetLeft, wetRight, t, duration);
+      this.applyStereoComfortBus(masked.left * (1 - tailMotion), masked.right * (1 + tailMotion), t, duration);
       left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft), this.outputStageLeft);
       right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight), this.outputStageRight);
     }

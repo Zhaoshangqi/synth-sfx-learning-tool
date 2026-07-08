@@ -856,6 +856,28 @@ test('renderSoundLabWorkbench shows motion bus realism in the quality card', () 
   assert.match(qualityBlock, /transient shield|tail bloom|wow|瞬态|尾巴/i);
 });
 
+test('renderSoundLabWorkbench teaches temporal masking in the quality card', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 48,
+    material: 88,
+    space: 76,
+    variation: 52,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'shape',
+    layerMix: { transient: 92, body: 64, texture: 72, tail: 86 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(qualityBlock, 'quality card should render as a distinct panel');
+  assert.match(qualityBlock, /Temporal Mask/);
+  assert.match(qualityBlock, /duck|瞬态|tail|尾巴/i);
+});
+
 test('renderSoundLabWorkbench renders Ear Triage as a real listening workflow', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
