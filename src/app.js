@@ -101,6 +101,7 @@ const WORKBENCH_ACTION_MESSAGES = {
   'randomize-patch': '已生成一个轻微变化版本：宏参数只做小幅偏移，方便继续 A/B。',
   'focus-source': '已聚焦声源和频谱：先确认目标声音是否成立。',
   'focus-waveform': '已聚焦波形拆解：先判断基础波形成分，再回到频谱验证。',
+  'focus-material-resonance': '已聚焦材质共振：先听 body-only，再看哪些峰决定金属/玻璃身份。',
   'focus-controls': '已聚焦参数塑形：一次只改一个听感问题。',
   'focus-practice-loop': '已聚焦听辨闭环：先做 A/B，再只改一个参数验证。',
   'focus-coach': '已聚焦合成器教练：按 Serum / Phase Plant / Vital 路由复刻。',
@@ -1628,11 +1629,13 @@ function writeRangeValue(input, nextValue) {
 function setDirectManipulation(isActive) {
   globalThis.clearTimeout(directManipulationTimer);
   globalThis.__synthDirectManipulating = Boolean(isActive);
+  document.body?.classList.toggle('is-direct-manipulating', Boolean(isActive));
   if (isActive) {
     return;
   }
   directManipulationTimer = globalThis.setTimeout(() => {
     globalThis.__synthDirectManipulating = false;
+    document.body?.classList.remove('is-direct-manipulating');
   }, 80);
 }
 
@@ -2290,6 +2293,17 @@ async function handleWorkbenchAction(action, button) {
     state.activeWorkbenchModule = 'generator';
     renderSameView();
     scrollSoundLabIntoView('.waveform-detective-panel');
+    return;
+  }
+
+  if (action === 'focus-material-resonance') {
+    state.soundLabWorkflowStep = 'source';
+    state.activeAtlasNode = 'material';
+    state.activeWorkbenchModuleMapId = 'source';
+    state.activeAdvancedModule = 'advanced';
+    state.activeWorkbenchModule = 'generator';
+    renderSameView();
+    scrollSoundLabIntoView('.material-resonance-panel');
     return;
   }
 

@@ -74,6 +74,7 @@ function initSpotlight() {
   }
 
   globalThis.addEventListener('pointermove', (event) => {
+    if (globalThis.__synthDirectManipulating) return;
     pointer.x = event.clientX;
     pointer.y = event.clientY;
     if (!frame) frame = globalThis.requestAnimationFrame(tickSpotlight);

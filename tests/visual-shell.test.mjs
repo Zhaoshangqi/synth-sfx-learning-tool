@@ -723,6 +723,24 @@ test('sound lab app wires layer audition playback as real patch overrides', () =
   assert.match(css, /\.layer-audition-strip button\.is-active/);
 });
 
+test('sound lab app wires material resonance map as a real beginner action', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /function buildMaterialResonanceMap/);
+  assert.match(modelJs, /materialResonanceMap/);
+  assert.match(renderJs, /renderMaterialResonancePanel/);
+  assert.match(renderJs, /material-resonance-panel/);
+  assert.match(renderJs, /data-layer-audition="body"/);
+  assert.match(renderJs, /data-workbench-action="focus-material-resonance"/);
+  assert.match(appJs, /'focus-material-resonance'/);
+  assert.match(appJs, /scrollSoundLabIntoView\('\.material-resonance-panel'\)/);
+  assert.match(css, /\.material-resonance-panel\s*\{/);
+  assert.match(css, /\.resonance-peak-card/);
+});
+
 test('sound lab app preserves workstation module tab state across rerenders', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

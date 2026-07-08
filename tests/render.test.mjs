@@ -599,6 +599,28 @@ test('renderSoundLabWorkbench exposes layer audition buttons for realistic SFX l
   assert.match(html, /transient|body|texture|tail/i);
 });
 
+test('renderSoundLabWorkbench renders a material resonance map with playable body audition', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 78,
+    motion: 48,
+    material: 88,
+    space: 42,
+    variation: 36,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /material-resonance-panel/);
+  assert.match(html, /Material Resonance|材质共振地图/);
+  assert.match(html, /data-layer-audition="body"/);
+  assert.match(html, /data-workbench-action="focus-material-resonance"/);
+  assert.match(html, /Serum|Phase Plant|Vital|REAPER/);
+  assert.match(html, /Hz|ratio|decay|Q|峰/);
+});
+
 test('renderSoundLabWorkbench explains synth realism controls in the quality card', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
