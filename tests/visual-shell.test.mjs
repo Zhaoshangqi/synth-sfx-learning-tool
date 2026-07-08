@@ -41,6 +41,34 @@ test('studio reference shell ports the supplied splash menu CTA and spotlight mo
   assert.match(shellJs, /--spot-x/);
 });
 
+test('dashboard learning path gives beginners a clickable route into real modules', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const DASHBOARD_LEARNING_PATH = \[/);
+  assert.match(appJs, /id: 'listen-source'/);
+  assert.match(appJs, /id: 'fm-metal'/);
+  assert.match(appJs, /id: 'ab-deliver'/);
+  assert.match(appJs, /activeDashboardPathStep: DASHBOARD_LEARNING_PATH\[0\]\?\.id/);
+  assert.match(appJs, /function getActiveDashboardPathStep\(\)/);
+  assert.match(appJs, /class="dashboard-learning-console"/);
+  assert.match(appJs, /data-dashboard-path-step/);
+  assert.match(appJs, /function applyDashboardPathStep\(step\)/);
+  assert.match(appJs, /selectSoundLabFamily\(step\.familyId, false\)/);
+  assert.match(appJs, /state\.activeLabId = step\.labId/);
+  assert.match(appJs, /state\.soundLabWorkflowStep = step\.workflowStep/);
+  assert.match(appJs, /state\.activeWorkbenchModule = step\.workbenchModule/);
+  assert.match(appJs, /function bindDashboardLearningPathControls\(\)/);
+  assert.match(appJs, /switchView\(step\.view\)/);
+  assert.match(css, /\.dashboard-learning-console\s*\{/);
+  assert.match(css, /\.learning-path-grid\s*\{/);
+  assert.match(css, /\.learning-path-step\.is-active\s*\{/);
+  assert.match(css, /\.learning-path-detail\s*\{/);
+  assert.match(css, /\.learning-path-checks\s*\{/);
+  assert.match(css, /color:\s*var\(--studio-ink\)/);
+  assert.match(css, /color:\s*var\(--studio-paper\)/);
+});
+
 test('styles include premium button feel and custom range rails', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
