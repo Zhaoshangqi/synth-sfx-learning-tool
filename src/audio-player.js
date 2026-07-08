@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-viscous-ear';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-aether-translation';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 

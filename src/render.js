@@ -2942,6 +2942,50 @@ function renderSoundQualityCoachPanel(model = {}) {
   `;
 }
 
+function renderTranslationMonitorPanel(model = {}) {
+  const monitor = model.translationMonitor ?? {};
+  const checks = monitor.checks ?? [];
+  if (!checks.length) return '';
+
+  return `
+    <div class="translation-monitor-panel" aria-label="Translation Monitor 翻译检查">
+      <div class="translation-monitor-head">
+        <span>Translation Monitor</span>
+        <strong>${escapeHtml(monitor.titleZh ?? 'Translation Monitor 翻译检查')}</strong>
+        <p>${escapeHtml(monitor.summaryZh ?? '')}</p>
+      </div>
+      <div class="translation-check-grid">
+        ${checks.map((check) => {
+          const attributes = [
+            check.action ? `data-workbench-action="${escapeHtml(check.action)}"` : '',
+            check.layerAudition ? `data-layer-audition="${escapeHtml(check.layerAudition)}"` : '',
+            check.outputMode ? `data-output-compare="${escapeHtml(check.outputMode)}"` : '',
+          ].filter(Boolean).join(' ');
+          return `
+            <article class="translation-check-card ${check.id === monitor.primaryCheckId ? 'is-primary' : ''}" data-translation-check="${escapeHtml(check.id)}" style="--translation-value:${formatNumber(check.value ?? 0)}%">
+              <div class="translation-check-top">
+                <span>${escapeHtml(check.statusZh ?? '')}</span>
+                <strong>${escapeHtml(check.labelZh ?? check.id)}</strong>
+                <output>${escapeHtml(String(check.value ?? 0))}</output>
+              </div>
+              <i aria-hidden="true"><b></b></i>
+              <p>${escapeHtml(check.listenZh ?? '')}</p>
+              <em>${escapeHtml(check.fixZh ?? '')}</em>
+              <small>${escapeHtml(check.reaperZh ?? '')}</small>
+              <button type="button" ${attributes} data-translation-action="${escapeHtml(check.id)}">${escapeHtml(check.actionLabelZh ?? '试听检查')}</button>
+            </article>
+          `;
+        }).join('')}
+      </div>
+      <div class="translation-reaper-strip">
+        ${(monitor.reaperChecklist ?? []).map((item, index) => `
+          <span><b>${String(index + 1).padStart(2, '0')}</b>${escapeHtml(item)}</span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderWorkbenchQuality(model = {}) {
   const qualityItems = (model.soundQuality?.length
     ? model.soundQuality
@@ -3001,6 +3045,7 @@ function renderWorkbenchQuality(model = {}) {
         </div>
       ` : ''}
       ${renderSoundQualityCoachPanel(model)}
+      ${renderTranslationMonitorPanel(model)}
     </section>
   `;
 }

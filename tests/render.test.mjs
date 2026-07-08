@@ -1290,3 +1290,31 @@ test('renderSoundLabWorkbench exposes a live analyzer next-move slot', () => {
   assert.match(html, /data-analyzer-coach-live-action/);
   assert.match(html, /data-analyzer-coach-live-parameter/);
 });
+
+test('renderSoundLabWorkbench renders a translation monitor with real audition routes', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 42,
+    material: 84,
+    space: 78,
+    variation: 30,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    layerMix: { transient: 88, body: 48, texture: 84, tail: 82 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /translation-monitor-panel/);
+  assert.match(html, /Translation Monitor|翻译检查/);
+  assert.match(html, /data-translation-check="mono-anchor"/);
+  assert.match(html, /data-translation-check="small-speaker"/);
+  assert.match(html, /data-translation-check="headphone-width"/);
+  assert.match(html, /data-translation-check="tail-safety"/);
+  assert.match(html, /data-layer-audition="body"/);
+  assert.match(html, /data-layer-audition="tail"/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /REAPER|A\/B|mono/i);
+});

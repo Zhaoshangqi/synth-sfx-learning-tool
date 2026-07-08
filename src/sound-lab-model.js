@@ -2167,6 +2167,89 @@ function buildSoundQualityCoach(patch, patchDoctor) {
   };
 }
 
+function buildTranslationMonitor(patch, patchDoctor) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
+  const spatial = patch.globalFx?.space ?? patch.spatialImage ?? {};
+  const brightness = clamp(values.brightness ?? 50, 0, 100);
+  const motion = clamp(values.motion ?? 50, 0, 100);
+  const material = clamp(values.material ?? 50, 0, 100);
+  const space = clamp(values.space ?? 50, 0, 100);
+  const transientMix = clamp(layerMix.transient ?? 50, 0, 100);
+  const bodyMix = clamp(layerMix.body ?? 50, 0, 100);
+  const textureMix = clamp(layerMix.texture ?? 50, 0, 100);
+  const tailMix = clamp(layerMix.tail ?? 50, 0, 100);
+  const headroom = clamp((comfortBus.headroom ?? 0) * 650, 0, 100);
+  const deHarsh = clamp((comfortBus.deHarsh ?? 0) * 100, 0, 100);
+  const monoAnchor = clamp((comfortBus.monoAnchor ?? 0) * 180, 0, 100);
+  const tailDuck = clamp((comfortBus.tailDuck ?? 0) * 180, 0, 100);
+  const widthScore = clamp((spatial.width ?? 0.56) * 100, 0, 100);
+  const primaryDiagnostic = patchDoctor?.diagnostics?.[0];
+
+  const checks = [
+    {
+      id: 'mono-anchor',
+      labelZh: 'Mono 主体锚点',
+      value: Math.round(clamp(bodyMix * 0.46 + material * 0.18 + monoAnchor * 0.28 + (100 - Math.abs(transientMix - bodyMix)) * 0.08, 0, 100)),
+      statusZh: bodyMix >= 60 && monoAnchor >= 42 ? '能折叠' : '需补主体',
+      listenZh: '听 mono A/B：关掉空间后，触点和 body 仍要能说明这个声音是什么。',
+      fixZh: bodyMix >= 60 ? '保持 body，只小幅修 transient/body 比例。' : '先提高 Body 或降低过亮 texture，不要只靠 reverb 撑大。',
+      reaperZh: 'REAPER 用 mono/stereo A/B item 对照，响度匹配后写下主体是否消失。',
+      action: 'focus-controls',
+      actionLabelZh: '定位 Body',
+    },
+    {
+      id: 'small-speaker',
+      labelZh: '小音箱可读性',
+      value: Math.round(clamp(bodyMix * 0.34 + transientMix * 0.24 + material * 0.16 + headroom * 0.12 + (100 - tailMix) * 0.14, 0, 100)),
+      statusZh: transientMix + bodyMix > 122 ? '能读到' : '偏薄',
+      listenZh: 'solo Body 再听 full：小音箱主要靠 transient/body，不靠低频和宽空间。',
+      fixZh: '让 body 有短而稳定的中频锚点；tail 太多时先收尾巴再判断。',
+      reaperZh: 'REAPER 放一个 small-speaker EQ 或窄频 A/B，导出 dry/full 两版比较。',
+      layerAudition: 'body',
+      actionLabelZh: 'Solo Body',
+    },
+    {
+      id: 'headphone-width',
+      labelZh: '耳机宽度舒适',
+      value: Math.round(clamp(100 - Math.abs(widthScore - 58) * 0.9 - Math.max(0, tailMix - 76) * 0.18 + deHarsh * 0.12, 0, 100)),
+      statusZh: widthScore > 82 ? '偏宽' : '舒适区',
+      listenZh: '听 Comfort A/B：耳机里宽度应带来空间，不应让中心 body 变空。',
+      fixZh: '如果宽度抢主体，先回到 Comfort 输出，再少量降低 Space 或 stereo width。',
+      reaperZh: 'REAPER 用 headphones 与 mono fold-down 双检查，A/B dry、full、tail-only。',
+      outputMode: 'comfort',
+      actionLabelZh: '听 Comfort',
+    },
+    {
+      id: 'tail-safety',
+      labelZh: 'Tail 遮挡安全',
+      value: Math.round(clamp(100 - Math.max(0, space + tailMix - 130) * 0.7 + tailDuck * 0.22 + (100 - motion) * 0.06, 0, 100)),
+      statusZh: space + tailMix > 145 ? '尾巴偏重' : '不遮挡',
+      listenZh: 'solo Tail 再听 full：尾巴要解释空间，不能把第一下动作吃掉。',
+      fixZh: '先让 tail duck 起音，必要时降低 Space/Tail；不要用更大声掩盖糊。',
+      reaperZh: 'REAPER 导出 tail-only，与 full A/B；在 item note 记录是否遮挡 transient。',
+      layerAudition: 'tail',
+      actionLabelZh: 'Solo Tail',
+    },
+  ];
+  const primaryCheck = checks.reduce((lowest, check) => (check.value < lowest.value ? check : lowest), checks[0]);
+
+  return {
+    id: 'translation-monitor',
+    titleZh: 'Translation Monitor 翻译检查',
+    summaryZh: `用 mono、小音箱、耳机宽度和 tail-only 四种监听检查音效能不能从 Sound Lab 翻译到 REAPER 交付；当前优先听 ${primaryCheck.labelZh}。`,
+    primaryCheckId: primaryCheck.id,
+    checks,
+    reaperChecklist: [
+      '先导出 dry / full / tail-only 三版，并匹配响度。',
+      '在 REAPER 里做 mono fold-down、小音箱 EQ、耳机宽度三轮 A/B。',
+      `如果失败，优先回到 ${primaryDiagnostic?.labelZh ?? primaryCheck.labelZh}，一次只改一个参数。`,
+    ],
+  };
+}
+
 const TARGET_MATCH_PROFILES = {
   'metal-impact': {
     nameZh: '短金属撞击参考',
@@ -3376,6 +3459,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     synthTransferPlan: buildSynthTransferPlan(family, patch, patchDoctor, targetMatchCoach, macroList),
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
+    translationMonitor: buildTranslationMonitor(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
     analyzerCoach: buildAnalyzerCoach(patch, macroList),
     performanceFeel: patch.performanceFeel,

@@ -1276,3 +1276,32 @@ test('buildSoundLabViewModel exposes HQ engine modes, FX rack, and performance U
   assert.ok(model.fxRack.some((effect) => effect.id === 'reverb'));
   assert.match(model.patchJson, /"toneGraph"/);
 });
+
+test('buildSoundLabViewModel exposes a translation monitor for real-world playback checks', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 42,
+    material: 84,
+    space: 78,
+    variation: 30,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    layerMix: { transient: 88, body: 48, texture: 84, tail: 82 },
+  });
+
+  assert.equal(model.translationMonitor.id, 'translation-monitor');
+  assert.match(model.translationMonitor.summaryZh, /小音箱|耳机|mono|REAPER/i);
+  assert.ok(model.translationMonitor.checks.length >= 4);
+  assert.ok(model.translationMonitor.checks.some((check) => check.id === 'mono-anchor' && check.action === 'focus-controls'));
+  assert.ok(model.translationMonitor.checks.some((check) => check.id === 'small-speaker' && check.layerAudition === 'body'));
+  assert.ok(model.translationMonitor.checks.some((check) => check.id === 'headphone-width' && check.outputMode === 'comfort'));
+  assert.ok(model.translationMonitor.checks.some((check) => check.id === 'tail-safety' && check.layerAudition === 'tail'));
+  for (const check of model.translationMonitor.checks) {
+    assert.ok(check.value >= 0 && check.value <= 100, `${check.id} value should be normalized`);
+    assert.match(check.listenZh, /听|solo|A\/B|对比/i);
+    assert.match(check.reaperZh, /REAPER|mono|item|导出|A\/B/i);
+    assert.ok(check.fixZh.length > 8);
+  }
+});

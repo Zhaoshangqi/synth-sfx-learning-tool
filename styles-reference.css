@@ -3068,3 +3068,131 @@ body.is-direct-manipulating .sound-lab-workbench .waveform-ear-tree::after {
     transition: none !important;
   }
 }
+
+/* Reference aether component flow v9.20
+   Converts the pasted Aether Flow component into the existing native canvas
+   language: component-aware slow currents, no React deps, no click flashes. */
+
+.audio-space::before {
+  content: "";
+  position: fixed;
+  inset: -16%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at calc(18% + var(--space-x, 0) * 5%) calc(24% + var(--space-y, 0) * 4%), rgba(117, 197, 222, 0.14), transparent 0 10%, transparent 32%),
+    radial-gradient(circle at calc(82% - var(--space-x, 0) * 4%) calc(68% - var(--space-y, 0) * 4%), rgba(167, 139, 250, 0.1), transparent 0 12%, transparent 34%),
+    linear-gradient(108deg, transparent 0 28%, rgba(117, 197, 222, 0.08) 42%, rgba(255, 255, 255, 0.16) 50%, rgba(94, 234, 212, 0.07) 58%, transparent 74%),
+    repeating-linear-gradient(118deg, transparent 0 74px, rgba(117, 197, 222, 0.028) 75px, transparent 78px);
+  background-size: 100% 100%, 100% 100%, 340% 100%, 190px 190px;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  filter: blur(0.18px) saturate(1.06);
+  transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.018);
+  animation: ref9-component-flow-sheen 34s ease-in-out infinite alternate;
+}
+
+.content .sound-lab-workbench :where(
+  .polish-calibration-panel,
+  .sound-quality-coach-panel,
+  .translation-monitor-panel,
+  .target-match-coach-panel,
+  .synth-transfer-panel,
+  .waveform-ear-tree
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.content .sound-lab-workbench :where(
+  .polish-calibration-panel,
+  .sound-quality-coach-panel,
+  .translation-monitor-panel,
+  .target-match-coach-panel,
+  .synth-transfer-panel,
+  .waveform-ear-tree
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.content .sound-lab-workbench :where(
+  .polish-calibration-panel,
+  .sound-quality-coach-panel,
+  .translation-monitor-panel,
+  .target-match-coach-panel,
+  .synth-transfer-panel,
+  .waveform-ear-tree
+)::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(117, 197, 222, 0.12) 38%, rgba(244, 241, 232, 0.18) 49%, rgba(94, 234, 212, 0.08) 58%, transparent 76%),
+    repeating-linear-gradient(116deg, transparent 0 48px, rgba(117, 197, 222, 0.032) 49px, transparent 52px);
+  background-size: 270% 100%, 144px 144px;
+  opacity: 0.115;
+  mix-blend-mode: screen;
+  transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0);
+  animation: ref9-component-edge-flow 24s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .audio-space::before,
+body.is-direct-manipulating .content .sound-lab-workbench :where(
+  .polish-calibration-panel,
+  .sound-quality-coach-panel,
+  .translation-monitor-panel,
+  .target-match-coach-panel,
+  .synth-transfer-panel,
+  .waveform-ear-tree
+)::after {
+  animation-name: ref9-component-edge-flow;
+  animation-play-state: paused !important;
+  opacity: 0.045 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-component-flow-sheen {
+  0% {
+    background-position: 0 0, 100% 100%, 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 6px), calc(var(--space-y, 0) * 4px), 0) scale(1.01);
+  }
+  100% {
+    background-position: 100% 28%, 0% 72%, 100% 50%, 190px 92px;
+    transform: translate3d(calc(var(--space-x, 0) * 13px), calc(var(--space-y, 0) * 9px), 0) scale(1.034);
+  }
+}
+
+@keyframes ref9-component-edge-flow {
+  0% {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 3px), calc(var(--space-y, 0) * 2px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 144px 76px;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.012);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space::before,
+  .content .sound-lab-workbench :where(
+    .polish-calibration-panel,
+    .sound-quality-coach-panel,
+    .translation-monitor-panel,
+    .target-match-coach-panel,
+    .synth-transfer-panel,
+    .waveform-ear-tree
+  )::after {
+    animation-name: ref9-component-flow-sheen;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.07 !important;
+    transition: none !important;
+  }
+}

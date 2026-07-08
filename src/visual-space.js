@@ -16,6 +16,8 @@ let aetherFlowFilaments = [];
 let aetherFlowRivers = [];
 let aetherViscousCurrents = [];
 let aetherAdaptiveMeshParticles = [];
+let aetherComponentFlowParticles = [];
+let aetherComponentFlowTargets = [];
 let aetherSurfaceThreads = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
@@ -25,6 +27,7 @@ let frameId = 0;
 let spaceParallaxFrame = 0;
 let lastAetherAudioRippleTime = 0;
 let aetherAdaptiveMeshEnergy = 0;
+let aetherComponentFlowEnergy = 0;
 let aetherSurfaceThreadEnergy = 0;
 let aetherViscousCurrentEnergy = 0;
 
@@ -64,6 +67,9 @@ const AETHER_ADAPTIVE_MESH_COUNT = 74;
 const AETHER_ADAPTIVE_MESH_RADIUS = 168;
 const AETHER_ADAPTIVE_MOUSE_RADIUS = 232;
 const AETHER_ADAPTIVE_MESH_STRIDE = 2;
+const AETHER_COMPONENT_FLOW_COUNT = 64;
+const AETHER_COMPONENT_FLOW_RADIUS = 184;
+const AETHER_COMPONENT_FLOW_STRIDE = 2;
 const AETHER_SURFACE_THREAD_MAX = 12;
 const AETHER_SURFACE_THREAD_SEGMENTS = 44;
 const AETHER_SURFACE_THREAD_PACKET_TAIL = 0.075;
@@ -89,8 +95,31 @@ const AETHER_FLOW_SURFACE_SELECTOR = [
   '.hero-status-strip',
   '.waveform-drill-step',
   '.waveform-ear-tree',
+  '.translation-monitor-panel',
   '.target-match-coach-panel',
   '.synth-transfer-panel',
+  '[data-flow-surface]',
+].join(',');
+const AETHER_COMPONENT_FLOW_SELECTOR = [
+  '.dashboard-hero.aether-flow-stage',
+  '.hero-sound-visual.aether-flow-stage',
+  '.dashboard-actions',
+  '.hero-status-strip',
+  '.learning-flow',
+  '.dashboard-module-directory',
+  '.module-directory-card',
+  '.daily-video-card',
+  '.source-card',
+  '.workbench-panel',
+  '.workbench-topbar',
+  '.advanced-module-pill',
+  '.polish-calibration-panel',
+  '.sound-quality-coach-panel',
+  '.translation-monitor-panel',
+  '.waveform-ear-tree',
+  '.target-match-coach-panel',
+  '.synth-transfer-panel',
+  '.mission-brief-panel',
   '[data-flow-surface]',
 ].join(',');
 const cursorWakeAnchor = { x: 0, y: 0, time: 0 };
@@ -223,6 +252,76 @@ function createAetherAdaptiveMeshParticle(index, seed = 0) {
   };
 }
 
+function collectAetherComponentFlowTargets() {
+  if (!width || !height || typeof document === 'undefined') return [];
+
+  const seen = new Set();
+  const targets = Array.from(document.querySelectorAll(AETHER_COMPONENT_FLOW_SELECTOR))
+    .map((node, index) => {
+      if (!node || seen.has(node)) return null;
+      seen.add(node);
+
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      if (rect.bottom < -80 || rect.top > height + 80 || rect.right < -80 || rect.left > width + 80) return null;
+
+      const style = globalThis.getComputedStyle?.(node);
+      if (style?.display === 'none' || style?.visibility === 'hidden' || Number(style?.opacity ?? 1) < 0.04) return null;
+
+      const weight = node.matches('.dashboard-hero, .hero-sound-visual, .sound-lab-workbench, .workbench-panel')
+        ? 1.22
+        : node.matches('button, .advanced-module-pill, .module-directory-card')
+          ? 1.04
+          : 0.86;
+
+      return {
+        key: `${node.className || node.tagName}-${index}`,
+        x: rect.left + rect.width * (0.42 + (index % 3) * 0.08),
+        y: rect.top + rect.height * (0.42 + (index % 2) * 0.12),
+        width: rect.width,
+        height: rect.height,
+        weight,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.weight - a.weight);
+
+  if (targets.length) return targets.slice(0, width < 760 ? 9 : 18);
+
+  return [
+    { key: 'fallback-hero', x: width * 0.22, y: height * 0.28, width: 280, height: 180, weight: 1.08 },
+    { key: 'fallback-core', x: width * 0.58, y: height * 0.46, width: 340, height: 220, weight: 1.2 },
+    { key: 'fallback-rail', x: width * 0.78, y: height * 0.72, width: 240, height: 160, weight: 0.92 },
+  ];
+}
+
+function createAetherComponentFlowParticle(index, seed = 0, targets = aetherComponentFlowTargets) {
+  const anchors = targets.length ? targets : collectAetherComponentFlowTargets();
+  const target = anchors[index % Math.max(1, anchors.length)] ?? {
+    x: width * 0.5,
+    y: height * 0.48,
+    width: width * 0.25,
+    height: height * 0.2,
+    weight: 1,
+  };
+  const angle = random(0, Math.PI * 2) + seed * 0.07 + index * 0.015;
+  const radius = random(16, Math.max(34, Math.min(target.width, target.height) * 0.26));
+
+  return {
+    x: target.x + Math.cos(angle) * radius + random(-18, 18),
+    y: target.y + Math.sin(angle) * radius * 0.72 + random(-12, 12),
+    homeX: target.x + Math.cos(angle + 0.7) * radius * 0.56,
+    homeY: target.y + Math.sin(angle + 0.7) * radius * 0.42,
+    targetIndex: index % Math.max(1, anchors.length),
+    vx: random(-0.052, 0.052),
+    vy: random(-0.038, 0.038),
+    z: random(0.34, 1),
+    r: random(0.62, 1.8),
+    phase: random(0, Math.PI * 2) + seed * 0.12,
+    color: index % 5 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function createAetherHeroFlowParticle(index, seed = 0) {
   const lane = (index % 7) / 6;
   const edgeBias = index % 3 === 0 ? 0.18 : index % 3 === 1 ? 0.5 : 0.82;
@@ -311,6 +410,21 @@ function resetAetherAdaptiveMesh(detail = {}) {
   aetherAdaptiveMeshParticles = Array.from({ length: count }, (_, index) => createAetherAdaptiveMeshParticle(index, seed));
 }
 
+function resetAetherComponentFlowNetwork(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'component-flow').length;
+  aetherComponentFlowTargets = collectAetherComponentFlowTargets();
+  const count = Math.min(
+    AETHER_COMPONENT_FLOW_COUNT,
+    Math.max(width < 760 ? 20 : 36, Math.floor((width * height) / 25000)),
+  );
+  aetherComponentFlowParticles = Array.from(
+    { length: count },
+    (_, index) => createAetherComponentFlowParticle(index, seed, aetherComponentFlowTargets),
+  );
+  aetherComponentFlowEnergy = Math.min(1, aetherComponentFlowEnergy + 0.22);
+}
+
 function resetAetherFlowRivers(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'river').length;
@@ -379,6 +493,28 @@ function energizeAetherAdaptiveMesh(detail = {}) {
   const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.42)));
   if (level < 0.04) return;
   aetherAdaptiveMeshEnergy = Math.min(1, aetherAdaptiveMeshEnergy + level * 0.34);
+}
+
+function energizeAetherComponentFlow(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherComponentFlowParticles.length) resetAetherComponentFlowNetwork(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.42)));
+  if (level < 0.035) return;
+  aetherComponentFlowEnergy = Math.min(1, aetherComponentFlowEnergy + level * 0.32);
+
+  if (detail.source === 'surface-hover' || detail.to || detail.selector) {
+    aetherComponentFlowTargets = collectAetherComponentFlowTargets();
+  }
+
+  aetherComponentFlowParticles.forEach((particle, index) => {
+    const target = aetherComponentFlowTargets[(particle.targetIndex + index) % Math.max(1, aetherComponentFlowTargets.length)];
+    if (target && index % 5 === 0) {
+      particle.homeX = target.x + Math.sin(particle.phase + index) * Math.min(80, target.width * 0.2);
+      particle.homeY = target.y + Math.cos(particle.phase + index) * Math.min(56, target.height * 0.22);
+    }
+    particle.phase += 0.11 + level * 0.18;
+  });
 }
 
 function collectAetherFlowSurfaces() {
@@ -714,6 +850,7 @@ function resize() {
   aetherConstellationParticles = Array.from({ length: constellationCount }, (_, index) => createAetherConstellationParticle(index));
   resetAetherHeroFlowNetwork();
   resetAetherAdaptiveMesh();
+  resetAetherComponentFlowNetwork();
   cursorWakeParticles = [];
   cursorWakeAnchor.x = pointer.screenX;
   cursorWakeAnchor.y = pointer.screenY;
@@ -723,6 +860,7 @@ function resize() {
   aetherAudioRipples = [];
   lastAetherAudioRippleTime = 0;
   aetherAdaptiveMeshEnergy = 0;
+  aetherComponentFlowEnergy = 0;
 }
 
 function waveY(x, rowIndex, time) {
@@ -1248,6 +1386,121 @@ function drawAetherAdaptiveMesh(time) {
     ctx.shadowColor = `rgba(${particle.color}, ${0.08 + particle.mouseRepel * 0.16 + aetherAdaptiveMeshEnergy * 0.1})`;
     ctx.shadowBlur = 5 + particle.z * 7 + particle.mouseRepel * 9;
     ctx.arc(particle.viewX, particle.viewY, particle.r + particle.mouseRepel * 1.12 + aetherAdaptiveMeshEnergy * 0.36, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+function componentFlowPointerPressure(x, y, z = 1) {
+  if (isAetherFlowPaused()) return { x, y, force: 0 };
+  const dx = x - pointer.screenX;
+  const dy = y - pointer.screenY;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const force = Math.max(0, 1 - distance / (AETHER_COMPONENT_FLOW_RADIUS * 1.18)) * pointer.force * z;
+  const pressure = force * (8 + z * 18 + aetherComponentFlowEnergy * 12);
+
+  return {
+    x: x + (dx / distance) * pressure,
+    y: y + (dy / distance) * pressure * 0.72,
+    force,
+  };
+}
+
+function drawAetherComponentFlowNetwork(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherComponentFlowParticles.length) return;
+
+  aetherComponentFlowEnergy *= 0.935;
+  if (aetherComponentFlowEnergy < 0.004) aetherComponentFlowEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  const flowParticles = aetherComponentFlowParticles.map((particle, index) => {
+    const target = aetherComponentFlowTargets[particle.targetIndex % Math.max(1, aetherComponentFlowTargets.length)];
+    if (target && index % 3 === 0) {
+      particle.homeX += (target.x - particle.homeX) * 0.0018;
+      particle.homeY += (target.y - particle.homeY) * 0.0018;
+    }
+
+    const pullX = (particle.homeX - particle.x) * (0.0014 + particle.z * 0.0007);
+    const pullY = (particle.homeY - particle.y) * (0.0012 + particle.z * 0.0006);
+    particle.vx = (particle.vx + pullX) * 0.994;
+    particle.vy = (particle.vy + pullY) * 0.994;
+    particle.x += particle.vx * (0.54 + particle.z * 0.7) + Math.sin(time * 0.00018 + particle.phase) * 0.1;
+    particle.y += particle.vy * (0.5 + particle.z * 0.62) + Math.cos(time * 0.00016 + particle.phase) * 0.08;
+    particle.phase += 0.0014 + aetherComponentFlowEnergy * 0.0014;
+
+    if (particle.x < -34) particle.x = width + 34;
+    if (particle.x > width + 34) particle.x = -34;
+    if (particle.y < -34) particle.y = height + 34;
+    if (particle.y > height + 34) particle.y = -34;
+
+    const driftX = Math.sin(time * 0.00022 + particle.phase * 0.73) * 16 * particle.z;
+    const driftY = Math.cos(time * 0.00019 + particle.phase * 0.57) * 12 * particle.z;
+    const pressure = componentFlowPointerPressure(
+      particle.x + driftX + pointer.x * particle.z * 18,
+      particle.y + driftY + pointer.y * particle.z * 13,
+      particle.z,
+    );
+
+    particle.viewX = pressure.x;
+    particle.viewY = pressure.y;
+    particle.pointerPressure = pressure.force;
+    return particle;
+  });
+
+  const radius = width < 760 ? AETHER_COMPONENT_FLOW_RADIUS * 0.72 : AETHER_COMPONENT_FLOW_RADIUS;
+  for (let i = 0; i < flowParticles.length; i += AETHER_COMPONENT_FLOW_STRIDE) {
+    const a = flowParticles[i];
+    for (let j = i + AETHER_COMPONENT_FLOW_STRIDE; j < flowParticles.length; j += AETHER_COMPONENT_FLOW_STRIDE) {
+      const b = flowParticles[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      const activeRadius = radius + Math.max(a.pointerPressure, b.pointerPressure) * 72;
+      if (distance > activeRadius) continue;
+
+      const strength = Math.max(0, 1 - distance / activeRadius);
+      const pressure = Math.max(a.pointerPressure, b.pointerPressure);
+      const shimmer = 0.5 + Math.sin(time * 0.001 + a.phase + b.phase) * 0.22;
+      const alpha = Math.min(0.18, strength * 0.035 + pressure * 0.1 + aetherComponentFlowEnergy * 0.055 + shimmer * 0.008);
+      if (alpha < 0.008) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.48, `rgba(255, 255, 255, ${alpha * (0.48 + pressure * 0.28)})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.32 + pressure * 0.78 + aetherComponentFlowEnergy * 0.24;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * (20 + pressure * 18),
+        (a.viewY + b.viewY) * 0.5 + pointer.y * (14 + pressure * 14),
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+
+  flowParticles.forEach((particle) => {
+    const pulse = 0.5
+      + Math.sin(time * 0.0015 + particle.phase) * 0.2
+      + particle.pointerPressure * 0.3
+      + aetherComponentFlowEnergy * 0.22;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${0.065 + pulse * 0.105})`;
+    ctx.shadowColor = `rgba(${particle.color}, ${0.07 + particle.pointerPressure * 0.16 + aetherComponentFlowEnergy * 0.08})`;
+    ctx.shadowBlur = 5 + particle.z * 8 + particle.pointerPressure * 8;
+    ctx.arc(
+      particle.viewX,
+      particle.viewY,
+      particle.r + particle.pointerPressure * 1.06 + aetherComponentFlowEnergy * 0.34,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
   });
 
@@ -1798,6 +2051,7 @@ function handleAetherSurfaceHover(event) {
     rect.top + rect.height * 0.5,
     { radius: Math.min(AETHER_PRESSURE_RADIUS, Math.max(84, rect.width * 0.42)), strength: 0.42, ttl: 1.05 },
   );
+  energizeAetherComponentFlow({ level: 0.38, source: 'surface-hover' });
   energizeAetherSurfaceThreads({ level: 0.42, source: 'surface-hover' });
 }
 
@@ -1831,6 +2085,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
   if (!isAetherFlowPaused()) drawAetherAdaptiveMesh(time);
   if (!isAetherFlowPaused()) drawAetherHeroFlowNetwork(time);
+  if (!isAetherFlowPaused()) drawAetherComponentFlowNetwork(time);
   if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
   if (!isAetherFlowPaused()) drawAetherMagneticLinks(time);
   particles.forEach((particle) => {
@@ -1865,6 +2120,7 @@ function init() {
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);
     resetAetherHeroFlowNetwork(event.detail);
+    resetAetherComponentFlowNetwork(event.detail);
     rethreadAetherFlowRivers(event.detail);
     resetAetherViscousCurrents(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
@@ -1891,6 +2147,7 @@ function init() {
     spawnAetherAudioRipple(event.detail);
     energizeAetherViscousCurrents(event.detail);
     energizeAetherAdaptiveMesh(event.detail);
+    energizeAetherComponentFlow(event.detail);
     energizeAetherSurfaceThreads(event.detail);
   });
   tick();
