@@ -3312,3 +3312,54 @@ body.is-direct-manipulating .content :where(
     transition: none !important;
   }
 }
+/* Reference aether laminar signal curtain v9.22
+   A thin background current layer adapted from the pasted Aether Flow prompt:
+   it keeps the slow connected-particle feeling visible while direct dragging
+   pauses the motion to avoid the old full-screen flash. */
+
+.signal-field::after {
+  content: "";
+  position: fixed;
+  inset: -14%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(96deg, transparent 0 18%, rgba(117, 197, 222, 0.11) 36%, rgba(255, 255, 255, 0.2) 49%, rgba(94, 234, 212, 0.09) 58%, transparent 77%),
+    linear-gradient(116deg, transparent 0 26%, rgba(167, 139, 250, 0.08) 42%, rgba(255, 255, 255, 0.11) 50%, transparent 71%),
+    repeating-linear-gradient(104deg, transparent 0 84px, rgba(117, 197, 222, 0.028) 85px, transparent 90px);
+  background-size: 330% 100%, 260% 100%, 210px 210px;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  filter: blur(0.1px) saturate(1.05);
+  transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) scale(1.015);
+  animation: ref9-laminar-signal-drift 38s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .signal-field::after {
+  animation-name: ref9-laminar-signal-drift;
+  animation-play-state: paused !important;
+  opacity: 0.055 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-laminar-signal-drift {
+  0% {
+    background-position: 0% 50%, 100% 52%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 5px), calc(var(--space-y, 0) * 4px), 0) scale(1.01);
+  }
+  100% {
+    background-position: 100% 50%, 0% 48%, 210px 96px;
+    transform: translate3d(calc(var(--space-x, 0) * 12px), calc(var(--space-y, 0) * 9px), 0) scale(1.032);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-field::after {
+    animation-name: ref9-laminar-signal-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.08 !important;
+    transition: none !important;
+  }
+}

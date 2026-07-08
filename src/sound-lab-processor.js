@@ -86,6 +86,10 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       snap: 0,
       body: 0,
       silk: 0,
+      crest: 0,
+      gloss: 0,
+      bodyFocus: 0,
+      alias: 0,
       prev: 0,
     };
   }
@@ -526,6 +530,31 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return Math.tanh(rounded * amount) / Math.tanh(amount) * ceiling * (1 - outputSilk * 0.012);
   }
 
+  applyTransientGloss(sample, edge, state, transientGloss = {}) {
+    const crestClamp = clamp(transientGloss.crestClamp ?? 0, 0, 1);
+    const harmonicAir = clamp(transientGloss.harmonicAir ?? 0, 0, 1);
+    const bodyFocus = clamp(transientGloss.bodyFocus ?? 0, 0, 1);
+    const aliasGuard = clamp(transientGloss.aliasGuard ?? 0, 0, 1);
+    const crestWindowMs = clamp(transientGloss.crestWindowMs ?? 10, 0, 40);
+    if (crestClamp <= 0 && harmonicAir <= 0 && bodyFocus <= 0 && aliasGuard <= 0) return sample;
+
+    const crestCoeff = crestWindowMs > 0
+      ? clamp(1 / Math.max(1, sampleRate * crestWindowMs / 1000), 0.0004, 0.12)
+      : 0.12;
+    state.crest = this.onePole(state.crest, Math.abs(sample), crestCoeff);
+    state.gloss = this.onePole(state.gloss, edge, 0.12 + harmonicAir * 0.1);
+    state.alias = this.onePole(state.alias, state.gloss, 0.035 + aliasGuard * 0.06);
+    state.bodyFocus = this.onePole(state.bodyFocus, sample, 0.008 + bodyFocus * 0.026);
+
+    const crestLimit = state.crest * (1 + crestClamp * 1.24) + 0.075;
+    const over = Math.max(0, Math.abs(sample) - crestLimit);
+    const managed = sample - Math.sign(sample || 1) * Math.tanh(over * 5.5) * crestClamp * 0.16;
+    const glossBand = state.gloss - state.alias * (0.72 + aliasGuard * 0.42);
+    const air = Math.tanh(glossBand * (1.2 + harmonicAir * 3.4)) * harmonicAir * (0.026 + aliasGuard * 0.01);
+    const focused = managed + state.bodyFocus * bodyFocus * 0.05 + air;
+    return clamp(focused * (1 - aliasGuard * Math.abs(air) * 0.12), -1.18, 1.18);
+  }
+
   applyMasterPolish(sample, state) {
     const polish = this.patch?.globalFx?.masterPolish || {};
     if (polish.enabled === false) return clamp(sample * clamp(polish.bodyGain ?? 0.96, 0.72, 1.04), -1.2, 1.2);
@@ -544,6 +573,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
     const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
     const snapWindowMs = clamp(dynamicDetail.snapWindowMs ?? 18, 0, 64);
+    const transientGloss = polish.transientGloss || {};
     const detailSnapWindow = snapWindowMs > 0
       ? clamp(1 / Math.max(1, sampleRate * snapWindowMs / 1000), 0.00025, 0.08)
       : 0.08;
@@ -564,9 +594,10 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const harshMotion = harshBand - previousHarsh * 0.18;
     const deHarshAmount = clamp(Math.abs(harshMotion) * deHarsh * 2.4 + airTame * 0.035, 0, 0.2);
     const comforted = warmed - harshBand * deHarshAmount;
+    const glossed = this.applyTransientGloss(comforted, edge, state, transientGloss);
     state.snap = this.onePole(state.snap, Math.abs(state.edge), detailSnapWindow);
-    state.body = this.onePole(state.body, comforted, 0.01 + bodyGlue * 0.022);
-    const gluedInput = comforted + state.body * bodyGlue * 0.072;
+    state.body = this.onePole(state.body, glossed, 0.01 + bodyGlue * 0.022);
+    const gluedInput = glossed + state.body * bodyGlue * 0.072;
     const drive = 1 + glue * 1.7;
     const glued = Math.tanh(gluedInput * drive) / Math.tanh(drive);
     state.silk = this.onePole(state.silk, glued, 0.05 + outputSilk * 0.07);
