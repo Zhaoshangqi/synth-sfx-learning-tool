@@ -420,6 +420,45 @@ test('buildSoundLabViewModel exposes a target match coach with one-change guidan
   assert.ok(Number.isFinite(coach.oneChangeChallenge.to));
 });
 
+test('buildSoundLabViewModel exposes a synth transfer plan for one-change practice', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 34,
+    material: 88,
+    space: 68,
+    variation: 32,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 88, body: 58, texture: 78, tail: 72 },
+  });
+
+  const plan = model.synthTransferPlan;
+  assert.ok(plan, 'view model should expose a synth transfer plan');
+  assert.match(plan.titleZh, /Synth Transfer|迁移|三合成器/);
+  assert.match(plan.summaryZh, /Serum/);
+  assert.match(plan.summaryZh, /Phase Plant/);
+  assert.match(plan.summaryZh, /Vital/);
+  assert.match(plan.summaryZh, /REAPER/);
+  assert.equal(plan.oneChange.diagnosticId, model.patchDoctor.diagnostics[0].id);
+  assert.equal(plan.oneChange.applyActionId, model.patchDoctor.diagnostics[0].applyAction.id);
+  assert.ok(plan.oneChange.parameterId);
+  assert.ok(Number.isFinite(plan.oneChange.from));
+  assert.ok(Number.isFinite(plan.oneChange.to));
+  assert.deepEqual(plan.synthSteps.map((step) => step.id), ['serum', 'phasePlant', 'vital']);
+  assert.ok(plan.synthSteps.every((step) => step.label && step.whereZh && step.doZh && step.listenZh && step.proofZh));
+  assert.match(plan.synthSteps[0].label, /Serum/);
+  assert.match(plan.synthSteps[1].label, /Phase Plant/);
+  assert.match(plan.synthSteps[2].label, /Vital/);
+  assert.match(plan.reaperProof.noteZh, /REAPER|A\/B|dry|full|tail|只改一个/i);
+  assert.ok(plan.actions.some((action) => action.type === 'doctor-apply' && action.applyDiagnosticId === model.patchDoctor.diagnostics[0].id));
+  assert.ok(plan.actions.some((action) => action.workbenchAction === 'focus-practice-loop'));
+  assert.ok(plan.actions.some((action) => action.workbenchAction === 'focus-export'));
+});
+
 test('buildSoundLabViewModel exposes a perceptual signature for realistic synth SFX coaching', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

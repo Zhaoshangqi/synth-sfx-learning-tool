@@ -907,6 +907,37 @@ test('renderSoundLabWorkbench renders a target match coach with routed one-chang
   assert.match(html, /REAPER note|REAPER 记录/);
 });
 
+test('renderSoundLabWorkbench renders a synth transfer plan with real routed actions', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 34,
+    material: 88,
+    space: 68,
+    variation: 32,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 88, body: 58, texture: 78, tail: 72 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /synth-transfer-panel/);
+  assert.match(html, /Synth Transfer|三合成器迁移/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER|A\/B|dry|full|tail/);
+  assert.match(html, /data-synth-transfer-step="serum"/);
+  assert.match(html, /data-synth-transfer-step="phasePlant"/);
+  assert.match(html, /data-synth-transfer-step="vital"/);
+  assert.match(html, /data-doctor-apply="/);
+  assert.match(html, /data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /data-workbench-action="focus-export"/);
+});
+
 test('renderSoundLabWorkbench renders playable reference match controls', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

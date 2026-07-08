@@ -2314,6 +2314,85 @@ function buildTargetMatchCoach(family, patch, patchDoctor, macroList = []) {
   };
 }
 
+function buildSynthTransferPlan(family, patch, patchDoctor, targetMatchCoach, macroList = []) {
+  const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const challenge = targetMatchCoach?.oneChangeChallenge ?? {};
+  const macro = macroList.find((item) => item.id === challenge.parameterId)
+    ?? macroList.find((item) => item.id === Object.keys(diagnostic.applyAction?.macroDelta ?? {})[0])
+    ?? macroList[0]
+    ?? {};
+  const parameterId = challenge.parameterId ?? macro.id ?? 'brightness';
+  const parameterLabel = challenge.labelZh ?? macro.labelZh ?? parameterId;
+  const from = Number.isFinite(challenge.from) ? challenge.from : Math.round(patch.macros?.[parameterId] ?? macro.value ?? 50);
+  const to = Number.isFinite(challenge.to)
+    ? challenge.to
+    : clamp(from + (diagnostic.applyAction?.macroDelta?.[parameterId] ?? 0), 0, 100);
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前音效';
+  const diagnosticLabel = diagnostic.labelZh ?? '最高优先听感问题';
+
+  return {
+    id: 'synth-transfer-plan',
+    titleZh: 'Synth Transfer：三合成器迁移练习',
+    summaryZh: `把 Patch Doctor 的「${diagnosticLabel}」翻译成 Serum、Phase Plant、Vital 和 REAPER 的同一条练习：只改 ${parameterLabel}，先听变化，再 A/B 证明。`,
+    problemZh: diagnostic.listenZh ?? `先听 ${familyName} 中起音、主体、材质或尾巴哪一段最不像目标。`,
+    oneChange: {
+      diagnosticId: diagnostic.id ?? '',
+      applyActionId: diagnostic.applyAction?.id ?? diagnostic.id ?? '',
+      parameterId,
+      labelZh: parameterLabel,
+      from,
+      to,
+      expectedChangeZh: challenge.expectedChangeZh ?? diagnostic.applyAction?.feedbackZh ?? '只听这一个参数造成的变化，不同时改变层级、宏和效果。',
+      actionLabelZh: diagnostic.applyAction?.labelZh ?? challenge.actionLabelZh ?? '试调一次',
+    },
+    synthSteps: [
+      {
+        id: 'serum',
+        label: 'Serum',
+        whereZh: 'Osc / Noise / Filter / FX 或 Matrix 里找到同一个听感来源。',
+        doZh: diagnostic.synthTargets?.serum ?? 'Serum: 只把 Macro 绑到一个目标，例如 warp、FM amount、filter cutoff 或 noise level。',
+        listenZh: `听 ${parameterLabel} ${from} -> ${to} 后，${diagnosticLabel} 是否更接近目标。`,
+        proofZh: '先 bypass reverb/delay，再开 FX；确认不是空间变大造成的错觉。',
+      },
+      {
+        id: 'phasePlant',
+        label: 'Phase Plant',
+        whereZh: 'Generator lane / Modulator / FX lane 中找到 transient、body、texture 或 tail 的对应层。',
+        doZh: diagnostic.synthTargets?.phasePlant ?? 'Phase Plant: solo 问题 lane，只让一个 Macro 或 modulator 影响一个目标参数。',
+        listenZh: '先听 lane solo，再回 full；判断主体、材质和尾巴是否仍像同一个声音。',
+        proofZh: '保留 lane 名称和 Macro 名称，方便回到 REAPER 版本备注复盘。',
+      },
+      {
+        id: 'vital',
+        label: 'Vital',
+        whereZh: 'Osc / Sample / Filter / Matrix / FX 中找到对应 warp、FM、noise 或 resonator 深度。',
+        doZh: diagnostic.synthTargets?.vital ?? 'Vital: 用 Matrix 只连一个目标，先固定包络，再做小幅参数移动。',
+        listenZh: '听 dry 主体是否变好，再打开空间；不要让 chorus/reverb 掩盖材质判断。',
+        proofZh: '把改动写成“参数 from -> to”，不要只写“更亮/更暗”。',
+      },
+    ],
+    reaperProof: {
+      titleZh: 'REAPER 证明',
+      noteZh: challenge.reaperNoteZh ?? diagnostic.reaperCheckZh ?? `REAPER: ${familyName} dry / full / tail-only A/B；只改一个参数 ${parameterLabel} ${from} -> ${to}；保留/撤回=____。`,
+      checklist: [
+        '渲染 dry、full、tail-only 三版，匹配响度后再判断。',
+        'item note 写清楚只改一个参数、听感变化和保留/撤回理由。',
+        '如果只变大声或只变亮，不算通过，回到 Patch Doctor 下一项。',
+      ],
+    },
+    actions: [
+      {
+        type: 'doctor-apply',
+        labelZh: diagnostic.applyAction?.labelZh ?? '试调这个变化',
+        applyDiagnosticId: diagnostic.id ?? '',
+      },
+      { type: 'workbench', labelZh: '去改参数', workbenchAction: diagnostic.action ?? challenge.action ?? 'focus-controls' },
+      { type: 'workbench', labelZh: '做 A/B', workbenchAction: 'focus-practice-loop' },
+      { type: 'workbench', labelZh: '看导出', workbenchAction: 'focus-export' },
+    ],
+  };
+}
+
 function buildPerceptualSignature(family, patch, patchDoctor, macroList = []) {
   const values = patch.macros ?? {};
   const layerMix = patch.layerMix ?? {};
@@ -3072,6 +3151,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
   const workflowStep = options.workflowStep ?? options.activeWorkflowStep ?? 'source';
   const waveformFingerprint = buildWaveformFingerprint(patch);
   const listeningCompass = buildListeningCompass(family, patch, macroList, workflowStep);
+  const targetMatchCoach = buildTargetMatchCoach(family, patch, patchDoctor, macroList);
   const practiceFocus = buildPracticeFocus(
     family,
     patch,
@@ -3146,7 +3226,8 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     missionBrief,
     practiceFocus,
     earTrainingChain,
-    targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
+    targetMatchCoach,
+    synthTransferPlan: buildSynthTransferPlan(family, patch, patchDoctor, targetMatchCoach, macroList),
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),

@@ -2718,6 +2718,59 @@ function renderTargetMatchCoachPanel(model = {}) {
   `;
 }
 
+function renderSynthTransferPlanPanel(model = {}) {
+  const plan = model.synthTransferPlan ?? {};
+  const synthSteps = plan.synthSteps ?? [];
+  const oneChange = plan.oneChange ?? {};
+  const proof = plan.reaperProof ?? {};
+  const actions = plan.actions ?? [];
+  if (!synthSteps.length) return '';
+
+  return `
+    <section class="synth-transfer-panel" aria-label="Synth Transfer 三合成器迁移练习">
+      <div class="synth-transfer-head">
+        <span>Synth Transfer</span>
+        <strong>${escapeHtml(plan.titleZh ?? 'Synth Transfer：三合成器迁移练习')}</strong>
+        <p>${escapeHtml(plan.summaryZh ?? '')}</p>
+      </div>
+      <div class="synth-transfer-one-change">
+        <span>One Change</span>
+        <strong>${escapeHtml(oneChange.labelZh ?? oneChange.parameterId ?? 'parameter')}</strong>
+        <p>${escapeHtml(plan.problemZh ?? '')}</p>
+        <code>${escapeHtml(`${oneChange.parameterId ?? 'parameter'} ${oneChange.from ?? 0} -> ${oneChange.to ?? 0}`)}</code>
+      </div>
+      <div class="synth-transfer-grid">
+        ${synthSteps.map((step) => `
+          <article class="synth-transfer-step" data-synth-transfer-step="${escapeHtml(step.id)}">
+            <span>${escapeHtml(step.label ?? step.id)}</span>
+            <strong>${escapeHtml(step.whereZh ?? '')}</strong>
+            <p>${escapeHtml(step.doZh ?? '')}</p>
+            <small>${escapeHtml(step.listenZh ?? '')}</small>
+            <em>${escapeHtml(step.proofZh ?? '')}</em>
+          </article>
+        `).join('')}
+      </div>
+      <div class="synth-transfer-proof">
+        <div>
+          <span>${escapeHtml(proof.titleZh ?? 'REAPER 证明')}</span>
+          <code>${escapeHtml(proof.noteZh ?? 'REAPER A/B: dry / full / tail-only; 只改一个参数。')}</code>
+        </div>
+        <ul>
+          ${(proof.checklist ?? []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="synth-transfer-actions">
+        ${actions.map((action) => {
+          if (action.type === 'doctor-apply') {
+            return `<button type="button" data-doctor-apply="${escapeHtml(action.applyDiagnosticId ?? '')}">${escapeHtml(action.labelZh ?? '试调这个变化')}</button>`;
+          }
+          return `<button type="button" data-workbench-action="${escapeHtml(action.workbenchAction ?? 'focus-controls')}">${escapeHtml(action.labelZh ?? '去改参数')}</button>`;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderReferenceMatchPanel(reference = {}) {
   const controls = reference.controls ?? [];
   const playTargets = reference.playTargets ?? {};
@@ -3294,6 +3347,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
       ${renderEarTrainingChainPanel(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
+      ${renderSynthTransferPlanPanel(model)}
       <div class="synth-tab-row">
         ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
@@ -3392,6 +3446,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
       ${renderEarTrainingChainPanel(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
+      ${renderSynthTransferPlanPanel(model)}
       <main class="atlas-main-console">
         ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
         <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">

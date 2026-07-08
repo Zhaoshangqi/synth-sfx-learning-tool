@@ -13,6 +13,7 @@ let aetherOrbitalFields = [];
 let aetherConstellationParticles = [];
 let aetherHeroFlowParticles = [];
 let aetherFlowFilaments = [];
+let aetherFlowRivers = [];
 let aetherAdaptiveMeshParticles = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
@@ -50,6 +51,8 @@ const AETHER_HERO_FLOW_CONNECTION_RADIUS = 154;
 const AETHER_HERO_FLOW_STRIDE = 2;
 const AETHER_FLOW_FILAMENT_COUNT = 9;
 const AETHER_FLOW_FILAMENT_SEGMENTS = 86;
+const AETHER_FLOW_RIVER_COUNT = 4;
+const AETHER_FLOW_RIVER_SEGMENTS = 96;
 const AETHER_ADAPTIVE_MESH_COUNT = 74;
 const AETHER_ADAPTIVE_MESH_RADIUS = 168;
 const AETHER_ADAPTIVE_MOUSE_RADIUS = 232;
@@ -69,6 +72,8 @@ const AETHER_FLOW_SURFACE_SELECTOR = [
   '.source-card',
   '.workbench-panel',
   '.waveform-drill-step',
+  '.target-match-coach-panel',
+  '.synth-transfer-panel',
   '[data-flow-surface]',
 ].join(',');
 const cursorWakeAnchor = { x: 0, y: 0, time: 0 };
@@ -237,6 +242,24 @@ function createAetherFlowFilament(index) {
   };
 }
 
+function createAetherFlowRiver(index, seed = 0) {
+  const span = AETHER_FLOW_RIVER_COUNT + 1;
+  return {
+    lane: (index + 1) / span + random(-0.035, 0.035),
+    amplitude: random(36, 86),
+    secondaryAmplitude: random(12, 34),
+    frequency: random(1.05, 2.55),
+    phase: random(0, Math.PI * 2) + seed * 0.09,
+    speed: random(0.000045, 0.00011) * (index % 2 === 0 ? 1 : -1),
+    drift: random(-0.000012, 0.000018),
+    z: random(0.32, 0.92),
+    width: random(2.8, 7.2),
+    packet: random(0, 1),
+    packetSpeed: random(0.000022, 0.00005),
+    color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
+  };
+}
+
 function resetAetherHeroFlowNetwork(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? 'aether').length;
@@ -249,6 +272,29 @@ function resetAetherAdaptiveMesh(detail = {}) {
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'mesh').length;
   const count = Math.min(AETHER_ADAPTIVE_MESH_COUNT, Math.max(width < 760 ? 24 : 42, Math.floor((width * height) / 24000)));
   aetherAdaptiveMeshParticles = Array.from({ length: count }, (_, index) => createAetherAdaptiveMeshParticle(index, seed));
+}
+
+function resetAetherFlowRivers(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'river').length;
+  const count = width < 760 ? 2 : AETHER_FLOW_RIVER_COUNT;
+  aetherFlowRivers = Array.from({ length: count }, (_, index) => createAetherFlowRiver(index, seed));
+}
+
+function rethreadAetherFlowRivers(detail = {}) {
+  if (!width || !height) return;
+  if (!aetherFlowRivers.length) {
+    resetAetherFlowRivers(detail);
+    return;
+  }
+
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'route').length;
+  aetherFlowRivers.forEach((river, index) => {
+    river.phase += 0.46 + seed * 0.018 + index * 0.09;
+    river.lane = Math.max(0.08, Math.min(0.92, river.lane + Math.sin(seed + index) * 0.018));
+    river.packet = (river.packet + 0.16 + index * 0.035) % 1;
+    if (index % 2 === seed % 2) river.speed *= -1;
+  });
 }
 
 function rethreadAetherAdaptiveMesh(detail = {}) {
@@ -405,6 +451,21 @@ function getAetherStreamPoint(stream, progress, time, phaseOffset = 0) {
   return aetherRepel(x + pointer.x * stream.parallaxX, y, stream.z);
 }
 
+function getAetherFlowRiverPoint(river, progress, time, phaseOffset = 0) {
+  const easedProgress = progress * progress * (3 - progress * 2);
+  const direction = river.speed >= 0 ? 1 : -1;
+  const x = direction > 0
+    ? -140 + easedProgress * (width + 280)
+    : width + 140 - easedProgress * (width + 280);
+  const laneY = height * Math.max(0.06, Math.min(0.94, river.lane));
+  const phase = river.phase + time * river.speed + progress * river.frequency * Math.PI * 2 + phaseOffset;
+  const y = laneY
+    + Math.sin(phase) * river.amplitude
+    + Math.sin(phase * 0.41 + phaseOffset) * river.secondaryAmplitude
+    + pointer.y * river.z * 20;
+  return aetherRepel(x + pointer.x * river.z * 30, y, river.z);
+}
+
 function resize() {
   if (!canvas || !ctx) return;
   const ratio = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -447,6 +508,7 @@ function resize() {
   aetherStreams = Array.from({ length: streamCount }, (_, index) => createAetherStream(index));
   const filamentCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
   aetherFlowFilaments = Array.from({ length: filamentCount }, (_, index) => createAetherFlowFilament(index));
+  resetAetherFlowRivers();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
   const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
@@ -1131,6 +1193,65 @@ function drawAetherLiquidFilaments(time) {
   ctx.restore();
 }
 
+function drawAetherFlowRivers(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherFlowRivers.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherFlowRivers.forEach((river, riverIndex) => {
+    river.phase += river.drift;
+    river.packet = (river.packet + river.packetSpeed * (16 + river.z * 10)) % 1;
+
+    let startPoint = null;
+    let endPoint = null;
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_FLOW_RIVER_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_FLOW_RIVER_SEGMENTS;
+      const point = getAetherFlowRiverPoint(river, progress, time, riverIndex * 0.34);
+      if (!startPoint) startPoint = point;
+      endPoint = point;
+      if (segment === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+
+    if (!startPoint || !endPoint) return;
+    const riverPulse = 0.54 + Math.sin(time * 0.00052 + river.phase) * 0.2;
+    const gradient = ctx.createLinearGradient(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+    gradient.addColorStop(0, `rgba(${river.color}, 0)`);
+    gradient.addColorStop(0.22, `rgba(${river.color}, ${0.018 + riverPulse * 0.026})`);
+    gradient.addColorStop(0.52, `rgba(255, 255, 255, ${0.012 + riverPulse * 0.018})`);
+    gradient.addColorStop(0.78, `rgba(${river.color}, ${0.018 + riverPulse * 0.022})`);
+    gradient.addColorStop(1, `rgba(${river.color}, 0)`);
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = river.width;
+    ctx.shadowColor = `rgba(${river.color}, ${0.05 + riverPulse * 0.052})`;
+    ctx.shadowBlur = 12 + river.z * 18;
+    ctx.stroke();
+
+    const head = getAetherFlowRiverPoint(river, river.packet, time, riverIndex * 0.34);
+    const tail = getAetherFlowRiverPoint(river, Math.max(0, river.packet - 0.07), time, riverIndex * 0.34);
+    const packetGradient = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    packetGradient.addColorStop(0, `rgba(${river.color}, 0)`);
+    packetGradient.addColorStop(0.62, `rgba(${river.color}, ${0.09 + riverPulse * 0.12})`);
+    packetGradient.addColorStop(1, `rgba(255, 255, 255, ${0.12 + riverPulse * 0.12})`);
+
+    ctx.beginPath();
+    ctx.strokeStyle = packetGradient;
+    ctx.lineWidth = Math.max(1.1, river.width * 0.28);
+    ctx.moveTo(tail.x, tail.y);
+    ctx.quadraticCurveTo(
+      (tail.x + head.x) * 0.5 + pointer.x * 18 * river.z,
+      (tail.y + head.y) * 0.5 + pointer.y * 12 * river.z,
+      head.x,
+      head.y,
+    );
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -1376,6 +1497,7 @@ function tick(time = 0) {
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherLiquidFilaments(time);
+  if (!isAetherFlowPaused()) drawAetherFlowRivers(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
@@ -1414,6 +1536,7 @@ function init() {
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);
     resetAetherHeroFlowNetwork(event.detail);
+    rethreadAetherFlowRivers(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
     aetherMagneticLinks.forEach((link, index) => {
