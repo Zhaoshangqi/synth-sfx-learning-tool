@@ -1051,6 +1051,7 @@ function buildSoundQuality(patch) {
   const tailSafety = clamp((patch.globalFx?.space?.mix ?? 0) * 92 + (patch.globalFx?.softLimiter?.ceiling ?? 0.9) * 18, 0, 100);
   const polish = patch.globalFx?.masterPolish ?? {};
   const comfortBus = polish.comfortBus ?? {};
+  const motionBus = polish.motionBus ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
       + (polish.lowTighten ?? 0) * 28
@@ -1064,6 +1065,14 @@ function buildSoundQuality(patch) {
       + (comfortBus.deHarsh ?? 0) * 54
       + (comfortBus.headroom ?? 0) * 360
       + (comfortBus.airTame ?? 0) * 28,
+    0,
+    100,
+  );
+  const motionScore = clamp(
+    (motionBus.microDynamics ?? 0) * 360
+      + (motionBus.transientShield ?? 0) * 116
+      + (motionBus.tailBloom ?? 0) * 96
+      + (motionBus.wowFlutter ?? 0) * 620,
     0,
     100,
   );
@@ -1103,6 +1112,13 @@ function buildSoundQuality(patch) {
       value: comfortScore,
       statusZh: '舒适余量',
       noteZh: 'de-harsh + headroom',
+    },
+    {
+      id: 'motion-bus',
+      labelZh: 'Micro Motion',
+      value: motionScore,
+      statusZh: '微动态呼吸',
+      noteZh: `transient shield ${formatQualityNumber((motionBus.transientShield ?? 0) * 100)}% / tail bloom ${formatQualityNumber((motionBus.tailBloom ?? 0) * 100)}% / wow ${formatQualityNumber((motionBus.wowFlutter ?? 0) * 100)}%`,
     },
     {
       id: 'polish',

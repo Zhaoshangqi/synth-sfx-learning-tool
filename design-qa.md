@@ -364,3 +364,37 @@ Passed for this iteration. Sound Lab now has a more professional ear-training lo
 
 ## Result
 Passed for this iteration. This pass replaces the old mixed dark/light overrides with a coherent light showcase system, fixes Sound Lab module contrast at the computed-style level, and adds a real patch-driven Performance Feel panel with gesture playback and tight/expressive presets.
+
+---
+
+# Design QA - Aether Flow Motion v9.1 + Micro Motion Quality
+
+## Focus
+- Goal: adapt the supplied Aether Flow prompt into the existing static JS/CSS app without adding React, Tailwind, framer-motion, or lucide dependencies.
+- Visual upgrade: native canvas particles now use pointer repulsion, low-opacity signal-web connections, slow wave particles, edge-flow sheen on modules, and soft flow animation on primary buttons.
+- Stability upgrade: direct `#soundlab` routes skip the opening splash, and continuous controls pause expensive flow effects while dragging.
+- Audio learning upgrade: Sound Lab quality cards now expose `Micro Motion` so the existing `motionBus` engine work is visible to learners as transient shield, tail bloom, and wow/flutter cues.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=aether-flow-2` and `http://localhost:5177/#soundlab`.
+- Browser note: Playwright with system Chrome was used because in-app browser screenshot tools were not exposed.
+- Desktop viewport: 1440 x 980.
+- Dashboard flow: passed. `body` background is `rgb(228, 228, 228)`, horizontal overflow is `0`, hero/background/button animations compute to `ref9-aether-flow`, module edge animation computes to `ref9-edge-flow`, and the canvas is active at `1440 x 980`.
+- Direct Sound Lab route: passed. `#soundlab` loads with `.visual-splash` at `display:none`, preventing the old direct-route flash.
+- Sound Lab drag: passed. A visible `brightness` macro drag changed `80 -> 18`; after pointer up, `body.is-direct-manipulating=false`, `#app.is-view-switching=false`, splash stayed `none`, overflow stayed `0`, and no console errors were captured.
+- Micro Motion quality: passed. `.patch-quality-card` includes `Micro Motion`, `微动态呼吸`, `transient shield`, `tail bloom`, and `wow`.
+- Mobile viewport: 390 x 900. Passed: no horizontal overflow, hero width `366`, flow animation remains active, splash is `none`, and the headline is grouped into 4 readable phrase spans instead of per-character wrapping.
+
+## Screenshots
+- Dashboard: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-aether-flow-qa\dashboard-aether-flow-v2.png`
+- Sound Lab after drag: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-aether-flow-qa\soundlab-after-drag-v2.png`
+- Mobile dashboard: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-aether-flow-qa\mobile-dashboard-headline-v3.png`
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "aether flow" tests\visual-shell.test.mjs` failed before implementation on missing `AETHER_MOUSE_RADIUS`.
+- TDD red: `node --test --test-name-pattern "direct hash routes skip" tests\visual-shell.test.mjs` failed before the direct-route splash fix.
+- Syntax: `node --check src\visual-space.js`, `src\shell-visuals.js`, `src\sound-lab-model.js`, and `src\render.js`: passed.
+- Full suite: `npm.cmd test`: 224 passed.
+
+## Result
+Passed for this iteration. The app now has a calmer Aether-style signal flow layer, fewer direct-route flash sources, verified draggable Sound Lab controls, and a more visible explanation of the subtle motion bus that makes patches feel less static.
