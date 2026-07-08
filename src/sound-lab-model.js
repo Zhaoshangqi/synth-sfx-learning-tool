@@ -1484,6 +1484,144 @@ function buildSoundQualityCoach(patch, patchDoctor) {
   };
 }
 
+function buildTargetMatchCoach(family, patch, patchDoctor, macroList = []) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const familyTargets = {
+    'metal-impact': { transient: 76, body: 66, material: 84, space: 42 },
+    'glass-ping': { transient: 58, body: 54, material: 66, space: 64 },
+    'electric-crackle': { transient: 68, body: 42, material: 78, space: 38 },
+    'air-whoosh': { transient: 34, body: 38, material: 46, space: 74 },
+    'servo-tick': { transient: 72, body: 58, material: 68, space: 30 },
+    'energy-charge': { transient: 48, body: 62, material: 64, space: 68 },
+  };
+  const target = familyTargets[family?.id] ?? { transient: 62, body: 60, material: 68, space: 54 };
+  const brightness = values.brightness ?? 50;
+  const material = values.material ?? 50;
+  const motion = values.motion ?? 50;
+  const space = values.space ?? 50;
+  const transientMix = layerMix.transient ?? 50;
+  const bodyMix = layerMix.body ?? 50;
+  const textureMix = layerMix.texture ?? 50;
+  const tailMix = layerMix.tail ?? 50;
+  const materialRead = clamp(material * 0.58 + textureMix * 0.28 + brightness * 0.14, 0, 100);
+  const spaceRead = clamp(space * 0.58 + tailMix * 0.32 + motion * 0.1, 0, 100);
+  const scoreFrom = (current, targetValue, penalty = 0) => Math.round(clamp(100 - Math.abs(current - targetValue) * 1.35 - penalty, 0, 100));
+  const primaryDiagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const macroLabels = Object.fromEntries(macroList.map((macro) => [macro.id, macro.labelZh]));
+  const layerLabels = {
+    transient: 'Transient 瞬态层',
+    body: 'Body 主体层',
+    texture: 'Texture 质感层',
+    tail: 'Tail 尾音层',
+  };
+  const macroDelta = Object.entries(primaryDiagnostic.applyAction?.macroDelta ?? {})
+    .find(([, value]) => Number.isFinite(value) && value !== 0);
+  const layerDelta = Object.entries(primaryDiagnostic.applyAction?.layerDelta ?? {})
+    .find(([, value]) => Number.isFinite(value) && value !== 0);
+  const [parameterId, delta, scope] = macroDelta
+    ? [macroDelta[0], macroDelta[1], 'macro']
+    : layerDelta
+      ? [layerDelta[0], layerDelta[1], 'layer']
+      : ['material', material > target.material ? -6 : 6, 'macro'];
+  const currentValue = scope === 'layer'
+    ? layerMix[parameterId] ?? 50
+    : values[parameterId] ?? 50;
+  const targetValue = Math.round(clamp(currentValue + delta, 0, 100));
+  const parameterLabel = scope === 'layer'
+    ? layerLabels[parameterId] ?? parameterId
+    : macroLabels[parameterId] ?? SOUND_LAB_MACRO_DEFS.find((macro) => macro.id === parameterId)?.labelZh ?? parameterId;
+  const expectedByParameter = {
+    brightness: 'A/B 时重点听 3k-10k 边缘是否更清楚但不刺耳，变化不能只来自音量变小。',
+    motion: 'A/B 时重点听声音是否更有运动方向，同时连续触发三次仍像同一个 Patch。',
+    material: 'A/B 时重点听主体是否更硬、更金属、更非谐波，但不应只剩尖锐 click。',
+    space: 'A/B 时重点听尾巴是否退到主体后面，dry transient 仍要清楚。',
+    variation: 'A/B 时重点听每次触发是否有细微生命感，但不要像多个不同音色。',
+    transient: 'A/B 时重点听前 20ms 是否更清楚，主体不能被 click 抢走。',
+    body: 'A/B 时重点听关掉空间后是否仍有重量或音高锚点。',
+    texture: 'A/B 时重点听噪声和颗粒是否贴住主体，而不是单独浮在前面。',
+    tail: 'A/B 时重点听尾音是否自然退场，不能糊住下一次触发。',
+  };
+
+  const metrics = [
+    {
+      id: 'transient',
+      labelZh: 'Transient 起音',
+      targetZh: '目标：第一下清楚、有功能，但不扎耳。',
+      currentZh: `当前瞬态 ${Math.round(transientMix)} / 目标 ${target.transient}`,
+      listenZh: '只听前 20ms：click 是否说明动作发生，还是已经盖住主体。',
+      score: scoreFrom(transientMix, target.transient, brightness > 90 ? 5 : 0),
+      delta: Math.round(transientMix - target.transient),
+      action: 'focus-controls',
+      actionLabelZh: '调包络',
+    },
+    {
+      id: 'body',
+      labelZh: 'Body 主体',
+      targetZh: '目标：关掉空间后仍有可识别的重量或音高锚点。',
+      currentZh: `当前主体 ${Math.round(bodyMix)} / 目标 ${target.body}`,
+      listenZh: '听 120Hz-1.2kHz：是否有主体，还是只剩高频纹理和噪声。',
+      score: scoreFrom(bodyMix, target.body, Math.abs(transientMix - bodyMix) > 30 ? 6 : 0),
+      delta: Math.round(bodyMix - target.body),
+      action: 'focus-controls',
+      actionLabelZh: '调层级',
+    },
+    {
+      id: 'material',
+      labelZh: 'Material 材质',
+      targetZh: '目标：材质有非谐波、共振或颗粒证据，而不是单纯变亮。',
+      currentZh: `当前材质 ${Math.round(materialRead)} / 目标 ${target.material}`,
+      listenZh: '听金属、玻璃、电流或空气边缘：材质应该来自侧频和共振，不是音量错觉。',
+      score: scoreFrom(materialRead, target.material, material > 90 && textureMix > 80 ? 7 : 0),
+      delta: Math.round(materialRead - target.material),
+      action: 'focus-coach',
+      actionLabelZh: '看调制',
+    },
+    {
+      id: 'space',
+      labelZh: 'Space 空间',
+      targetZh: '目标：空间服务交付，尾巴不遮挡起音和主体。',
+      currentZh: `当前空间 ${Math.round(spaceRead)} / 目标 ${target.space}`,
+      listenZh: '切 dry/full/tail-only：尾巴是否解释场景，还是把动作边缘糊掉。',
+      score: scoreFrom(spaceRead, target.space, tailMix > 82 ? 6 : 0),
+      delta: Math.round(spaceRead - target.space),
+      action: 'focus-practice-loop',
+      actionLabelZh: '做 A/B',
+    },
+  ];
+
+  const overall = Math.round(metrics.reduce((sum, metric) => sum + metric.score, 0) / metrics.length);
+  return {
+    titleZh: 'Target Match 目标匹配教练',
+    summaryZh: '把当前 Patch 拆成起音、主体、材质和空间四个听感目标；分数低的维度优先做一次“只改一个参数”的 A/B 练习。',
+    overall,
+    targetNameZh: family?.titleZh ?? '目标音效',
+    metrics,
+    oneChangeChallenge: {
+      titleZh: 'One Change Challenge：只改一个参数',
+      diagnosticId: primaryDiagnostic.id ?? '',
+      labelZh: `本轮只改 ${parameterLabel}`,
+      parameterId,
+      parameterScope: scope,
+      from: Math.round(currentValue),
+      to: targetValue,
+      delta: Math.round(delta),
+      action: primaryDiagnostic.action ?? 'focus-controls',
+      actionLabelZh: primaryDiagnostic.actionLabelZh ?? '去改参数',
+      applyActionId: primaryDiagnostic.id ?? '',
+      expectedChangeZh: expectedByParameter[parameterId] ?? 'A/B 时只听这一个参数带来的变化，并记录保留或撤回理由。',
+      synthPathZh: primaryDiagnostic.synthTargets?.serum ?? 'Serum / Phase Plant / Vital 中只选择一个等价目标参数，不要同时换 source 和 target。',
+      reaperNoteZh: `REAPER note: A/B ${parameterLabel} ${Math.round(currentValue)} -> ${targetValue}; 只改一个参数; 听感变化=____; 保留/撤回=____。`,
+      steps: [
+        '播放 A：记住当前起音、主体、材质和尾巴。',
+        `只把 ${parameterLabel} 从 ${Math.round(currentValue)} 调到 ${targetValue}。`,
+        '播放 B：不要被音量欺骗，只听目标维度是否更接近。',
+        '把保留/撤回理由写进 REAPER item notes。',
+      ],
+    },
+  };
+}
+
 function buildMissionBrief(family, patch, patchDoctor, workflowStep = 'source') {
   const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
   const primaryDiagnostic = patchDoctor?.diagnostics?.[0];
@@ -1822,6 +1960,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor,
     missionBrief,
+    targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
     evidence: family.sourceIds,

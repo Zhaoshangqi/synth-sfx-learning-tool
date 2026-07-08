@@ -2200,6 +2200,67 @@ function renderMissionBriefPanel(model = {}) {
   `;
 }
 
+function renderTargetMatchCoachPanel(model = {}) {
+  const coach = model.targetMatchCoach ?? {};
+  const metrics = coach.metrics ?? [];
+  const challenge = coach.oneChangeChallenge ?? {};
+  if (!metrics.length) return '';
+
+  return `
+    <section class="target-match-coach-panel" aria-label="Target Match 目标匹配教练">
+      <div class="target-match-head">
+        <span>Target Match</span>
+        <strong>${escapeHtml(coach.titleZh ?? 'Target Match 目标匹配教练')}</strong>
+        <p>${escapeHtml(coach.summaryZh ?? '把当前 Patch 拆成起音、主体、材质和空间四个听感目标，再做一次只改一个参数的 A/B。')}</p>
+      </div>
+      <div class="target-match-score">
+        <span>Match</span>
+        <strong>${escapeHtml(String(coach.overall ?? 0))}</strong>
+        <small>${escapeHtml(coach.targetNameZh ?? '当前目标音效')}</small>
+      </div>
+      <div class="target-match-grid">
+        ${metrics.map((metric) => `
+          <button
+            class="target-match-card"
+            type="button"
+            data-target-match-action="${escapeHtml(metric.id)}"
+            data-workbench-action="${escapeHtml(metric.action)}"
+            style="--target-score:${formatNumber(metric.score ?? 0)}%"
+          >
+            <div>
+              <strong>${escapeHtml(metric.labelZh)}</strong>
+              <span>${escapeHtml(String(metric.score ?? 0))}</span>
+            </div>
+            <p>${escapeHtml(metric.targetZh)}</p>
+            <small>${escapeHtml(metric.currentZh)}</small>
+            <em>${escapeHtml(metric.listenZh)}</em>
+            <i class="target-match-meter" aria-hidden="true"></i>
+            <b>${escapeHtml(metric.actionLabelZh ?? '聚焦')}</b>
+          </button>
+        `).join('')}
+      </div>
+      <div class="target-match-challenge">
+        <div>
+          <span>${escapeHtml(challenge.titleZh ?? 'One Change Challenge：只改一个参数')}</span>
+          <strong>${escapeHtml(challenge.labelZh ?? '本轮只改一个参数')}</strong>
+          <p>${escapeHtml(challenge.expectedChangeZh ?? 'A/B 时只听这一个参数带来的变化，并记录保留或撤回理由。')}</p>
+          <code>${escapeHtml(challenge.reaperNoteZh ?? 'REAPER note: A/B; 只改一个参数; 听感变化=____; 保留/撤回=____。')}</code>
+        </div>
+        <div class="target-match-change">
+          <small>${escapeHtml(challenge.parameterId ?? 'parameter')}</small>
+          <strong>${escapeHtml(String(challenge.from ?? 0))} → ${escapeHtml(String(challenge.to ?? 0))}</strong>
+          <span>${escapeHtml(challenge.synthPathZh ?? 'Serum / Phase Plant / Vital 里只动一个等价参数。')}</span>
+        </div>
+        <div class="target-match-actions">
+          <button type="button" data-workbench-action="${escapeHtml(challenge.action ?? 'focus-controls')}">${escapeHtml(challenge.actionLabelZh ?? '去改参数')}</button>
+          ${challenge.applyActionId ? `<button class="target-match-apply" type="button" data-doctor-apply="${escapeHtml(challenge.applyActionId)}">试调这个变化</button>` : ''}
+          <button type="button" data-workbench-action="focus-practice-loop">REAPER note / A/B</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderSoundQualityCoachPanel(model = {}) {
   const coach = model.soundQualityCoach ?? {
     titleZh: '音质听诊台',
@@ -2715,6 +2776,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
       </header>
       ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
       ${renderMissionBriefPanel(model)}
+      ${renderTargetMatchCoachPanel(model)}
       <div class="synth-tab-row">
         ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
         <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
@@ -2805,6 +2867,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
       ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
       ${renderMissionBriefPanel(model)}
+      ${renderTargetMatchCoachPanel(model)}
       <main class="atlas-main-console">
         ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
         <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">

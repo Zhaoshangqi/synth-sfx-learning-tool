@@ -270,6 +270,39 @@ test('buildSoundLabViewModel exposes a beginner mission brief with routed listen
   assert.equal(model.missionBrief.primaryDiagnosticId, model.patchDoctor.diagnostics[0].id);
 });
 
+test('buildSoundLabViewModel exposes a target match coach with one-change guidance', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 34,
+    material: 88,
+    space: 68,
+    variation: 32,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 88, body: 58, texture: 78, tail: 72 },
+  });
+
+  const coach = model.targetMatchCoach;
+  assert.ok(coach, 'view model should expose a target match coach');
+  assert.match(coach.titleZh, /Target|目标|匹配/);
+  assert.equal(coach.metrics.length, 4);
+  assert.deepEqual(coach.metrics.map((metric) => metric.id), ['transient', 'body', 'material', 'space']);
+  assert.ok(coach.metrics.every((metric) => metric.labelZh && metric.targetZh && metric.currentZh && metric.listenZh));
+  assert.ok(coach.metrics.every((metric) => Number.isFinite(metric.score) && metric.score >= 0 && metric.score <= 100));
+  assert.ok(coach.metrics.every((metric) => Number.isFinite(metric.delta) && metric.action && metric.actionLabelZh));
+  assert.equal(coach.oneChangeChallenge.diagnosticId, model.patchDoctor.diagnostics[0].id);
+  assert.match(coach.oneChangeChallenge.titleZh, /只改一个|One Change/);
+  assert.match(coach.oneChangeChallenge.expectedChangeZh, /听|A\/B|变化/);
+  assert.match(coach.oneChangeChallenge.reaperNoteZh, /REAPER|A\/B|只改一个/);
+  assert.ok(coach.oneChangeChallenge.parameterId);
+  assert.ok(Number.isFinite(coach.oneChangeChallenge.from));
+  assert.ok(Number.isFinite(coach.oneChangeChallenge.to));
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

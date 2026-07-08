@@ -1469,6 +1469,21 @@ function rangePercentFromInput(input) {
   return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 }
 
+function steppedRangeValue(rawValue, min, max, step) {
+  const stepped = Number.isFinite(step) && step > 0
+    ? min + Math.round((rawValue - min) / step) * step
+    : rawValue;
+  return Math.max(min, Math.min(max, stepped));
+}
+
+function writeRangeValue(input, nextValue) {
+  const serializedValue = Number.isInteger(nextValue) ? String(nextValue) : nextValue.toFixed(3);
+  if (input.value === serializedValue) return false;
+  input.value = serializedValue;
+  input.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
+  return true;
+}
+
 function setDirectManipulation(isActive) {
   globalThis.clearTimeout(directManipulationTimer);
   globalThis.__synthDirectManipulating = Boolean(isActive);
@@ -1491,15 +1506,21 @@ function updateVerticalRangeFromPointer(input, event) {
 
   const ratio = Math.max(0, Math.min(1, (rect.bottom - event.clientY) / rect.height));
   const rawValue = min + ratio * (max - min);
-  const stepped = Number.isFinite(step) && step > 0
-    ? min + Math.round((rawValue - min) / step) * step
-    : rawValue;
-  const nextValue = Math.max(min, Math.min(max, stepped));
-  const serializedValue = Number.isInteger(nextValue) ? String(nextValue) : nextValue.toFixed(3);
-  if (input.value === serializedValue) return false;
-  input.value = serializedValue;
-  input.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
-  return true;
+  return writeRangeValue(input, steppedRangeValue(rawValue, min, max, step));
+}
+
+function updateHorizontalRangeFromPointer(input, event) {
+  if (input?.closest('.vertical-slider')) return false;
+  const rect = input.getBoundingClientRect();
+  if (!rect.width) return false;
+  const min = Number(input.min || 0);
+  const max = Number(input.max || 100);
+  const step = Number(input.step || 1);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max === min) return false;
+
+  const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  const rawValue = min + ratio * (max - min);
+  return writeRangeValue(input, steppedRangeValue(rawValue, min, max, step));
 }
 
 function updateRangeChrome(input) {
@@ -1507,7 +1528,11 @@ function updateRangeChrome(input) {
   const shell = input.closest('.range-shell');
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
   const output = control?.querySelector('output') ?? input.closest('label')?.querySelector('output');
-  shell?.style.setProperty('--range-value', `${rangePercentFromInput(input).toFixed(2)}%`);
+  const percent = `${rangePercentFromInput(input).toFixed(2)}%`;
+  shell?.style.setProperty('--range-value', percent);
+  if (control?.classList?.contains('macro-knob')) {
+    control.style.setProperty('--knob-value', percent);
+  }
   if (output) output.textContent = `${input.value}${input.dataset.controlUnit ?? ''}`;
 }
 
@@ -1595,15 +1620,41 @@ function finishSmoothRangeInput(input = activeRangeInput) {
 
 function bindSmoothRangeInput(input, onValue) {
   const isVerticalRange = Boolean(input.closest('.vertical-slider'));
-  const commitVerticalPointerValue = (event) => {
-    if (!isVerticalRange) return false;
+  const commitPointerRangeValue = (event) => {
     event.preventDefault();
-    const changed = updateVerticalRangeFromPointer(input, event);
+    const changed = isVerticalRange
+      ? updateVerticalRangeFromPointer(input, event)
+      : updateHorizontalRangeFromPointer(input, event);
     if (!changed) return false;
     applyImmediateControlFeedback(input);
     scheduleRangeChromeUpdate(input);
     onValue(input);
     return true;
+  };
+  const commitKeyboardRangeValue = (event) => {
+    const min = Number(input.min || 0);
+    const max = Number(input.max || 100);
+    const step = Number(input.step || 1);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || max === min) return;
+    const increment = Number.isFinite(step) && step > 0 ? step : (max - min) / 100;
+    const current = Number(input.value || min);
+    const nextByKey = {
+      ArrowRight: current + increment,
+      ArrowUp: current + increment,
+      ArrowLeft: current - increment,
+      ArrowDown: current - increment,
+      PageUp: current + increment * 10,
+      PageDown: current - increment * 10,
+      Home: min,
+      End: max,
+    };
+    if (!(event.key in nextByKey)) return;
+    event.preventDefault();
+    const changed = writeRangeValue(input, steppedRangeValue(nextByKey[event.key], min, max, step));
+    if (!changed) return;
+    applyImmediateControlFeedback(input);
+    scheduleRangeChromeUpdate(input);
+    onValue(input);
   };
 
   input.addEventListener('pointerdown', (event) => {
@@ -1612,12 +1663,12 @@ function bindSmoothRangeInput(input, onValue) {
     setRangeDragging(input, true);
     setDirectManipulation(true);
     applyImmediateControlFeedback(input);
-    commitVerticalPointerValue(event);
+    commitPointerRangeValue(event);
   });
 
   input.addEventListener('pointermove', (event) => {
     if (input !== activeRangeInput) return;
-    commitVerticalPointerValue(event);
+    commitPointerRangeValue(event);
   });
 
   input.addEventListener('input', () => {
@@ -1643,6 +1694,8 @@ function bindSmoothRangeInput(input, onValue) {
   input.addEventListener('focus', () => {
     input.closest('.range-shell')?.classList.add('is-focused');
   });
+
+  input.addEventListener('keydown', commitKeyboardRangeValue);
 
   input.addEventListener('blur', () => {
     input.closest('.range-shell')?.classList.remove('is-focused');
