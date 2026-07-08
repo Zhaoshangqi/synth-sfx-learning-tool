@@ -1516,6 +1516,52 @@ function renderPerceptualSignaturePanel(model = {}) {
   `;
 }
 
+function renderMaterialResonancePanel(model = {}) {
+  const map = model.materialResonanceMap ?? {};
+  const peaks = map.peaks ?? [];
+  if (!peaks.length) return '';
+
+  return `
+    <section class="workbench-panel material-resonance-panel" aria-label="Material Resonance 材质共振地图">
+      <div class="mini-panel-head resonance-panel-head">
+        <strong>${escapeHtml(map.titleZh ?? 'Material Resonance 材质共振地图')}</strong>
+        <button type="button" data-workbench-action="focus-material-resonance">聚焦共振峰</button>
+      </div>
+      <p>${escapeHtml(map.beginnerZh ?? '')}</p>
+      <div class="resonance-peak-grid" aria-label="modal resonator peaks">
+        ${peaks.map((peak) => `
+          <article class="resonance-peak-card" style="--peak-gain:${formatNumber(peak.gainPercent ?? 0)}%; --peak-decay:${formatNumber(Math.min(100, (peak.decayMs ?? 0) / 18))}%">
+            <div>
+              <span>${escapeHtml(String(peak.index).padStart(2, '0'))}</span>
+              <strong>${escapeHtml(peak.labelZh)}</strong>
+            </div>
+            <dl>
+              <dt>Hz</dt><dd>${escapeHtml(peak.frequencyHz)}</dd>
+              <dt>ratio</dt><dd>${escapeHtml(peak.ratio)}</dd>
+              <dt>decay</dt><dd>${escapeHtml(peak.decayMs)}ms</dd>
+              <dt>Q</dt><dd>${escapeHtml(peak.q)}</dd>
+            </dl>
+            <i aria-hidden="true"></i>
+            <p>${escapeHtml(peak.listenZh)}</p>
+            <small>${escapeHtml(peak.synthZh)}</small>
+          </article>
+        `).join('')}
+      </div>
+      <div class="resonance-action-row">
+        <button type="button" data-layer-audition="body">试听 body-only 共振</button>
+        <button type="button" data-layer-audition="full">回到 full patch</button>
+        <span>${escapeHtml(map.practiceZh ?? '')}</span>
+      </div>
+      <div class="resonance-synth-map">
+        <article><strong>Serum</strong><p>${escapeHtml(map.serumZh ?? '')}</p></article>
+        <article><strong>Phase Plant</strong><p>${escapeHtml(map.phasePlantZh ?? '')}</p></article>
+        <article><strong>Vital</strong><p>${escapeHtml(map.vitalZh ?? '')}</p></article>
+        <article><strong>REAPER</strong><p>${escapeHtml(map.reaperZh ?? '')}</p></article>
+      </div>
+    </section>
+  `;
+}
+
 function renderPracticeLoopPanel(model = {}) {
   const loop = model.practiceLoop ?? {};
   const steps = loop.steps ?? [];
@@ -2872,6 +2918,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
           </div>
           ${renderWaveformDetectivePanel(model)}
           ${renderPerceptualSignaturePanel(model)}
+          ${renderMaterialResonancePanel(model)}
           ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
@@ -2962,6 +3009,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
             </div>
             ${renderWaveformDetectivePanel(model)}
             ${renderPerceptualSignaturePanel(model)}
+            ${renderMaterialResonancePanel(model)}
           </div>
           <div class="atlas-control-column">
             ${renderWorkbenchEnvelope(model)}

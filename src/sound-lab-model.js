@@ -1146,6 +1146,58 @@ function buildWaveformFingerprint(patch) {
   };
 }
 
+function buildMaterialResonanceMap(family, patch) {
+  const modalLayer = patch.layers.find((layer) => layer.engine === 'modalResonator') ?? {};
+  const resonators = Array.isArray(modalLayer.resonators) && modalLayer.resonators.length
+    ? modalLayer.resonators
+    : patch.dsp.resonators;
+  const baseFrequency = modalLayer.baseFrequency ?? patch.dsp.oscillator?.baseFrequency ?? 180;
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前材质';
+  const material = Math.round(patch.macros?.material ?? 50);
+  const brightness = Math.round(patch.macros?.brightness ?? 50);
+  const roleByIndex = ['基频锚点', '非谐波侧峰', '硬质边缘', '空气泛音', '尾音泛光'];
+  const listenByIndex = [
+    '决定声音有没有可识别的主体 pitch；过强会像纯音铃声。',
+    '制造金属或玻璃的不等距侧频；太高会刺耳、太低会不像材质。',
+    '让 hit 有硬边和小物体质感；衰减太长会拖成泛音尾巴。',
+    '补高频 shimmer 与空气，只需要一点点，不要盖住主体。',
+    '决定空间里还剩什么材质记忆，适合 tail-only 或 body-only 检查。',
+  ];
+
+  const peaks = resonators.slice(0, 5).map((resonator, index) => {
+    const ratio = Number(resonator.ratio ?? 1);
+    const frequencyHz = Math.round(clamp(baseFrequency * ratio, 40, 16000));
+    const decayMs = Math.round(clamp((resonator.decay ?? 0.2) * 1000, 20, 3200));
+    const q = Math.round(clamp(resonator.q ?? 8 + index * 2, 2, 40));
+    const gainPercent = Math.round(clamp((resonator.gain ?? 0.3) * 100, 0, 100));
+
+    return {
+      id: `peak-${index + 1}`,
+      index: index + 1,
+      labelZh: roleByIndex[index] ?? `共振峰 ${index + 1}`,
+      frequencyHz,
+      ratio: Number(ratio.toFixed(2)),
+      gainPercent,
+      decayMs,
+      q,
+      listenZh: listenByIndex[index] ?? '听这个峰是否在 body-only 中形成材质身份。',
+      synthZh: `把一个 band-pass / comb peak 放在 ${frequencyHz}Hz，Q≈${q}，decay≈${decayMs}ms。`,
+    };
+  });
+
+  return {
+    titleZh: 'Material Resonance 材质共振地图',
+    familyNameZh: familyName,
+    beginnerZh: `${familyName} 的金属/玻璃感不是来自一个波形，而是多个不等距共振峰一起衰减：Material ${material} 控制峰的硬度，Brightness ${brightness} 决定这些峰露出来多少。`,
+    peaks,
+    serumZh: 'Serum: 用 FM/Noise 进 comb 或高 Q filter，按上面 Hz 做 2-4 个峰；Macro Material 同时推 FM depth 和 filter resonance。',
+    phasePlantZh: 'Phase Plant: 用 Resonator/Comb Filter lane 做 modal body；每个 peak 单独 envelope，body-only 听是否还有材质身份。',
+    vitalZh: 'Vital: 用 spectral warp/FM 加短 decay，再用两个高 Q filter 峰模拟 modal；Macro 只控制峰值和 decay，不要同时加空间。',
+    reaperZh: 'REAPER: 导出 body-only stem，看 spectrum 中这些峰是否稳定；用窄 EQ 轻推/轻削验证哪个峰决定金属感。',
+    practiceZh: '先按 body-only 听共振，再回 full patch 判断 transient 与 texture 是否只是在服务这个主体。',
+  };
+}
+
 function buildPracticeLoop(family, patch, macroList) {
   const familyName = family?.titleZh?.split('：')[0] ?? '目标音效';
   const sortedMacros = macroList
@@ -2198,6 +2250,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     soundQuality: buildSoundQuality(patch),
     polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint: buildWaveformFingerprint(patch),
+    materialResonanceMap: buildMaterialResonanceMap(family, patch),
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor,

@@ -261,3 +261,33 @@ Passed for this iteration. The Dashboard now gives a concrete daily drill before
 
 ## Result
 Passed for this iteration. The visual system now follows the pasted Stitch reference more closely while keeping the app as a working synth/SFX tool, and Sound Lab has a real layer solo workflow for practical listening practice.
+
+---
+
+# Design QA - Studio Reference Fusion + Material Resonance v6.8
+
+## Focus
+- Goal: push the supplied HTML visual reference further into the live app: light gray studio stage, small circular brand/menu controls, dark sonic core, capsule CTAs, restrained spotlight motion, and calmer Chinese hero typography.
+- Product upgrade: add `Material Resonance 材质共振地图` so metallic/glass body design is visible as real modal peaks with Hz / ratio / decay / Q, body-only audition, Serum / Phase Plant / Vital translation, and REAPER spectrum checks.
+- Stability constraint: freeze global spotlight/particle motion during direct range manipulation to avoid drag flashes.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=v68-final` and `http://localhost:5177/#soundlab`.
+- Browser note: in-app browser tools were not exposed; Python Playwright with system Chrome was used.
+- Desktop viewport: 1440 x 920.
+- Dashboard visual: passed. Body background is `rgb(228, 228, 228)`, hero remains a two-column studio stage, title is 3 readable lines at `60px`, headline filter is `none`, and horizontal overflow is `0`.
+- Sound Lab resonance map: passed. `.material-resonance-panel` renders 4 peak cards, panel color is `rgb(244, 241, 232)`, peak body text is `rgba(244, 241, 232, 0.7)`, and horizontal overflow is `0`.
+- Resonance interaction: passed. Clicking `focus-material-resonance` routes to the panel, and clicking `data-layer-audition="body"` sets body-only active.
+- Range drag stability: passed. Dragging a visible Sound Lab macro sets `body.is-direct-manipulating=true` and `window.__synthDirectManipulating=true`; both return to false after pointer up.
+- Mobile viewport: 390 x 900.
+- Mobile dashboard: passed. Single-column hero, CTA width `290` inside a `390` viewport, and horizontal overflow is `0`.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "material resonance|resonance map" tests\sound-lab.test.mjs tests\render.test.mjs tests\visual-shell.test.mjs` failed on missing model/render/app/CSS support.
+- TDD green: targeted material resonance tests passed.
+- Syntax: `node --check src\app.js`, `src\render.js`, `src\sound-lab-model.js`, and `src\shell-visuals.js`: passed.
+- Full suite: `npm.cmd test`: 209 passed.
+
+## Result
+Passed for this iteration. The first viewport is calmer and closer to the supplied studio reference, Sound Lab now exposes teachable modal resonance data instead of hiding it in DSP internals, and continuous controls pause global motion while dragging.

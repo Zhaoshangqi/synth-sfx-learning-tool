@@ -561,6 +561,37 @@ test('sound lab exposes layer audition modes for transient body texture and tail
   assert.match(model.layerAudition.reaperZh, /REAPER|stem|dry|tail-only/i);
 });
 
+test('sound lab explains material resonators as audible synthesis targets', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 78,
+    motion: 48,
+    material: 88,
+    space: 42,
+    variation: 36,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+  });
+
+  assert.ok(model.materialResonanceMap, 'view model should expose material resonance guidance');
+  assert.match(model.materialResonanceMap.titleZh, /共振|Resonance|材质/i);
+  assert.ok(model.materialResonanceMap.peaks.length >= 3, 'resonance map should expose multiple modal peaks');
+  assert.ok(model.materialResonanceMap.peaks.every((peak) => (
+    peak.frequencyHz > 40
+    && peak.ratio
+    && peak.gainPercent >= 0
+    && peak.decayMs > 20
+    && peak.listenZh
+    && peak.synthZh
+  )));
+  assert.match(model.materialResonanceMap.beginnerZh, /金属|玻璃|材质|峰|衰减/);
+  assert.match(model.materialResonanceMap.serumZh, /Serum|filter|comb|FM/i);
+  assert.match(model.materialResonanceMap.phasePlantZh, /Phase Plant|Resonator|Comb|modal/i);
+  assert.match(model.materialResonanceMap.vitalZh, /Vital|spectral|filter|FM/i);
+  assert.match(model.materialResonanceMap.reaperZh, /REAPER|EQ|spectrum|body-only/i);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',
