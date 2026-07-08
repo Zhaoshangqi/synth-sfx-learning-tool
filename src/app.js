@@ -134,6 +134,101 @@ const VIEW_IDS = new Set([
   'integrations',
 ]);
 
+const DASHBOARD_LEARNING_PATH = [
+  {
+    id: 'listen-source',
+    index: '01',
+    title: '先听目标声',
+    level: '零基础',
+    view: 'soundlab',
+    familyId: 'metal-impact',
+    workflowStep: 'source',
+    atlasNode: 'source',
+    moduleMapId: 'source',
+    workbenchModule: 'generator',
+    advancedModule: 'advanced',
+    focusZh: '先判断 transient、body、tail 有没有分清，而不是急着加效果。',
+    listenZh: '听第一个 80ms 是否有点击，主体是否有金属短共振，尾巴是否干净。',
+    synthZh: 'Serum / Phase Plant / Vital 里先只开一个 osc 或 noise 源，确认基础波形和音高范围。',
+    reaperZh: '在 REAPER 放一个短 MIDI note，导出 dry 版本作为后续 A/B 基准。',
+    proofZh: '能说出“声音由哪三段组成”，再进入下一步。',
+  },
+  {
+    id: 'shape-envelope',
+    index: '02',
+    title: '包络塑形',
+    level: '基础',
+    view: 'interactive',
+    labId: 'adsr-envelope',
+    focusZh: 'Attack/Decay/Sustain/Release 决定声音功能：click、pluck、pad、tail。',
+    listenZh: '把 Attack 拉长会软，Decay 变短会脆，Release 过长会拖尾。',
+    synthZh: '把同一套 ADSR 复制到 Serum Amp Env、Phase Plant output envelope、Vital Env 1。',
+    reaperZh: '渲染 click / pluck / swell 三版，文件名只改包络参数，方便回听。',
+    proofZh: '不用看屏幕也能听出 Attack 和 Release 的变化。',
+  },
+  {
+    id: 'spectrum-motion',
+    index: '03',
+    title: '频谱运动',
+    level: '初级',
+    view: 'interactive',
+    labId: 'filter-spectrum',
+    focusZh: '滤波不是“变暗”，而是在频谱里选择哪些部分留下来。',
+    listenZh: '听 cutoff 的明暗边界、resonance 的尖峰、运动速度是否太抢。',
+    synthZh: '用 filter envelope 或 LFO 推 cutoff，先小范围调制，再加 resonance。',
+    reaperZh: '用频谱仪看能量是否随参数移动，不要只靠更响判断“更好”。',
+    proofZh: '能解释为什么同一个 saw 经过低通会更像 whoosh/body。',
+  },
+  {
+    id: 'fm-metal',
+    index: '04',
+    title: 'FM 金属',
+    level: '中级',
+    view: 'soundlab',
+    familyId: 'metal-impact',
+    workflowStep: 'shape',
+    atlasNode: 'modulation',
+    moduleMapId: 'modulation',
+    workbenchModule: 'modulation',
+    advancedModule: 'mod-matrix',
+    focusZh: '金属感来自非谐波侧频、短 decay 和受控共振，不是单纯 EQ 提亮。',
+    listenZh: '听侧频是否变硬但不刺耳，金属短响是否清楚，body 是否还稳。',
+    synthZh: 'Serum 用 FM from B / warp，Phase Plant 用 audio-rate mod，Vital 用 FM/phase 或 spectral warp。',
+    reaperZh: '导出 dry 和 changed 两版，响度匹配后判断是不是“更金属”而不是“更大声”。',
+    proofZh: '能指出 carrier / modulator 比例改变后哪一段听感变了。',
+  },
+  {
+    id: 'layer-material',
+    index: '05',
+    title: '分层材质',
+    level: '进阶',
+    view: 'soundlab',
+    familyId: 'electric-crackle',
+    workflowStep: 'material',
+    atlasNode: 'material',
+    moduleMapId: 'material',
+    workbenchModule: 'effects',
+    advancedModule: 'fx-chain',
+    focusZh: '一个复杂音效通常由 transient、body、texture、tail 组合，不是一层完成。',
+    listenZh: '关掉每一层，确认它到底负责点击、主体、摩擦、电流还是空间尾巴。',
+    synthZh: '用 noise / random / short delay 做 texture，再用 macro 控制层间比例。',
+    reaperZh: '分轨渲染 dry / full / tail-only，检查每一层是否能独立说明用途。',
+    proofZh: '能删除一层并准确说出声音少了什么。',
+  },
+  {
+    id: 'ab-deliver',
+    index: '06',
+    title: 'A/B 交付',
+    level: '交付',
+    view: 'practice',
+    focusZh: '交付不是“做完声音”，而是能复现、能解释、能通过响度匹配验收。',
+    listenZh: '听 dry 与 full 差别、tail 是否遮挡、瞬态是否过硬、响度是否骗判断。',
+    synthZh: '把最终 Patch 写成 macro 名称、核心参数和可复现步骤，而不是只存预设名。',
+    reaperZh: '按 -14 LUFS 参考、峰值不超过 -1 dBTP、24bit/48kHz 或项目规格导出。',
+    proofZh: '能把 Patch JSON、REAPER notes 和 A/B 文件一起交付。',
+  },
+];
+
 function getViewFromHash() {
   const rawHash = decodeURIComponent(globalThis.location?.hash?.replace(/^#/, '') ?? '').trim();
   return VIEW_IDS.has(rawHash) ? rawHash : 'dashboard';
@@ -147,6 +242,7 @@ const state = {
   tag: 'all',
   dailyVideoFilter: 'all',
   dailyVideoActionMessage: '每天自动搜索英文 YouTube 和 B 站教程；先收集，再转成中文练习卡。',
+  activeDashboardPathStep: DASHBOARD_LEARNING_PATH[0]?.id,
   activeLabId: interactiveLabs[0]?.id,
   labStates: Object.fromEntries(interactiveLabs.map((lab) => [lab.id, buildDefaultLabState(lab)])),
   activeMicroTrackId: microLearningTracks[0]?.id,
@@ -297,11 +393,16 @@ function header(title, description, countText = '') {
   `;
 }
 
+function getActiveDashboardPathStep() {
+  return DASHBOARD_LEARNING_PATH.find((step) => step.id === state.activeDashboardPathStep) ?? DASHBOARD_LEARNING_PATH[0];
+}
+
 function renderDashboard() {
   const allSources = [...userSources, ...sources];
   const stats = buildDashboardStats({ sources: allSources, knowledgeCards, roadmapLessons, recipes });
   const completed = new Set(JSON.parse(localStorage.getItem('synthSfxLearningTool:completedLessons') ?? '[]'));
   const nextLesson = getNextLesson(roadmapLessons, completed);
+  const activePathStep = getActiveDashboardPathStep();
   const flowNodes = [
     {
       index: '01',
@@ -458,6 +559,37 @@ function renderDashboard() {
           <p>每个配方都有 REAPER 步骤和验收听感。</p>
         </div>
       </aside>
+    </section>
+    <section class="dashboard-learning-console" aria-label="从零到交付路线">
+      <div class="learning-console-head">
+        <div>
+          <div class="card-kicker">从零到交付路线</div>
+          <h3>先听，再拆，再合成，最后交付</h3>
+        </div>
+        <p>每一步都绑定一个真实模块：点进去会直接打开对应实验或 Sound Lab 状态，不再靠猜下一步。</p>
+      </div>
+      <div class="learning-path-grid" role="list">
+        ${DASHBOARD_LEARNING_PATH.map((step) => `
+          <button class="learning-path-step ${step.id === activePathStep.id ? 'is-active' : ''}" type="button" data-dashboard-path-step="${escapeHtml(step.id)}">
+            <span>${escapeHtml(step.index)}</span>
+            <strong>${escapeHtml(step.title)}</strong>
+            <small>${escapeHtml(step.level)}</small>
+          </button>
+        `).join('')}
+      </div>
+      <article class="learning-path-detail">
+        <div class="learning-path-detail-main">
+          <span>${escapeHtml(activePathStep.level)} · Step ${escapeHtml(activePathStep.index)}</span>
+          <h4>${escapeHtml(activePathStep.title)}</h4>
+          <p>${escapeHtml(activePathStep.focusZh)}</p>
+        </div>
+        <div class="learning-path-checks">
+          <div><strong>听什么</strong><p>${escapeHtml(activePathStep.listenZh)}</p></div>
+          <div><strong>合成器怎么做</strong><p>${escapeHtml(activePathStep.synthZh)}</p></div>
+          <div><strong>REAPER 怎么验</strong><p>${escapeHtml(activePathStep.reaperZh)}</p></div>
+          <div><strong>过关标准</strong><p>${escapeHtml(activePathStep.proofZh)}</p></div>
+        </div>
+      </article>
     </section>
     <section class="learning-flow" aria-label="学习动线">
       <div class="flow-header">
@@ -2161,7 +2293,42 @@ function bindDynamicForms() {
   bindIntegrationControls();
 }
 
+function applyDashboardPathStep(step) {
+  state.activeDashboardPathStep = step.id;
+
+  if (step.labId && interactiveLabs.some((lab) => lab.id === step.labId)) {
+    state.activeLabId = step.labId;
+  }
+
+  if (step.familyId) {
+    selectSoundLabFamily(step.familyId, false);
+    state.soundLabWorkflowStep = step.workflowStep ?? state.soundLabWorkflowStep;
+    state.activeAtlasNode = step.atlasNode ?? state.activeAtlasNode;
+    state.activeWorkbenchModuleMapId = step.moduleMapId ?? state.activeWorkbenchModuleMapId;
+    state.activeWorkbenchModule = step.workbenchModule ?? state.activeWorkbenchModule;
+    state.activeAdvancedModule = step.advancedModule ?? state.activeAdvancedModule;
+    state.workbenchActionFeedback = `路线 ${step.index}：${step.title}。${step.focusZh}`;
+    syncSoundLabPatchSoon();
+  }
+}
+
+function bindDashboardLearningPathControls() {
+  document.querySelectorAll('[data-dashboard-path-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const step = DASHBOARD_LEARNING_PATH.find((item) => item.id === button.dataset.dashboardPathStep);
+      if (!step) return;
+      applyDashboardPathStep(step);
+      if (step.view === state.view) {
+        renderSameView();
+      } else {
+        switchView(step.view);
+      }
+    });
+  });
+}
+
 function bindDashboardControls() {
+  bindDashboardLearningPathControls();
   document.querySelectorAll('[data-dashboard-primary-view], [data-dashboard-flow-view], [data-module-directory-view]').forEach((button) => {
     button.addEventListener('click', () => {
       const dashboardTarget = button.dataset.dashboardPrimaryView ?? button.dataset.dashboardFlowView ?? button.dataset.moduleDirectoryView;
