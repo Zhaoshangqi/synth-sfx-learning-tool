@@ -37,3 +37,27 @@
 
 ## Result
 Passed for this iteration. Remaining work is taste-level refinement only: the live app still keeps the product's existing left navigation and content density, so it is a faithful integration rather than a completely blank-slate mock clone.
+
+---
+
+# Design QA - Stitch Visual Refit v5.3
+
+## Source Visual Truth
+- Reference source: attached pasted HTML in this thread, a light grey studio showcase with block splash, round menu button, black menu panel, capsule CTA, word reveal, and pointer spotlight.
+- Target translation: keep the real synth learning app, but restyle the shell as a premium light studio while preserving the dark professional Sound Lab console.
+
+## Browser QA
+- Local URL: `http://localhost:5177/`
+- Desktop viewport: in-app browser 1280 x 720.
+- Dashboard: passed. The page uses a light grey grid stage, round fixed SFX mark, round menu button, capsule toolbar, large editorial heading, spotlight-driven hero panel, and hidden splash after load.
+- Menu: passed. The burger opens a black rounded panel with high-contrast primary navigation and closes without leaving the toolbar underneath in front.
+- Sound Lab: passed. The Signal Atlas console remains dark, has no right overflow, and keeps 18 range controls available.
+- Continuous controls: passed. Dragging Macro 1 changed the value from `80` to `25`; `.content` stayed stable, `visual-splash` stayed `display:none`, and particle opacity did not change.
+- Legacy contrast: passed. The light quality panel, XY Pad, and Macro Morph subpanels now use dark text on light surfaces instead of inheriting pale console text.
+
+## Automated Checks
+- `node --test tests/visual-shell.test.mjs`: 84 passed.
+- `npm.cmd test`: 192 passed.
+
+## Result
+Passed for this iteration. The final shell matches the supplied showcase language at the system level: light studio canvas, restrained cyan accent, circular menu, capsule controls, pointer spotlight, smooth entry motion, and dark readable Sound Lab modules.

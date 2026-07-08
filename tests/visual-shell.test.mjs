@@ -77,6 +77,35 @@ test('stitch showcase production pass adds a pointer reveal audio core and capsu
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*stitch-view-enter/);
 });
 
+test('stitch visual refit keeps the supplied showcase motion but removes click flash sources', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(css, /Stitch visual refit v5\.3/);
+  assert.match(css, /--stitch-canvas:\s*#E4E4E4/);
+  assert.match(css, /--stitch-paper:\s*#F4F1E8/);
+  assert.match(css, /--stitch-accent:\s*#75C5DE/);
+  assert.match(css, /\.visual-splash\.is-done\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*radial-gradient\(circle at var\(--spot-x\) var\(--spot-y\)/);
+  assert.match(css, /\.hero-sound-visual::before\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x\) var\(--spot-y\)/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button\.is-primary::after\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button:hover::after\s*\{[\s\S]*transform:\s*translateX\(-7px\)/);
+  assert.match(css, /\.content :where\(\.card,[\s\S]*\.quality-panel\) :where\(p, li, small, span, label\)\s*\{[\s\S]*color:\s*rgba\(11,\s*11,\s*11,\s*0\.68\)/);
+  assert.match(css, /\.content \.quality-panel :where\(p, span, small\)\s*\{[\s\S]*color:\s*rgba\(11,\s*11,\s*11,\s*0\.68\)/);
+  assert.match(css, /\.content \.quality-panel :where\(h3, h4, strong\)\s*\{[\s\S]*color:\s*var\(--stitch-ink\)/);
+  assert.match(css, /\.signal-atlas-console :where\(p, li, small, span, label\)\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.74\)/);
+  assert.match(css, /\.signal-atlas-console \.xy-pad,[\s\S]*\.signal-atlas-console \.macro-morph-card\s*\{[\s\S]*background:\s*#fbfdff[\s\S]*color:\s*#243846/);
+  assert.match(css, /\.signal-atlas-console \.xy-pad span,[\s\S]*\.signal-atlas-console \.macro-morph-card p\s*\{[\s\S]*color:\s*rgba\(11,\s*11,\s*11,\s*0\.68\)\s*!important/);
+  assert.match(css, /\.signal-atlas-console \.macro-morph-card strong\s*\{[\s\S]*color:\s*#243846\s*!important/);
+  assert.match(shellJs, /function settleSplash/);
+  assert.match(shellJs, /splash\?\.classList\.add\('is-done'\)/);
+  assert.match(shellJs, /function tickSpotlight/);
+  assert.match(shellJs, /requestAnimationFrame\(tickSpotlight\)/);
+  assert.match(shellJs, /'关闭导航菜单'/);
+  assert.match(shellJs, /'打开导航菜单'/);
+  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
+});
+
 test('stitch QA pass keeps the menu above the toolbar and Sound Lab mission readable', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
