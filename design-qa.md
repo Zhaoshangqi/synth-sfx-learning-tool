@@ -231,3 +231,33 @@ Passed for this iteration. The app now follows the supplied showcase visual lang
 
 ## Result
 Passed for this iteration. The Dashboard now gives a concrete daily drill before users enter modules, and the older dark route/module cards stay readable under the new showcase visual system.
+
+---
+
+# Design QA - Stitch Reference Synthesis + Layer Audition v6.7
+
+## Focus
+- Goal: translate the pasted Stitch-style HTML reference into the full synth learning tool: light gray studio stage, circular logo/menu, capsule controls, large background word, soft pointer spotlight, and clear high-contrast Sound Lab modules.
+- Product upgrade: add `Layer Audition 分层试听` so users can solo full / transient / body / texture / tail and hear professional stem roles instead of only one full patch.
+- Stability constraint: keep continuous controls class-only and runtime-updated so range dragging does not trigger whole-page flashes.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=v671` and `http://localhost:5177/#soundlab`.
+- Browser note: in-app browser tools were not exposed; Python Playwright with system Chrome was used.
+- Desktop viewport: 1365 x 768.
+- Dashboard visual: passed. Body background is `rgb(228, 228, 228)`, hero uses the light studio card, circular logo/burger, capsule entry buttons, and oversized background type.
+- Menu: passed. After transition the menu is open with `top=8`, `right=8`, `width=460`, `opacity=1`, and no transform offset.
+- Sound Lab layer audition: passed. 10 layer buttons render across the session dock and playback card; clicking `tail` sets both active buttons to `tail` and updates feedback to the tail-only listening instruction.
+- Sound Lab overflow: passed. `.sound-lab-workbench`, `.workbench-panel`, and `.session-transport-dock` horizontal overflow count is `0`.
+- Mobile viewport: 390 x 844.
+- Mobile shell: passed. Body width equals viewport width, no horizontal overflow, sticky toolbar top is `86`, burger bottom is `76`, and the two are separated.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "layer audition" tests\sound-lab.test.mjs tests\render.test.mjs tests\visual-shell.test.mjs` failed on missing model/render/app/CSS support.
+- TDD green: the targeted layer audition tests passed.
+- Syntax: `node --check src\app.js`, `src\render.js`, and `src\sound-lab-model.js`: passed.
+- Full suite: `npm.cmd test`: 206 passed.
+
+## Result
+Passed for this iteration. The visual system now follows the pasted Stitch reference more closely while keeping the app as a working synth/SFX tool, and Sound Lab has a real layer solo workflow for practical listening practice.

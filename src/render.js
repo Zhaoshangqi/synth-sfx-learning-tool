@@ -2108,12 +2108,42 @@ function renderWorkbenchPlayback(model = {}, isPlaying = false) {
         `).join('')}
       </div>
       <p class="output-compare-hint">${escapeHtml(outputCompare.practiceZh ?? '')}</p>
+      ${renderLayerAuditionStrip(model)}
       <div class="reference-volume">
         <span>参考音量</span>
         <strong>-14 LUFS</strong>
         <i style="--range-value:${formatNumber(model.patch?.macros?.space ?? 32)}%"></i>
       </div>
     </section>
+  `;
+}
+
+function renderLayerAuditionStrip(model = {}, activeMode = model.layerAudition?.activeMode) {
+  const audition = model.layerAudition ?? {};
+  const modes = audition.modes ?? [];
+  if (!modes.length) return '';
+
+  return `
+    <div class="layer-audition-strip" aria-label="Layer Audition 分层试听">
+      <div class="layer-audition-head">
+        <strong>${escapeHtml(audition.titleZh ?? 'Layer Audition 分层试听')}</strong>
+        <span>${escapeHtml(audition.practiceZh ?? 'solo transient / body / texture / tail')}</span>
+      </div>
+      <div class="layer-audition-buttons">
+        ${modes.map((mode) => `
+          <button
+            class="${mode.id === activeMode ? 'is-active' : ''}"
+            type="button"
+            data-layer-audition="${escapeHtml(mode.id)}"
+            title="${escapeHtml(mode.listenZh ?? '')}"
+          >
+            <strong>${escapeHtml(mode.label)}</strong>
+            <span>${escapeHtml(mode.titleZh ?? mode.roleZh ?? '')}</span>
+          </button>
+        `).join('')}
+      </div>
+      <p>${escapeHtml(audition.reaperZh ?? '')}</p>
+    </div>
   `;
 }
 
@@ -2206,6 +2236,7 @@ function renderSessionTransportDock(family = {}, model = {}, options = {}) {
         <button type="button" data-session-jump="controls">改参数</button>
         <button type="button" data-session-jump="coach">看复刻</button>
       </div>
+      ${renderLayerAuditionStrip(model, options.activeLayerAudition)}
     </section>
   `;
 }

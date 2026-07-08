@@ -535,6 +535,32 @@ test('sound lab exposes raw comfort studio output comparison for listening pract
   assert.match(model.outputCompare.practiceZh, /先听 Raw|Comfort|Studio/);
 });
 
+test('sound lab exposes layer audition modes for transient body texture and tail isolation', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 52,
+    material: 86,
+    space: 46,
+    variation: 38,
+  }, {
+    outputMode: 'comfort',
+    qualityMode: 'studio',
+    layerMix: { transient: 88, body: 74, texture: 64, tail: 42 },
+  });
+
+  assert.ok(model.layerAudition, 'view model should expose layer audition controls');
+  assert.deepEqual(model.layerAudition.modes.map((mode) => mode.id), ['full', 'transient', 'body', 'texture', 'tail']);
+  assert.ok(model.layerAudition.modes.every((mode) => mode.listenZh && mode.layerMix && mode.playOptions));
+  assert.equal(model.layerAudition.modes.find((mode) => mode.id === 'transient').layerMix.transient, 100);
+  assert.equal(model.layerAudition.modes.find((mode) => mode.id === 'transient').layerMix.body, 0);
+  assert.equal(model.layerAudition.modes.find((mode) => mode.id === 'body').layerMix.body, 100);
+  assert.equal(model.layerAudition.modes.find((mode) => mode.id === 'texture').layerMix.texture, 100);
+  assert.equal(model.layerAudition.modes.find((mode) => mode.id === 'tail').layerMix.tail, 100);
+  assert.match(model.layerAudition.practiceZh, /transient|body|texture|tail|分层|solo/i);
+  assert.match(model.layerAudition.reaperZh, /REAPER|stem|dry|tail-only/i);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',
