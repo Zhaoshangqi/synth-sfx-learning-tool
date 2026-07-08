@@ -2681,7 +2681,7 @@ function renderWorkbenchQuality(model = {}) {
       statusZh: (item.amount ?? 0) > 0.66 ? '优秀' : '良好',
       noteZh: item.type ?? 'FX',
     }))
-  ).slice(0, 8);
+  ).slice(0, 9);
   const calibration = model.polishCalibration ?? {};
   const calibrationSteps = calibration.steps ?? [];
   const calibrationMeters = calibration.meters ?? [];
@@ -2716,7 +2716,7 @@ function renderWorkbenchQuality(model = {}) {
           </div>
           <div class="calibration-step-grid">
             ${calibrationSteps.map((step, index) => `
-              <div class="calibration-step">
+              <div class="calibration-step" data-calibration-step="${escapeHtml(step.id ?? '')}">
                 <div>
                   <span>${String(index + 1).padStart(2, '0')}</span>
                   <strong>${escapeHtml(step.labelZh)}</strong>

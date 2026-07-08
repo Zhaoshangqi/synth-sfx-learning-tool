@@ -940,6 +940,31 @@ test('renderSoundLabWorkbench teaches temporal masking in the quality card', () 
   assert.match(qualityBlock, /duck|瞬态|tail|尾巴/i);
 });
 
+test('renderSoundLabWorkbench teaches spatial image and early reflections in the quality card', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'glass-ping');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 74,
+    motion: 58,
+    material: 62,
+    space: 78,
+    variation: 66,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'shape',
+    layerMix: { transient: 54, body: 68, texture: 76, tail: 82 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(qualityBlock, 'quality card should render as a distinct panel');
+  assert.match(qualityBlock, /Spatial Image|空间成像|空间距离/);
+  assert.match(qualityBlock, /early|早期反射|front-back|距离/i);
+  assert.match(qualityBlock, /space-depth/);
+  assert.match(qualityBlock, /tail-only|predelay|early reflection|空间|距离/i);
+});
+
 test('renderSoundLabWorkbench renders Ear Triage as a real listening workflow', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
