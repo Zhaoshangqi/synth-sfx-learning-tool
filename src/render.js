@@ -1529,6 +1529,77 @@ function renderAnalyzerCoachPanel(model = {}) {
   `;
 }
 
+function renderWaveformEarDecisionTree(model = {}, options = {}) {
+  const tree = model.waveformEarDecisionTree ?? {};
+  const clues = tree.clues ?? [];
+  if (!clues.length) return '';
+
+  const activeClueId = options.activeWaveformEarClue ?? tree.activeClueId ?? clues[0]?.id ?? '';
+  const renderClueAttributes = (clue) => {
+    const attrs = [
+      `data-waveform-ear-clue="${escapeHtml(clue.id)}"`,
+      `aria-pressed="${clue.id === activeClueId ? 'true' : 'false'}"`,
+    ];
+    if (clue.waveformDrillStep) {
+      attrs.push(`data-waveform-drill-step="${escapeHtml(clue.waveformDrillStep)}"`);
+    }
+    if (clue.playAction) {
+      attrs.push('data-sound-lab-play');
+    }
+    if (clue.layerAudition) {
+      attrs.push(`data-layer-audition="${escapeHtml(clue.layerAudition)}"`);
+    }
+    if (clue.outputMode) {
+      attrs.push(`data-output-compare="${escapeHtml(clue.outputMode)}"`);
+    }
+    if (clue.workbenchAction) {
+      attrs.push(`data-workbench-action="${escapeHtml(clue.workbenchAction)}"`);
+    }
+    return attrs.join(' ');
+  };
+
+  return `
+    <div class="waveform-ear-tree" aria-label="Waveform Ear Decision Tree">
+      <div class="waveform-ear-head">
+        <div>
+          <span>Ear Decision Tree</span>
+          <strong>${escapeHtml(tree.titleZh ?? 'Waveform Ear Decision Tree 波形听辨决策树')}</strong>
+          <p>${escapeHtml(tree.summaryZh ?? '')}</p>
+        </div>
+        <small>${escapeHtml(tree.principleZh ?? '')}</small>
+      </div>
+      <div class="waveform-ear-clue-grid">
+        ${clues.map((clue, index) => {
+          const isActive = clue.id === activeClueId;
+          const className = ['waveform-ear-clue', isActive ? 'is-active' : '']
+            .filter(Boolean)
+            .join(' ');
+          return `
+            <button class="${className}" type="button" ${renderClueAttributes(clue)}>
+              <span>${escapeHtml(String(index + 1).padStart(2, '0'))} ${escapeHtml(clue.labelZh ?? '')}</span>
+              <strong>${escapeHtml(clue.questionZh ?? '')}</strong>
+              <p>${escapeHtml(clue.listenTestZh ?? '')}</p>
+              <small class="waveform-ear-sources">${escapeHtml((clue.likelySources ?? []).join(' / '))}</small>
+              <em class="wrong-trap">误判：${escapeHtml(clue.wrongTrapZh ?? '')}</em>
+              <b>${escapeHtml(clue.verifyActionZh ?? '')}</b>
+              <dl>
+                <div><dt>Serum</dt><dd>${escapeHtml(clue.synthMap?.serum ?? '')}</dd></div>
+                <div><dt>Phase Plant</dt><dd>${escapeHtml(clue.synthMap?.phasePlant ?? '')}</dd></div>
+                <div><dt>Vital</dt><dd>${escapeHtml(clue.synthMap?.vital ?? '')}</dd></div>
+              </dl>
+              <code>${escapeHtml(clue.reaperNoteZh ?? '')}</code>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      <div class="waveform-ear-proof">
+        <span>REAPER proof</span>
+        <code>${escapeHtml(tree.reaperProofTemplate ?? '')}</code>
+      </div>
+    </div>
+  `;
+}
+
 function renderWaveformDetectivePanel(model = {}, options = {}) {
   const fingerprint = model.waveformFingerprint ?? {};
   const ingredients = fingerprint.ingredients ?? [];
@@ -1576,6 +1647,7 @@ function renderWaveformDetectivePanel(model = {}, options = {}) {
       <ol class="waveform-detective-steps">
         ${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
       </ol>
+      ${renderWaveformEarDecisionTree(model, options)}
       ${drillSteps.length ? `
         <div class="waveform-drill-rail" aria-label="波形反推训练">
           <div class="waveform-drill-head">

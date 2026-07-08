@@ -2982,3 +2982,89 @@ body.is-direct-manipulating .audio-space::after {
     transition: none !important;
   }
 }
+
+/* Reference aether viscous stream lattice v9.19
+   Adapts the pasted Aether Flow prompt into a slower, fluid edge-current
+   system around primary learning surfaces, without React/Tailwind deps. */
+
+.hero-status-strip,
+.dashboard-actions,
+.signal-atlas-console .workbench-topbar,
+.sound-lab-workbench .waveform-ear-tree {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hero-status-strip::after,
+.dashboard-actions::after,
+.signal-atlas-console .workbench-topbar::after,
+.sound-lab-workbench .waveform-ear-tree::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 18%, rgba(117, 197, 222, 0.16) 36%, rgba(255, 255, 255, 0.22) 48%, rgba(94, 234, 212, 0.1) 58%, transparent 76%),
+    repeating-linear-gradient(118deg, transparent 0 46px, rgba(117, 197, 222, 0.038) 47px, transparent 51px),
+    radial-gradient(circle at calc(22% + var(--space-x, 0) * 5%) calc(42% + var(--space-y, 0) * 4%), rgba(167, 139, 250, 0.12), transparent 0 12%, transparent 34%);
+  background-size: 260% 100%, 142px 142px, 100% 100%;
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  filter: saturate(1.05) blur(0.12px);
+  transform: translate3d(calc(var(--space-x, 0) * 5px), calc(var(--space-y, 0) * 4px), 0);
+  animation: ref9-viscous-edge-current 24s ease-in-out infinite alternate;
+}
+
+.hero-status-strip > *,
+.dashboard-actions > *,
+.signal-atlas-console .workbench-topbar > *,
+.sound-lab-workbench .waveform-ear-tree > * {
+  position: relative;
+  z-index: 1;
+}
+
+.signal-atlas-console .workbench-topbar::after {
+  opacity: 0.11;
+}
+
+.sound-lab-workbench .waveform-ear-tree::after {
+  opacity: 0.1;
+}
+
+body.is-direct-manipulating .hero-status-strip::after,
+body.is-direct-manipulating .dashboard-actions::after,
+body.is-direct-manipulating .signal-atlas-console .workbench-topbar::after,
+body.is-direct-manipulating .sound-lab-workbench .waveform-ear-tree::after {
+  animation-name: ref9-viscous-edge-current;
+  animation-play-state: paused !important;
+  opacity: 0.045 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-viscous-edge-current {
+  0% {
+    background-position: 0% 50%, 0 0, 28% 52%;
+    transform: translate3d(calc(var(--space-x, 0) * 3px), calc(var(--space-y, 0) * 2px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 142px 74px, 72% 48%;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.012);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-status-strip::after,
+  .dashboard-actions::after,
+  .signal-atlas-console .workbench-topbar::after,
+  .sound-lab-workbench .waveform-ear-tree::after {
+    animation-name: ref9-viscous-edge-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.07 !important;
+    transition: none !important;
+  }
+}

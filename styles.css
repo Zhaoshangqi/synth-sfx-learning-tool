@@ -24136,3 +24136,183 @@ body.is-direct-manipulating .analyzer-coach-panel::before {
   }
 }
 
+/* v10.9 waveform ear decision tree: readable beginner source inference cards */
+.waveform-ear-tree {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(110, 231, 249, 0.18);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(110, 231, 249, 0.12), transparent 0 34%, transparent 58%),
+    radial-gradient(circle at 96% 16%, rgba(167, 139, 250, 0.1), transparent 0 32%, transparent 54%),
+    linear-gradient(145deg, rgba(18, 24, 38, 0.88), rgba(8, 10, 18, 0.78));
+  box-shadow: inset 0 1px 0 rgba(244, 241, 232, 0.08), 0 20px 64px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.waveform-ear-tree::before {
+  content: "";
+  position: absolute;
+  inset: -32%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(118deg, transparent 0 28%, rgba(110, 231, 249, 0.13) 44%, rgba(244, 241, 232, 0.18) 50%, rgba(94, 234, 212, 0.09) 58%, transparent 76%),
+    repeating-linear-gradient(118deg, transparent 0 54px, rgba(110, 231, 249, 0.04) 55px, transparent 59px);
+  background-size: 260% 100%, 150px 150px;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  animation: waveform-ear-current 24s ease-in-out infinite alternate;
+}
+
+.waveform-ear-tree > * {
+  position: relative;
+  z-index: 1;
+}
+
+.waveform-ear-head {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.waveform-ear-head span,
+.waveform-ear-sources {
+  color: rgba(110, 231, 249, 0.86) !important;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.waveform-ear-head strong {
+  color: rgba(244, 241, 232, 0.96) !important;
+  font-size: 15px;
+}
+
+.waveform-ear-head p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: rgba(244, 241, 232, 0.72) !important;
+  line-height: 1.58;
+}
+
+.waveform-ear-clue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.waveform-ear-clue {
+  min-width: 0;
+  min-height: 184px;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.11);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(244, 241, 232, 0.075), rgba(244, 241, 232, 0.035));
+  color: rgba(244, 241, 232, 0.88);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(244, 241, 232, 0.07);
+  transition: transform 160ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.waveform-ear-clue:hover,
+.waveform-ear-clue:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(110, 231, 249, 0.36);
+  background: linear-gradient(145deg, rgba(110, 231, 249, 0.105), rgba(244, 241, 232, 0.05));
+  box-shadow: inset 0 1px 0 rgba(244, 241, 232, 0.09), 0 16px 42px rgba(0, 0, 0, 0.22);
+}
+
+.waveform-ear-clue.is-active {
+  border-color: rgba(110, 231, 249, 0.52);
+  background: linear-gradient(145deg, rgba(110, 231, 249, 0.14), rgba(167, 139, 250, 0.07));
+  box-shadow: inset 0 1px 0 rgba(244, 241, 232, 0.1), 0 0 0 1px rgba(110, 231, 249, 0.08), 0 18px 48px rgba(110, 231, 249, 0.08);
+}
+
+.waveform-ear-clue strong {
+  color: rgba(244, 241, 232, 0.96) !important;
+}
+
+.waveform-ear-clue :where(p, small, em, b, dd, code) {
+  color: rgba(244, 241, 232, 0.74) !important;
+  line-height: 1.5;
+}
+
+.waveform-ear-clue p,
+.waveform-ear-clue dl {
+  margin: 0;
+}
+
+.waveform-ear-clue em,
+.waveform-ear-clue code {
+  display: block;
+  padding: 8px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(244, 241, 232, 0.09);
+  background: rgba(8, 10, 18, 0.36);
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+
+.waveform-ear-clue dl {
+  display: grid;
+  gap: 5px;
+}
+
+.waveform-ear-clue dt {
+  color: rgba(110, 231, 249, 0.86) !important;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.waveform-ear-proof {
+  padding: 10px 11px;
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  border-radius: 12px;
+  background: rgba(94, 234, 212, 0.07);
+  color: rgba(244, 241, 232, 0.78) !important;
+  overflow-wrap: anywhere;
+}
+
+body.is-direct-manipulating .waveform-ear-tree::before {
+  animation-play-state: paused !important;
+  opacity: 0.06 !important;
+  transition: none !important;
+}
+
+@keyframes waveform-ear-current {
+  from {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 3px), calc(var(--space-y, 0) * 2px), 0) scale(1);
+  }
+  to {
+    background-position: 100% 50%, 150px 74px;
+    transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) scale(1.02);
+  }
+}
+
+@media (max-width: 1120px) {
+  .waveform-ear-clue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 880px) {
+  .waveform-ear-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .waveform-ear-clue-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

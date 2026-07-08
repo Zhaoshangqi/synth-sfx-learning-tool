@@ -1449,6 +1449,150 @@ function buildWaveformFingerprint(patch) {
   };
 }
 
+function buildWaveformEarDecisionTree(fingerprint, patch, family) {
+  const ingredientValue = Object.fromEntries((fingerprint?.ingredients ?? []).map((item) => [item.id, item.value ?? 0]));
+  const layerMix = patch.layerMix ?? {};
+  const macros = patch.macros ?? {};
+  const engineGain = patch.layers.reduce((totals, layer) => {
+    totals[layer.engine] = (totals[layer.engine] ?? 0) + clamp(layer.gain ?? 0, 0, 1.4);
+    return totals;
+  }, {});
+  const material = macros.material ?? 50;
+  const brightness = macros.brightness ?? 50;
+  const motion = macros.motion ?? 50;
+  const texture = layerMix.texture ?? 50;
+  const transient = layerMix.transient ?? 50;
+  const tail = layerMix.tail ?? 50;
+
+  const clues = [
+    {
+      id: 'metallic-inharmonic',
+      labelZh: '非谐波金属',
+      score: material + (engineGain.modalResonator ?? 0) * 24 + (engineGain.fmBurst ?? 0) * 18,
+      questionZh: '听起来像金属、玻璃或钟，但频率不是整齐的八度/五度关系吗？',
+      likelySources: ['FM sidebands', 'Modal resonator', 'Comb filter', 'Sine partials'],
+      listenTestZh: '先听 body-only，再扫 filter：如果主体留下很多不等距峰值，而不是单个纯音，就是 FM/modal/comb 在做材质。',
+      wrongTrapZh: '不要把 reverb 尾巴的亮 shimmer 误判成金属主体；尾巴要单独 tail-only 检查。',
+      verifyActionZh: '先点 Solo body，再点材质共振；只动 Material 或 FM depth，确认非谐波峰是否随参数移动。',
+      waveformDrillStep: 'body-solo',
+      layerAudition: 'body',
+      workbenchAction: 'focus-material-resonance',
+      synthMap: {
+        serum: 'Serum: 用 sine carrier + FM from B 或 comb/filter resonance，先关 Noise 和 Reverb，只听 sidebands。',
+        phasePlant: 'Phase Plant: 把 sine partials、FM lane 或 resonator lane 单独分组，mute tail lane 后听非谐波峰。',
+        vital: 'Vital: 用 sine/triangle 做 carrier，调 FM amount 或 spectral warp；先关 effects 判断是不是主体。',
+      },
+      reaperNoteZh: 'REAPER A/B: 渲染 full / body-only / tail-only；如果 body-only 仍有不等距峰，记录 FM/modal/comb 是金属来源。',
+    },
+    {
+      id: 'pitch-anchor',
+      labelZh: '稳定音高锚点',
+      score: (ingredientValue.sine ?? 0) + (ingredientValue.triangle ?? 0) + (engineGain.modalResonator ?? 0) * 12,
+      questionZh: '你能哼出一个中心音、钟感 pitch 或柔和主体吗？',
+      likelySources: ['Sine', 'Triangle', 'FM carrier', 'Modal resonator'],
+      listenTestZh: '先听 full，再把 transient/noise/tail 关掉；如果中心音还在，基础来源多半是 sine/triangle/FM carrier。',
+      wrongTrapZh: '不要把很短的 click 当成 pitch；click 只说明包络很短，不说明有稳定基础波形。',
+      verifyActionZh: '点“听 pitch 锚点”，再 solo body；用 spectrum 看基频峰是否稳定。',
+      waveformDrillStep: 'anchor',
+      playAction: 'current',
+      workbenchAction: 'focus-waveform',
+      synthMap: {
+        serum: 'Serum: solo Osc A/B，先用 Basic Shapes 的 sine/triangle 对照，确认 pitch 是否仍成立。',
+        phasePlant: 'Phase Plant: solo generator lane，关掉 noise/sample lane，只听 pitch anchor。',
+        vital: 'Vital: 关 Noise，Oscillator 先切 sine/triangle，再加 FM 或 warp 对照差异。',
+      },
+      reaperNoteZh: 'REAPER A/B: full vs body-only；如果 body-only 能哼出 pitch，写下基频和可能的 sine/triangle/FM carrier。',
+    },
+    {
+      id: 'hollow-pulse',
+      labelZh: '空心脉冲硬边',
+      score: (ingredientValue.square ?? 0) + material * 0.24 + motion * 0.08,
+      questionZh: '声音有没有 hollow、空心、像 8-bit/脉冲电子块的硬边？',
+      likelySources: ['Square', 'Pulse width', 'Hard sync edge'],
+      listenTestZh: '把 filter 稍微收暗：如果仍然有空心硬边，通常是 square/pulse；如果只剩柔和主体，可能不是方波。',
+      wrongTrapZh: '失真或剪切也会变硬，但它通常不带稳定的空心脉冲周期。',
+      verifyActionZh: '只动 pulse width 或 square/sine 对照，不要同时动 drive；听 hollow 是否跟着变。',
+      waveformDrillStep: 'edge-sweep',
+      workbenchAction: 'focus-controls',
+      synthMap: {
+        serum: 'Serum: Basic Shapes 切 square/pulse，调 PWM 或 warp，和 sine A/B。',
+        phasePlant: 'Phase Plant: 用 square oscillator 进 filter，先不要加 distortion，听 hollow body。',
+        vital: 'Vital: 选 square/pulse wavetable，轻扫 wavetable position 或 phase modulation。',
+      },
+      reaperNoteZh: 'REAPER A/B: full vs square/pulse trial；记录 hollow 是否来自 oscillator，而不是 drive 或 limiter。',
+    },
+    {
+      id: 'bright-buzz',
+      labelZh: '明亮锯齿毛边',
+      score: (ingredientValue.saw ?? 0) + brightness * 0.56 + (engineGain.combDelay ?? 0) * 18,
+      questionZh: '高频很亮、毛边密、扫低通时最先消失的是一片谐波边缘吗？',
+      likelySources: ['Saw', 'Comb filter', 'FM sidebands', 'Resonant filter'],
+      listenTestZh: '缓慢扫 low-pass：如果亮边像一层布被拿掉，主体还在，亮边多半是 saw/comb/FM sidebands。',
+      wrongTrapZh: '不要把 noise hiss 误判成 saw；saw 有周期谐波，noise 更随机、更像空气和砂砾。',
+      verifyActionZh: '点“扫亮边”，只动 Brightness/filter cutoff；看 waveform/spectrum 中高频边缘是否同步变化。',
+      waveformDrillStep: 'edge-sweep',
+      workbenchAction: 'focus-controls',
+      synthMap: {
+        serum: 'Serum: 用 saw 或 wavetable rich harmonics，扫 low-pass，确认谐波边缘随 cutoff 消退。',
+        phasePlant: 'Phase Plant: saw lane 或 comb/filter lane 单独开关，观察 2k-12k 边缘变化。',
+        vital: 'Vital: saw/wavetable + filter sweep；如果 spectral warp 产生侧频，和 saw 分开 A/B。',
+      },
+      reaperNoteZh: 'REAPER A/B: full / darker-filter / body-only；记录 bright edge 是 saw、comb 还是 FM sidebands。',
+    },
+    {
+      id: 'noise-grain',
+      labelZh: '噪声颗粒与空气',
+      score: (ingredientValue.noise ?? 0) + texture * 0.64 + transient * 0.28,
+      questionZh: '你听到的是砂砾、空气、click、爆裂颗粒，而不是明确音高吗？',
+      likelySources: ['Noise', 'Sample grain', 'Transient click', 'Filtered noise'],
+      listenTestZh: 'solo texture/transient：如果 pitch 消失但材质还在，就是 noise/grain/click 在承担边缘。',
+      wrongTrapZh: '噪声不等于“脏”；短噪声可以是 transient，长噪声可以是 air，二者要分开听。',
+      verifyActionZh: '点 texture 或 transient audition，再只调 Noise level / filter；确认空气和 click 的职责。',
+      waveformDrillStep: 'body-solo',
+      layerAudition: 'texture',
+      workbenchAction: 'focus-practice-loop',
+      synthMap: {
+        serum: 'Serum: solo Noise oscillator，换 bright/metal/attack noise；用 envelope 决定 click 还是 air。',
+        phasePlant: 'Phase Plant: noise/sample lane 分 transient 与 texture，两条 lane 分别 A/B。',
+        vital: 'Vital: Noise sampler + filter envelope；短 decay 做 click，长 decay 做 air/grain。',
+      },
+      reaperNoteZh: 'REAPER A/B: full / texture-only / transient-only；记录 noise 是 click、air 还是 grain，不要笼统写“噪声”。',
+    },
+    {
+      id: 'space-tail',
+      labelZh: '空间尾巴假象',
+      score: tail + (patch.globalFx?.reverb?.mix ?? 0) * 80 + (patch.globalFx?.delay?.mix ?? 0) * 60,
+      questionZh: '声音的“材质”是不是主要出现在尾巴里，而 dry body 其实很简单？',
+      likelySources: ['Reverb tail', 'Delay feedback', 'Shimmer filter', 'Not a base waveform'],
+      listenTestZh: '切 tail-only：如果材质只在尾巴里出现，那不是基础波形本身，而是 FX 把频谱拉长了。',
+      wrongTrapZh: '不要用尾巴决定 oscillator；先确认 dry transient/body，再判断 reverb/delay 的贡献。',
+      verifyActionZh: '切 Comfort A/B，再导出 full/body/tail-only 三版；先分清声源和效果。',
+      waveformDrillStep: 'ab-proof',
+      outputMode: 'comfort',
+      workbenchAction: 'focus-practice-loop',
+      synthMap: {
+        serum: 'Serum: 先关 FX rack 判断 oscillator，再开 reverb/delay 记录尾巴变化。',
+        phasePlant: 'Phase Plant: FX lane 和 generator lane 分开，tail 只作为空间证据，不当基础波形。',
+        vital: 'Vital: 关 reverb/delay 后听 dry patch，确认基础波形再恢复 FX。',
+      },
+      reaperNoteZh: 'REAPER A/B: full / body-only / tail-only；如果 tail-only 才有材质，记录为 FX tail，不写成 saw/FM 主体。',
+    },
+  ];
+
+  const sortedClues = clues
+    .sort((a, b) => b.score - a.score)
+    .map(({ score, ...clue }) => clue);
+
+  return {
+    titleZh: 'Waveform Ear Decision Tree 波形听辨决策树',
+    summaryZh: `听到什么，先反推基础波形或合成来源；当前 ${family?.titleZh ?? 'Patch'} 最值得先查「${sortedClues[0]?.labelZh ?? '主体来源'}」。`,
+    principleZh: '依据不是猜名字，而是谐波结构、噪声性、非谐波峰值和包络时间：稳定 pitch 看 sine/triangle/FM，空心硬边看 square/pulse，明亮密集看 saw/comb/FM sidebands，砂砾空气看 noise，尾巴只算 FX 证据。',
+    activeClueId: sortedClues[0]?.id ?? 'pitch-anchor',
+    clues: sortedClues,
+    reaperProofTemplate: 'REAPER proof: render full / body-only / texture-only / tail-only, then write A/B note: source=?, edge=?, noise=?, FX tail=?',
+  };
+}
+
 function buildMaterialResonanceMap(family, patch) {
   const modalLayer = patch.layers.find((layer) => layer.engine === 'modalResonator') ?? {};
   const resonators = Array.isArray(modalLayer.resonators) && modalLayer.resonators.length
@@ -3150,6 +3294,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
   const earTriage = buildEarTriage(family, patch, patchDoctor, macroList);
   const workflowStep = options.workflowStep ?? options.activeWorkflowStep ?? 'source';
   const waveformFingerprint = buildWaveformFingerprint(patch);
+  const waveformEarDecisionTree = buildWaveformEarDecisionTree(waveformFingerprint, patch, family);
   const listeningCompass = buildListeningCompass(family, patch, macroList, workflowStep);
   const targetMatchCoach = buildTargetMatchCoach(family, patch, patchDoctor, macroList);
   const practiceFocus = buildPracticeFocus(
@@ -3218,6 +3363,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     soundQuality: buildSoundQuality(patch),
     polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint,
+    waveformEarDecisionTree,
     materialResonanceMap: buildMaterialResonanceMap(family, patch),
     practiceLoop,
     listeningCompass,

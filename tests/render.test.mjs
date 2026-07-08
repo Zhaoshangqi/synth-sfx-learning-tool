@@ -410,6 +410,43 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
   assert.match(html, /下一步/);
 });
 
+test('renderSoundLabWorkbench renders a waveform ear decision tree with routed clue actions', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact') ?? soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 38,
+    material: 86,
+    space: 34,
+    variation: 28,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'source',
+    layerMix: { transient: 82, body: 68, texture: 84, tail: 36 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWaveformEarClue: model.waveformEarDecisionTree.activeClueId,
+  });
+
+  assert.match(html, /waveform-ear-tree/);
+  assert.match(html, /Waveform Ear Decision Tree|波形听辨决策树|听辨决策树/);
+  assert.match(html, /听到什么|反推|基础波形/);
+  assert.match(html, /谐波|噪声|非谐波|包络/);
+  assert.match(html, /data-waveform-ear-clue="/);
+  assert.match(html, /data-waveform-drill-step="body-solo"/);
+  assert.match(html, /data-waveform-drill-step="edge-sweep"/);
+  assert.match(html, /data-layer-audition="texture"|data-layer-audition="transient"|data-layer-audition="body"/);
+  assert.match(html, /data-workbench-action="focus-controls"|data-workbench-action="focus-practice-loop"|data-workbench-action="focus-material-resonance"/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER|A\/B/);
+  assert.match(html, /wrong-trap|误判/);
+  assert.match(html, /full \/ body-only \/ texture-only \/ tail-only|full.*body.*texture.*tail/i);
+});
+
 test('renderSoundLabWorkbench exposes a guided A/B practice loop for beginners', () => {
   const family = soundLabFamilies[0];
   const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
