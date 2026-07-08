@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-thread"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-viscous-ear"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-aether-thread/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-thread/);
+  assert.match(html, /visual-space\.js\?v=20260709-viscous-ear/);
+  assert.match(html, /styles-reference\.css\?v=20260709-viscous-ear/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -393,11 +393,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-transfer-river"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-transfer-river'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-transfer-river'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-viscous-ear"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-viscous-ear'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-viscous-ear'/);
   assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-dynamic-detail'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260709-transfer-river'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-viscous-ear'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -769,7 +769,7 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
-  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-transfer-river/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-viscous-ear/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260709-dynamic-detail/);
   assert.match(css, /\.sound-lab-workbench/);
@@ -1607,6 +1607,28 @@ test('sound lab waveform detective is a routed beginner module, not a dead card'
   assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-drill-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
+test('waveform ear decision tree is routed, readable, and responsive', () => {
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /buildWaveformEarDecisionTree/);
+  assert.match(modelJs, /waveformEarDecisionTree/);
+  assert.match(renderJs, /renderWaveformEarDecisionTree/);
+  assert.match(renderJs, /waveform-ear-tree/);
+  assert.match(renderJs, /data-waveform-ear-clue/);
+  assert.match(renderJs, /data-waveform-drill-step/);
+  assert.match(renderJs, /data-layer-audition/);
+  assert.match(renderJs, /data-workbench-action/);
+  assert.match(css, /\.waveform-ear-tree\s*\{[\s\S]*border:\s*1px solid rgba\(110,\s*231,\s*249,\s*0\.18\)/);
+  assert.match(css, /\.waveform-ear-clue\s*\{[\s\S]*cursor:\s*pointer/);
+  assert.match(css, /\.waveform-ear-clue\.is-active\s*\{[\s\S]*border-color:\s*rgba\(110,\s*231,\s*249,\s*0\.52\)/);
+  assert.match(css, /\.waveform-ear-clue :where\(p,\s*small,\s*em,\s*b,\s*dd,\s*code\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.74\)/);
+  assert.match(css, /\.waveform-ear-proof\s*\{[\s\S]*overflow-wrap:\s*anywhere/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.waveform-ear-tree::before[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-ear-clue-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
 test('sound lab practice loop has routed actions and readable dark panel styling', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
@@ -2024,8 +2046,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-thread/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-thread/);
+  assert.match(html, /styles-reference\.css\?v=20260709-viscous-ear/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-viscous-ear/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -2045,8 +2067,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-thread/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-thread/);
+  assert.match(html, /styles-reference\.css\?v=20260709-viscous-ear/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-viscous-ear/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2199,8 +2221,8 @@ test('pasted aether flow prompt adds an adaptive particle mesh without React dep
   assert.match(css, /#particle-canvas\s*\{[\s\S]*will-change:\s*opacity,\s*filter/);
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-thread/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-thread"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-viscous-ear/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-viscous-ear"/);
 });
 
 test('pasted aether flow prompt adds slow energy rivers and card-edge currents', () => {
@@ -2250,6 +2272,33 @@ test('pasted aether flow prompt adds surface threadlines that reweave around int
   assert.match(css, /\.audio-space::after\s*\{[\s\S]*animation:\s*ref9-interaction-thread-drift/);
   assert.match(css, /body\.is-direct-manipulating \.audio-space::after[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-interaction-thread-drift/);
+});
+
+test('pasted aether flow prompt adds a viscous stream lattice without React dependencies', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherViscousCurrents/);
+  assert.match(visualSpaceJs, /AETHER_VISCOUS_CURRENT_COUNT/);
+  assert.match(visualSpaceJs, /createAetherViscousCurrent/);
+  assert.match(visualSpaceJs, /resetAetherViscousCurrents/);
+  assert.match(visualSpaceJs, /energizeAetherViscousCurrents/);
+  assert.match(visualSpaceJs, /drawAetherViscousCurrents/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherViscousCurrents\(time\)/);
+  assert.match(visualSpaceJs, /synth:view-transition[\s\S]*resetAetherViscousCurrents/);
+  assert.match(visualSpaceJs, /synth:audio-pulse[\s\S]*energizeAetherViscousCurrents/);
+  assert.doesNotMatch(visualSpaceJs, /fillStyle\s*=\s*['"]black['"]/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react|tailwindcss/);
+
+  assert.match(css, /Reference aether viscous stream lattice v9\.19/);
+  assert.match(css, /\.hero-status-strip::after,[\s\S]*\.dashboard-actions::after,[\s\S]*\.signal-atlas-console \.workbench-topbar::after/);
+  assert.match(css, /@keyframes ref9-viscous-edge-current/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-viscous-edge-current/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-viscous-edge-current/);
+  assert.match(html, /styles-reference\.css\?v=20260709-viscous-ear/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-viscous-ear"/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

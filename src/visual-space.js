@@ -14,6 +14,7 @@ let aetherConstellationParticles = [];
 let aetherHeroFlowParticles = [];
 let aetherFlowFilaments = [];
 let aetherFlowRivers = [];
+let aetherViscousCurrents = [];
 let aetherAdaptiveMeshParticles = [];
 let aetherSurfaceThreads = [];
 let cursorWakeParticles = [];
@@ -25,6 +26,7 @@ let spaceParallaxFrame = 0;
 let lastAetherAudioRippleTime = 0;
 let aetherAdaptiveMeshEnergy = 0;
 let aetherSurfaceThreadEnergy = 0;
+let aetherViscousCurrentEnergy = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -55,6 +57,9 @@ const AETHER_FLOW_FILAMENT_COUNT = 9;
 const AETHER_FLOW_FILAMENT_SEGMENTS = 86;
 const AETHER_FLOW_RIVER_COUNT = 4;
 const AETHER_FLOW_RIVER_SEGMENTS = 96;
+const AETHER_VISCOUS_CURRENT_COUNT = 7;
+const AETHER_VISCOUS_CURRENT_SEGMENTS = 74;
+const AETHER_VISCOUS_CURRENT_TAIL = 0.09;
 const AETHER_ADAPTIVE_MESH_COUNT = 74;
 const AETHER_ADAPTIVE_MESH_RADIUS = 168;
 const AETHER_ADAPTIVE_MOUSE_RADIUS = 232;
@@ -79,7 +84,11 @@ const AETHER_FLOW_SURFACE_SELECTOR = [
   '.daily-video-card',
   '.source-card',
   '.workbench-panel',
+  '.workbench-topbar',
+  '.dashboard-actions',
+  '.hero-status-strip',
   '.waveform-drill-step',
+  '.waveform-ear-tree',
   '.target-match-coach-panel',
   '.synth-transfer-panel',
   '[data-flow-surface]',
@@ -268,6 +277,26 @@ function createAetherFlowRiver(index, seed = 0) {
   };
 }
 
+function createAetherViscousCurrent(index, seed = 0) {
+  const lane = (index + 0.55) / (AETHER_VISCOUS_CURRENT_COUNT + 0.1);
+  const direction = index % 2 === 0 ? 1 : -1;
+  return {
+    lane: Math.max(0.08, Math.min(0.92, lane + Math.sin(seed + index) * 0.035)),
+    amplitude: random(22, 68),
+    secondaryAmplitude: random(10, 30),
+    frequency: random(1.25, 2.9),
+    phase: random(0, Math.PI * 2) + seed * 0.13,
+    speed: random(0.000034, 0.000078) * direction,
+    drift: random(-0.000014, 0.000018),
+    z: random(0.28, 0.94),
+    width: random(0.58, 1.55),
+    packet: random(0, 1),
+    packetSpeed: random(0.000032, 0.000072) * direction,
+    viscosity: random(0.42, 0.86),
+    color: index % 5 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function resetAetherHeroFlowNetwork(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? 'aether').length;
@@ -302,6 +331,29 @@ function rethreadAetherFlowRivers(detail = {}) {
     river.lane = Math.max(0.08, Math.min(0.92, river.lane + Math.sin(seed + index) * 0.018));
     river.packet = (river.packet + 0.16 + index * 0.035) % 1;
     if (index % 2 === seed % 2) river.speed *= -1;
+  });
+}
+
+function resetAetherViscousCurrents(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'viscous').length;
+  const count = Math.min(AETHER_VISCOUS_CURRENT_COUNT, Math.max(width < 760 ? 3 : 5, Math.floor((width * height) / 180000)));
+  aetherViscousCurrents = Array.from({ length: count }, (_, index) => createAetherViscousCurrent(index, seed));
+  aetherViscousCurrentEnergy = Math.min(1, aetherViscousCurrentEnergy + 0.18);
+}
+
+function energizeAetherViscousCurrents(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherViscousCurrents.length) resetAetherViscousCurrents(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.44)));
+  if (level < 0.035) return;
+  const seed = String(detail.selector ?? detail.source ?? 'audio').length;
+  aetherViscousCurrentEnergy = Math.min(1, aetherViscousCurrentEnergy + level * 0.32);
+  aetherViscousCurrents.forEach((current, index) => {
+    current.phase += 0.08 + level * 0.14 + index * 0.015;
+    current.packet = (current.packet + 0.05 + level * 0.08 + seed * 0.003) % 1;
+    current.lane = Math.max(0.07, Math.min(0.93, current.lane + Math.sin(seed + index * 1.7) * level * 0.008));
   });
 }
 
@@ -588,6 +640,23 @@ function getAetherFlowRiverPoint(river, progress, time, phaseOffset = 0) {
   return aetherRepel(x + pointer.x * river.z * 30, y, river.z);
 }
 
+function getAetherViscousCurrentPoint(current, progress, time, phaseOffset = 0) {
+  const easedProgress = progress * progress * (3 - progress * 2);
+  const direction = current.speed >= 0 ? 1 : -1;
+  const x = direction > 0
+    ? -110 + easedProgress * (width + 220)
+    : width + 110 - easedProgress * (width + 220);
+  const laneY = height * Math.max(0.06, Math.min(0.94, current.lane));
+  const phase = current.phase + time * current.speed + progress * current.frequency * Math.PI * 2 + phaseOffset;
+  const drag = Math.sin(phase * 0.33 + current.viscosity) * current.amplitude * 0.42;
+  const y = laneY
+    + Math.sin(phase) * current.amplitude
+    + Math.sin(phase * 0.56 + phaseOffset) * current.secondaryAmplitude
+    + drag
+    + pointer.y * current.z * (18 + current.viscosity * 12);
+  return aetherRepel(x + pointer.x * current.z * (24 + current.viscosity * 18), y, current.z);
+}
+
 function resize() {
   if (!canvas || !ctx) return;
   const ratio = Math.min(globalThis.devicePixelRatio || 1, 2);
@@ -631,6 +700,7 @@ function resize() {
   const filamentCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
   aetherFlowFilaments = Array.from({ length: filamentCount }, (_, index) => createAetherFlowFilament(index));
   resetAetherFlowRivers();
+  resetAetherViscousCurrents();
   refreshAetherSurfaceThreads();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
@@ -1375,6 +1445,71 @@ function drawAetherFlowRivers(time) {
   ctx.restore();
 }
 
+function drawAetherViscousCurrents(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherViscousCurrents.length) return;
+
+  aetherViscousCurrentEnergy *= 0.94;
+  if (aetherViscousCurrentEnergy < 0.004) aetherViscousCurrentEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherViscousCurrents.forEach((current, currentIndex) => {
+    current.phase += current.drift;
+    current.packet = (current.packet + current.packetSpeed * (14 + current.z * 10)) % 1;
+    const packet = current.packet < 0 ? current.packet + 1 : current.packet;
+    const pulse = 0.48
+      + Math.sin(time * 0.00048 + current.phase) * 0.2
+      + aetherViscousCurrentEnergy * 0.22;
+
+    let startPoint = null;
+    let endPoint = null;
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_VISCOUS_CURRENT_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_VISCOUS_CURRENT_SEGMENTS;
+      const point = getAetherViscousCurrentPoint(current, progress, time, currentIndex * 0.27);
+      if (!startPoint) startPoint = point;
+      endPoint = point;
+      if (segment === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+
+    if (!startPoint || !endPoint) return;
+    const gradient = ctx.createLinearGradient(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+    gradient.addColorStop(0, `rgba(${current.color}, 0)`);
+    gradient.addColorStop(0.28, `rgba(${current.color}, ${0.026 + pulse * 0.03})`);
+    gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.012 + pulse * 0.018})`);
+    gradient.addColorStop(0.74, `rgba(${current.color}, ${0.024 + pulse * 0.026})`);
+    gradient.addColorStop(1, `rgba(${current.color}, 0)`);
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = current.width + current.viscosity * 0.7 + aetherViscousCurrentEnergy * 0.5;
+    ctx.shadowColor = `rgba(${current.color}, ${0.045 + pulse * 0.052 + aetherViscousCurrentEnergy * 0.05})`;
+    ctx.shadowBlur = 8 + current.z * 14 + current.viscosity * 10;
+    ctx.stroke();
+
+    const head = getAetherViscousCurrentPoint(current, packet, time, currentIndex * 0.27);
+    const tail = getAetherViscousCurrentPoint(current, Math.max(0, packet - AETHER_VISCOUS_CURRENT_TAIL), time, currentIndex * 0.27);
+    const packetGradient = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    packetGradient.addColorStop(0, `rgba(${current.color}, 0)`);
+    packetGradient.addColorStop(0.58, `rgba(${current.color}, ${0.1 + pulse * 0.12 + aetherViscousCurrentEnergy * 0.08})`);
+    packetGradient.addColorStop(1, `rgba(255, 255, 255, ${0.1 + pulse * 0.12})`);
+
+    ctx.beginPath();
+    ctx.strokeStyle = packetGradient;
+    ctx.lineWidth = 0.92 + current.z * 0.74 + current.viscosity * 0.58;
+    ctx.moveTo(tail.x, tail.y);
+    ctx.quadraticCurveTo(
+      (tail.x + head.x) * 0.5 + pointer.x * current.z * 20,
+      (tail.y + head.y) * 0.5 + pointer.y * current.z * 14,
+      head.x,
+      head.y,
+    );
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawAetherSurfaceThreads(time) {
   if (prefersReducedMotion || isAetherFlowPaused() || !aetherSurfaceThreads.length) return;
 
@@ -1689,6 +1824,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherLiquidFilaments(time);
   if (!isAetherFlowPaused()) drawAetherFlowRivers(time);
+  if (!isAetherFlowPaused()) drawAetherViscousCurrents(time);
   if (!isAetherFlowPaused()) drawAetherSurfaceThreads(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
@@ -1730,6 +1866,7 @@ function init() {
     spawnTransitionBurst(event.detail);
     resetAetherHeroFlowNetwork(event.detail);
     rethreadAetherFlowRivers(event.detail);
+    resetAetherViscousCurrents(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
     refreshAetherSurfaceThreads(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
@@ -1752,6 +1889,7 @@ function init() {
   });
   document.addEventListener('synth:audio-pulse', (event) => {
     spawnAetherAudioRipple(event.detail);
+    energizeAetherViscousCurrents(event.detail);
     energizeAetherAdaptiveMesh(event.detail);
     energizeAetherSurfaceThreads(event.detail);
   });

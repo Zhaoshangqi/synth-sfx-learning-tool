@@ -160,6 +160,40 @@ test('buildSoundLabViewModel turns waveform detective into a playable reverse-en
   assert.ok(drill.every((step) => /下一步|记录|验证|solo|A\/B|REAPER|filter|Brightness/i.test(step.nextZh + step.feedbackZh)));
 });
 
+test('buildSoundLabViewModel exposes a waveform ear decision tree for source inference', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 38,
+    material: 86,
+    space: 34,
+    variation: 28,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'source',
+    layerMix: { transient: 82, body: 68, texture: 84, tail: 36 },
+  });
+
+  const tree = model.waveformEarDecisionTree;
+  assert.ok(tree, 'view model should expose a beginner ear decision tree');
+  assert.match(tree.titleZh, /波形听辨决策树|Waveform Ear Decision Tree|听辨/);
+  assert.match(tree.summaryZh, /听到什么|反推|基础波形/);
+  assert.match(tree.principleZh, /谐波|噪声|非谐波|包络/);
+  assert.equal(tree.activeClueId, tree.clues[0].id);
+  assert.ok(tree.clues.length >= 5);
+  const allSources = tree.clues.flatMap((clue) => clue.likelySources ?? []).join(' ');
+  assert.match(allSources, /Sine|Triangle|Square|Saw|Noise|FM|Modal|Comb/i);
+  assert.ok(tree.clues.every((clue) => clue.questionZh && clue.listenTestZh && clue.wrongTrapZh && clue.verifyActionZh));
+  assert.ok(tree.clues.every((clue) => clue.synthMap?.serum && clue.synthMap?.phasePlant && clue.synthMap?.vital));
+  assert.ok(tree.clues.every((clue) => /REAPER|A\/B|full|body|texture|tail/i.test(clue.reaperNoteZh ?? '')));
+  assert.ok(tree.clues.some((clue) => clue.waveformDrillStep === 'body-solo'));
+  assert.ok(tree.clues.some((clue) => clue.layerAudition === 'texture' || clue.layerAudition === 'transient'));
+  assert.ok(tree.clues.some((clue) => clue.workbenchAction === 'focus-practice-loop' || clue.workbenchAction === 'focus-controls'));
+  assert.match(tree.reaperProofTemplate, /full|body|texture|tail|A\/B/);
+});
+
 test('buildSoundLabViewModel exposes a beginner ear chain that connects waveform layers repair and REAPER proof', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {
