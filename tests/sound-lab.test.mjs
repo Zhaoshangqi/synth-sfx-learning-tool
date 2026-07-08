@@ -609,6 +609,50 @@ test('studio patches expose subtle motion bus for less static synth output', () 
   assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.motionBus));
 });
 
+test('studio patches expose dynamic detail polish for snap glue and silky output', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 84,
+    motion: 58,
+    material: 88,
+    space: 38,
+    variation: 62,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 92, body: 82, texture: 64, tail: 34 },
+  });
+
+  const dynamicDetail = patch.globalFx.masterPolish.dynamicDetail;
+  assert.ok(dynamicDetail, 'studio output should expose a small detail polish stage');
+  assert.ok(dynamicDetail.transientAir > 0.08, 'transient air should add first-edge clarity without raising the whole patch');
+  assert.ok(dynamicDetail.bodyGlue > 0.08, 'body glue should bind transient and modal body');
+  assert.ok(dynamicDetail.outputSilk > 0.08, 'output silk should soften the final high edge');
+  assert.ok(dynamicDetail.snapWindowMs >= 8 && dynamicDetail.snapWindowMs <= 42);
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.dynamicDetail));
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.dynamicDetail, dynamicDetail);
+});
+
+test('browser audio engines apply dynamic detail polish in Worklet and Tone fallback paths', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /dynamicDetail/);
+  assert.match(processorJs, /transientAir/);
+  assert.match(processorJs, /bodyGlue/);
+  assert.match(processorJs, /outputSilk/);
+  assert.match(processorJs, /snapWindowMs/);
+  assert.match(processorJs, /detailSnapWindow/);
+  assert.match(audioPlayerJs, /connectDynamicDetailStage/);
+  assert.match(audioPlayerJs, /dynamicDetail/);
+  assert.match(audioPlayerJs, /transientAir/);
+  assert.match(audioPlayerJs, /bodyGlue/);
+  assert.match(audioPlayerJs, /outputSilk/);
+});
+
 test('studio patches expose temporal masking so tails do not smear the transient', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
