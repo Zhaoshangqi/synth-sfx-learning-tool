@@ -9,6 +9,14 @@
     <link rel="prefetch" href="./vendor/tone/Tone.js" as="script" />
   </head>
   <body>
+    <div class="visual-splash" aria-hidden="true">
+      <div class="visual-splash-row visual-splash-row-top">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="visual-splash-row visual-splash-row-bottom">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
     <div class="audio-space" aria-hidden="true">
       <canvas id="particle-canvas"></canvas>
       <div class="space-glow glow-a"></div>
@@ -18,8 +26,19 @@
       </div>
       <div class="space-noise"></div>
     </div>
+    <div class="visual-spotlight" aria-hidden="true"></div>
     <a class="skip-link" href="#app">跳到内容</a>
-    <aside class="sidebar">
+    <div class="visual-logo-wrapper" aria-hidden="true">
+      <div class="visual-logo-mark">SFX</div>
+      <span>合成器音效学习工具</span>
+    </div>
+    <div class="visual-burger-wrapper">
+      <button class="visual-burger-btn" type="button" aria-label="打开导航菜单" aria-controls="site-menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <aside class="sidebar" id="site-menu">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">SFX</span>
         <div>
@@ -107,6 +126,7 @@
     <script type="module" src="./src/visual-space.js"></script>
     <script type="module" src="./src/interaction-effects.js"></script>
     <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/shell-visuals.js"></script>
   </body>
 </html>
 
