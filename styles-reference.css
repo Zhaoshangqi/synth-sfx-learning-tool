@@ -3196,3 +3196,119 @@ body.is-direct-manipulating .content .sound-lab-workbench :where(
     transition: none !important;
   }
 }
+
+/* Reference aether relay packet flow v9.21
+   A final native pass for the pasted Aether Flow prompt: subtle packet paths
+   around real learning/workbench components, with drag-safe paused motion. */
+
+.content :where(
+  .dashboard-module-directory,
+  .learning-flow,
+  .workbench-panel,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .sound-lab-secondary-section,
+  .professional-module-panel
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.content :where(
+  .dashboard-module-directory,
+  .learning-flow,
+  .workbench-panel,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .sound-lab-secondary-section,
+  .professional-module-panel
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.content :where(
+  .dashboard-module-directory,
+  .learning-flow,
+  .workbench-panel,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .sound-lab-secondary-section,
+  .professional-module-panel
+)::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at calc(18% + var(--space-x, 0) * 4%) calc(36% + var(--space-y, 0) * 3%), rgba(117, 197, 222, 0.12), transparent 0 9%, transparent 28%),
+    linear-gradient(110deg, transparent 0 26%, rgba(117, 197, 222, 0.12) 39%, rgba(255, 255, 255, 0.18) 49%, rgba(94, 234, 212, 0.08) 58%, transparent 76%),
+    repeating-linear-gradient(116deg, transparent 0 54px, rgba(117, 197, 222, 0.03) 55px, transparent 58px);
+  background-size: 100% 100%, 280% 100%, 152px 152px;
+  opacity: 0.1;
+  mix-blend-mode: screen;
+  filter: blur(0.12px) saturate(1.05);
+  transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0);
+  animation: ref9-relay-packet-flow 26s ease-in-out infinite alternate;
+}
+
+.content :where(.dashboard-module-directory, .learning-flow)::after {
+  opacity: 0.13;
+}
+
+.content :where(.module-directory-card, .daily-video-card, .source-card)::after {
+  opacity: 0.075;
+}
+
+body.is-direct-manipulating .content :where(
+  .dashboard-module-directory,
+  .learning-flow,
+  .workbench-panel,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .sound-lab-secondary-section,
+  .professional-module-panel
+)::after {
+  animation-name: ref9-relay-packet-flow;
+  animation-play-state: paused !important;
+  opacity: 0.035 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-relay-packet-flow {
+  0% {
+    background-position: 0 0, 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 3px), calc(var(--space-y, 0) * 2px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 20%, 100% 50%, 152px 80px;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.014);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content :where(
+    .dashboard-module-directory,
+    .learning-flow,
+    .workbench-panel,
+    .module-directory-card,
+    .daily-video-card,
+    .source-card,
+    .sound-lab-secondary-section,
+    .professional-module-panel
+  )::after {
+    animation-name: ref9-relay-packet-flow;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.055 !important;
+    transition: none !important;
+  }
+}

@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-translation"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-relay"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-aether-translation/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-translation/);
+  assert.match(html, /visual-space\.js\?v=20260709-aether-relay/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-relay/);
 });
 
 test('pasted Aether Flow prompt becomes a soft component-aware flow network', () => {
@@ -419,11 +419,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-aether-translation"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-aether-translation'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-aether-translation'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-aether-relay"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-aether-relay'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-aether-relay'/);
   assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-dynamic-detail'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260709-aether-translation'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-aether-relay'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -795,7 +795,7 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
-  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-aether-translation/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-aether-relay/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260709-dynamic-detail/);
   assert.match(css, /\.sound-lab-workbench/);
@@ -2072,8 +2072,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-translation/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-translation/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-relay/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-relay/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -2093,8 +2093,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-translation/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-translation/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-relay/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-relay/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2247,8 +2247,8 @@ test('pasted aether flow prompt adds an adaptive particle mesh without React dep
   assert.match(css, /#particle-canvas\s*\{[\s\S]*will-change:\s*opacity,\s*filter/);
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-translation/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-translation"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-relay/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-relay"/);
 });
 
 test('pasted aether flow prompt adds slow energy rivers and card-edge currents', () => {
@@ -2323,8 +2323,34 @@ test('pasted aether flow prompt adds a viscous stream lattice without React depe
   assert.match(css, /@keyframes ref9-viscous-edge-current/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-viscous-edge-current/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-viscous-edge-current/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-translation/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-translation"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-relay/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-relay"/);
+});
+
+test('pasted aether flow prompt adds component relay packets without dragging flashes', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherRelayPackets/);
+  assert.match(visualSpaceJs, /AETHER_RELAY_PACKET_COUNT/);
+  assert.match(visualSpaceJs, /collectAetherComponentRelayLinks/);
+  assert.match(visualSpaceJs, /createAetherRelayPacket/);
+  assert.match(visualSpaceJs, /resetAetherRelayPackets/);
+  assert.match(visualSpaceJs, /energizeAetherRelayPackets/);
+  assert.match(visualSpaceJs, /drawAetherComponentRelayPackets/);
+  assert.match(visualSpaceJs, /drawAetherComponentFlowNetwork\(time\)[\s\S]*drawAetherComponentRelayPackets\(time\)/);
+  assert.match(visualSpaceJs, /synth:view-transition[\s\S]*resetAetherRelayPackets/);
+  assert.match(visualSpaceJs, /synth:audio-pulse[\s\S]*energizeAetherRelayPackets/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherComponentRelayPackets\(time\)/);
+  assert.doesNotMatch(visualSpaceJs, /fillStyle\s*=\s*['"]black['"]/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react|tailwindcss/);
+
+  assert.match(css, /Reference aether relay packet flow v9\.21/);
+  assert.match(css, /\.content :where\([\s\S]*\.dashboard-module-directory,[\s\S]*\.learning-flow,[\s\S]*\.workbench-panel[\s\S]*\)::after/);
+  assert.match(css, /@keyframes ref9-relay-packet-flow/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-relay-packet-flow/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-relay-packet-flow/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {
