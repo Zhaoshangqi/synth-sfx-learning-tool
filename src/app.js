@@ -3060,6 +3060,12 @@ function bindSoundLabControls() {
     });
   });
 
+  document.querySelectorAll('[data-quality-coach-apply]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applyPatchDoctorSuggestion(button.dataset.qualityCoachApply, button);
+    });
+  });
+
   document.querySelectorAll('[data-workbench-action]').forEach((button) => {
     button.addEventListener('click', async () => {
       await handleWorkbenchAction(button.dataset.workbenchAction, button);

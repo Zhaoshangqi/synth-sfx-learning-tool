@@ -1404,6 +1404,86 @@ function buildPatchDoctor(family, patch, macroList = []) {
   };
 }
 
+function buildSoundQualityCoach(patch, patchDoctor) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
+  const brightness = values.brightness ?? 50;
+  const material = values.material ?? 50;
+  const space = values.space ?? 50;
+  const transientMix = layerMix.transient ?? 50;
+  const bodyMix = layerMix.body ?? 50;
+  const textureMix = layerMix.texture ?? 50;
+  const tailMix = layerMix.tail ?? 50;
+  const headroom = clamp((comfortBus.headroom ?? 0) * 650, 0, 100);
+  const deHarsh = clamp((comfortBus.deHarsh ?? 0) * 100, 0, 100);
+  const monoAnchor = clamp((comfortBus.monoAnchor ?? 0) * 180, 0, 100);
+  const tailDuck = clamp((comfortBus.tailDuck ?? 0) * 180, 0, 100);
+  const transientBodyGap = Math.abs(transientMix - bodyMix);
+  const primaryDiagnostic = patchDoctor?.diagnostics?.[0];
+
+  const metrics = [
+    {
+      id: 'headroom',
+      labelZh: '响度余量',
+      value: Math.round(headroom),
+      statusZh: headroom >= 60 ? '安全' : '偏紧',
+      listenZh: '切 Raw / Comfort / Studio 时，主体大小应接近，不能因为更响就误判更好。',
+      fixZh: headroom >= 60 ? '保持当前输出余量，下一步检查刺耳边缘。' : '先降一点输出或 drive，再匹配响度做 A/B。',
+    },
+    {
+      id: 'harshness',
+      labelZh: '刺耳风险',
+      value: Math.round(clamp(brightness * 0.42 + material * 0.26 + textureMix * 0.2 - deHarsh * 0.18, 0, 100)),
+      statusZh: brightness + material > 150 ? '重点听' : '可控',
+      listenZh: '听 3k-8k 是否薄、扎、像噪声刮耳，尤其是金属和电流类声音。',
+      fixZh: '优先少量降低 Brightness / Texture，确认金属感还在而不是只变暗。',
+    },
+    {
+      id: 'body-anchor',
+      labelZh: '主体锚点',
+      value: Math.round(clamp(bodyMix * 0.5 + monoAnchor * 0.34 + (100 - transientBodyGap) * 0.16, 0, 100)),
+      statusZh: bodyMix >= 62 ? '稳定' : '偏空',
+      listenZh: '关掉空间后，声音仍应有能被识别的主体重量或音高锚点。',
+      fixZh: '如果只剩 click 和噪声，补 Body 或降低高频纹理，让主体先成立。',
+    },
+    {
+      id: 'tail-mask',
+      labelZh: '尾巴遮挡',
+      value: Math.round(clamp(space * 0.34 + tailMix * 0.38 - tailDuck * 0.18, 0, 100)),
+      statusZh: space + tailMix > 145 ? '可能遮挡' : '可控',
+      listenZh: '听第一下之后，reverb/delay 是否立刻盖住主体，让动作边缘变糊。',
+      fixZh: '小幅收 Space / Tail，或让 tail duck 起音，保留 dry transient。',
+    },
+    {
+      id: 'layer-balance',
+      labelZh: '层级平衡',
+      value: Math.round(clamp(100 - transientBodyGap * 0.72 - Math.abs(textureMix - bodyMix) * 0.18, 0, 100)),
+      statusZh: transientBodyGap > 28 ? '需校准' : '均衡',
+      listenZh: '起音、主体、质感和尾巴要像同一个声音，不要像几个样本拼接。',
+      fixZh: '一次只改一个层级：Transient、Body、Texture 或 Tail，写进 REAPER item notes。',
+    },
+  ];
+
+  return {
+    titleZh: '音质听诊台',
+    summaryZh: '把响度余量、刺耳风险、主体锚点、尾巴遮挡和层级平衡放在一张听感地图里；先听最高风险，再只改一个参数做 A/B 验证。',
+    metrics,
+    routine: [
+      '先切 Raw / Comfort / Studio，确认响度接近，只听质感差异。',
+      '看分数最高的一项，solo 或专注听那一段：起音、主体或尾巴。',
+      '点一键试修，只做小幅参数变化，不要同时重做整个 Patch。',
+      '回到 A/B，写下保留或撤回的原因。',
+    ],
+    primaryFix: {
+      diagnosticId: primaryDiagnostic?.id ?? 'harsh-edge',
+      labelZh: `一键试修优先项：${primaryDiagnostic?.labelZh ?? '刺耳边缘'}`,
+      feedbackZh: '只改一个参数后，用 A/B 验证这次试修是否真的更舒服、更真实，而不是只变小声。',
+    },
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -1623,6 +1703,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
       percent: clamp(value, 0, 100),
     };
   });
+  const patchDoctor = buildPatchDoctor(family, patch, macroList);
   const presetDnaOptions = getPresetDnaForFamily(family?.id);
   const patchJson = JSON.stringify({
     familyId: patch.familyId,
@@ -1672,7 +1753,8 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     waveformFingerprint: buildWaveformFingerprint(patch),
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
-    patchDoctor: buildPatchDoctor(family, patch, macroList),
+    patchDoctor,
+    soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
     evidence: family.sourceIds,
     patchJson,

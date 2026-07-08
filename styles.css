@@ -7086,15 +7086,178 @@ textarea {
   color: rgba(244, 247, 251, 0.72);
 }
 
+.sound-quality-coach-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(94, 234, 212, 0.1), transparent 42%),
+    radial-gradient(circle at 100% 18%, rgba(124, 140, 255, 0.09), transparent 36%),
+    linear-gradient(145deg, rgba(8, 10, 18, 0.9), rgba(18, 24, 38, 0.78));
+  color: rgba(244, 247, 251, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.quality-coach-head {
+  display: grid;
+  gap: 4px;
+}
+
+.quality-coach-head span {
+  color: rgba(94, 234, 212, 0.86);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quality-coach-head strong {
+  color: var(--v3-text, #f4f7fb);
+  font-size: 14px;
+}
+
+.quality-coach-head p {
+  max-width: 78ch;
+  margin: 0;
+  color: rgba(174, 183, 198, 0.8);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.quality-coach-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quality-coach-metric {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(174, 183, 198, 0.12);
+  border-radius: 7px;
+  background: rgba(10, 15, 27, 0.66);
+}
+
+.quality-coach-metric div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quality-coach-metric strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--v3-text, #f4f7fb);
+  font-size: 11px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quality-coach-metric span {
+  flex: 0 0 auto;
+  color: rgba(94, 234, 212, 0.92);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.quality-coach-metric small,
+.quality-coach-metric p,
+.quality-coach-metric em {
+  margin: 0;
+  color: rgba(174, 183, 198, 0.78);
+  font-size: 10px;
+  line-height: 1.48;
+}
+
+.quality-coach-metric em {
+  color: rgba(244, 247, 251, 0.76);
+  font-style: normal;
+  font-weight: 760;
+}
+
+.quality-coach-metric i {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(94, 234, 212, 0.86) 0 var(--quality-coach-value), rgba(174, 183, 198, 0.12) var(--quality-coach-value) 100%);
+}
+
+.quality-coach-routine {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quality-coach-routine span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(94, 234, 212, 0.12);
+  border-radius: 7px;
+  background: rgba(94, 234, 212, 0.055);
+  color: rgba(244, 247, 251, 0.78);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.quality-coach-routine b {
+  color: rgba(94, 234, 212, 0.92);
+  font-size: 10px;
+}
+
+.quality-coach-apply-button {
+  display: grid;
+  gap: 5px;
+  min-height: 56px;
+  padding: 11px 13px;
+  border: 1px solid rgba(94, 234, 212, 0.34);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.18), rgba(124, 140, 255, 0.12));
+  color: var(--v3-text, #f4f7fb);
+  cursor: pointer;
+  text-align: left;
+}
+
+.quality-coach-apply-button:hover,
+.quality-coach-apply-button:focus-visible {
+  border-color: rgba(94, 234, 212, 0.58);
+  box-shadow: 0 0 28px rgba(94, 234, 212, 0.12);
+  outline: none;
+}
+
+.quality-coach-apply-button strong {
+  color: var(--v3-text, #f4f7fb);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.quality-coach-apply-button span {
+  color: rgba(174, 183, 198, 0.86);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 @media (max-width: 1100px) {
-  .calibration-step-grid {
+  .calibration-step-grid,
+  .quality-coach-metric-grid,
+  .quality-coach-routine {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 680px) {
   .calibration-meter-row,
-  .calibration-step-grid {
+  .calibration-step-grid,
+  .quality-coach-metric-grid,
+  .quality-coach-routine {
     grid-template-columns: 1fr;
   }
 }
@@ -13860,5 +14023,582 @@ textarea:focus {
   .primary-button,
   .secondary-button {
     transition: none !important;
+  }
+}
+
+/* Stitch reference fusion v4.8: editorial light studio + readable dark synth console */
+:root {
+  --stitch-canvas: #E4E4E4;
+  --stitch-paper: #F4F1E8;
+  --stitch-ink: #0B0B0B;
+  --stitch-soft-ink: #292929;
+  --stitch-muted: #6E6A64;
+  --stitch-accent: #75C5DE;
+  --stitch-accent-deep: #0B7082;
+  --stitch-line: rgba(11, 11, 11, 0.11);
+  --stitch-shadow: 0 30px 96px rgba(20, 24, 28, 0.13);
+  --stitch-fast: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+body {
+  background:
+    radial-gradient(circle at 78% 8%, rgba(117, 197, 222, 0.22), transparent 0 25vw),
+    radial-gradient(circle at 12% 4%, rgba(244, 241, 232, 0.78), transparent 0 19vw),
+    linear-gradient(180deg, #EDEDED 0%, var(--stitch-canvas) 48%, #DADADA 100%);
+}
+
+.visual-logo-wrapper {
+  top: 28px;
+  left: 36px;
+  gap: 14px;
+  color: var(--stitch-ink);
+  font-weight: 800;
+}
+
+.visual-logo-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--stitch-ink);
+  color: var(--stitch-paper);
+  box-shadow: 0 18px 54px rgba(11, 11, 11, 0.18);
+}
+
+.visual-burger-btn {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--stitch-paper);
+  box-shadow: 0 20px 62px rgba(11, 11, 11, 0.14);
+  transition:
+    background 260ms var(--stitch-fast),
+    transform 260ms var(--stitch-fast),
+    box-shadow 260ms var(--stitch-fast);
+}
+
+.visual-burger-btn:hover,
+.visual-burger-btn:focus-visible,
+.visual-burger-btn.is-open {
+  background: var(--stitch-ink);
+  box-shadow: 0 24px 80px rgba(11, 11, 11, 0.25);
+}
+
+.shell-menu-open .sidebar {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toolbar {
+  width: min(1220px, calc(100% - 38px));
+  padding: 10px;
+  border: 1px solid rgba(11, 11, 11, 0.075);
+  background: rgba(244, 241, 232, 0.82);
+  box-shadow: 0 22px 72px rgba(20, 24, 28, 0.11);
+}
+
+.content {
+  width: min(1260px, calc(100% - 38px));
+}
+
+.view-header {
+  margin: 0 0 20px;
+}
+
+.view-header h2 {
+  color: var(--stitch-ink);
+  font-size: clamp(42px, 6.6vw, 92px);
+  line-height: 0.84;
+  letter-spacing: -0.055em;
+}
+
+.view-header p,
+.muted {
+  color: rgba(11, 11, 11, 0.62);
+}
+
+.dashboard-hero {
+  position: relative;
+  min-height: min(690px, calc(100dvh - 160px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.42fr);
+  gap: clamp(22px, 3vw, 44px);
+  padding: clamp(28px, 4.8vw, 68px);
+  border-radius: 30px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at var(--spot-x) var(--spot-y), rgba(255, 255, 255, 0.62), transparent 0 160px, rgba(117, 197, 222, 0.12) 255px, transparent 410px),
+    linear-gradient(145deg, rgba(244, 241, 232, 0.94), rgba(255, 255, 255, 0.62));
+  box-shadow: var(--stitch-shadow);
+}
+
+.dashboard-hero::before {
+  content: "SFX";
+  position: absolute;
+  left: 50%;
+  bottom: -0.18em;
+  z-index: -1;
+  transform: translateX(-50%);
+  color: rgba(11, 11, 11, 0.072);
+  font-size: clamp(210px, 34vw, 610px);
+  font-weight: 760;
+  line-height: 0.78;
+  letter-spacing: -0.075em;
+  pointer-events: none;
+}
+
+.dashboard-hero::after {
+  height: 1px;
+  top: auto;
+  bottom: 22%;
+  background: linear-gradient(90deg, transparent, rgba(117, 197, 222, 0.5), rgba(255, 255, 255, 0.92), transparent);
+  animation: hero-scan 9s ease-in-out infinite alternate;
+}
+
+.hero-copy h3 {
+  max-width: 820px;
+  color: var(--stitch-ink);
+  font-size: clamp(44px, 6.3vw, 92px);
+  line-height: 0.88;
+  letter-spacing: -0.06em;
+}
+
+.hero-copy p {
+  max-width: 760px;
+  color: rgba(11, 11, 11, 0.66);
+  font-size: clamp(15px, 1.35vw, 19px);
+  line-height: 1.78;
+}
+
+.quality-panel {
+  align-self: center;
+  border: 1px solid rgba(244, 241, 232, 0.13);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 84% 14%, rgba(117, 197, 222, 0.15), transparent 34%),
+    rgba(17, 17, 17, 0.94);
+  color: var(--stitch-paper);
+  box-shadow: 0 28px 88px rgba(11, 11, 11, 0.24);
+}
+
+.quality-panel h3,
+.quality-panel strong {
+  color: var(--stitch-paper);
+}
+
+.quality-panel p,
+.quality-panel span {
+  color: rgba(244, 241, 232, 0.68);
+}
+
+.dashboard-starter-strip,
+.hero-status-strip,
+.dashboard-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-starter-strip {
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.dashboard-starter-strip button {
+  border-radius: 999px;
+  background: rgba(244, 241, 232, 0.82);
+  color: var(--stitch-ink);
+}
+
+.dashboard-actions .launchpad-button {
+  min-height: 72px;
+  border-radius: 999px;
+  padding: 8px 8px 8px 22px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 52px;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.dashboard-actions .launchpad-button.is-primary::after {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin-left: 0;
+  background:
+    linear-gradient(135deg, transparent 47%, #FFFFFF 48% 53%, transparent 54%),
+    var(--stitch-accent);
+}
+
+.dashboard-actions .launchpad-button:hover {
+  transform: translateY(-3px);
+}
+
+.dashboard-actions .launchpad-button:hover::after {
+  transform: translateX(-7px);
+}
+
+.card,
+.daily-video-card,
+.source-card,
+.technique-card,
+.community-technique-card,
+.deep-dive-card,
+.interactive-lab-card,
+.micro-lesson-card,
+.micro-route-shell,
+.research-command-panel,
+.source-result-toolbar,
+.source-form-compact,
+.practice-reference-card,
+.integration-console,
+.daily-sync-panel,
+.sound-lab-secondary-section,
+.dashboard-learning-console,
+.dashboard-module-directory,
+.learning-flow,
+.dashboard-spotlight {
+  border: 1px solid rgba(11, 11, 11, 0.075);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(244, 241, 232, 0.76));
+  color: var(--stitch-ink);
+  box-shadow: 0 20px 64px rgba(20, 24, 28, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.card h3,
+.card h4,
+.daily-video-card h3,
+.source-card h3,
+.technique-card h3,
+.community-technique-card h3,
+.deep-dive-card h3,
+.interactive-lab-card h3,
+.micro-lesson-card h3 {
+  color: var(--stitch-ink);
+}
+
+.card p,
+.card li,
+.daily-video-card p,
+.source-card p,
+.technique-card p,
+.community-technique-card p,
+.deep-dive-card p,
+.interactive-lab-card p,
+.micro-lesson-card p {
+  color: rgba(11, 11, 11, 0.66);
+}
+
+.badge,
+.tag,
+.card-kicker,
+.module-priority-badge,
+.daily-video-status,
+.technique-chip,
+.source-result-toolbar > span {
+  border-color: rgba(117, 197, 222, 0.36);
+  background: rgba(117, 197, 222, 0.16);
+  color: #075669;
+}
+
+.primary-button,
+.secondary-button,
+.daily-video-open-link,
+.daily-filter-row button,
+.lab-select-button,
+.preset-button,
+.engine-mode-button,
+.quality-mode-button,
+.deep-module-button,
+.micro-track-button,
+.challenge-selector button,
+.material-select-button,
+.sound-preset-card,
+.source-card .source-link {
+  transition:
+    transform 230ms var(--stitch-fast),
+    border-color 230ms var(--stitch-fast),
+    background 230ms var(--stitch-fast),
+    box-shadow 230ms var(--stitch-fast);
+}
+
+.primary-button:active,
+.secondary-button:active,
+.daily-video-open-link:active,
+.lab-select-button:active,
+.preset-button:active,
+.material-select-button:active,
+.deep-module-button:active,
+.micro-track-button:active,
+.dashboard-actions .launchpad-button:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.signal-atlas-console,
+.sound-lab-workbench,
+.synth-workbench-layout {
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 82% 6%, rgba(117, 197, 222, 0.13), transparent 32%),
+    linear-gradient(180deg, rgba(17, 17, 17, 0.98), rgba(26, 27, 28, 0.96));
+  color: var(--stitch-paper);
+  box-shadow: 0 34px 104px rgba(11, 11, 11, 0.28);
+}
+
+.signal-atlas-console .workbench-panel,
+.signal-atlas-console .side-panel,
+.signal-atlas-console .route-progress-panel,
+.signal-atlas-console .waveform-detective-panel,
+.signal-atlas-console .challenge-panel,
+.signal-atlas-console .quick-entry-panel,
+.signal-atlas-console .workbench-module-map,
+.signal-atlas-console .workbench-usage-panel,
+.signal-atlas-console .modulation-panel,
+.signal-atlas-console .workbench-coach-panel,
+.signal-atlas-console .patch-doctor-panel,
+.signal-atlas-console .practice-loop-panel,
+.signal-atlas-console .listening-compass-panel,
+.signal-atlas-console .parameter-coach-panel,
+.signal-atlas-console .polish-calibration-panel,
+.signal-atlas-console .sound-quality-coach-panel {
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  background: rgba(244, 241, 232, 0.07);
+  color: var(--stitch-paper);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.signal-atlas-console .workbench-panel h3,
+.signal-atlas-console .workbench-panel h4,
+.signal-atlas-console .side-panel h3,
+.signal-atlas-console .side-panel h4,
+.signal-atlas-console .patch-doctor-panel h4,
+.signal-atlas-console .practice-loop-panel h4,
+.signal-atlas-console .listening-compass-panel h4,
+.signal-atlas-console .sound-quality-coach-panel h4,
+.signal-atlas-console .sound-quality-coach-panel strong {
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console .workbench-panel p,
+.signal-atlas-console .workbench-panel li,
+.signal-atlas-console .side-panel p,
+.signal-atlas-console .side-panel li,
+.signal-atlas-console .patch-doctor-panel p,
+.signal-atlas-console .patch-doctor-panel li,
+.signal-atlas-console .practice-loop-panel p,
+.signal-atlas-console .practice-loop-panel li,
+.signal-atlas-console .listening-compass-panel p,
+.signal-atlas-console .listening-compass-panel li,
+.signal-atlas-console .parameter-coach-panel p,
+.signal-atlas-console .polish-calibration-panel p,
+.signal-atlas-console .sound-quality-coach-panel p {
+  color: rgba(244, 241, 232, 0.74);
+}
+
+.signal-atlas-console .module-map-card,
+.signal-atlas-console .usage-card,
+.signal-atlas-console .mod-source-card,
+.signal-atlas-console .coach-card,
+.signal-atlas-console .waveform-ingredient-card,
+.signal-atlas-console .quality-coach-metric,
+.signal-atlas-console .patch-doctor-card,
+.signal-atlas-console .calibration-step-card {
+  border-color: rgba(244, 241, 232, 0.12);
+  background: rgba(244, 241, 232, 0.075);
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console .module-map-card p,
+.signal-atlas-console .usage-card p,
+.signal-atlas-console .mod-source-card p,
+.signal-atlas-console .coach-card p,
+.signal-atlas-console .waveform-ingredient-card p,
+.signal-atlas-console .quality-coach-metric p,
+.signal-atlas-console .patch-doctor-card p,
+.signal-atlas-console .calibration-step-card p,
+.signal-atlas-console .module-map-card small,
+.signal-atlas-console .usage-card small,
+.signal-atlas-console .mod-source-card small,
+.signal-atlas-console .coach-card small,
+.signal-atlas-console .waveform-ingredient-card small,
+.signal-atlas-console .quality-coach-metric small {
+  color: rgba(244, 241, 232, 0.68);
+}
+
+.signal-atlas-console button,
+.signal-atlas-console .atlas-tool-button,
+.signal-atlas-console .atlas-ab-button,
+.signal-atlas-console .session-jump-actions button,
+.signal-atlas-console .output-compare-strip button,
+.signal-atlas-console .quality-coach-apply-button {
+  border-color: rgba(244, 241, 232, 0.14);
+  background: rgba(244, 241, 232, 0.08);
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console button:hover,
+.signal-atlas-console button:focus-visible,
+.signal-atlas-console .atlas-tool-button:hover,
+.signal-atlas-console .atlas-ab-button:hover,
+.signal-atlas-console .session-jump-actions button:hover,
+.signal-atlas-console .output-compare-strip button:hover,
+.signal-atlas-console .quality-coach-apply-button:hover {
+  border-color: rgba(117, 197, 222, 0.54);
+  background: rgba(117, 197, 222, 0.16);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.signal-atlas-console input,
+.signal-atlas-console select,
+.signal-atlas-console textarea {
+  border-color: rgba(244, 241, 232, 0.14);
+  background: rgba(5, 8, 10, 0.64);
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console input[type="range"] {
+  cursor: grab;
+}
+
+.signal-atlas-console input[type="range"]:active {
+  cursor: grabbing;
+}
+
+.is-pressing {
+  box-shadow:
+    inset 0 0 0 1px rgba(117, 197, 222, 0.28),
+    0 0 0 4px rgba(117, 197, 222, 0.12),
+    0 20px 54px rgba(11, 11, 11, 0.13) !important;
+}
+
+@media (max-width: 980px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .quality-panel {
+    align-self: stretch;
+  }
+
+  .dashboard-actions .launchpad-button {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .dashboard-actions .launchpad-button.is-primary::after {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .visual-logo-wrapper {
+    left: 18px;
+  }
+
+  .visual-burger-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .content,
+  .toolbar {
+    width: calc(100% - 22px);
+  }
+
+  .view-header h2,
+  .hero-copy h3 {
+    letter-spacing: -0.035em;
+  }
+}
+
+/* Stitch Chinese typography and console readability v4.9 */
+body,
+.view-header h2,
+.hero-copy h3,
+.dashboard-actions button,
+.signal-atlas-console,
+.signal-atlas-console * {
+  letter-spacing: 0;
+}
+
+.view-header h2 {
+  line-height: 0.96;
+  letter-spacing: 0;
+}
+
+.hero-copy h3 {
+  max-width: 760px;
+  font-size: clamp(40px, 4.85vw, 72px);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.dashboard-hero {
+  align-items: center;
+}
+
+.dashboard-launchpad {
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 22px;
+  background: rgba(17, 17, 17, 0.82);
+  box-shadow: 0 24px 70px rgba(11, 11, 11, 0.2);
+}
+
+.dashboard-action-label span,
+.dashboard-launchpad .dashboard-action-label span {
+  color: var(--stitch-accent);
+}
+
+.dashboard-action-label small,
+.dashboard-launchpad .dashboard-action-label small {
+  color: rgba(244, 241, 232, 0.68);
+}
+
+.signal-atlas-console .workbench-topbar h3 {
+  color: var(--stitch-paper);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.24);
+}
+
+.signal-atlas-console .workbench-breadcrumb {
+  color: rgba(244, 241, 232, 0.58);
+}
+
+.signal-atlas-console .workbench-breadcrumb strong {
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console .workbench-topbar p {
+  color: rgba(244, 241, 232, 0.72);
+}
+
+.signal-atlas-console .workbench-command-center {
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  background: rgba(8, 10, 12, 0.58);
+}
+
+.signal-atlas-console .workbench-command-center h4,
+.signal-atlas-console .workbench-command-center strong {
+  color: var(--stitch-paper);
+}
+
+.signal-atlas-console .workbench-command-center p,
+.signal-atlas-console .workbench-command-center small {
+  color: rgba(244, 241, 232, 0.68);
+}
+
+.signal-atlas-console .workbench-command-center span,
+.signal-atlas-console .workbench-command-center em,
+.signal-atlas-console .workbench-command-center .workbench-state-strip,
+.signal-atlas-console .workbench-command-center .workbench-feedback {
+  color: rgba(244, 241, 232, 0.66);
+}
+
+@media (max-width: 680px) {
+  .hero-copy h3 {
+    font-size: clamp(36px, 11vw, 56px);
+    line-height: 1.04;
   }
 }

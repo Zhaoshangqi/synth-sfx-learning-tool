@@ -623,6 +623,31 @@ test('renderSoundLabWorkbench renders perceptual calibration as beginner quality
   assert.match(html, /Raw|Comfort|Studio|-14 LUFS/);
 });
 
+test('renderSoundLabWorkbench renders a sound quality coach with a real one-click repair action', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 96,
+    motion: 26,
+    material: 92,
+    space: 82,
+    variation: 30,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 92, body: 54, texture: 86, tail: 88 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /sound-quality-coach-panel/);
+  assert.match(html, /音质听诊台|质量教练/);
+  assert.match(html, /响度余量|刺耳风险|主体锚点|尾巴遮挡|层级平衡/);
+  assert.match(html, /data-quality-coach-apply="/);
+  assert.match(html, /一键|试修|优先/);
+  assert.match(html, /只改一个|A\/B|验证/);
+});
+
 test('renderSoundLabWorkbench renders live parameter coach with synth and REAPER guidance', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

@@ -41,6 +41,24 @@ test('studio reference shell ports the supplied splash menu CTA and spotlight mo
   assert.match(shellJs, /--spot-x/);
 });
 
+test('stitch visual direction keeps the app as a premium light studio with readable dark lab modules', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Stitch reference fusion v4\.8/);
+  assert.match(css, /--stitch-canvas:\s*#E4E4E4/);
+  assert.match(css, /--stitch-accent:\s*#75C5DE/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"SFX"/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button\.is-primary::after\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.match(css, /\.visual-burger-btn\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.match(css, /\.shell-menu-open \.sidebar\s*\{[\s\S]*transform:\s*translateY\(0\)/);
+  assert.match(css, /\.signal-atlas-console \.workbench-panel,[\s\S]*\.signal-atlas-console \.sound-quality-coach-panel\s*\{[\s\S]*background:\s*rgba\(244,\s*241,\s*232,\s*0\.07\)/);
+  assert.match(css, /\.signal-atlas-console \.workbench-panel p,[\s\S]*\.signal-atlas-console \.sound-quality-coach-panel p\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.74\)/);
+  assert.match(css, /Stitch Chinese typography and console readability v4\.9/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*line-height:\s*1\.02/);
+  assert.match(css, /\.signal-atlas-console \.workbench-topbar h3\s*\{[\s\S]*color:\s*var\(--stitch-paper\)/);
+  assert.match(css, /\.signal-atlas-console \.workbench-topbar p\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
+});
+
 test('dashboard learning path gives beginners a clickable route into real modules', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
@@ -1220,6 +1238,23 @@ test('sound lab Patch Doctor is routed, readable, and not a dead card', () => {
   assert.match(css, /\.patch-doctor-actions\s*\{/);
   assert.match(css, /\.patch-doctor-apply-button\s*\{/);
   assert.match(css, /\.patch-doctor-card button\s*\{[\s\S]*cursor:\s*pointer/);
+});
+
+test('sound lab quality coach is a live routed panel, not a decorative score card', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /buildSoundQualityCoach/);
+  assert.match(modelJs, /soundQualityCoach:\s*buildSoundQualityCoach/);
+  assert.match(renderJs, /sound-quality-coach-panel/);
+  assert.match(renderJs, /data-quality-coach-apply="\$\{escapeHtml\(coach\.primaryFix\.diagnosticId\)\}"/);
+  assert.match(appJs, /\[data-quality-coach-apply\]/);
+  assert.match(appJs, /applyPatchDoctorSuggestion\(button\.dataset\.qualityCoachApply,\s*button\)/);
+  assert.match(css, /\.sound-quality-coach-panel\s*\{/);
+  assert.match(css, /\.quality-coach-metric-grid\s*\{/);
+  assert.match(css, /\.quality-coach-apply-button\s*\{/);
 });
 
 test('sound lab listening compass stays readable and routes to existing workbench actions', () => {
