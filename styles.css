@@ -11622,6 +11622,105 @@ button:disabled,
   font-weight: 900;
 }
 
+.waveform-drill-rail {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(110, 231, 249, 0.16);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(110, 231, 249, 0.1), transparent 38%),
+    linear-gradient(135deg, rgba(18, 24, 38, 0.72), rgba(8, 10, 18, 0.54));
+}
+
+.waveform-drill-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waveform-drill-head strong {
+  color: var(--v3-text);
+  font-size: 13px;
+}
+
+.waveform-drill-head span {
+  color: rgba(244, 241, 232, 0.68);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.waveform-drill-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.waveform-drill-step {
+  display: grid;
+  min-height: 168px;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(244, 241, 232, 0.075), rgba(244, 241, 232, 0.035)),
+    rgba(10, 14, 22, 0.5);
+  color: var(--v3-text);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 170ms ease, border-color 170ms ease, background 170ms ease, box-shadow 170ms ease;
+}
+
+.waveform-drill-step:hover,
+.waveform-drill-step:focus-visible {
+  border-color: rgba(110, 231, 249, 0.42);
+  background:
+    linear-gradient(180deg, rgba(110, 231, 249, 0.11), rgba(244, 241, 232, 0.045)),
+    rgba(10, 14, 22, 0.58);
+  box-shadow: 0 14px 34px rgba(6, 18, 28, 0.22), inset 0 0 0 1px rgba(110, 231, 249, 0.12);
+  transform: translateY(-2px);
+}
+
+.waveform-drill-step span {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.14);
+  color: rgba(244, 241, 232, 0.92);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.waveform-drill-step strong {
+  color: var(--v3-text);
+  font-size: 13px;
+  line-height: 1.22;
+}
+
+.waveform-drill-step :where(p, small, em) {
+  margin: 0;
+  color: rgba(244, 241, 232, 0.72);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+}
+
+.waveform-drill-step small {
+  color: rgba(110, 231, 249, 0.72);
+}
+
+.waveform-drill-step em {
+  color: rgba(94, 234, 212, 0.76);
+}
+
 .practice-loop-panel {
   display: grid;
   gap: 12px;
@@ -12028,6 +12127,19 @@ button:disabled,
 
   .waveform-detective-steps {
     grid-template-columns: 1fr;
+  }
+
+  .waveform-drill-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .waveform-drill-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .waveform-drill-head span {
+    text-align: left;
   }
 }
 

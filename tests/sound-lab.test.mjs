@@ -108,6 +108,32 @@ test('buildSoundLabViewModel explains the basic waveform ingredients behind a pa
   assert.match(model.waveformFingerprint.beginnerSummaryZh, /基础波形|听感/);
 });
 
+test('buildSoundLabViewModel turns waveform detective into a playable reverse-engineering drill', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 42,
+    material: 86,
+    space: 44,
+    variation: 38,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+  });
+  const drill = model.waveformFingerprint.drillSteps;
+
+  assert.ok(Array.isArray(drill), 'waveform detective should expose clickable drill steps');
+  assert.deepEqual(drill.map((step) => step.id), ['anchor', 'body-solo', 'edge-sweep', 'ab-proof']);
+  assert.ok(drill.every((step) => step.titleZh && step.listenZh && step.proofZh));
+  assert.ok(drill.some((step) => step.playAction === 'current'));
+  assert.ok(drill.some((step) => step.layerAudition === 'body'));
+  assert.ok(drill.some((step) => step.action === 'focus-controls'));
+  assert.ok(drill.some((step) => step.outputMode === 'comfort'));
+  assert.ok(drill.every((step) => /Serum|Phase Plant|Vital/.test(step.synthZh)));
+  assert.ok(drill.every((step) => /A\/B|REAPER|solo|pitch|filter|FM/i.test(step.proofZh + step.listenZh)));
+});
+
 test('buildSoundLabViewModel creates a beginner practice loop with one-change A/B guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

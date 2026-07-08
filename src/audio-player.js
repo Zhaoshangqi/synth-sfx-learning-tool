@@ -1,5 +1,5 @@
-﻿import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260708-flow-focus';
+import { buildLabAudioPatch } from './audio-model.js';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260708-aether-wake';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -250,7 +250,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260708-flow-focus');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260708-aether-wake');
       this.workletReady = true;
       return true;
     } catch {

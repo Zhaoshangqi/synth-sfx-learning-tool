@@ -1121,6 +1121,120 @@ body.is-direct-manipulating .signal-field::before {
   }
 }
 
+/* Reference aether cursor wake v9.5
+   Adds the pasted prompt's flow trace to key learning controls while keeping
+   direct manipulation calm and free of viewport flash. */
+
+.hero-signal-mesh,
+.dashboard-starter-strip,
+.waveform-drill-rail {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden !important;
+}
+
+.hero-signal-mesh::after,
+.dashboard-starter-strip::after,
+.waveform-drill-rail::after {
+  content: "";
+  position: absolute;
+  inset: -36%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 22% 48%, rgba(117, 197, 222, 0.22), transparent 0 8px, transparent 9px),
+    radial-gradient(circle at 72% 50%, rgba(244, 241, 232, 0.28), transparent 0 7px, transparent 8px),
+    linear-gradient(104deg, transparent 0 26%, rgba(117, 197, 222, 0.2) 42%, rgba(167, 139, 250, 0.12) 52%, transparent 70%);
+  background-size: 180px 100%, 240px 100%, 280% 100%;
+  opacity: 0.28;
+  transform: translate3d(-18%, 0, 0) skewX(-8deg);
+  animation: ref9-signal-current 18s var(--ref9-ease) infinite alternate;
+}
+
+.dashboard-starter-strip::after {
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+}
+
+.waveform-drill-rail::after {
+  inset: -14%;
+  background:
+    linear-gradient(104deg, transparent 0 24%, rgba(117, 197, 222, 0.18) 42%, rgba(244, 241, 232, 0.1) 50%, transparent 68%),
+    repeating-linear-gradient(90deg, transparent 0 52px, rgba(117, 197, 222, 0.055) 53px, transparent 55px);
+  background-size: 260% 100%, 96px 100%;
+  opacity: 0.16;
+  mix-blend-mode: screen;
+}
+
+.hero-signal-mesh > *,
+.dashboard-starter-strip > *,
+.waveform-drill-rail > * {
+  position: relative;
+  z-index: 1;
+}
+
+.signal-atlas-console .waveform-drill-step,
+.sound-lab-workbench .waveform-drill-step {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border-color: rgba(244, 241, 232, 0.14) !important;
+  background:
+    linear-gradient(180deg, rgba(244, 241, 232, 0.072), rgba(244, 241, 232, 0.032)),
+    rgba(10, 14, 22, 0.62) !important;
+  box-shadow: inset 0 0 0 1px rgba(117, 197, 222, 0.035) !important;
+}
+
+.signal-atlas-console .waveform-drill-step:hover,
+.signal-atlas-console .waveform-drill-step:focus-visible,
+.sound-lab-workbench .waveform-drill-step:hover,
+.sound-lab-workbench .waveform-drill-step:focus-visible {
+  border-color: rgba(117, 197, 222, 0.46) !important;
+  background:
+    linear-gradient(180deg, rgba(117, 197, 222, 0.1), rgba(244, 241, 232, 0.04)),
+    rgba(10, 14, 22, 0.7) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(117, 197, 222, 0.12) !important;
+}
+
+.dashboard-starter-strip:hover::after,
+.dashboard-starter-strip:focus-within::after,
+.waveform-drill-rail:hover::after,
+.waveform-drill-rail:focus-within::after {
+  opacity: 0.44;
+  animation-duration: 11s;
+}
+
+body.is-direct-manipulating .hero-signal-mesh::after,
+body.is-direct-manipulating .dashboard-starter-strip::after,
+body.is-direct-manipulating .waveform-drill-rail::after {
+  animation-name: ref9-signal-current;
+  animation-play-state: paused !important;
+  opacity: 0.14 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-signal-current {
+  0% {
+    background-position: 0 50%, 0 50%, 0% 50%;
+    transform: translate3d(-22%, 0, 0) skewX(-8deg);
+  }
+  100% {
+    background-position: 92px 50%, -118px 50%, 100% 50%;
+    transform: translate3d(22%, 0, 0) skewX(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-signal-mesh::after,
+  .dashboard-starter-strip::after,
+  .waveform-drill-rail::after {
+    animation-name: ref9-signal-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
 .ear-triage-panel {
   border-color: rgba(117, 197, 222, 0.24) !important;
 }

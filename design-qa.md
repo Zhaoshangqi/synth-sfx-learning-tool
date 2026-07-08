@@ -505,3 +505,27 @@ Passed for this iteration. The attached Aether Flow prompt is now represented as
   - Sound Lab flow focus: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-focus-soundlab.png`
   - Sound Lab after drag: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-focus-after-drag.png`
 - Tests: `npm.cmd test` passed, 236 tests.
+
+---
+
+## 2026-07-08 - Waveform reverse drill + Aether cursor wake
+
+- Goal: make the beginner waveform detective actionable, then adapt the attached `AetherFlowHero` prompt into the existing static app as a subtle native flow layer.
+- Learning upgrade: `Waveform Reverse Drill` now gives four clickable steps: listen to pitch anchor, solo the body layer, sweep the bright edge, and write an A/B conclusion in REAPER terms.
+- Visual upgrade: `src/visual-space.js` now adds throttled cursor wake particles behind pointer movement. `styles-reference.css` adds `ref9-signal-current` flow traces on the hero mesh, starter strip, and waveform drill rail.
+- Stability constraint: cursor wake is pointermove-only, bounded by `AETHER_WAKE_MAX_PARTICLES`, and pauses under `body.is-direct-manipulating`. It does not listen to pointerdown, so clicks and drags do not create viewport flashes.
+- Legacy CSS fix: final-layer rules now force `.waveform-drill-step` back to 14px module cards with `overflow:hidden`, preventing the global Sound Lab pill-button rule from turning them into large rounded capsules.
+- Cache stability: static entry and module URLs now use `?v=20260708-aether-wake`.
+- Local browser QA:
+  - Dashboard: `http://localhost:5177/?qa=aether-wake-<timestamp>#dashboard`.
+  - Sound Lab: `http://localhost:5177/?qa=aether-wake-<timestamp>#soundlab`.
+- Browser checks: passed. `visual-space.js?v=20260708-aether-wake` loaded, dashboard horizontal overflow stayed `0`, `#particle-canvas` opacity was `0.18`, `.hero-signal-mesh::after` and `.dashboard-starter-strip::after` computed `ref9-signal-current`, and direct route splash stayed `display:none`.
+- Sound Lab checks: passed. `.waveform-drill-rail::after` computed `ref9-signal-current`, drill step count was `4`, horizontal overflow stayed `0`, and no console/page errors were captured.
+- Drag stability: passed. Dragging the visible Sound Lab Brightness control set `body.is-direct-manipulating=true` and `globalThis.__synthDirectManipulating=true`; the drill rail flow paused, spotlight opacity dropped to `0.12`, and `#app.is-view-switching=false`.
+- Screenshots:
+  - Dashboard flow wake: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\aether-wake-dashboard.png`
+  - Sound Lab drill before step-radius fix: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\aether-wake-soundlab-polished.png`
+  - Sound Lab drill final card fix: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\aether-wake-soundlab-step-fix.png`
+- Tests:
+  - Targeted: `node --test --test-name-pattern "cursor wake currents|waveform detective is a routed beginner module" tests\visual-shell.test.mjs` passed.
+  - Full suite: `npm.cmd test` passed, 238 tests.
