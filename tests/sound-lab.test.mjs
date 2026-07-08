@@ -136,6 +136,40 @@ test('buildSoundLabViewModel turns waveform detective into a playable reverse-en
   assert.ok(drill.every((step) => /下一步|记录|验证|solo|A\/B|REAPER|filter|Brightness/i.test(step.nextZh + step.feedbackZh)));
 });
 
+test('buildSoundLabViewModel exposes a beginner ear chain that connects waveform layers repair and REAPER proof', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 36,
+    material: 88,
+    space: 58,
+    variation: 42,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 90, body: 58, texture: 82, tail: 76 },
+  });
+
+  const chain = model.earTrainingChain;
+  assert.ok(chain, 'view model should expose a single beginner ear training chain');
+  assert.match(chain.titleZh, /Beginner Ear Chain|听音诊断链|听音/);
+  assert.match(chain.summaryZh, /波形|起音|主体|尾巴|A\/B|REAPER/);
+  assert.equal(chain.steps.length, 5);
+  assert.deepEqual(chain.steps.map((step) => step.id), ['waveform-map', 'time-split', 'layer-solo', 'one-change', 'ab-proof']);
+  assert.ok(chain.steps.every((step) => step.labelZh && step.listenZh && step.proofZh));
+  assert.ok(chain.steps.every((step) => step.action || step.playAction || step.layerAudition || step.applyDiagnosticId || step.outputMode));
+  assert.match(chain.steps[0].listenZh + chain.steps[0].proofZh, /Sine|Square|Saw|Triangle|Noise|噪声/);
+  assert.match(chain.steps[1].listenZh, /起音|主体|尾巴/);
+  assert.equal(chain.steps[2].layerAudition, 'body');
+  assert.equal(chain.steps[3].applyDiagnosticId, model.patchDoctor.diagnostics[0].id);
+  assert.equal(chain.steps[4].outputMode, 'comfort');
+  assert.ok(chain.synthMap.serum && chain.synthMap.phasePlant && chain.synthMap.vital);
+  assert.match(chain.reaperNoteTemplate, /A\/B|REAPER|dry|full|tail-only/);
+  assert.equal(chain.activeStepId, 'one-change');
+});
+
 test('buildSoundLabViewModel creates a beginner practice loop with one-change A/B guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

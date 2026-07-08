@@ -2496,6 +2496,106 @@ function buildPracticeFocus(family, patch, patchDoctor, practiceLoop, earTriage,
   };
 }
 
+function buildEarTrainingChain(
+  family,
+  patch,
+  waveformFingerprint,
+  listeningCompass,
+  earTriage,
+  patchDoctor,
+  practiceLoop,
+  workflowStep = 'source',
+) {
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前音效';
+  const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const primaryIngredients = (waveformFingerprint?.ingredients ?? [])
+    .slice()
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+    .slice(0, 3)
+    .map((item) => item.label)
+    .join(' / ');
+  const soloStep = (earTriage?.steps ?? []).find((step) => step.id === 'isolate') ?? {};
+  const timeSplit = (listeningCompass?.stages ?? [])
+    .map((stage) => stage.labelZh?.replace(/^\d+\s*/, '') ?? stage.id)
+    .filter(Boolean)
+    .join(' / ');
+  const activeByWorkflow = {
+    source: 'waveform-map',
+    shape: 'one-change',
+    compare: 'ab-proof',
+    deliver: 'ab-proof',
+  };
+  const outputMode = patch.outputMode === 'raw' ? 'comfort' : patch.outputMode ?? 'comfort';
+
+  const steps = [
+    {
+      id: 'waveform-map',
+      labelZh: '01 波形地图',
+      titleZh: '先判断基础波形角色',
+      listenZh: `先听 ${familyName} 的主体像 Sine、Square、Saw、Triangle 还是 Noise 的组合；当前最像 ${primaryIngredients || 'Sine / Noise'}。`,
+      proofZh: '证据：能说明 pitch 锚点、亮边和噪声分别来自哪里，而不是只说“像金属”。',
+      action: 'focus-waveform',
+      actionLabelZh: '打开波形侦探',
+      waveformDrillStep: 'anchor',
+    },
+    {
+      id: 'time-split',
+      labelZh: '02 三段听法',
+      titleZh: '把声音切成起音 / 主体 / 尾巴',
+      listenZh: `按 ${timeSplit || '起音 / 主体 / 尾巴'} 的顺序听：先判断第一下，再判断材质身份，最后判断空间尾巴是否遮挡主体。`,
+      proofZh: '证据：能说出问题发生在 transient、body 还是 tail，而不是直接乱调所有宏。',
+      action: 'focus-practice-loop',
+      actionLabelZh: '看听辨导航',
+      playAction: 'current',
+    },
+    {
+      id: 'layer-solo',
+      labelZh: '03 Solo 层',
+      titleZh: '只听 body 层确认主体',
+      listenZh: soloStep.bodyZh ?? 'Solo body 层：关掉 transient、texture 和 tail 后，如果主体仍成立，就说明基础波形/共振锚点判断可靠。',
+      proofZh: '证据：body-only 仍能听出 pitch、重量或 modal 金属主体；如果听不出，问题可能来自噪声或空间假象。',
+      action: 'focus-practice-loop',
+      actionLabelZh: soloStep.actionLabelZh ?? 'Solo body',
+      layerAudition: 'body',
+    },
+    {
+      id: 'one-change',
+      labelZh: '04 只改一次',
+      titleZh: diagnostic.applyAction?.labelZh ?? '按 Patch Doctor 只改一个问题',
+      listenZh: diagnostic.listenZh ?? '只动最高优先级问题的一处参数，听它是否真的修正当前问题。',
+      proofZh: diagnostic.reaperCheckZh ?? '证据：A/B 后能写下保留或撤回原因，并说明不是响度错觉。',
+      action: diagnostic.action ?? 'focus-controls',
+      actionLabelZh: diagnostic.applyAction?.labelZh ?? '试调一次',
+      applyDiagnosticId: diagnostic.id ?? '',
+    },
+    {
+      id: 'ab-proof',
+      labelZh: '05 A/B 证明',
+      titleZh: '写 REAPER 交付证据',
+      listenZh: `切 dry / full / tail-only，再切 Raw / Comfort / ${outputMode}，响度匹配后判断变化是否更接近目标。`,
+      proofZh: '证据：REAPER note 里有 A/B 结论、只改一个参数、保留/撤回理由和下一轮要修哪里。',
+      action: 'focus-practice-loop',
+      actionLabelZh: '写 A/B 结论',
+      outputMode,
+    },
+  ];
+
+  return {
+    id: 'beginner-ear-chain',
+    titleZh: 'Beginner Ear Chain：听音诊断链',
+    summaryZh: `从零开始按一条线走：先看波形，再听起音、主体、尾巴，solo 问题层，只改一个参数，最后用 A/B 和 REAPER 证明。`,
+    activeStepId: activeByWorkflow[workflowStep] ?? 'waveform-map',
+    steps,
+    synthMap: {
+      serum: 'Serum: 用 Osc A/B、Noise、Filter 和 FX bypass 复刻每一步；先关空间再判断主体。',
+      phasePlant: 'Phase Plant: 把 transient、body、texture、tail 分成 lane，用 mute/solo 和 macro 做同一步 A/B。',
+      vital: 'Vital: 用 Osc、Sample/Noise、Filter、Warp/FM 和 FX 开关对应波形、材质与尾巴。',
+    },
+    reaperNoteTemplate: practiceLoop?.reaperNoteTemplate
+      ?? `REAPER A/B ${familyName}: dry / full / tail-only; 只改一个参数; 保留/撤回=____; 下一轮=____。`,
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -2788,13 +2888,26 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
   const missionBrief = buildMissionBrief(family, patch, patchDoctor, options.workflowStep ?? options.activeWorkflowStep ?? 'source');
   const practiceLoop = buildPracticeLoop(family, patch, macroList);
   const earTriage = buildEarTriage(family, patch, patchDoctor, macroList);
+  const workflowStep = options.workflowStep ?? options.activeWorkflowStep ?? 'source';
+  const waveformFingerprint = buildWaveformFingerprint(patch);
+  const listeningCompass = buildListeningCompass(family, patch, macroList, workflowStep);
   const practiceFocus = buildPracticeFocus(
     family,
     patch,
     patchDoctor,
     practiceLoop,
     earTriage,
-    options.workflowStep ?? options.activeWorkflowStep ?? 'source',
+    workflowStep,
+  );
+  const earTrainingChain = buildEarTrainingChain(
+    family,
+    patch,
+    waveformFingerprint,
+    listeningCompass,
+    earTriage,
+    patchDoctor,
+    practiceLoop,
+    workflowStep,
   );
   const presetDnaOptions = getPresetDnaForFamily(family?.id);
   const patchJson = JSON.stringify({
@@ -2843,14 +2956,15 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     meters: buildMeters(patch),
     soundQuality: buildSoundQuality(patch),
     polishCalibration: buildPolishCalibration(patch),
-    waveformFingerprint: buildWaveformFingerprint(patch),
+    waveformFingerprint,
     materialResonanceMap: buildMaterialResonanceMap(family, patch),
     practiceLoop,
-    listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
+    listeningCompass,
     patchDoctor,
     earTriage,
     missionBrief,
     practiceFocus,
+    earTrainingChain,
     targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),

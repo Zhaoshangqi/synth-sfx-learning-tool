@@ -377,7 +377,7 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
   assert.match(html, /visual-space\.js\?v=20260708-aether-orbit/);
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -393,11 +393,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-spatial-image"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-spatial-image'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-spatial-image'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-spatial-image'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-spatial-image'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-ear-chain"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-ear-chain'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-ear-chain'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-ear-chain'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-ear-chain'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -769,9 +769,9 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
-  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260708-spatial-image/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260708-ear-chain/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
-  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260708-spatial-image/);
+  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260708-ear-chain/);
   assert.match(css, /\.sound-lab-workbench/);
   assert.match(css, /\.macro-knob/);
   assert.match(css, /\.spectrum-stage/);
@@ -1623,6 +1623,20 @@ test('sound lab practice loop has routed actions and readable dark panel styling
   assert.match(css, /\.practice-loop-step\s*\{[\s\S]*color:\s*rgba\(244,\s*247,\s*251,\s*0\.84\)/);
 });
 
+test('beginner ear chain is visually readable and pauses motion during direct manipulation', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderEarTrainingChainPanel/);
+  assert.match(renderJs, /ear-chain-panel/);
+  assert.match(renderJs, /data-ear-chain-step/);
+  assert.match(css, /\.ear-chain-panel\s*\{[\s\S]*background:[\s\S]*rgba\(8,\s*10,\s*18,\s*0\.88\)/);
+  assert.match(css, /\.ear-chain-panel\s+:where\(p,\s*small,\s*span,\s*em,\s*li\)\s*\{[\s\S]*rgba\(244,\s*247,\s*251,\s*0\.78\)/);
+  assert.match(css, /\.ear-chain-step\s*\{[\s\S]*cursor:\s*pointer/);
+  assert.match(css, /\.ear-chain-step\.is-active\s*\{[\s\S]*border-color:[\s\S]*rgba\(110,\s*231,\s*249,\s*0\.72\)/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.ear-chain-panel::before[\s\S]*animation-play-state:\s*paused !important/);
+});
+
 test('sound lab Patch Doctor is routed, readable, and not a dead card', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
@@ -1905,7 +1919,7 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
   assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
@@ -1926,7 +1940,7 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
   assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);

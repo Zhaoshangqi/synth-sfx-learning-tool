@@ -809,6 +809,51 @@ test('renderSoundLabWorkbench renders a compact practice focus rail before deep 
   assert.match(html, /只改一个|A\/B|REAPER/);
 });
 
+test('renderSoundLabWorkbench renders a routed beginner ear chain as the main learning path', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 36,
+    material: 88,
+    space: 58,
+    variation: 42,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 90, body: 58, texture: 82, tail: 76 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkflowStep: 'shape',
+  });
+  const focusIndex = html.indexOf('practice-focus-strip');
+  const chainIndex = html.indexOf('ear-chain-panel');
+  const analyzerIndex = html.indexOf('atlas-main-console');
+
+  assert.ok(chainIndex > -1, 'beginner ear chain should render on the first screen');
+  assert.ok(focusIndex > -1, 'practice focus should still render');
+  assert.ok(analyzerIndex > -1, 'main atlas console should still render');
+  assert.ok(focusIndex < chainIndex, 'ear chain should follow the compact current-practice rail');
+  assert.ok(chainIndex < analyzerIndex, 'ear chain should teach the route before deep analyzer controls');
+  assert.match(html, /Beginner Ear Chain|听音诊断链/);
+  assert.match(html, /波形|起音|主体|尾巴|A\/B|REAPER/);
+  assert.match(html, /data-ear-chain-step="waveform-map"/);
+  assert.match(html, /data-ear-chain-step="time-split"/);
+  assert.match(html, /data-ear-chain-step="layer-solo"/);
+  assert.match(html, /data-ear-chain-step="one-change"/);
+  assert.match(html, /data-ear-chain-step="ab-proof"/);
+  assert.match(html, /data-workbench-action="focus-waveform"/);
+  assert.match(html, /data-workbench-action="focus-practice-loop"/);
+  assert.match(html, /data-layer-audition="body"/);
+  assert.match(html, /data-doctor-apply="/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+});
+
 test('renderSoundLabWorkbench renders a target match coach with routed one-change practice', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
