@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-flow"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260708-aether-flow/);
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow-v98/);
+  assert.match(html, /visual-space\.js\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -1905,8 +1905,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow-v98/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-flow/);
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -1919,6 +1919,29 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   assert.match(visualSpaceJs, /drawAetherNodeCurrents/);
   assert.match(visualSpaceJs, /synth:view-transition/);
   assert.match(visualSpaceJs, /__synthDirectManipulating/);
+});
+
+test('aether flow prompt adds orbital currents while preserving drag-safe motion', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-orbit/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
+  assert.match(css, /Reference aether orbital flow v9\.9/);
+  assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
+  assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
+  assert.match(css, /\.content:not\(\.is-view-switching\):not\(\.is-same-view-rendering\)\s+\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current 28s linear infinite !important/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.dashboard-hero\s+\.hero-copy::after[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(visualSpaceJs, /AETHER_ORBITAL_FIELD_COUNT/);
+  assert.match(visualSpaceJs, /createAetherOrbitalField/);
+  assert.match(visualSpaceJs, /drawAetherOrbitalCurrents/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherOrbitalCurrents\(time\)/);
+  assert.doesNotMatch(
+    visualSpaceJs,
+    /addEventListener\('pointerdown'[\s\S]{0,260}drawAetherOrbitalCurrents/,
+    'orbital current layer must be continuous ambient motion, not a click-triggered viewport flash',
+  );
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {
