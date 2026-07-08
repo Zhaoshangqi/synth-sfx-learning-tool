@@ -2930,3 +2930,55 @@ body.is-direct-manipulating .sound-lab-workbench :where(
     opacity: 0.1 !important;
   }
 }
+
+/* Reference aether interaction threadlines v9.18
+   A quiet companion to the native canvas surface threads: a slow ambient
+   routing field that reads as signal flow, while drag/reduced-motion states
+   pause instead of repainting the page. */
+
+.audio-space::after {
+  content: "";
+  position: fixed;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at calc(24% + var(--space-x, 0) * 4%) calc(26% + var(--space-y, 0) * 4%), rgba(94, 234, 212, 0.12), transparent 0 11%, transparent 30%),
+    radial-gradient(circle at calc(78% - var(--space-x, 0) * 5%) calc(74% - var(--space-y, 0) * 4%), rgba(124, 140, 255, 0.12), transparent 0 12%, transparent 32%),
+    linear-gradient(104deg, transparent 0 28%, rgba(117, 197, 222, 0.1) 43%, rgba(255, 255, 255, 0.18) 50%, rgba(167, 139, 250, 0.08) 58%, transparent 74%),
+    repeating-linear-gradient(118deg, transparent 0 68px, rgba(117, 197, 222, 0.032) 69px, transparent 72px);
+  background-size: 100% 100%, 100% 100%, 320% 100%, 172px 172px;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  filter: blur(0.15px) saturate(1.08);
+  transform: translate3d(calc(var(--space-x, 0) * 9px), calc(var(--space-y, 0) * 7px), 0) scale(1.02);
+  animation: ref9-interaction-thread-drift 30s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .audio-space::after {
+  animation-play-state: paused !important;
+  opacity: 0.08 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-interaction-thread-drift {
+  0% {
+    background-position: 0 0, 100% 100%, 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) scale(1.01);
+  }
+  100% {
+    background-position: 100% 24%, 0% 76%, 100% 50%, 172px 86px;
+    transform: translate3d(calc(var(--space-x, 0) * 13px), calc(var(--space-y, 0) * 10px), 0) scale(1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space::after {
+    animation-name: ref9-interaction-thread-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.1 !important;
+    transition: none !important;
+  }
+}

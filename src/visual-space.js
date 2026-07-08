@@ -15,6 +15,7 @@ let aetherHeroFlowParticles = [];
 let aetherFlowFilaments = [];
 let aetherFlowRivers = [];
 let aetherAdaptiveMeshParticles = [];
+let aetherSurfaceThreads = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -23,6 +24,7 @@ let frameId = 0;
 let spaceParallaxFrame = 0;
 let lastAetherAudioRippleTime = 0;
 let aetherAdaptiveMeshEnergy = 0;
+let aetherSurfaceThreadEnergy = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -57,6 +59,9 @@ const AETHER_ADAPTIVE_MESH_COUNT = 74;
 const AETHER_ADAPTIVE_MESH_RADIUS = 168;
 const AETHER_ADAPTIVE_MOUSE_RADIUS = 232;
 const AETHER_ADAPTIVE_MESH_STRIDE = 2;
+const AETHER_SURFACE_THREAD_MAX = 12;
+const AETHER_SURFACE_THREAD_SEGMENTS = 44;
+const AETHER_SURFACE_THREAD_PACKET_TAIL = 0.075;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -67,6 +72,9 @@ const AETHER_AUDIO_RIPPLE_MIN_MS = 105;
 const AETHER_FLOW_SURFACE_SELECTOR = [
   '.visual-burger-btn',
   '.signal-node',
+  '.dashboard-hero.aether-flow-stage',
+  '.hero-capsule-cta',
+  '.hero-sound-visual.aether-flow-stage',
   '.module-directory-card',
   '.daily-video-card',
   '.source-card',
@@ -321,6 +329,120 @@ function energizeAetherAdaptiveMesh(detail = {}) {
   aetherAdaptiveMeshEnergy = Math.min(1, aetherAdaptiveMeshEnergy + level * 0.34);
 }
 
+function collectAetherFlowSurfaces() {
+  if (!width || !height || typeof document === 'undefined') return [];
+
+  const seen = new Set();
+  return Array.from(document.querySelectorAll(AETHER_FLOW_SURFACE_SELECTOR))
+    .map((node, index) => {
+      if (!node || seen.has(node)) return null;
+      seen.add(node);
+
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      if (rect.bottom < -60 || rect.top > height + 60 || rect.right < -60 || rect.left > width + 60) return null;
+
+      const style = globalThis.getComputedStyle?.(node);
+      if (style?.display === 'none' || style?.visibility === 'hidden' || Number(style?.opacity ?? 1) < 0.04) return null;
+
+      const priority = node.matches('.dashboard-hero, .hero-sound-visual, .sound-lab-workbench, .workbench-panel')
+        ? 1.25
+        : node.matches('button, .hero-capsule-cta, .signal-node')
+          ? 1.05
+          : 0.86;
+
+      return {
+        key: `${node.className || node.tagName}-${index}`,
+        x: rect.left + rect.width * 0.5,
+        y: rect.top + rect.height * 0.5,
+        width: rect.width,
+        height: rect.height,
+        priority,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.priority - a.priority);
+}
+
+function createAetherSurfaceThread(from, to, index = 0, seed = 0) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const distance = Math.max(80, Math.hypot(dx, dy));
+  const direction = index % 2 === 0 ? 1 : -1;
+
+  return {
+    from: { ...from },
+    to: { ...to },
+    phase: random(0, Math.PI * 2) + seed * 0.12,
+    packet: random(0, 1),
+    speed: random(0.000026, 0.000058) * direction,
+    curve: random(-0.18, 0.18) * distance + Math.sin(seed + index) * 18,
+    wobble: random(5, 18),
+    z: random(0.34, 0.94),
+    width: random(0.42, 1.15),
+    color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
+  };
+}
+
+function refreshAetherSurfaceThreads(detail = {}) {
+  if (!width || !height) return;
+
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'thread').length;
+  const surfaces = collectAetherFlowSurfaces();
+  const anchors = surfaces.length >= 2 ? surfaces : [
+    { key: 'fallback-left', x: width * 0.18, y: height * 0.28, width: 180, height: 120, priority: 0.8 },
+    { key: 'fallback-core', x: width * 0.58, y: height * 0.46, width: 260, height: 180, priority: 1 },
+    { key: 'fallback-right', x: width * 0.82, y: height * 0.68, width: 180, height: 120, priority: 0.8 },
+  ];
+  const targetCount = Math.min(
+    AETHER_SURFACE_THREAD_MAX,
+    Math.max(width < 760 ? 4 : 7, Math.floor(anchors.length * 1.25)),
+  );
+
+  aetherSurfaceThreads = Array.from({ length: targetCount }, (_, index) => {
+    const from = anchors[(index + seed) % anchors.length];
+    let to = anchors[(index * 2 + seed + 3) % anchors.length];
+    if (to === from) to = anchors[(index + seed + 1) % anchors.length];
+    return createAetherSurfaceThread(from, to, index, seed);
+  });
+  aetherSurfaceThreadEnergy = Math.min(1, aetherSurfaceThreadEnergy + 0.2);
+}
+
+function energizeAetherSurfaceThreads(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherSurfaceThreads.length) refreshAetherSurfaceThreads(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.45)));
+  aetherSurfaceThreadEnergy = Math.min(1, aetherSurfaceThreadEnergy + 0.18 + level * 0.3);
+  const point = detail.selector ? getAetherPulsePoint(detail) : null;
+
+  aetherSurfaceThreads.forEach((thread, index) => {
+    thread.phase += 0.14 + level * 0.18 + index * 0.018;
+    thread.packet = (thread.packet + 0.08 + level * 0.11 + index * 0.01) % 1;
+    if (point && index % 3 === 0) {
+      thread.to = { key: 'audio-focus', x: point.x, y: point.y, width: 120, height: 80, priority: 1.15 };
+    }
+  });
+}
+
+function getAetherSurfaceThreadPoint(thread, progress, time, phaseOffset = 0) {
+  const eased = progress * progress * (3 - progress * 2);
+  const inv = 1 - eased;
+  const midX = (thread.from.x + thread.to.x) * 0.5;
+  const midY = (thread.from.y + thread.to.y) * 0.5;
+  const dx = thread.to.x - thread.from.x;
+  const dy = thread.to.y - thread.from.y;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const normalX = -dy / distance;
+  const normalY = dx / distance;
+  const breath = Math.sin(time * 0.00046 + thread.phase + phaseOffset) * thread.wobble;
+  const controlX = midX + normalX * (thread.curve + breath) + pointer.x * thread.z * 20;
+  const controlY = midY + normalY * (thread.curve * 0.56 + breath * 0.8) + pointer.y * thread.z * 14;
+  const x = inv * inv * thread.from.x + 2 * inv * eased * controlX + eased * eased * thread.to.x;
+  const y = inv * inv * thread.from.y + 2 * inv * eased * controlY + eased * eased * thread.to.y;
+  return aetherRepel(x, y, thread.z);
+}
+
 function getAetherFilamentPoint(filament, progress, time) {
   const easedProgress = progress * progress * (3 - progress * 2);
   const direction = filament.speed >= 0 ? 1 : -1;
@@ -509,6 +631,7 @@ function resize() {
   const filamentCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
   aetherFlowFilaments = Array.from({ length: filamentCount }, (_, index) => createAetherFlowFilament(index));
   resetAetherFlowRivers();
+  refreshAetherSurfaceThreads();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
   const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
@@ -1252,6 +1375,73 @@ function drawAetherFlowRivers(time) {
   ctx.restore();
 }
 
+function drawAetherSurfaceThreads(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherSurfaceThreads.length) return;
+
+  aetherSurfaceThreadEnergy *= 0.93;
+  if (aetherSurfaceThreadEnergy < 0.004) aetherSurfaceThreadEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherSurfaceThreads.forEach((thread, threadIndex) => {
+    thread.packet = (thread.packet + thread.speed * (16 + thread.z * 12)) % 1;
+    const packet = thread.packet < 0 ? thread.packet + 1 : thread.packet;
+    const pulse = 0.54 + Math.sin(time * 0.00072 + thread.phase) * 0.22 + aetherSurfaceThreadEnergy * 0.24;
+
+    let startPoint = null;
+    let endPoint = null;
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_SURFACE_THREAD_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_SURFACE_THREAD_SEGMENTS;
+      const point = getAetherSurfaceThreadPoint(thread, progress, time, threadIndex * 0.18);
+      if (!startPoint) startPoint = point;
+      endPoint = point;
+      if (segment === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+
+    if (!startPoint || !endPoint) return;
+    const gradient = ctx.createLinearGradient(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+    gradient.addColorStop(0, `rgba(${thread.color}, 0)`);
+    gradient.addColorStop(0.36, `rgba(${thread.color}, ${0.026 + pulse * 0.022})`);
+    gradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.018 + pulse * 0.018 + aetherSurfaceThreadEnergy * 0.025})`);
+    gradient.addColorStop(0.72, `rgba(${thread.color}, ${0.022 + pulse * 0.02})`);
+    gradient.addColorStop(1, `rgba(${thread.color}, 0)`);
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = thread.width + aetherSurfaceThreadEnergy * 0.36;
+    ctx.shadowColor = `rgba(${thread.color}, ${0.05 + aetherSurfaceThreadEnergy * 0.1})`;
+    ctx.shadowBlur = 8 + thread.z * 10 + aetherSurfaceThreadEnergy * 12;
+    ctx.stroke();
+
+    const head = getAetherSurfaceThreadPoint(thread, packet, time, threadIndex * 0.18);
+    const tail = getAetherSurfaceThreadPoint(thread, Math.max(0, packet - AETHER_SURFACE_THREAD_PACKET_TAIL), time, threadIndex * 0.18);
+    const packetGradient = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    packetGradient.addColorStop(0, `rgba(${thread.color}, 0)`);
+    packetGradient.addColorStop(0.68, `rgba(${thread.color}, ${0.11 + pulse * 0.12})`);
+    packetGradient.addColorStop(1, `rgba(255, 255, 255, ${0.12 + pulse * 0.14 + aetherSurfaceThreadEnergy * 0.12})`);
+
+    ctx.beginPath();
+    ctx.strokeStyle = packetGradient;
+    ctx.lineWidth = 0.78 + thread.z * 0.72 + aetherSurfaceThreadEnergy * 0.38;
+    ctx.moveTo(tail.x, tail.y);
+    ctx.quadraticCurveTo(
+      (tail.x + head.x) * 0.5 + pointer.x * 16 * thread.z,
+      (tail.y + head.y) * 0.5 + pointer.y * 10 * thread.z,
+      head.x,
+      head.y,
+    );
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${thread.color}, ${0.12 + pulse * 0.16 + aetherSurfaceThreadEnergy * 0.12})`;
+    ctx.arc(head.x, head.y, 1.05 + thread.z * 1.15 + aetherSurfaceThreadEnergy * 0.78, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -1473,6 +1663,7 @@ function handleAetherSurfaceHover(event) {
     rect.top + rect.height * 0.5,
     { radius: Math.min(AETHER_PRESSURE_RADIUS, Math.max(84, rect.width * 0.42)), strength: 0.42, ttl: 1.05 },
   );
+  energizeAetherSurfaceThreads({ level: 0.42, source: 'surface-hover' });
 }
 
 function tick(time = 0) {
@@ -1498,6 +1689,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherLiquidFilaments(time);
   if (!isAetherFlowPaused()) drawAetherFlowRivers(time);
+  if (!isAetherFlowPaused()) drawAetherSurfaceThreads(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
@@ -1526,6 +1718,7 @@ function tick(time = 0) {
 function init() {
   if (!canvas || !ctx) return;
   resize();
+  globalThis.requestAnimationFrame?.(() => refreshAetherSurfaceThreads({ source: 'initial-layout' }));
   globalThis.addEventListener('resize', resize);
   globalThis.addEventListener('pointermove', (event) => {
     updatePointerFromEvent(event);
@@ -1538,6 +1731,7 @@ function init() {
     resetAetherHeroFlowNetwork(event.detail);
     rethreadAetherFlowRivers(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
+    refreshAetherSurfaceThreads(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
     aetherMagneticLinks.forEach((link, index) => {
       link.phase += 0.42 + index * 0.026;
@@ -1559,6 +1753,7 @@ function init() {
   document.addEventListener('synth:audio-pulse', (event) => {
     spawnAetherAudioRipple(event.detail);
     energizeAetherAdaptiveMesh(event.detail);
+    energizeAetherSurfaceThreads(event.detail);
   });
   tick();
 }
