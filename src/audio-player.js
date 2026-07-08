@@ -1,7 +1,59 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260708-ear-chain';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-gesture-hits';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const performanceGestureHits = (patch = {}) => {
+  const pattern = Array.isArray(patch.performanceFeel?.triggerPattern) && patch.performanceFeel.triggerPattern.length
+    ? patch.performanceFeel.triggerPattern
+    : [{ id: 'hit-1', delayMs: 0, velocity: patch.performance?.velocity ?? 72, noteOffset: 0 }];
+  return pattern.slice(0, 4).map((hit, index) => ({
+    id: hit.id ?? `hit-${index + 1}`,
+    delayMs: clamp(hit.delayMs ?? index * 28, 0, 1400),
+    velocity: clamp(hit.velocity ?? patch.performance?.velocity ?? 72, 1, 127),
+    noteOffset: clamp(hit.noteOffset ?? 0, -12, 12),
+  }));
+};
+
+const performanceGestureTailMs = (patch = {}) => {
+  const latestHitMs = Math.max(0, ...performanceGestureHits(patch).map((hit) => hit.delayMs));
+  const releaseMs = clamp((patch.envelope?.release ?? patch.toneGraph?.envelope?.release ?? 0.32) * 1000, 60, 1800);
+  return clamp(latestHitMs + releaseMs + 260, 520, 2600);
+};
+
+const NOTE_OFFSETS = {
+  C: 0,
+  'C#': 1,
+  Db: 1,
+  D: 2,
+  'D#': 3,
+  Eb: 3,
+  E: 4,
+  F: 5,
+  'F#': 6,
+  Gb: 6,
+  G: 7,
+  'G#': 8,
+  Ab: 8,
+  A: 9,
+  'A#': 10,
+  Bb: 10,
+  B: 11,
+};
+
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const transposeNote = (note = 'C3', semitones = 0) => {
+  const match = /^([A-Ga-g])([#b]?)(-?\d+)$/.exec(String(note).trim());
+  if (!match) return note;
+  const key = `${match[1].toUpperCase()}${match[2]}`;
+  const baseOffset = NOTE_OFFSETS[key];
+  if (!Number.isFinite(baseOffset)) return note;
+  const midi = (Number(match[3]) + 1) * 12 + baseOffset + Math.round(semitones);
+  const name = NOTE_NAMES[((midi % 12) + 12) % 12];
+  const octave = Math.floor(midi / 12) - 1;
+  return `${name}${octave}`;
+};
 
 const rampGain = (gainParam, now, patch) => {
   const attack = Math.max(0.002, patch.envelope.attackMs / 1000);
@@ -250,7 +302,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260708-ear-chain');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-gesture-hits');
       this.workletReady = true;
       return true;
     } catch {
@@ -435,10 +487,16 @@ export class LabAudioPlayer {
     const velocity = clamp(patch.performance?.velocity ?? 72, 0, 127) / 127;
     const now = Tone.now?.() ?? 0;
 
-    if (patch.familyId === 'air-whoosh' || patch.familyId === 'electric-crackle') {
-      instrument.triggerAttackRelease(duration, now, velocity);
-    } else {
-      instrument.triggerAttackRelease(note, duration, now, velocity);
+    for (const hit of performanceGestureHits(patch)) {
+      const hitTime = now + hit.delayMs / 1000;
+      const hitDuration = clamp(duration * (0.58 + hit.velocity / 127 * 0.22), 0.05, duration);
+      const hitVelocity = clamp(hit.velocity / 127, 0.08, 1);
+      if (patch.familyId === 'air-whoosh' || patch.familyId === 'electric-crackle') {
+        instrument.triggerAttackRelease(hitDuration, hitTime, hitVelocity);
+      } else {
+        const hitNote = transposeNote(note, hit.noteOffset);
+        instrument.triggerAttackRelease(hitNote, hitDuration, hitTime, hitVelocity);
+      }
     }
 
     return true;
@@ -483,7 +541,8 @@ export class LabAudioPlayer {
     }
 
     this.startMeter();
-    this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(patch.durationSeconds * 1000 + 520, 520, 4200));
+    const stopAfterMs = patch.durationSeconds * 1000 + performanceGestureTailMs(patch);
+    this.oneShotTimer = globalThis.setTimeout(() => this.stop(), clamp(stopAfterMs, 620, 6200));
     return { workletReady: canUseWorklet, toneReady: this.toneReady, engineUsed, fallbackChain };
   }
 

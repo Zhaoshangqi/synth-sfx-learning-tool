@@ -1059,6 +1059,33 @@ test('sound lab performance feel shapes playable dynamics and worklet payload', 
   assert.match(model.performanceFeel.reaperZh, /REAPER|velocity|A\/B|三连/);
 });
 
+test('sound lab worklet renders performance trigger pattern as separate gesture hits', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 74,
+    motion: 70,
+    material: 86,
+    space: 44,
+    variation: 64,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    performance: { note: 'D3', velocity: 108, glide: 42, hold: false, octave: 0 },
+  });
+  const message = buildWorkletMessage(patch);
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.equal(message.payload.performanceFeel.triggerPattern.length, 3);
+  assert.ok(message.payload.performanceFeel.triggerPattern.some((hit) => hit.delayMs > 0), 'gesture needs delayed hits');
+  assert.match(processorJs, /performanceGestureHits/);
+  assert.match(processorJs, /createLayerStateMatrix/);
+  assert.match(processorJs, /gesturePitchRatio/);
+  assert.match(processorJs, /hit\.delayMs/);
+  assert.match(processorJs, /for \(let hitIndex = 0; hitIndex < gestureHits\.length; hitIndex \+= 1\)/);
+  assert.match(processorJs, /renderTimedLayer\(layer,\s*hitState,\s*t,\s*duration,\s*hit\)/);
+});
+
 test('buildSoundLabPatch exposes HQ synth engine graph and playable performance controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'energy-charge');
   const patch = buildSoundLabPatch(family, {
@@ -1093,7 +1120,7 @@ test('browser audio engines honor layer onset and space pre-delay cues', () => {
   assert.match(processorJs, /layerOnsetSeconds/);
   assert.match(processorJs, /localT/);
   assert.match(processorJs, /if \(t < onset\) return/);
-  assert.match(processorJs, /duration - onset/);
+  assert.match(processorJs, /duration - layerOnset/);
   assert.match(processorJs, /preDelayMs/);
   assert.match(processorJs, /spacePreDelay/);
 
@@ -1101,6 +1128,23 @@ test('browser audio engines honor layer onset and space pre-delay cues', () => {
   assert.match(audioPlayerJs, /layerDuration/);
   assert.match(audioPlayerJs, /layer\.onsetMs/);
   assert.match(audioPlayerJs, /globalFx\.space\.preDelayMs/);
+});
+
+test('browser audio engine keeps performance gesture tail before auto stop', () => {
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(audioPlayerJs, /performanceGestureTailMs/);
+  assert.match(audioPlayerJs, /triggerPattern/);
+  assert.match(audioPlayerJs, /patch\.durationSeconds \* 1000 \+ performanceGestureTailMs\(patch\)/);
+});
+
+test('HQ Tone engine transposes performance gesture note offsets', () => {
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(audioPlayerJs, /transposeNote/);
+  assert.match(audioPlayerJs, /hit\.noteOffset/);
+  assert.match(audioPlayerJs, /const hitNote = transposeNote\(note,\s*hit\.noteOffset\)/);
+  assert.match(audioPlayerJs, /triggerAttackRelease\(hitNote,\s*hitDuration,\s*hitTime,\s*hitVelocity\)/);
 });
 
 test('buildSoundLabViewModel exposes HQ engine modes, FX rack, and performance UI data', () => {
