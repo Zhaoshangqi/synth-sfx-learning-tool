@@ -175,6 +175,36 @@ test('dashboard learning path gives beginners a clickable route into real module
   assert.match(css, /color:\s*var\(--studio-paper\)/);
 });
 
+test('dashboard practice prescription connects the route to a concrete listen edit verify drill', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const viewModelJs = readFileSync(new URL('../src/view-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(viewModelJs, /export function buildPracticePrescription/);
+  assert.match(appJs, /buildPracticePrescription/);
+  assert.match(appJs, /const practicePrescription = buildPracticePrescription/);
+  assert.match(appJs, /class="dashboard-practice-prescription"/);
+  assert.match(appJs, /class="prescription-step-grid"/);
+  assert.match(appJs, /data-dashboard-prescription-action="launch"/);
+  assert.match(appJs, /data-dashboard-prescription-action="ab"/);
+  assert.match(appJs, /今日练习处方|一次只改|A\/B|REAPER/);
+  assert.match(appJs, /launchDashboardPathStep\(activePathStep\)/);
+  assert.match(css, /\.dashboard-practice-prescription\s*\{/);
+  assert.match(css, /\.prescription-step-grid\s*\{/);
+  assert.match(css, /\.prescription-action-row\s*\{/);
+  assert.match(css, /\.prescription-action-row button:hover\s*\{/);
+});
+
+test('dashboard dark route and module cards keep readable light text after showcase overrides', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Dashboard dark-card contrast fix v6\.6/);
+  assert.match(css, /\.dashboard-learning-console \.learning-path-detail,[\s\S]*\.dashboard-module-directory \.module-directory-card\s*\{[\s\S]*background:[\s\S]*rgba\(17,\s*17,\s*17,\s*0\.92\)/);
+  assert.match(css, /\.dashboard-learning-console \.learning-path-detail :where\(h4,\s*strong\),[\s\S]*\.dashboard-module-directory \.module-directory-card strong\s*\{[\s\S]*color:\s*var\(--showcase-paper\)\s*!important/);
+  assert.match(css, /\.dashboard-learning-console \.learning-path-detail :where\(p,\s*small,\s*span\),[\s\S]*\.dashboard-module-directory \.module-directory-card :where\(p,\s*small\)\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.72\)\s*!important/);
+  assert.match(css, /\.dashboard-module-directory \.module-directory-card > span,[\s\S]*\.dashboard-learning-console \.learning-path-detail-main > span\s*\{[\s\S]*color:\s*rgba\(117,\s*197,\s*222,\s*0\.95\)\s*!important/);
+});
+
 test('styles include premium button feel and custom range rails', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 

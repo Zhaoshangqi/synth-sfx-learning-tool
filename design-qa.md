@@ -202,3 +202,32 @@ Passed for this iteration. The Dashboard now reads as a cleaner supplied-referen
 
 ## Result
 Passed for this iteration. The app now follows the supplied showcase visual language more cleanly, keeps the anti-flash interaction constraints, and adds a practical Sound Lab realism coach grounded in the current synth patch data.
+
+---
+
+# Design QA - Practice Prescription + Dashboard Contrast v6.6
+
+## Focus
+- Goal: make the Dashboard behave more like a beginner-safe coach instead of a module directory.
+- Product upgrade: add a shared `Practice Prescription` model that translates the active route into a concrete listen -> edit -> verify -> deliver drill.
+- Visual fix: protect nested dark dashboard route/module cards from late light-theme overrides so dark cards keep readable light text.
+
+## Browser QA
+- Local URL: `http://localhost:5177`.
+- Browser note: in-app browser tools were not exposed; Python Playwright with system Chrome was used.
+- Desktop viewport: 1440 x 1500.
+- Dashboard prescription: passed. `.dashboard-practice-prescription` renders, route is `listen-source`, 6 prescription action buttons are present, and horizontal overflow is `0`.
+- Prescription routing: passed. Clicking the A/B prescription action navigates to `#soundlab`, renders `.sound-lab-workbench`, sets `data-workflow-step="compare"`, keeps A/B controls visible, and preserves the perceptual signature panel.
+- Dashboard dark-card contrast: passed. Computed module card background is `rgba(17, 17, 17, 0.92)`, strong text is `rgb(244, 241, 232)`, and body text is `rgba(244, 241, 232, 0.72)`.
+- Mobile viewport: 390 x 1000.
+- Mobile prescription: passed. The prescription panel exists, 14 module cards remain reachable, 6 prescription actions are present, and horizontal overflow is `0`.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "PracticePrescription|practice prescription" tests\view-model.test.mjs tests\visual-shell.test.mjs` failed on missing `buildPracticePrescription`.
+- TDD red: `node --test --test-name-pattern "dashboard dark route" tests\visual-shell.test.mjs` failed on missing dashboard dark-card contrast fix.
+- TDD green: the targeted prescription and contrast tests passed.
+- Syntax: `node --check src\app.js` and `node --check src\view-model.js`: passed.
+
+## Result
+Passed for this iteration. The Dashboard now gives a concrete daily drill before users enter modules, and the older dark route/module cards stay readable under the new showcase visual system.
