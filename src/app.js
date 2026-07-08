@@ -51,7 +51,7 @@ import {
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
 import { createLabAudioPlayer } from './audio-player.js';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, getNextLesson, groupByStage } from './view-model.js';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -433,6 +433,7 @@ function renderDashboard() {
   const completed = new Set(JSON.parse(localStorage.getItem('synthSfxLearningTool:completedLessons') ?? '[]'));
   const nextLesson = getNextLesson(roadmapLessons, completed);
   const activePathStep = getActiveDashboardPathStep();
+  const practicePrescription = buildPracticePrescription({ activePathStep, nextLesson, stats });
   const flowNodes = [
     {
       index: '01',
@@ -605,6 +606,52 @@ function renderDashboard() {
           <p>每个配方都有 REAPER 步骤和验收听感。</p>
         </div>
       </aside>
+    </section>
+    <section class="dashboard-practice-prescription" aria-label="今日练习处方" data-practice-prescription="${escapeHtml(practicePrescription.routeId)}">
+      <div class="prescription-copy">
+        <span class="card-kicker">${escapeHtml(practicePrescription.routeLabel)}</span>
+        <h3>${escapeHtml(practicePrescription.titleZh)}</h3>
+        <p>${escapeHtml(practicePrescription.subtitleZh)}</p>
+      </div>
+      <div class="prescription-main">
+        <div class="prescription-objective">
+          <span>声音目标</span>
+          <strong>${escapeHtml(practicePrescription.objectiveZh)}</strong>
+        </div>
+        <div class="prescription-listen">
+          <span>先听什么</span>
+          <p>${escapeHtml(practicePrescription.listenQuestionZh)}</p>
+        </div>
+        <div class="prescription-one-change">
+          <span>一次只改</span>
+          <p>${escapeHtml(practicePrescription.oneChange.labelZh)}</p>
+          <small>${escapeHtml(practicePrescription.oneChange.guardrailZh)}</small>
+        </div>
+      </div>
+      <div class="prescription-step-grid">
+        ${practicePrescription.steps.map((step) => `
+          <button type="button" data-dashboard-prescription-action="${escapeHtml(step.action)}">
+            <span>${escapeHtml(step.labelZh)}</span>
+            <strong>${escapeHtml(step.proofZh)}</strong>
+          </button>
+        `).join('')}
+      </div>
+      <div class="prescription-verify">
+        <div>
+          <span>A/B</span>
+          <p>${escapeHtml(practicePrescription.verification.zh)}</p>
+          <small>${escapeHtml(practicePrescription.verification.methodZh)}</small>
+        </div>
+        <div>
+          <span>REAPER</span>
+          <p>${escapeHtml(practicePrescription.deliveryZh)}</p>
+          <small>${escapeHtml(practicePrescription.nextZh)}</small>
+        </div>
+      </div>
+      <div class="prescription-action-row">
+        <button class="primary-button" type="button" data-dashboard-prescription-action="launch">${escapeHtml(practicePrescription.launchLabelZh)}</button>
+        <button class="secondary-button" type="button" data-dashboard-prescription-action="ab">去做 A/B 验证</button>
+      </div>
     </section>
     <section class="dashboard-learning-console" aria-label="从零到交付路线">
       <div class="learning-console-head">
@@ -2441,6 +2488,25 @@ function launchDashboardPathStep(step) {
   switchView(step.view);
 }
 
+function handleDashboardPrescriptionAction(action) {
+  const activePathStep = getActiveDashboardPathStep();
+  if (action === 'launch') {
+    launchDashboardPathStep(activePathStep);
+    return;
+  }
+
+  if (action === 'ab') {
+    applyDashboardPathStep(activePathStep);
+    state.soundLabWorkflowStep = 'compare';
+    state.activeAtlasNode = 'compare';
+    state.activeWorkbenchModuleMapId = 'compare';
+    state.activeAdvancedModule = 'ab-compare';
+    state.workbenchActionFeedback = `处方验证：${activePathStep.title}。先听 dry，再听 changed，响度匹配后决定保留或撤回。`;
+    syncSoundLabPatchSoon();
+    switchView('soundlab');
+  }
+}
+
 function bindDashboardLearningPathControls() {
   document.querySelectorAll('[data-dashboard-path-step]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2456,6 +2522,12 @@ function bindDashboardLearningPathControls() {
       const step = DASHBOARD_LEARNING_PATH.find((item) => item.id === button.dataset.dashboardPathLaunch);
       if (!step) return;
       launchDashboardPathStep(step);
+    });
+  });
+
+  document.querySelectorAll('[data-dashboard-prescription-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      handleDashboardPrescriptionAction(button.dataset.dashboardPrescriptionAction);
     });
   });
 }
