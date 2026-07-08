@@ -9,6 +9,7 @@ let aetherStreams = [];
 let aetherCurrentPackets = [];
 let aetherFlowNodes = [];
 let aetherMagneticLinks = [];
+let aetherOrbitalFields = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -29,6 +30,8 @@ const AETHER_FLOW_NODE_COUNT = 34;
 const AETHER_NODE_CONNECTION_RADIUS = 176;
 const AETHER_MAGNETIC_LINK_COUNT = 11;
 const AETHER_MAGNETIC_SEGMENTS = 32;
+const AETHER_ORBITAL_FIELD_COUNT = 5;
+const AETHER_ORBITAL_SEGMENTS = 92;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -116,6 +119,31 @@ function createAetherMagneticLink(index) {
     drift: random(-0.000035, 0.000052),
     z: random(0.34, 0.96),
     width: random(0.42, 1.1),
+    color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
+  };
+}
+
+function createAetherOrbitalField(index) {
+  const anchors = [
+    [0.18, 0.22],
+    [0.74, 0.24],
+    [0.5, 0.52],
+    [0.24, 0.76],
+    [0.78, 0.72],
+  ];
+  const [anchorX, anchorY] = anchors[index % anchors.length];
+
+  return {
+    anchorX,
+    anchorY,
+    radiusX: random(width * 0.08, width * 0.18),
+    radiusY: random(height * 0.035, height * 0.105),
+    speed: random(0.00012, 0.00028) * (index % 2 === 0 ? 1 : -1),
+    phase: random(0, Math.PI * 2),
+    tilt: random(-0.34, 0.34),
+    z: random(0.36, 0.9),
+    parallaxX: random(14, 36),
+    parallaxY: random(8, 24),
     color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
   };
 }
@@ -230,6 +258,8 @@ function resize() {
   aetherFlowNodes = Array.from({ length: nodeCount }, (_, index) => createAetherFlowNode(index));
   const magneticLinkCount = width < 760 ? 6 : AETHER_MAGNETIC_LINK_COUNT;
   aetherMagneticLinks = Array.from({ length: magneticLinkCount }, (_, index) => createAetherMagneticLink(index));
+  const orbitalFieldCount = width < 760 ? 3 : AETHER_ORBITAL_FIELD_COUNT;
+  aetherOrbitalFields = Array.from({ length: orbitalFieldCount }, (_, index) => createAetherOrbitalField(index));
   cursorWakeParticles = [];
   cursorWakeAnchor.x = pointer.screenX;
   cursorWakeAnchor.y = pointer.screenY;
@@ -552,6 +582,62 @@ function drawAetherMagneticLinks(time) {
   ctx.restore();
 }
 
+function drawAetherOrbitalCurrents(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherOrbitalFields.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherOrbitalFields.forEach((field, fieldIndex) => {
+    const centerX = width * field.anchorX + pointer.x * field.parallaxX;
+    const centerY = height * field.anchorY + pointer.y * field.parallaxY;
+    const phase = field.phase + time * field.speed;
+    const lift = 0.6 + Math.sin(time * 0.0007 + field.phase) * 0.18;
+
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_ORBITAL_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_ORBITAL_SEGMENTS;
+      const angle = progress * Math.PI * 2 + phase;
+      const warp = 1 + Math.sin(angle * 2.2 + time * 0.00036 + fieldIndex) * 0.055;
+      const orbitalX = Math.cos(angle) * field.radiusX * warp;
+      const orbitalY = Math.sin(angle) * field.radiusY * warp;
+      const x = centerX + orbitalX * Math.cos(field.tilt) - orbitalY * Math.sin(field.tilt);
+      const y = centerY + orbitalX * Math.sin(field.tilt) + orbitalY * Math.cos(field.tilt);
+      const flow = aetherRepel(x, y, field.z);
+      if (segment === 0) ctx.moveTo(flow.x, flow.y);
+      else ctx.lineTo(flow.x, flow.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(${field.color}, ${0.018 + field.z * 0.018})`;
+    ctx.lineWidth = 0.48 + field.z * 0.72;
+    ctx.shadowColor = `rgba(${field.color}, 0.08)`;
+    ctx.shadowBlur = 10 + field.z * 10;
+    ctx.stroke();
+
+    const packetProgress = ((time * Math.abs(field.speed) * 0.42 + field.phase) % (Math.PI * 2)) / (Math.PI * 2);
+    const tail = 0.12 + field.z * 0.045;
+    ctx.beginPath();
+    for (let segment = 0; segment <= 18; segment += 1) {
+      const localProgress = packetProgress - tail + (segment / 18) * tail;
+      const angle = localProgress * Math.PI * 2 + phase;
+      const warp = 1 + Math.sin(angle * 2.2 + time * 0.00036 + fieldIndex) * 0.055;
+      const orbitalX = Math.cos(angle) * field.radiusX * warp;
+      const orbitalY = Math.sin(angle) * field.radiusY * warp;
+      const x = centerX + orbitalX * Math.cos(field.tilt) - orbitalY * Math.sin(field.tilt);
+      const y = centerY + orbitalX * Math.sin(field.tilt) + orbitalY * Math.cos(field.tilt);
+      const flow = aetherRepel(x, y, field.z);
+      if (segment === 0) ctx.moveTo(flow.x, flow.y);
+      else ctx.lineTo(flow.x, flow.y);
+    }
+    ctx.strokeStyle = `rgba(${field.color}, ${0.09 + lift * 0.11})`;
+    ctx.lineWidth = 1.1 + field.z * 1.15;
+    ctx.shadowColor = `rgba(${field.color}, ${0.16 + lift * 0.12})`;
+    ctx.shadowBlur = 14 + field.z * 14;
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -730,6 +816,7 @@ function tick(time = 0) {
 
   drawRippleField(time);
   drawAetherPressureField(time);
+  if (!isAetherFlowPaused()) drawAetherOrbitalCurrents(time);
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
@@ -768,6 +855,10 @@ function init() {
     aetherMagneticLinks.forEach((link, index) => {
       link.phase += 0.42 + index * 0.026;
       link.drift *= -1;
+    });
+    aetherOrbitalFields.forEach((field, index) => {
+      field.phase += 0.34 + index * 0.08;
+      field.speed *= -1;
     });
   });
   document.addEventListener('synth:flow-pulse', (event) => {

@@ -1935,6 +1935,97 @@ body.is-direct-manipulating .hero-sound-visual::after {
   }
 }
 
+/* Reference aether orbital flow v9.9
+   Adds the pasted prompt's living Aether current as calm orbital motion around
+   the hero copy and Sound Lab console, while keeping continuous controls stable. */
+
+.dashboard-hero .hero-copy,
+.signal-atlas-console {
+  position: relative;
+}
+
+.dashboard-hero .hero-copy > *,
+.signal-atlas-console > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-hero .hero-copy::after {
+  content: "";
+  position: absolute;
+  inset: -32px -42px -24px -34px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 42px;
+  background:
+    conic-gradient(from 116deg at 42% 44%, transparent 0 18%, rgba(117, 197, 222, 0.18) 27%, rgba(255, 255, 255, 0.14) 31%, transparent 42% 62%, rgba(167, 139, 250, 0.12) 72%, transparent 84% 100%),
+    radial-gradient(ellipse at 34% 46%, rgba(117, 197, 222, 0.16), transparent 0 46%, transparent 62%);
+  mask-image: radial-gradient(ellipse at 42% 48%, transparent 0 32%, #000 44%, #000 62%, transparent 76%);
+  mix-blend-mode: multiply;
+  opacity: 0.42;
+  transform: translate3d(calc(var(--space-x, 0) * 10px), calc(var(--space-y, 0) * 7px), 0) rotate(0deg);
+  animation: ref9-orbital-copy-current 24s cubic-bezier(0.21, 0.61, 0.35, 1) infinite;
+}
+
+.signal-atlas-console::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 26px;
+  background:
+    conic-gradient(from 92deg at 58% 42%, transparent 0 22%, rgba(110, 231, 249, 0.12) 32%, rgba(244, 241, 232, 0.08) 36%, transparent 48% 62%, rgba(167, 139, 250, 0.1) 76%, transparent 90% 100%),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(110, 231, 249, 0.045) 54px 55px, transparent 55px 108px);
+  mask-image: radial-gradient(ellipse at 52% 46%, transparent 0 30%, #000 42%, #000 68%, transparent 84%);
+  mix-blend-mode: screen;
+  opacity: 0.34;
+  transform: translate3d(calc(var(--space-x, 0) * 6px), calc(var(--space-y, 0) * 4px), 0) rotate(0deg);
+  animation: ref9-orbital-console-current 28s linear infinite;
+}
+
+body.is-direct-manipulating .dashboard-hero .hero-copy::after,
+body.is-direct-manipulating .signal-atlas-console::after {
+  animation-play-state: paused !important;
+  opacity: 0.12 !important;
+  transition: none !important;
+}
+
+.content:not(.is-view-switching):not(.is-same-view-rendering) .signal-atlas-console::after {
+  animation: ref9-orbital-console-current 28s linear infinite !important;
+}
+
+body.is-direct-manipulating .content:not(.is-view-switching) .signal-atlas-console::after {
+  animation-play-state: paused !important;
+  opacity: 0.12 !important;
+}
+
+@keyframes ref9-orbital-copy-current {
+  0% {
+    background-position: 0 0, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) rotate(0deg) scale(1);
+  }
+  50% {
+    background-position: 38px -24px, -22px 18px;
+    transform: translate3d(calc(var(--space-x, 0) * 13px), calc(var(--space-y, 0) * 8px), 0) rotate(96deg) scale(1.018);
+  }
+  100% {
+    background-position: 76px -48px, -44px 36px;
+    transform: translate3d(calc(var(--space-x, 0) * 9px), calc(var(--space-y, 0) * 6px), 0) rotate(180deg) scale(1);
+  }
+}
+
+@keyframes ref9-orbital-console-current {
+  0% {
+    background-position: 0 0, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0) rotate(0deg);
+  }
+  100% {
+    background-position: 92px -64px, 108px 0;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 5px), 0) rotate(-180deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .audio-space::before,
   .hero-sound-visual::after,
@@ -1942,7 +2033,9 @@ body.is-direct-manipulating .hero-sound-visual::after {
   .dashboard-actions .launchpad-button::before,
   .primary-button::before,
   .source-link::before,
-  .visual-burger-btn::before {
+  .visual-burger-btn::before,
+  .dashboard-hero .hero-copy::after,
+  .signal-atlas-console::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     animation-play-state: paused !important;
