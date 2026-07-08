@@ -1608,6 +1608,8 @@ function renderMaterialResonancePanel(model = {}) {
   const map = model.materialResonanceMap ?? {};
   const peaks = map.peaks ?? [];
   if (!peaks.length) return '';
+  const bodyModel = map.bodyModel ?? {};
+  const bodyMetrics = bodyModel.metrics ?? [];
 
   return `
     <section class="workbench-panel material-resonance-panel" aria-label="Material Resonance 材质共振地图">
@@ -1616,6 +1618,28 @@ function renderMaterialResonancePanel(model = {}) {
         <button type="button" data-workbench-action="focus-material-resonance">聚焦共振峰</button>
       </div>
       <p>${escapeHtml(map.beginnerZh ?? '')}</p>
+      ${bodyMetrics.length ? `
+        <div class="material-body-model" aria-label="Modal body diffusion model">
+          <div>
+            <strong>${escapeHtml(bodyModel.titleZh ?? 'Modal Body material body model')}</strong>
+            <p>${escapeHtml(bodyModel.beginnerZh ?? '')}</p>
+          </div>
+          <div class="material-body-metrics">
+            ${bodyMetrics.map((metric) => `
+              <article style="--body-metric:${formatNumber(metric.value ?? 0)}%">
+                <span>${escapeHtml(metric.labelZh ?? metric.id)}</span>
+                <strong>${escapeHtml(metric.value ?? 0)}%</strong>
+                <i aria-hidden="true"></i>
+                <small>${escapeHtml(metric.detailZh ?? '')}</small>
+              </article>
+            `).join('')}
+          </div>
+          <div class="material-body-proof">
+            <span>${escapeHtml(bodyModel.synthZh ?? '')}</span>
+            <span>${escapeHtml(bodyModel.reaperZh ?? '')}</span>
+          </div>
+        </div>
+      ` : ''}
       <div class="resonance-peak-grid" aria-label="modal resonator peaks">
         ${peaks.map((peak) => `
           <article class="resonance-peak-card" style="--peak-gain:${formatNumber(peak.gainPercent ?? 0)}%; --peak-decay:${formatNumber(Math.min(100, (peak.decayMs ?? 0) / 18))}%">

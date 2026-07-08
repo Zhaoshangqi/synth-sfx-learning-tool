@@ -1637,6 +1637,19 @@ test('beginner ear chain is visually readable and pauses motion during direct ma
   assert.match(css, /body\.is-direct-manipulating\s+\.ear-chain-panel::before[\s\S]*animation-play-state:\s*paused !important/);
 });
 
+test('material modal body panel keeps dark readable contrast after final cascade', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const lockIndex = css.indexOf('v10.1 modal body material resonance contrast lock');
+  const finalShowcaseIndex = css.indexOf('Reference showcase visual system v8.4 final cascade lock');
+
+  assert.ok(lockIndex > finalShowcaseIndex, 'material contrast lock should load after old showcase cascade styles');
+  assert.match(css, /\.material-resonance-panel[\s\S]*rgba\(8,\s*10,\s*18,\s*0\.92\)/);
+  assert.match(css, /\.material-body-model[\s\S]*rgba\(9,\s*13,\s*24,\s*0\.82\)/);
+  assert.match(css, /\.resonance-peak-card[\s\S]*rgba\(13,\s*18,\s*30,\s*0\.86\)/);
+  assert.match(css, /\.material-body-metrics article[\s\S]*rgba\(12,\s*18,\s*31,\s*0\.78\)/);
+  assert.match(css, /\.material-resonance-panel :where\(p,\s*li,\s*small,\s*span,\s*em,\s*label,\s*dt,\s*dd\)[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.76\)/);
+});
+
 test('sound lab Patch Doctor is routed, readable, and not a dead card', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
@@ -1956,6 +1969,29 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
     /addEventListener\('pointerdown'[\s\S]{0,260}drawAetherOrbitalCurrents/,
     'orbital current layer must be continuous ambient motion, not a click-triggered viewport flash',
   );
+});
+
+test('aether flow prompt adds decaying pointer flow and control micro-currents', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /AETHER_POINTER_EASE/);
+  assert.match(visualSpaceJs, /AETHER_POINTER_DECAY/);
+  assert.match(visualSpaceJs, /targetForce/);
+  assert.match(visualSpaceJs, /pointer\.force/);
+  assert.match(visualSpaceJs, /pointer\.force \+= \(pointer\.targetForce - pointer\.force\) \* AETHER_POINTER_EASE/);
+  assert.match(visualSpaceJs, /pointer\.targetForce = 1/);
+  assert.match(visualSpaceJs, /pointer\.targetForce = 0/);
+  assert.match(visualSpaceJs, /addEventListener\('pointerleave'/);
+  assert.match(visualSpaceJs, /addEventListener\('blur'/);
+  assert.match(visualSpaceJs, /const force = Math\.max\(0, 1 - distance \/ AETHER_MOUSE_RADIUS\) \* z \* pointer\.force/);
+
+  assert.match(css, /Reference aether flow prompt polish v9\.10/);
+  assert.match(css, /@keyframes ref9-canvas-flow-breath/);
+  assert.match(css, /@keyframes ref9-control-current/);
+  assert.match(css, /\.sound-lab-workbench :where\([\s\S]*\.engine-mode-button[\s\S]*\)::after/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-control-current/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-control-current/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

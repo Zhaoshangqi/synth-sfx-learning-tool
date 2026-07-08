@@ -2258,3 +2258,151 @@ body.is-direct-manipulating .ear-chain-step::after {
     animation-play-state: paused !important;
   }
 }
+
+/* Reference aether flow prompt polish v9.10
+   Adds the supplied Aether Flow component's living-current feel as native
+   canvas/CSS motion: subtle pointer decay, no black repaint, drag-safe controls. */
+
+.visual-shell-ready .audio-space {
+  opacity: 1;
+  transition: opacity 420ms ease;
+}
+
+#particle-canvas {
+  animation: ref9-canvas-flow-breath 18s ease-in-out infinite alternate;
+}
+
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+)::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(106deg, transparent 0 26%, rgba(117, 197, 222, 0.24) 42%, rgba(255, 255, 255, 0.14) 50%, rgba(167, 139, 250, 0.12) 58%, transparent 74%),
+    radial-gradient(circle at 18% 50%, rgba(94, 234, 212, 0.18), transparent 0 5px, transparent 6px);
+  background-size: 280% 100%, 140px 100%;
+  opacity: 0.12;
+  transform: translate3d(-18%, 0, 0);
+  mix-blend-mode: screen;
+  animation: ref9-control-current 7.4s linear infinite;
+  transition: opacity 220ms ease, transform 360ms ease;
+}
+
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+):hover::after,
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+):focus-visible::after,
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+).is-active::after {
+  opacity: 0.3;
+  transform: translate3d(0, 0, 0);
+}
+
+.sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.is-direct-manipulating #particle-canvas {
+  animation-play-state: paused !important;
+  opacity: 0.08 !important;
+  transition: none !important;
+}
+
+body.is-direct-manipulating .sound-lab-workbench :where(
+  .engine-mode-button,
+  .sound-preset-card,
+  .advanced-module-pill,
+  .quality-mode-button,
+  .material-button,
+  .session-play-button
+)::after {
+  animation-name: ref9-control-current;
+  animation-play-state: paused !important;
+  opacity: 0.08 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-canvas-flow-breath {
+  from {
+    filter: saturate(1.08) contrast(1.02);
+  }
+  to {
+    filter: saturate(1.18) contrast(1.07);
+  }
+}
+
+@keyframes ref9-control-current {
+  0% {
+    background-position: 0% 50%, 0 50%;
+    transform: translate3d(-20%, 0, 0);
+  }
+  100% {
+    background-position: 100% 50%, 92px 50%;
+    transform: translate3d(20%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #particle-canvas,
+  .sound-lab-workbench :where(
+    .engine-mode-button,
+    .sound-preset-card,
+    .advanced-module-pill,
+    .quality-mode-button,
+    .material-button,
+    .session-play-button
+  )::after {
+    animation-name: ref9-control-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}

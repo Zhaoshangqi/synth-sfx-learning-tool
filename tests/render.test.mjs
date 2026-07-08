@@ -673,6 +673,31 @@ test('renderSoundLabWorkbench renders a material resonance map with playable bod
   assert.match(html, /Hz|ratio|decay|Q|峰/);
 });
 
+test('renderSoundLabWorkbench shows modal body diffusion inside material resonance guidance', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 46,
+    material: 92,
+    space: 42,
+    variation: 58,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 86, body: 78, texture: 62, tail: 44 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const resonanceBlock = html.match(/<section class="workbench-panel material-resonance-panel"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(resonanceBlock, 'material resonance panel should render as a distinct panel');
+  assert.match(resonanceBlock, /material-body-model/);
+  assert.match(resonanceBlock, /Modal Body|material body|modal/i);
+  assert.match(resonanceBlock, /Detune|Spread|Damping|Stereo|Strike|Excitation/i);
+  assert.match(resonanceBlock, /body-only|spectrum|A\/B|REAPER/i);
+});
+
 test('renderSoundLabWorkbench explains synth realism controls in the quality card', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

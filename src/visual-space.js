@@ -1,6 +1,6 @@
 const canvas = document.querySelector('#particle-canvas');
 const ctx = canvas?.getContext('2d', { alpha: true });
-const pointer = { x: 0, y: 0, tx: 0, ty: 0, screenX: 0, screenY: 0 };
+const pointer = { x: 0, y: 0, tx: 0, ty: 0, screenX: 0, screenY: 0, force: 0, targetForce: 0 };
 let width = 0;
 let height = 0;
 let particles = [];
@@ -21,6 +21,8 @@ const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: r
 const random = (min, max) => min + Math.random() * (max - min);
 const WAVE_ROWS = [0.28, 0.52, 0.76];
 const AETHER_MOUSE_RADIUS = 210;
+const AETHER_POINTER_EASE = 0.075;
+const AETHER_POINTER_DECAY = 0.925;
 const AETHER_CONNECTION_RADIUS = 136;
 const AETHER_WEB_STRIDE = 6;
 const AETHER_STREAM_COUNT = 5;
@@ -58,7 +60,7 @@ function aetherRepel(x, y, z = 1) {
   const dx = x - pointer.screenX;
   const dy = y - pointer.screenY;
   const distance = Math.max(1, Math.hypot(dx, dy));
-  const force = Math.max(0, 1 - distance / AETHER_MOUSE_RADIUS) * z;
+  const force = Math.max(0, 1 - distance / AETHER_MOUSE_RADIUS) * z * pointer.force;
   const lift = force * (10 + z * 14);
 
   return {
@@ -784,13 +786,22 @@ function scheduleSpaceParallaxCommit() {
 }
 
 function updatePointerFromEvent(event) {
-  if (globalThis.__synthDirectManipulating) return;
+  if (globalThis.__synthDirectManipulating) {
+    pointer.targetForce = 0;
+    return;
+  }
   pointer.screenX = event.clientX;
   pointer.screenY = event.clientY;
   pointer.tx = (event.clientX / Math.max(1, width) - 0.5) * 2;
   pointer.ty = (event.clientY / Math.max(1, height) - 0.5) * 2;
+  pointer.targetForce = 1;
   spawnCursorWake(event.clientX, event.clientY, event.timeStamp || performance.now());
   scheduleSpaceParallaxCommit();
+}
+
+function releaseAetherPointer() {
+  pointer.targetForce = 0;
+  cursorWakeAnchor.time = 0;
 }
 
 function handleAetherSurfaceHover(event) {
@@ -810,6 +821,12 @@ function tick(time = 0) {
 
   pointer.x += (pointer.tx - pointer.x) * 0.055;
   pointer.y += (pointer.ty - pointer.y) * 0.055;
+  if (pointer.targetForce > pointer.force) {
+    pointer.force += (pointer.targetForce - pointer.force) * AETHER_POINTER_EASE;
+  } else {
+    pointer.force *= AETHER_POINTER_DECAY;
+    if (pointer.force < 0.006) pointer.force = 0;
+  }
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = 'rgba(8, 10, 18, 0.022)';
   ctx.fillRect(0, 0, width, height);
@@ -848,6 +865,8 @@ function init() {
   globalThis.addEventListener('pointermove', (event) => {
     updatePointerFromEvent(event);
   }, { passive: true });
+  globalThis.addEventListener('pointerleave', releaseAetherPointer, { passive: true });
+  globalThis.addEventListener('blur', releaseAetherPointer);
   document.addEventListener('pointerover', handleAetherSurfaceHover, { passive: true });
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);

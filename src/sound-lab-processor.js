@@ -357,16 +357,35 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const env = this.envelopeFor(layer, t, duration);
     const baseFrequency = clamp(this.smoothLayerValue(state, 'baseFrequency', layer.baseFrequency || 180), 20, 2000);
     const gain = clamp(this.smoothLayerValue(state, 'gain', layer.gain ?? 0, 'gain'), 0, 2);
-    let sum = 0;
+    const materialBody = layer.materialBody || {};
+    const stereoSmear = clamp(materialBody.stereoSmear ?? layer.stereoSpread ?? 0, 0, 1);
+    const excitationBlend = clamp(materialBody.excitationBlend ?? 0, 0, 0.36);
+    const strikeTightness = clamp(materialBody.strikeTightness ?? 72, 20, 180);
+    const dampingTilt = clamp(materialBody.dampingTilt ?? 0.18, 0, 1.8);
+    let mono = 0;
+    let side = 0;
     const resonators = layer.resonators || [];
     for (let index = 0; index < resonators.length; index += 1) {
       const resonator = resonators[index];
-      const frequency = clamp(baseFrequency * resonator.ratio, 30, 16000);
+      const detune = Math.pow(2, clamp(resonator.detuneCents ?? 0, -36, 36) / 1200);
+      const frequency = clamp(baseFrequency * resonator.ratio * detune, 30, 16000);
       const decay = Math.exp(-t / clamp(resonator.decay, 0.025, 4));
-      const phaseSkew = index * 0.37;
-      sum += Math.sin(t * Math.PI * 2 * frequency + phaseSkew) * resonator.gain * decay;
+      const damping = Math.exp(-t * clamp(resonator.damping ?? dampingTilt * (0.5 + index * 0.22), 0, 2.4) * (0.55 + index * 0.18));
+      const phaseSkew = resonator.phaseSkew ?? index * 0.37;
+      const partial = Math.sin(t * Math.PI * 2 * frequency + phaseSkew) * resonator.gain * decay * damping;
+      const strike = this.colorNoise(state, 'bright')
+        * clamp(resonator.excitation ?? excitationBlend, 0, 0.36)
+        * Math.exp(-t * strikeTightness)
+        * clamp(1 - index * 0.12, 0.34, 1);
+      const value = partial + strike;
+      const pan = clamp(resonator.pan ?? ((index % 2 === 0 ? -1 : 1) * stereoSmear * 0.22), -0.75, 0.75);
+      mono += value * (1 - Math.abs(pan) * 0.08);
+      side += value * pan * stereoSmear;
     }
-    return sum * env * gain;
+    return {
+      mono: this.dcBlock(state.dc, mono * env * gain),
+      side: this.dcBlock(state.sideDc, side * env * gain),
+    };
   }
 
   renderFilteredNoise(layer, state, t, duration) {
