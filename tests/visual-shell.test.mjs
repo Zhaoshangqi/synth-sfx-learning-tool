@@ -155,6 +155,9 @@ test('range controls use smooth drag state and animation-frame chrome updates', 
   assert.match(appJs, /scheduleRangeChromeUpdate/);
   assert.match(appJs, /requestAnimationFrame/);
   assert.match(appJs, /bindSmoothRangeInput/);
+  assert.match(appJs, /updateHorizontalRangeFromPointer/);
+  assert.match(appJs, /commitPointerRangeValue/);
+  assert.match(appJs, /input\.addEventListener\('keydown'/);
   assert.match(appJs, /is-dragging/);
   assert.match(css, /@property --range-value/);
   assert.match(css, /\.range-shell\.is-dragging/);
@@ -186,6 +189,7 @@ test('range chrome updates value outputs without rewriting control labels', () =
 
   assert.ok(updateRangeBlock, 'updateRangeChrome should remain the single live range chrome updater');
   assert.match(updateRangeBlock, /querySelector\('output'\)/, 'live range updates should target numeric output elements');
+  assert.match(updateRangeBlock, /--knob-value/, 'live range updates should keep macro knob rings in sync with the numeric value');
   assert.doesNotMatch(updateRangeBlock, /querySelector\('output,\s*strong'\)/, 'range updates must not overwrite strong labels such as Attack or Decay');
   assert.doesNotMatch(updateRangeBlock, /querySelector\('strong,\s*output'\)/, 'range updates must not use strong labels as value outputs');
 });
@@ -1393,4 +1397,23 @@ test('signal atlas console fuses the primary lab with a guided signal path', () 
   assert.match(css, /@keyframes atlas-soft-pulse/);
   assert.match(css, /@keyframes atlas-confirm-pop/);
   assert.match(css, /transition:\s*transform 180ms cubic-bezier/);
+});
+
+test('target match coach is routed, readable, and visually integrated with Signal Atlas', () => {
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /function buildTargetMatchCoach/);
+  assert.match(modelJs, /targetMatchCoach:\s*buildTargetMatchCoach/);
+  assert.match(renderJs, /function renderTargetMatchCoachPanel/);
+  assert.match(renderJs, /target-match-coach-panel/);
+  assert.match(renderJs, /data-target-match-action/);
+  assert.match(renderJs, /data-doctor-apply/);
+  assert.match(css, /Target Match Coach v5\.2/);
+  assert.match(css, /\.target-match-coach-panel\s*\{[\s\S]*background:\s*linear-gradient/);
+  assert.match(css, /\.target-match-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.target-match-meter::after\s*\{[\s\S]*width:\s*var\(--target-score\)/);
+  assert.match(css, /\.signal-atlas-console \.target-match-coach-panel\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+  assert.match(css, /\.target-match-challenge button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
 });
