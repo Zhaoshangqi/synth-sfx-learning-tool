@@ -17276,3 +17276,114 @@ body::after {
 .content :where(.daily-video-card, .source-card, .content-card, .knowledge-card, .recipe-card, .advanced-feature-card, .learning-path-step, .deep-dive-card) :where(h3, h4, strong) {
   color: var(--showcase-ink) !important;
 }
+
+/* Dashboard coach route v6.3: preview the learning mission before jumping into a module */
+.learning-path-detail {
+  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr) !important;
+  gap: 16px !important;
+}
+
+.learning-coach-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.learning-coach-card {
+  min-height: 132px;
+  padding: 16px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(244, 241, 232, 0.42)),
+    rgba(255, 255, 255, 0.54);
+  box-shadow: 0 18px 42px rgba(17, 17, 17, 0.08);
+  transition:
+    transform 220ms var(--showcase-ease),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.learning-coach-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(117, 197, 222, 0.5);
+  box-shadow: 0 22px 54px rgba(17, 17, 17, 0.11);
+}
+
+.learning-coach-card span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 10px;
+  color: #0c6f7b !important;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.learning-coach-card p {
+  margin: 0;
+  color: rgba(17, 17, 17, 0.72) !important;
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.learning-path-cta {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-top: 2px;
+  padding: 14px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 12% 50%, rgba(117, 197, 222, 0.26), transparent 0 160px),
+    rgba(244, 241, 232, 0.58);
+}
+
+.learning-path-cta .primary-button {
+  min-width: 184px;
+}
+
+.learning-path-cta .primary-button small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(17, 17, 17, 0.54) !important;
+  font-size: 12px;
+}
+
+.learning-path-cta p {
+  margin: 0;
+  color: rgba(17, 17, 17, 0.64) !important;
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+@media (max-width: 980px) {
+  .learning-path-detail {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .learning-coach-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .learning-coach-grid,
+  .learning-path-cta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .learning-coach-card {
+    min-height: 0;
+  }
+
+  .learning-path-cta .primary-button {
+    width: 100%;
+  }
+}

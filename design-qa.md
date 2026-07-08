@@ -116,3 +116,31 @@ Passed for this iteration. This pass makes the current UI more robust before the
 
 ## Result
 Passed for this iteration. This pass locks the supplied showcase visual direction into the app shell, improves Sound Lab control hit targets, and completes the audio timing depth work for layer onset and space pre-delay in both the Worklet and browser fallback paths.
+
+---
+
+# Design QA - Dashboard Coach Route v6.3
+
+## Focus
+- Goal: make the zero-to-delivery route clearer for beginners by separating "preview this learning step" from "jump into the module".
+- Product behavior: route cards now select and explain the step on Dashboard; the explicit "开始这一步" CTA launches Sound Lab, Interactive Labs, or REAPER practice.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=coach-v63#dashboard`
+- Browser plugin note: in-app browser connected, but the full click-flow run timed out during automation; local Chromium fallback was used for final evidence.
+- Desktop viewport: 1280 x 720.
+- Initial dashboard: passed. No horizontal overflow; four coach cards and one route launch button render for the selected step.
+- Route preview: passed. Clicking `FM 金属` keeps `hash="#dashboard"`, marks `fm-metal` active, updates the detail title to `FM 金属`, and shows coach cards for sound target, one-knob practice, common mistake, and acceptance action.
+- Route launch: passed. Clicking `data-dashboard-path-launch="fm-metal"` navigates to `#soundlab`, renders Sound Lab, keeps no horizontal overflow, and retains cream text on the dark workbench.
+- Mobile viewport: 390 x 844.
+- Mobile route preview: passed. `分层材质` preview renders without horizontal overflow; coach grid and CTA collapse to one column.
+- Console logs: passed. No browser console errors captured in fallback run.
+
+## Automated Checks
+- TDD red: `node --test tests\visual-shell.test.mjs` failed on missing `soundTargetZh`, confirming the new test guarded missing behavior.
+- TDD green: `node --test tests\visual-shell.test.mjs`: 86 passed.
+- Syntax: `node --check src\app.js`: passed.
+- Full suite: `npm.cmd test`: 196 passed.
+
+## Result
+Passed for this iteration. The Dashboard route now behaves more like a guided learning coach: inspect one step, understand what to listen for, then explicitly launch the matching module when ready.
