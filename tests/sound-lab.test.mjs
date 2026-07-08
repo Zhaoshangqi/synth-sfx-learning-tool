@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { sources, soundLabFamilies } from '../src/content.js';
 import {
   SOUND_LAB_MACROS,
@@ -303,6 +304,40 @@ test('buildSoundLabViewModel exposes a target match coach with one-change guidan
   assert.ok(Number.isFinite(coach.oneChangeChallenge.to));
 });
 
+test('buildSoundLabViewModel exposes a perceptual signature for realistic synth SFX coaching', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 58,
+    material: 88,
+    space: 42,
+    variation: 36,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 82, body: 66, texture: 72, tail: 44 },
+  });
+
+  const signature = model.perceptualSignature;
+  assert.ok(signature, 'view model should explain why this patch feels like a real synth SFX');
+  assert.match(signature.titleZh, /听感指纹|Perceptual/);
+  assert.ok(signature.realismScore >= 0 && signature.realismScore <= 100);
+  assert.match(signature.identityZh, /metal|FM|modal|金属|材质/i);
+  assert.ok(signature.proofPoints.length >= 5);
+  assert.deepEqual(signature.proofPoints.map((point) => point.role), ['transient', 'body', 'material', 'space', 'comfort']);
+  assert.ok(signature.proofPoints.every((point) => point.labelZh && point.listenZh && point.evidenceZh && Number.isFinite(point.value)));
+  assert.ok(signature.nextMove.parameterId, 'next move should point to a concrete parameter');
+  assert.notEqual(signature.nextMove.from, signature.nextMove.to, 'next move should describe a small A/B change');
+  assert.ok(signature.nextMove.reasonZh);
+  assert.ok(signature.nextMove.action);
+  assert.ok(signature.synthTranslation.serum);
+  assert.ok(signature.synthTranslation.phasePlant);
+  assert.ok(signature.synthTranslation.vital);
+  assert.match(signature.reaperCheckZh, /A\/B|dry|full|REAPER/i);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
@@ -362,6 +397,38 @@ test('studio worklet patches expose unison drift and stereo spread for realistic
   const message = buildWorkletMessage(patch);
   const payloadLayer = message.payload.layers.find((layer) => layer.engine === 'fmBurst');
   assert.deepEqual(payloadLayer.unison, tonalLayers.find((layer) => layer.engine === 'fmBurst').unison);
+});
+
+test('studio worklet patches stagger transient body texture and tail for realistic SFX depth', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 78,
+    motion: 52,
+    material: 86,
+    space: 64,
+    variation: 72,
+  }, {
+    engineMode: 'worklet',
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    layerMix: { transient: 84, body: 76, texture: 62, tail: 58 },
+  });
+
+  const byRole = (role) => patch.layers.filter((layer) => layer.role === role);
+  assert.ok(byRole('transient').every((layer) => layer.onsetMs <= 3), 'transient layers should remain immediate');
+  assert.ok(byRole('body').some((layer) => layer.onsetMs >= 2), 'body should arrive after the click');
+  assert.ok(byRole('texture').some((layer) => layer.onsetMs >= 5), 'texture should bloom after the body starts');
+  assert.ok(byRole('tail').some((layer) => layer.onsetMs >= 14), 'tail should have pre-delay instead of smearing the attack');
+  assert.ok(patch.layers.every((layer) => Number.isFinite(layer.onsetMs) && layer.onsetMs >= 0 && layer.onsetMs <= 80));
+
+  assert.ok(patch.globalFx.acousticCues, 'patch should expose global acoustic timing cues');
+  assert.ok(patch.globalFx.acousticCues.bodyLagMs >= 2);
+  assert.ok(patch.globalFx.acousticCues.tailPreDelayMs >= 14);
+  assert.ok(patch.globalFx.space.preDelayMs >= patch.globalFx.acousticCues.tailPreDelayMs);
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.acousticCues, patch.globalFx.acousticCues);
+  assert.ok(message.payload.layers.every((layer) => Number.isFinite(layer.onsetMs)));
 });
 
 test('studio patches expose master polish for tighter finished synth tone', () => {
@@ -510,6 +577,23 @@ test('buildSoundLabPatch exposes HQ synth engine graph and playable performance 
   assert.equal(patch.performance.hold, true);
   assert.ok(patch.macroModulation.some((route) => route.source === 'motion' && route.target.includes('filter')));
   assert.equal(patch.fallbackChain.join(' > '), 'tone > worklet > webaudio');
+});
+
+test('browser audio engines honor layer onset and space pre-delay cues', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /layerOnsetSeconds/);
+  assert.match(processorJs, /localT/);
+  assert.match(processorJs, /if \(t < onset\) return/);
+  assert.match(processorJs, /duration - onset/);
+  assert.match(processorJs, /preDelayMs/);
+  assert.match(processorJs, /spacePreDelay/);
+
+  assert.match(audioPlayerJs, /layerStartTime/);
+  assert.match(audioPlayerJs, /layerDuration/);
+  assert.match(audioPlayerJs, /layer\.onsetMs/);
+  assert.match(audioPlayerJs, /globalFx\.space\.preDelayMs/);
 });
 
 test('buildSoundLabViewModel exposes HQ engine modes, FX rack, and performance UI data', () => {

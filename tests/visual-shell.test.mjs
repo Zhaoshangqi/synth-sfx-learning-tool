@@ -77,6 +77,23 @@ test('stitch showcase production pass adds a pointer reveal audio core and capsu
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*stitch-view-enter/);
 });
 
+test('showcase reference refit uses a single clean stage with reveal layers and no canvas mask repaint loop', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /hero-reveal-layer/);
+  assert.match(appJs, /hero-signal-mesh/);
+  assert.match(appJs, /hero-capsule-cta/);
+  assert.match(css, /Showcase exact reference refit v6\.5/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*var\(--showcase-canvas\)/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sound"/);
+  assert.match(css, /\.hero-reveal-layer\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x\) var\(--spot-y\)/);
+  assert.match(css, /\.hero-capsule-cta::before\s*\{[\s\S]*transition:\s*inset 360ms var\(--showcase-ease\)/);
+  assert.match(css, /\.hero-capsule-cta::after\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.doesNotMatch(shellJs, /toDataURL/, 'spotlight reveal must stay CSS-variable driven rather than repainting a canvas mask every frame');
+});
+
 test('stitch visual refit keeps the supplied showcase motion but removes click flash sources', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
@@ -126,22 +143,34 @@ test('dashboard learning path gives beginners a clickable route into real module
   assert.match(appJs, /id: 'listen-source'/);
   assert.match(appJs, /id: 'fm-metal'/);
   assert.match(appJs, /id: 'ab-deliver'/);
+  assert.match(appJs, /soundTargetZh:/);
+  assert.match(appJs, /oneKnobZh:/);
+  assert.match(appJs, /mistakeZh:/);
+  assert.match(appJs, /checkpointZh:/);
+  assert.match(appJs, /nextStepZh:/);
   assert.match(appJs, /activeDashboardPathStep: DASHBOARD_LEARNING_PATH\[0\]\?\.id/);
   assert.match(appJs, /function getActiveDashboardPathStep\(\)/);
   assert.match(appJs, /class="dashboard-learning-console"/);
   assert.match(appJs, /data-dashboard-path-step/);
+  assert.match(appJs, /class="learning-coach-grid"/);
+  assert.match(appJs, /class="learning-path-cta"/);
+  assert.match(appJs, /data-dashboard-path-launch/);
   assert.match(appJs, /function applyDashboardPathStep\(step\)/);
+  assert.match(appJs, /function launchDashboardPathStep\(step\)/);
   assert.match(appJs, /selectSoundLabFamily\(step\.familyId, false\)/);
   assert.match(appJs, /state\.activeLabId = step\.labId/);
   assert.match(appJs, /state\.soundLabWorkflowStep = step\.workflowStep/);
   assert.match(appJs, /state\.activeWorkbenchModule = step\.workbenchModule/);
   assert.match(appJs, /function bindDashboardLearningPathControls\(\)/);
-  assert.match(appJs, /switchView\(step\.view\)/);
+  assert.match(appJs, /launchDashboardPathStep\(step\)/);
   assert.match(css, /\.dashboard-learning-console\s*\{/);
   assert.match(css, /\.learning-path-grid\s*\{/);
   assert.match(css, /\.learning-path-step\.is-active\s*\{/);
   assert.match(css, /\.learning-path-detail\s*\{/);
   assert.match(css, /\.learning-path-checks\s*\{/);
+  assert.match(css, /\.learning-coach-grid\s*\{/);
+  assert.match(css, /\.learning-coach-card\s*\{/);
+  assert.match(css, /\.learning-path-cta\s*\{/);
   assert.match(css, /color:\s*var\(--studio-ink\)/);
   assert.match(css, /color:\s*var\(--studio-paper\)/);
 });
@@ -1466,4 +1495,64 @@ test('product stability pass contains overflow, menu hit areas, and Sound Lab co
   assert.match(css, /\.signal-atlas-console \.macro-knob input,[\s\S]*\.synth-workbench-layout \.macro-knob input\s*\{[\s\S]*max-width:\s*calc\(100% - 20px\)/);
   assert.match(css, /\.signal-atlas-console \.vertical-slider input,[\s\S]*\.synth-workbench-layout \.vertical-slider input\s*\{[\s\S]*width:\s*44px/);
   assert.match(css, /\.signal-atlas-console \.range-shell,[\s\S]*\.synth-workbench-layout \.range-shell\s*\{[\s\S]*max-width:\s*100%/);
+});
+
+test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const stabilityIndex = css.indexOf('Product stability pass v5.4');
+  const showcaseIndex = css.indexOf('Showcase reference redesign v6.0');
+  const cleanupIndex = css.indexOf('Showcase reference v6.1');
+  const polishIndex = css.indexOf('Showcase interaction polish v6.2');
+
+  assert.ok(stabilityIndex > -1, 'legacy stability guard should remain auditable');
+  assert.ok(showcaseIndex > stabilityIndex, 'showcase redesign must load after the old dark fallback rules');
+  assert.ok(cleanupIndex > showcaseIndex, 'first viewport cleanup must load after the showcase visual system');
+  assert.ok(polishIndex > cleanupIndex, 'interaction polish must load after the viewport cleanup');
+  assert.match(css, /--showcase-canvas:\s*#E4E4E4/);
+  assert.match(css, /--showcase-ink:\s*#111111/);
+  assert.match(css, /--showcase-paper:\s*#F4F1E8/);
+  assert.match(css, /--showcase-cyan:\s*#75C5DE/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*position:\s*fixed !important[\s\S]*right:\s*8px !important[\s\S]*background:\s*var\(--showcase-menu\) !important/);
+  assert.match(css, /\.shell-menu-open \.sidebar\s*\{[\s\S]*top:\s*8px !important[\s\S]*transform:\s*translate3d\(0,\s*0,\s*0\) !important/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /Showcase reference v6\.1/);
+  assert.match(css, /\.content:has\(\.dashboard-hero\) > \.view-header\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.quality-panel\s*\{[\s\S]*position:\s*absolute[\s\S]*min-height:\s*0 !important[\s\S]*max-height:\s*none !important[\s\S]*overflow:\s*hidden/);
+  assert.match(css, /\.quality-panel \.metric-row p\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.hero-copy \.card-kicker\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button::before,[\s\S]*\.source-link::before\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.9\)/);
+  assert.match(css, /\.hero-sound-visual::before\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x/);
+  assert.match(css, /\.signal-atlas-console,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*transparent !important/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*transparent !important/);
+  assert.match(css, /\.signal-atlas-console :where\(p, li, small, span, label, output\),[\s\S]*\.synth-workbench-layout :where\(p, li, small, span, label, output\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.78\) !important/);
+  assert.match(css, /\.range-shell\.is-dragging,[\s\S]*\.synth-workbench-layout \.range-shell\.is-dragging\s*\{[\s\S]*filter:\s*none !important/);
+  assert.match(css, /\.signal-atlas-console input\[type="range"\],[\s\S]*\.synth-workbench-layout input\[type="range"\]\s*\{[\s\S]*min-height:\s*40px[\s\S]*cursor:\s*grab[\s\S]*touch-action:\s*none/);
+  assert.match(css, /\.signal-atlas-console input\[type="range"\]:active,[\s\S]*\.synth-workbench-layout \.range-shell\.is-dragging\s*\{[\s\S]*cursor:\s*grabbing/);
+});
+
+test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+  const polishIndex = css.indexOf('Showcase interaction polish v6.2');
+  const stageIndex = css.indexOf('Showcase sonic stage v6.4');
+
+  assert.ok(stageIndex > polishIndex, 'v6.4 must load after previous showcase patches');
+  assert.match(css, /\.workspace:has\(\.dashboard-hero\) \.toolbar\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.content:has\(\.dashboard-hero\)\s*\{[\s\S]*margin-top:\s*0/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*min-height:\s*min\(780px,\s*calc\(100dvh - 108px\)\)/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*radial-gradient\(circle at var\(--spot-x/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*font-size:\s*clamp\(38px,\s*5\.2vw,\s*76px\)/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*letter-spacing:\s*-0\.035em/);
+  assert.match(css, /\.dashboard-starter-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.dashboard-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(240px,\s*1fr\)\)/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button span\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button::before\s*\{[\s\S]*inset:\s*7px 68px 7px 8px/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*visibility:\s*hidden/);
+  assert.match(css, /\.shell-menu-open \.sidebar\s*\{[\s\S]*visibility:\s*visible/);
+  assert.match(css, /\.sidebar \.tab\s*\{[\s\S]*font-size:\s*clamp\(24px,\s*4\.5vw,\s*40px\)/);
+  assert.match(css, /\.visual-spotlight\s*\{[\s\S]*mix-blend-mode:\s*soft-light/);
+  assert.match(shellJs, /setMenuOpen/);
+  assert.match(shellJs, /'关闭导航菜单'/);
+  assert.match(shellJs, /'打开导航菜单'/);
 });
