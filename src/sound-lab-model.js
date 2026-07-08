@@ -1293,6 +1293,8 @@ function buildWaveformFingerprint(patch) {
         listenZh: '先听完整 Patch：有没有稳定 pitch、钟感或 modal 主体。若能哼出中心音，sine/triangle/FM 主体通常在发挥作用。',
         proofZh: '证据：pitch 还在，说明不是纯噪声；REAPER 里先渲染 full 作为 A/B 参照。',
         synthZh: 'Serum / Phase Plant / Vital: 先 solo 主 oscillator 或 modal generator，不动 FX。',
+        feedbackZh: '你先听了完整 Patch，用 pitch、钟感和 modal 主体判断 sine、triangle 或 FM 是否在当核心。',
+        nextZh: 'solo body 层，确认主体不是 reverb、noise 或 transient 造成的听觉假象。',
         playAction: 'current',
       },
       {
@@ -1302,6 +1304,8 @@ function buildWaveformFingerprint(patch) {
         listenZh: '只听 body：关掉 transient、texture 和 tail 后，如果主体仍成立，就把它当成基础波形/频率锚点来判断。',
         proofZh: '证据：solo body 还能听出 pitch 或金属主体；如果没有，主体可能被噪声或空间假象盖住。',
         synthZh: 'Phase Plant / Vital: mute noise lane 和 reverb lane；Serum: 先关 Noise/Sub 以外的修饰。',
+        feedbackZh: '你把 transient、texture、tail 暂时拿掉，只听主体是否还能成立；这一步用来确认基础波形/频率锚点。',
+        nextZh: '动 Brightness 或 filter cutoff，找出 saw、comb、FM 侧频和 noise 边缘。',
         layerAudition: 'body',
       },
       {
@@ -1311,6 +1315,8 @@ function buildWaveformFingerprint(patch) {
         listenZh: '动 Brightness 或 filter cutoff：最先消失的亮边通常来自 saw、comb、FM 侧频或高频 noise。',
         proofZh: '证据：filter 扫低后仍有 pitch 是主体，消失的是 saw/noise/comb 边缘。',
         synthZh: 'Serum / Phase Plant / Vital: 用一个 low-pass sweep 或 Macro Brightness 反推谐波边缘。',
+        feedbackZh: '你只改变亮度或滤波，正在验证哪些高频边缘先消失；消失快的通常是 saw、comb、FM 侧频或 noise。',
+        nextZh: '回到 Comfort 输出做 A/B，把主体、边缘和噪声角色各记录一句。',
         action: 'focus-controls',
       },
       {
@@ -1320,6 +1326,8 @@ function buildWaveformFingerprint(patch) {
         listenZh: '回到 Comfort 输出做 A/B：写下“主体像什么波形，边缘来自哪里，噪声承担什么角色”。',
         proofZh: 'REAPER note: A/B full/body/comfort；结论必须说明 pitch、saw/noise 边缘和 FM/modal 材质各自贡献。',
         synthZh: 'Serum / Phase Plant / Vital: 把结论翻译成 oscillator、noise、FM 或 filter lane。',
+        feedbackZh: '你把听感结论翻译成 oscillator、noise、FM/filter lane，已经从“听起来像”推进到“能复刻”。',
+        nextZh: '记录 REAPER A/B：主体波形、边缘来源、噪声角色各一句，再回到 Serum / Phase Plant / Vital 复刻。',
         outputMode: 'comfort',
       },
     ],

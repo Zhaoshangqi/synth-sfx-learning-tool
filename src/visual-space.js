@@ -10,6 +10,7 @@ let aetherCurrentPackets = [];
 let aetherFlowNodes = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
+let aetherPressurePulses = [];
 let frameId = 0;
 let spaceParallaxFrame = 0;
 
@@ -28,6 +29,18 @@ const AETHER_NODE_CONNECTION_RADIUS = 176;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
+const AETHER_PRESSURE_RADIUS = 178;
+const AETHER_PRESSURE_MAX_PULSES = 12;
+const AETHER_FLOW_SURFACE_SELECTOR = [
+  '.visual-burger-btn',
+  '.signal-node',
+  '.module-directory-card',
+  '.daily-video-card',
+  '.source-card',
+  '.workbench-panel',
+  '.waveform-drill-step',
+  '[data-flow-surface]',
+].join(',');
 const cursorWakeAnchor = { x: 0, y: 0, time: 0 };
 
 function isAetherFlowPaused() {
@@ -126,6 +139,24 @@ function spawnCursorWake(x, y, time = performance.now()) {
   cursorWakeAnchor.time = time;
 }
 
+function spawnAetherPressurePulse(x = pointer.screenX, y = pointer.screenY, detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  aetherPressurePulses.push({
+    x,
+    y,
+    age: 0,
+    ttl: detail.ttl ?? random(0.95, 1.45),
+    radius: detail.radius ?? random(AETHER_PRESSURE_RADIUS * 0.55, AETHER_PRESSURE_RADIUS),
+    strength: detail.strength ?? random(0.45, 0.86),
+    phase: random(0, Math.PI * 2),
+    hue: detail.hue ?? (aetherPressurePulses.length % 3 === 0 ? 'violet' : aetherPressurePulses.length % 2 === 0 ? 'green' : 'cyan'),
+  });
+
+  if (aetherPressurePulses.length > AETHER_PRESSURE_MAX_PULSES) {
+    aetherPressurePulses.splice(0, aetherPressurePulses.length - AETHER_PRESSURE_MAX_PULSES);
+  }
+}
+
 function getAetherStreamPoint(stream, progress, time, phaseOffset = 0) {
   const x = -90 + progress * (width + 180);
   const phase = stream.phase + time * stream.speed + progress * stream.frequency + pointer.x * 0.45 + phaseOffset;
@@ -185,6 +216,7 @@ function resize() {
   cursorWakeAnchor.y = pointer.screenY;
   cursorWakeAnchor.time = 0;
   transitionBursts = [];
+  aetherPressurePulses = [];
 }
 
 function waveY(x, rowIndex, time) {
@@ -543,6 +575,37 @@ function drawTransitionParticles(time) {
   });
 }
 
+function drawAetherPressureField(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherPressurePulses.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherPressurePulses = aetherPressurePulses.filter((pulse) => pulse.age < pulse.ttl);
+  aetherPressurePulses.forEach((pulse) => {
+    pulse.age += 0.016;
+    const life = Math.max(0, 1 - pulse.age / pulse.ttl);
+    const color = pulse.hue === 'violet' ? '167, 139, 250' : pulse.hue === 'green' ? '94, 234, 212' : '117, 197, 222';
+    const radius = pulse.radius * (0.42 + (1 - life) * 0.72);
+    const shimmer = 0.65 + Math.sin(time * 0.003 + pulse.phase) * 0.22;
+    const gradient = ctx.createRadialGradient(pulse.x, pulse.y, Math.max(1, radius * 0.08), pulse.x, pulse.y, radius);
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${life * 0.035 * pulse.strength})`);
+    gradient.addColorStop(0.34, `rgba(${color}, ${life * 0.06 * pulse.strength})`);
+    gradient.addColorStop(1, `rgba(${color}, 0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(pulse.x + pointer.x * 10, pulse.y + pointer.y * 7, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(${color}, ${life * 0.11 * shimmer})`;
+    ctx.lineWidth = 0.6;
+    ctx.arc(pulse.x + pointer.x * 12, pulse.y + pointer.y * 8, radius * 0.72, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
 function drawRippleField(time) {
   const centers = [
     [width * 0.18 + pointer.x * 18, height * 0.2 + pointer.y * 12],
@@ -583,6 +646,18 @@ function updatePointerFromEvent(event) {
   scheduleSpaceParallaxCommit();
 }
 
+function handleAetherSurfaceHover(event) {
+  const target = event.target?.closest?.(AETHER_FLOW_SURFACE_SELECTOR);
+  if (!target || !document.body?.contains(target)) return;
+  const rect = target.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  spawnAetherPressurePulse(
+    rect.left + rect.width * 0.5,
+    rect.top + rect.height * 0.5,
+    { radius: Math.min(AETHER_PRESSURE_RADIUS, Math.max(84, rect.width * 0.42)), strength: 0.42, ttl: 1.05 },
+  );
+}
+
 function tick(time = 0) {
   if (!ctx || !canvas) return;
 
@@ -593,6 +668,7 @@ function tick(time = 0) {
   ctx.fillRect(0, 0, width, height);
 
   drawRippleField(time);
+  drawAetherPressureField(time);
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
@@ -623,8 +699,18 @@ function init() {
   globalThis.addEventListener('pointermove', (event) => {
     updatePointerFromEvent(event);
   }, { passive: true });
+  document.addEventListener('pointerover', handleAetherSurfaceHover, { passive: true });
   document.addEventListener('synth:view-transition', (event) => {
     spawnTransitionBurst(event.detail);
+    spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
+  });
+  document.addEventListener('synth:flow-pulse', (event) => {
+    const seed = String(event.detail?.to ?? 'pulse').length;
+    spawnAetherPressurePulse(
+      width * (0.36 + (seed % 5) * 0.07),
+      height * (0.32 + (seed % 4) * 0.11),
+      { radius: 190, strength: 0.58, ttl: 1.2, hue: seed % 2 === 0 ? 'green' : 'violet' },
+    );
   });
   tick();
 }

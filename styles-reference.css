@@ -1196,6 +1196,25 @@ body.is-direct-manipulating .signal-field::before {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(117, 197, 222, 0.12) !important;
 }
 
+.signal-atlas-console .waveform-drill-progress,
+.sound-lab-workbench .waveform-drill-progress {
+  border-color: rgba(117, 197, 222, 0.24) !important;
+  background:
+    linear-gradient(135deg, rgba(117, 197, 222, 0.13), rgba(244, 241, 232, 0.05)),
+    rgba(10, 14, 22, 0.66) !important;
+}
+
+.signal-atlas-console .waveform-drill-step.is-active,
+.sound-lab-workbench .waveform-drill-step.is-active,
+.signal-atlas-console .waveform-drill-step.is-complete,
+.sound-lab-workbench .waveform-drill-step.is-complete {
+  border-color: rgba(117, 197, 222, 0.52) !important;
+  background:
+    linear-gradient(180deg, rgba(117, 197, 222, 0.13), rgba(94, 234, 212, 0.045)),
+    rgba(10, 14, 22, 0.72) !important;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(117, 197, 222, 0.16) !important;
+}
+
 .dashboard-starter-strip:hover::after,
 .dashboard-starter-strip:focus-within::after,
 .waveform-drill-rail:hover::after,
@@ -1229,6 +1248,173 @@ body.is-direct-manipulating .waveform-drill-rail::after {
   .dashboard-starter-strip::after,
   .waveform-drill-rail::after {
     animation-name: ref9-signal-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
+/* Reference aether pressure flow v9.6
+   Translates the pasted React canvas concept into subtle native surface
+   currents: hover wakes, pressure pulses, and drag-safe motion pauses. */
+
+.sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+),
+.content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+),
+.visual-burger-btn {
+  position: relative;
+  isolation: isolate;
+}
+
+.sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+)::before,
+.content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+)::before,
+.visual-burger-btn::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(110deg, transparent 0 28%, rgba(117, 197, 222, 0.22) 42%, rgba(255, 255, 255, 0.16) 48%, rgba(167, 139, 250, 0.1) 56%, transparent 72%),
+    radial-gradient(circle at 18% 52%, rgba(94, 234, 212, 0.16), transparent 0 7px, transparent 8px);
+  background-size: 260% 100%, 180px 100%;
+  opacity: 0;
+  transform: translate3d(-18%, 0, 0);
+  transition: opacity 260ms ease, transform 520ms var(--ref9-ease);
+  animation: ref9-surface-stream 5.8s linear infinite;
+}
+
+.sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+):hover::before,
+.sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+).is-active::before,
+.content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+):hover::before,
+.content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+).is-active::before,
+.visual-burger-btn:hover::before,
+.visual-burger-btn:focus-visible::before {
+  opacity: 0.22;
+  transform: translate3d(0, 0, 0);
+}
+
+.sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+) > *,
+.content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+) > *,
+.visual-burger-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.is-direct-manipulating .sound-lab-workbench :where(
+  .workbench-panel,
+  .waveform-drill-step,
+  .workbench-module-card,
+  .module-directory-card,
+  .session-transport-dock button
+)::before,
+body.is-direct-manipulating .content :where(
+  .signal-node,
+  .learning-path-step,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card
+)::before,
+body.is-direct-manipulating .visual-burger-btn::before {
+  animation-name: ref9-surface-stream;
+  animation-play-state: paused !important;
+  opacity: 0.04 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-surface-stream {
+  0% {
+    background-position: 0% 50%, 0 50%;
+  }
+  100% {
+    background-position: 100% 50%, 96px 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-lab-workbench :where(
+    .workbench-panel,
+    .waveform-drill-step,
+    .workbench-module-card,
+    .module-directory-card,
+    .session-transport-dock button
+  )::before,
+  .content :where(
+    .signal-node,
+    .learning-path-step,
+    .daily-video-card,
+    .source-card,
+    .interactive-lab-card,
+    .micro-lesson-card
+  )::before,
+  .visual-burger-btn::before {
+    animation-name: ref9-surface-stream;
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     animation-play-state: paused !important;

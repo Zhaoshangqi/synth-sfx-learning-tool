@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-wake"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-pressure"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -336,6 +336,27 @@ test('aether flow prompt adds cursor wake currents without click flashes', () =>
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-signal-current/);
 });
 
+test('aether flow prompt adds pressure pulses and surface currents without click flashes', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+
+  assert.match(js, /aetherPressurePulses/);
+  assert.match(js, /AETHER_PRESSURE_RADIUS/);
+  assert.match(js, /AETHER_FLOW_SURFACE_SELECTOR/);
+  assert.match(js, /function spawnAetherPressurePulse/);
+  assert.match(js, /function drawAetherPressureField/);
+  assert.match(js, /synth:flow-pulse/);
+  assert.match(js, /addEventListener\('pointerover'/);
+  assert.match(js, /drawRippleField\(time\)[\s\S]*drawAetherPressureField\(time\)/);
+  assert.doesNotMatch(js, /addEventListener\('pointerdown'[\s\S]{0,240}spawnAetherPressurePulse/, 'flow pulses must not be click-triggered viewport flashes');
+
+  assert.match(css, /Reference aether pressure flow v9\.6/);
+  assert.match(css, /@keyframes ref9-surface-stream/);
+  assert.match(css, /\.sound-lab-workbench :where\([\s\S]*\.waveform-drill-step/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-surface-stream/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-surface-stream/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -349,11 +370,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-wake"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-wake'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-wake'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-wake'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-wake'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-pressure"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-pressure'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-pressure'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-pressure'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-pressure'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -1542,12 +1563,19 @@ test('sound lab waveform detective is a routed beginner module, not a dead card'
   assert.match(renderJs, /waveformFingerprint/);
   assert.match(appJs, /focus-waveform/);
   assert.match(appJs, /state\.activeAtlasNode = 'source'/);
+  assert.match(appJs, /activeWaveformDrillStep/);
+  assert.match(appJs, /completedWaveformDrillSteps/);
+  assert.match(appJs, /function handleWaveformDrillStep\(stepId/);
+  assert.match(appJs, /document\.querySelectorAll\('\[data-waveform-drill-step\]'\)/);
+  assert.match(appJs, /data-waveform-drill-progress/);
   assert.match(appJs, /scrollSoundLabIntoView\('\.waveform-detective-panel'\)/);
   assert.match(css, /\.waveform-detective-panel\s*\{/);
   assert.match(css, /\.waveform-ingredient-card\s*\{[\s\S]*cursor:\s*default/);
   assert.match(css, /\.waveform-drill-rail\s*\{/);
+  assert.match(css, /\.waveform-drill-progress\s*\{/);
   assert.match(css, /\.waveform-drill-grid\s*\{[\s\S]*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.waveform-drill-step\s*\{[\s\S]*min-height:\s*168px/);
+  assert.match(css, /\.waveform-drill-step\.is-active,[\s\S]*\.waveform-drill-step\.is-complete/);
   assert.match(css, /\.waveform-drill-step:hover,[\s\S]*\.waveform-drill-step:focus-visible\s*\{[\s\S]*transform:\s*translateY\(-2px\)/);
   assert.match(css, /\.waveform-drill-step :where\(p,\s*small,\s*em\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
   assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-ingredient-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
