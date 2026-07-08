@@ -1489,13 +1489,19 @@ function renderAnalyzerCoachPanel(model = {}) {
       </div>
       <p class="analyzer-coach-rule">${escapeHtml(coach.beginnerRuleZh ?? '先看时间，再看频段，最后做 A/B。')}</p>
       <small class="analyzer-coach-live-status" data-analyzer-coach-status>等待试听，播放后会用真实 waveform / spectrum 更新下方读图指标。</small>
-      <div class="analyzer-coach-next">
+      <div class="analyzer-coach-next" data-analyzer-coach-live-move data-live-move="${escapeHtml(nextMove.id ?? nextMove.parameterId ?? 'body')}">
         <div>
           <span>下一步</span>
-          <strong>${escapeHtml(nextMove.labelZh ?? 'Body 主体')}</strong>
-          <small>${escapeHtml(nextMove.reaperNoteZh ?? 'REAPER A/B: 只改一个参数并记录 waveform/spectrum 证据。')}</small>
+          <strong data-analyzer-coach-live-title>${escapeHtml(nextMove.labelZh ?? 'Body 主体')}</strong>
+          <small data-analyzer-coach-live-note>${escapeHtml(nextMove.reaperNoteZh ?? 'REAPER A/B: 只改一个参数并记录 waveform/spectrum 证据。')}</small>
         </div>
-        <button type="button" data-workbench-action="${escapeHtml(nextMove.action ?? 'focus-controls')}">定位参数</button>
+        <button
+          type="button"
+          data-analyzer-coach-live-action
+          data-analyzer-coach-live-parameter="${escapeHtml(nextMove.parameterId ?? 'material')}"
+          data-analyzer-coach-target="${escapeHtml(nextMove.parameterId ?? 'material')}"
+          data-workbench-action="${escapeHtml(nextMove.action ?? 'focus-controls')}"
+        >${escapeHtml(nextMove.actionLabelZh ?? '定位参数')}</button>
       </div>
       <div class="analyzer-coach-grid">
         ${bands.map((band) => `

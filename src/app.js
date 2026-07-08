@@ -2102,6 +2102,56 @@ function smoothAnalyzerCoachValue(previous, next, amount = 0.34) {
   return clampPercent(previous + (next - previous) * amount);
 }
 
+const ANALYZER_COACH_LIVE_MOVES = {
+  transient: {
+    id: 'transient',
+    labelZh: '先修起音 transient',
+    noteZh: '只动 Attack / transient 层：前 80ms 太强就软化，太弱就补 click。',
+    action: 'focus-controls',
+    parameterId: 'attack',
+    actionLabelZh: '定位起音',
+  },
+  body: {
+    id: 'body',
+    labelZh: '先修主体 body',
+    noteZh: '只动 Material / body 层：确认中低频是否支撑材质身份。',
+    action: 'focus-material-resonance',
+    parameterId: 'material',
+    actionLabelZh: '定位主体',
+  },
+  air: {
+    id: 'air',
+    labelZh: '先修高频 air',
+    noteZh: '只动 Brightness / filter：4k-10k 亮度要清楚但不刺耳。',
+    action: 'focus-controls',
+    parameterId: 'brightness',
+    actionLabelZh: '定位高频',
+  },
+  tail: {
+    id: 'tail',
+    labelZh: '先修尾巴 tail',
+    noteZh: '只动 Space / release：检查 reverb、delay 和 tail-only 是否盖住主体。',
+    action: 'focus-practice-loop',
+    parameterId: 'space',
+    actionLabelZh: '定位尾巴',
+  },
+  motion: {
+    id: 'motion',
+    labelZh: '先修运动 motion',
+    noteZh: '只动 Motion / LFO：确认运动是有目的的调制，不是随机失焦。',
+    action: 'focus-controls',
+    parameterId: 'motion',
+    actionLabelZh: '定位运动',
+  },
+};
+
+function getAnalyzerCoachLiveMove(dominant, bands = {}) {
+  const fallback = ANALYZER_COACH_LIVE_MOVES.body;
+  const move = ANALYZER_COACH_LIVE_MOVES[dominant] ?? fallback;
+  const value = Math.round(clampPercent(bands?.[dominant] ?? bands?.body ?? 50));
+  return { ...move, value };
+}
+
 function computeAnalyzerCoachFrame(frame) {
   const frequency = frame?.frequency;
   const timeDomain = frame?.timeDomain;
@@ -2151,6 +2201,23 @@ function updateAnalyzerCoachRuntimeUi(workbench, frame) {
 
   const status = workbench.querySelector('[data-analyzer-coach-status]');
   if (status) status.textContent = analysis.summaryZh;
+
+  const move = getAnalyzerCoachLiveMove(analysis.dominant, analysis.bands);
+  const liveMove = workbench.querySelector('[data-analyzer-coach-live-move]');
+  if (liveMove) {
+    liveMove.setAttribute('data-live-move', move.id);
+    const title = liveMove.querySelector('[data-analyzer-coach-live-title]');
+    const note = liveMove.querySelector('[data-analyzer-coach-live-note]');
+    const actionButton = liveMove.querySelector('[data-analyzer-coach-live-action]');
+    if (title) title.textContent = move.labelZh;
+    if (note) note.textContent = `${move.noteZh} 当前读数 ${move.value}，REAPER 里只导出 changed 一版做 A/B。`;
+    if (actionButton) {
+      actionButton.textContent = move.actionLabelZh;
+      actionButton.setAttribute('data-workbench-action', move.action);
+      actionButton.setAttribute('data-analyzer-coach-live-parameter', move.parameterId);
+      actionButton.setAttribute('data-analyzer-coach-target', move.parameterId);
+    }
+  }
 
   workbench.querySelectorAll('[data-analyzer-coach-live]').forEach((card) => {
     const bandId = card.dataset.analyzerCoachLive || card.dataset.analyzerCoachBand;

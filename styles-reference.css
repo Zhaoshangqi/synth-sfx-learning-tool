@@ -2564,3 +2564,91 @@ body.is-direct-manipulating .aether-flow-stage::before {
     animation-play-state: paused !important;
   }
 }
+
+/* Reference aether liquid filaments v9.13
+   Adds fine liquid signal glints inspired by the pasted Aether Flow prompt,
+   while keeping drag states calm and dependency-free. */
+
+.dashboard-hero.aether-flow-stage .hero-copy {
+  position: relative;
+}
+
+.dashboard-hero.aether-flow-stage .hero-copy::after {
+  content: "";
+  position: absolute;
+  inset: -18px -24px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 24px;
+  background:
+    linear-gradient(108deg, transparent 0 24%, rgba(117, 197, 222, 0.12) 38%, rgba(255, 255, 255, 0.28) 48%, rgba(167, 139, 250, 0.1) 58%, transparent 74%),
+    repeating-linear-gradient(116deg, transparent 0 52px, rgba(117, 197, 222, 0.034) 53px, transparent 56px);
+  background-size: 240% 100%, 130px 130px;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  transform: translate3d(calc(var(--space-x, 0) * 6px), calc(var(--space-y, 0) * 4px), 0);
+  animation: ref9-aether-text-glint 20s ease-in-out infinite alternate;
+}
+
+.dashboard-hero.aether-flow-stage .hero-copy > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-sound-visual.aether-flow-stage .hero-reveal-layer {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-sound-visual.aether-flow-stage .hero-reveal-layer::after {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 90deg, rgba(117, 197, 222, 0), rgba(117, 197, 222, 0.2), rgba(167, 139, 250, 0.12), rgba(94, 234, 212, 0.16), rgba(117, 197, 222, 0)),
+    radial-gradient(circle at 50% 50%, rgba(244, 241, 232, 0.24), transparent 0 18%, transparent 64%);
+  opacity: 0.34;
+  filter: blur(0.2px);
+  mix-blend-mode: multiply;
+  animation: ref9-aether-orbit-glint 26s linear infinite;
+}
+
+body.is-direct-manipulating .aether-flow-stage .hero-copy::after,
+body.is-direct-manipulating .aether-flow-stage .hero-reveal-layer::after {
+  animation-play-state: paused !important;
+  opacity: 0.12 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-aether-text-glint {
+  0% {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 5px), calc(var(--space-y, 0) * 3px), 0);
+  }
+  100% {
+    background-position: 100% 50%, 130px 70px;
+    transform: translate3d(calc(var(--space-x, 0) * 10px), calc(var(--space-y, 0) * 7px), 0);
+  }
+}
+
+@keyframes ref9-aether-orbit-glint {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-hero.aether-flow-stage .hero-copy::after,
+  .hero-sound-visual.aether-flow-stage .hero-reveal-layer::after {
+    animation-name: ref9-aether-text-glint;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}

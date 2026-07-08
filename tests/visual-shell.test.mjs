@@ -1896,6 +1896,26 @@ test('sound lab live analyzer summaries keep readable Chinese fallback text', ()
   assert.match(updateBlock, /if \(status\) status\.textContent = analysis\.summaryZh;/);
 });
 
+test('sound lab live analyzer coach routes the next one-change action from the dominant band', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-analyzer-coach-live-move/);
+  assert.match(renderJs, /data-analyzer-coach-live-action/);
+  assert.match(renderJs, /data-analyzer-coach-live-parameter/);
+  assert.match(appJs, /function getAnalyzerCoachLiveMove/);
+  assert.match(appJs, /const ANALYZER_COACH_LIVE_MOVES/);
+  assert.match(appJs, /data-analyzer-coach-live-title/);
+  assert.match(appJs, /data-analyzer-coach-live-note/);
+  assert.match(appJs, /setAttribute\('data-workbench-action',\s*move\.action\)/);
+  assert.match(appJs, /setAttribute\('data-analyzer-coach-live-parameter',\s*move\.parameterId\)/);
+  assert.match(appJs, /getAnalyzerCoachLiveMove\(analysis\.dominant,\s*analysis\.bands\)/);
+  assert.doesNotMatch(appJs, /getAnalyzerCoachLiveMove[\s\S]{0,240}render\(/);
+  assert.match(css, /\.analyzer-coach-next\[data-live-move/);
+  assert.match(css, /\.analyzer-coach-next\[data-live-move="transient"\]/);
+});
+
 test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const stabilityIndex = css.indexOf('Product stability pass v5.4');
@@ -2086,6 +2106,26 @@ test('pasted aether flow hero prompt is adapted into an ambient native flow netw
   assert.match(css, /\.hero-sound-visual\.aether-flow-stage::before\s*\{[\s\S]*animation:\s*ref9-aether-core-flow/);
   assert.match(css, /body\.is-direct-manipulating\s+\.aether-flow-stage::after[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-hero-flow/);
+});
+
+test('pasted aether flow prompt adds liquid filaments and stage glints without React deps', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherFlowFilaments/);
+  assert.match(visualSpaceJs, /AETHER_FLOW_FILAMENT_COUNT/);
+  assert.match(visualSpaceJs, /createAetherFlowFilament/);
+  assert.match(visualSpaceJs, /drawAetherLiquidFilaments/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherLiquidFilaments\(time\)/);
+  assert.match(visualSpaceJs, /globalCompositeOperation = 'lighter'/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react|tailwindcss/);
+
+  assert.match(css, /Reference aether liquid filaments v9\.13/);
+  assert.match(css, /\.dashboard-hero\.aether-flow-stage\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-aether-text-glint/);
+  assert.match(css, /\.hero-sound-visual\.aether-flow-stage\s+\.hero-reveal-layer::after\s*\{[\s\S]*animation:\s*ref9-aether-orbit-glint/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.aether-flow-stage\s+\.hero-copy::after[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-text-glint/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {
