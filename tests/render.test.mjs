@@ -748,6 +748,36 @@ test('renderSoundLabWorkbench renders a target match coach with routed one-chang
   assert.match(html, /REAPER note|REAPER 记录/);
 });
 
+test('renderSoundLabWorkbench renders playable reference match controls', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 94,
+    motion: 28,
+    material: 92,
+    space: 76,
+    variation: 44,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'compare',
+    layerMix: { transient: 92, body: 44, texture: 86, tail: 82 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /reference-match-panel/);
+  assert.match(html, /参考目标|Reference Match/);
+  assert.match(html, /data-target-reference-play="current"/);
+  assert.match(html, /data-target-reference-play="target"/);
+  assert.match(html, /data-target-reference-play="nudge"/);
+  assert.match(html, /data-target-reference-apply="nudge"/);
+  assert.match(html, /reference-control-row/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER/);
+});
+
 test('renderSoundLabWorkbench renders a perceptual signature coach for realistic synth tone', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

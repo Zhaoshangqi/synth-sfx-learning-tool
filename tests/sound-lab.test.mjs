@@ -592,6 +592,37 @@ test('sound lab explains material resonators as audible synthesis targets', () =
   assert.match(model.materialResonanceMap.reaperZh, /REAPER|EQ|spectrum|body-only/i);
 });
 
+test('target match coach exposes playable reference targets and a small nudge path', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 28,
+    material: 94,
+    space: 72,
+    variation: 44,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    layerMix: { transient: 90, body: 46, texture: 86, tail: 78 },
+  });
+
+  const reference = model.targetMatchCoach.referenceMatch;
+  assert.ok(reference, 'target match coach should expose reference matching data');
+  assert.ok(reference.targets.macros.material >= 70, 'reference target should include synth macro targets');
+  assert.ok(reference.targets.layerMix.body >= 50, 'reference target should include layer targets');
+  assert.ok(reference.nudge.macros, 'reference match should provide a small macro nudge');
+  assert.ok(reference.nudge.layerMix, 'reference match should provide a small layer nudge');
+  assert.ok(reference.playTargets.target.macros, 'target reference must be playable as macro overrides');
+  assert.ok(reference.playTargets.nudge.options.layerMix, 'nudge reference must be playable with layer overrides');
+  assert.ok(reference.controls.some((control) => control.scope === 'macro' && control.id === 'material'));
+  assert.ok(reference.controls.some((control) => control.scope === 'layer' && control.id === 'body'));
+  assert.match(reference.practiceZh, /A\/B|目标|只改一个|REAPER/);
+  assert.match(reference.synthMap.serum, /Serum|Macro|FM|filter/i);
+  assert.match(reference.synthMap.phasePlant, /Phase Plant|lane|Macro/i);
+  assert.match(reference.synthMap.vital, /Vital|Macro|spectral|FM/i);
+});
+
 test('buildWorkletMessage sends layered DSP data without dropping the legacy contract', () => {
   const patch = buildSoundLabPatch(soundLabFamilies[0], SOUND_LAB_MACROS, {
     presetId: 'vital-metal-modal-hit',

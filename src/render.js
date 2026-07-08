@@ -2328,6 +2328,7 @@ function renderTargetMatchCoachPanel(model = {}) {
   const coach = model.targetMatchCoach ?? {};
   const metrics = coach.metrics ?? [];
   const challenge = coach.oneChangeChallenge ?? {};
+  const reference = coach.referenceMatch ?? {};
   if (!metrics.length) return '';
 
   return `
@@ -2381,7 +2382,63 @@ function renderTargetMatchCoachPanel(model = {}) {
           <button type="button" data-workbench-action="focus-practice-loop">REAPER note / A/B</button>
         </div>
       </div>
+      ${renderReferenceMatchPanel(reference)}
     </section>
+  `;
+}
+
+function renderReferenceMatchPanel(reference = {}) {
+  const controls = reference.controls ?? [];
+  const playTargets = reference.playTargets ?? {};
+  if (!controls.length) return '';
+
+  const playButtons = ['current', 'target', 'nudge']
+    .filter((id) => playTargets[id])
+    .map((id) => {
+      const target = playTargets[id] ?? {};
+      return `
+        <button type="button" data-target-reference-play="${escapeHtml(id)}">
+          <strong>${escapeHtml(target.labelZh ?? id)}</strong>
+          <span>${escapeHtml(target.listenZh ?? '')}</span>
+        </button>
+      `;
+    })
+    .join('');
+
+  return `
+    <div class="reference-match-panel" aria-label="Reference Match 参考目标">
+      <div class="reference-match-head">
+        <span>Reference Match</span>
+        <strong>${escapeHtml(reference.profileNameZh ?? reference.titleZh ?? '参考目标')}</strong>
+        <p>${escapeHtml(reference.targetSoundZh ?? reference.practiceZh ?? '')}</p>
+      </div>
+      <div class="reference-listen-row">
+        ${playButtons}
+        <button class="reference-apply-button" type="button" data-target-reference-apply="nudge">
+          <strong>应用 Nudge</strong>
+          <span>${escapeHtml(reference.nudge?.noteZh ?? '只向目标靠近一小步。')}</span>
+        </button>
+      </div>
+      <div class="reference-control-grid">
+        ${controls.slice(0, 8).map((control) => `
+          <div class="reference-control-row" style="--reference-current:${formatNumber(control.current ?? 0)}%; --reference-target:${formatNumber(control.target ?? 0)}%; --reference-nudge:${formatNumber(control.nudge ?? 0)}%">
+            <div>
+              <span>${escapeHtml(control.scope === 'layer' ? 'Layer' : 'Macro')}</span>
+              <strong>${escapeHtml(control.labelZh ?? control.id)}</strong>
+              <small>${escapeHtml(String(control.current ?? 0))} → ${escapeHtml(String(control.target ?? 0))}</small>
+            </div>
+            <i aria-hidden="true"><b></b><em></em></i>
+          </div>
+        `).join('')}
+      </div>
+      <div class="reference-synth-map">
+        <p>${escapeHtml(reference.practiceZh ?? '')}</p>
+        <span>${escapeHtml(reference.synthMap?.serum ?? 'Serum: Macro A/B')}</span>
+        <span>${escapeHtml(reference.synthMap?.phasePlant ?? 'Phase Plant: lane A/B')}</span>
+        <span>${escapeHtml(reference.synthMap?.vital ?? 'Vital: Macro A/B')}</span>
+        <code>${escapeHtml(reference.reaperNoteZh ?? 'REAPER A/B note')}</code>
+      </div>
+    </div>
   `;
 }
 

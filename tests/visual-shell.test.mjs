@@ -741,6 +741,25 @@ test('sound lab app wires material resonance map as a real beginner action', () 
   assert.match(css, /\.resonance-peak-card/);
 });
 
+test('sound lab app wires reference match playback and nudge controls', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /referenceMatch/);
+  assert.match(modelJs, /playTargets/);
+  assert.match(renderJs, /reference-match-panel/);
+  assert.match(renderJs, /data-target-reference-play/);
+  assert.match(renderJs, /data-target-reference-apply/);
+  assert.match(appJs, /playTargetReference/);
+  assert.match(appJs, /applyTargetReferenceNudge/);
+  assert.match(appJs, /\[data-target-reference-play\]/);
+  assert.match(appJs, /\[data-target-reference-apply\]/);
+  assert.match(css, /\.reference-match-panel/);
+  assert.match(css, /\.reference-control-row/);
+});
+
 test('sound lab app preserves workstation module tab state across rerenders', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

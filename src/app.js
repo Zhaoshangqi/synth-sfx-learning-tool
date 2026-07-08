@@ -1117,6 +1117,42 @@ function playLayerAudition(modeId = 'full') {
   playSoundLabPatch({}, buildLayerAuditionOverrides(audition.id));
 }
 
+function getTargetReference(modeId = 'current') {
+  const reference = getSoundLabModel().targetMatchCoach?.referenceMatch;
+  return reference?.playTargets?.[modeId] ?? reference?.playTargets?.current ?? null;
+}
+
+function playTargetReference(modeId = 'current') {
+  const reference = getTargetReference(modeId);
+  if (!reference) return;
+
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = modeId === 'current' ? 'source' : 'material';
+  state.activeWorkbenchModuleMapId = 'compare';
+  state.activeAdvancedModule = 'ab-compare';
+  state.activeWorkbenchModule = 'macro';
+  state.workbenchActionFeedback = `参考匹配试听：${reference.labelZh}。${reference.listenZh}`;
+  playSoundLabPatch(reference.macros ?? {}, reference.options ?? {});
+}
+
+function applyTargetReferenceNudge() {
+  const reference = getSoundLabModel().targetMatchCoach?.referenceMatch;
+  const nudge = reference?.nudge;
+  if (!nudge) return;
+
+  state.soundLabMacros = { ...state.soundLabMacros, ...(nudge.macros ?? {}) };
+  state.soundLabLayerMix = { ...state.soundLabLayerMix, ...(nudge.layerMix ?? {}) };
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = 'material';
+  state.activeWorkbenchModuleMapId = 'compare';
+  state.activeAdvancedModule = 'ab-compare';
+  state.activeWorkbenchModule = 'macro';
+  state.workbenchActionFeedback = `${nudge.noteZh} 现在听 Current/Nudge A/B，决定保留还是撤回。`;
+  syncSoundLabPatchSoon();
+  renderSameView();
+  scrollSoundLabIntoView('.reference-match-panel');
+}
+
 function renderSoundLabView() {
   const family = getActiveSoundFamily();
   const model = getSoundLabModel();
@@ -3326,6 +3362,20 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-quality-coach-apply]').forEach((button) => {
     button.addEventListener('click', () => {
       applyPatchDoctorSuggestion(button.dataset.qualityCoachApply, button);
+    });
+  });
+
+  document.querySelectorAll('[data-target-reference-play]').forEach((button) => {
+    button.addEventListener('click', () => {
+      playTargetReference(button.dataset.targetReferencePlay);
+    });
+  });
+
+  document.querySelectorAll('[data-target-reference-apply]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applyTargetReferenceNudge();
+      button.classList.add('is-confirmed');
+      globalThis.setTimeout(() => button.classList.remove('is-confirmed'), 900);
     });
   });
 

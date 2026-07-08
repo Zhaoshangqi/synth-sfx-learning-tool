@@ -1568,18 +1568,163 @@ function buildSoundQualityCoach(patch, patchDoctor) {
   };
 }
 
+const TARGET_MATCH_PROFILES = {
+  'metal-impact': {
+    nameZh: '短金属撞击参考',
+    soundTargetZh: '前 20ms 有清楚触点，主体有非谐波金属短响，尾巴短而不糊。',
+    metricTargets: { transient: 76, body: 66, material: 84, space: 42 },
+    macroTargets: { brightness: 72, motion: 38, material: 84, space: 38, variation: 20 },
+    layerTargets: { transient: 76, body: 68, texture: 62, tail: 34 },
+  },
+  'glass-ping': {
+    nameZh: '玻璃脆响参考',
+    soundTargetZh: '起音较轻，主体明亮脆，modal 峰清楚，空间比金属更长。',
+    metricTargets: { transient: 58, body: 54, material: 66, space: 64 },
+    macroTargets: { brightness: 78, motion: 30, material: 66, space: 62, variation: 18 },
+    layerTargets: { transient: 58, body: 56, texture: 52, tail: 66 },
+  },
+  'electric-crackle': {
+    nameZh: '电流噼啪参考',
+    soundTargetZh: '瞬态清楚、主体偏薄，材质来自随机颗粒和高频断续，不要糊成噪声墙。',
+    metricTargets: { transient: 68, body: 42, material: 78, space: 38 },
+    macroTargets: { brightness: 82, motion: 72, material: 78, space: 34, variation: 56 },
+    layerTargets: { transient: 70, body: 42, texture: 82, tail: 30 },
+  },
+  'air-whoosh': {
+    nameZh: '空气划过参考',
+    soundTargetZh: '起音柔和，主体轻，运动和空间明显，材质不能过硬。',
+    metricTargets: { transient: 34, body: 38, material: 46, space: 74 },
+    macroTargets: { brightness: 62, motion: 78, material: 42, space: 76, variation: 34 },
+    layerTargets: { transient: 34, body: 40, texture: 62, tail: 72 },
+  },
+  'servo-tick': {
+    nameZh: '机械伺服点击参考',
+    soundTargetZh: '起音硬、主体短，材质有机械边缘，空间很少。',
+    metricTargets: { transient: 72, body: 58, material: 68, space: 30 },
+    macroTargets: { brightness: 68, motion: 54, material: 68, space: 28, variation: 24 },
+    layerTargets: { transient: 74, body: 60, texture: 54, tail: 24 },
+  },
+  'energy-charge': {
+    nameZh: '能量充能参考',
+    soundTargetZh: '主体和运动持续推进，材质有合成器能量感，尾巴支撑空间。',
+    metricTargets: { transient: 48, body: 62, material: 64, space: 68 },
+    macroTargets: { brightness: 74, motion: 82, material: 64, space: 68, variation: 38 },
+    layerTargets: { transient: 46, body: 64, texture: 58, tail: 66 },
+  },
+};
+
+function getTargetMatchProfile(family) {
+  return TARGET_MATCH_PROFILES[family?.id] ?? {
+    nameZh: '通用音效参考',
+    soundTargetZh: '起音、主体、材质和空间都能被单独听出来。',
+    metricTargets: { transient: 62, body: 60, material: 68, space: 54 },
+    macroTargets: { brightness: 66, motion: 52, material: 68, space: 54, variation: 28 },
+    layerTargets: { transient: 62, body: 60, texture: 58, tail: 52 },
+  };
+}
+
+function stepTowardTarget(current, target, amount = 0.34) {
+  const currentValue = clamp(current, 0, 100);
+  const targetValue = clamp(target, 0, 100);
+  const difference = targetValue - currentValue;
+  if (Math.abs(difference) < 1) return Math.round(currentValue);
+  const step = Math.sign(difference) * Math.max(2, Math.abs(difference) * amount);
+  return Math.round(clamp(currentValue + step, 0, 100));
+}
+
+function buildReferenceMatch({ family, patch, profile, metrics, primaryDiagnostic, macroList }) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const macroTargets = { ...SOUND_LAB_MACROS, ...profile.macroTargets };
+  const layerTargets = { ...SOUND_LAB_LAYER_MIX, ...profile.layerTargets };
+  const macroLabels = Object.fromEntries(macroList.map((macro) => [macro.id, macro.labelZh]));
+  const layerLabels = {
+    transient: 'Transient 瞬态层',
+    body: 'Body 主体层',
+    texture: 'Texture 质感层',
+    tail: 'Tail 尾音层',
+  };
+  const nudgeMacros = Object.fromEntries(Object.entries(macroTargets).map(([id, target]) => [
+    id,
+    stepTowardTarget(values[id] ?? SOUND_LAB_MACROS[id] ?? 50, target),
+  ]));
+  const nudgeLayerMix = Object.fromEntries(Object.entries(layerTargets).map(([id, target]) => [
+    id,
+    stepTowardTarget(layerMix[id] ?? SOUND_LAB_LAYER_MIX[id] ?? 50, target),
+  ]));
+  const weakestMetric = [...metrics].sort((a, b) => a.score - b.score)[0] ?? metrics[0];
+  const controls = [
+    ...Object.entries(macroTargets).map(([id, target]) => ({
+      scope: 'macro',
+      id,
+      labelZh: macroLabels[id] ?? id,
+      current: Math.round(values[id] ?? 50),
+      target: Math.round(target),
+      nudge: nudgeMacros[id],
+      delta: Math.round((values[id] ?? 50) - target),
+    })),
+    ...Object.entries(layerTargets).map(([id, target]) => ({
+      scope: 'layer',
+      id,
+      labelZh: layerLabels[id] ?? id,
+      current: Math.round(layerMix[id] ?? 50),
+      target: Math.round(target),
+      nudge: nudgeLayerMix[id],
+      delta: Math.round((layerMix[id] ?? 50) - target),
+    })),
+  ].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  return {
+    titleZh: 'Reference Match 参考目标',
+    profileNameZh: profile.nameZh,
+    targetSoundZh: profile.soundTargetZh,
+    weakestMetricId: weakestMetric?.id ?? 'material',
+    weakestMetricLabelZh: weakestMetric?.labelZh ?? 'Material 材质',
+    practiceZh: '先听 Current，再听 Target Reference，最后听 Nudge；如果 Nudge 更接近目标，只应用这一小步并写进 REAPER A/B note。',
+    targets: {
+      macros: macroTargets,
+      layerMix: layerTargets,
+    },
+    nudge: {
+      macros: nudgeMacros,
+      layerMix: nudgeLayerMix,
+      noteZh: `本次微调优先靠近「${weakestMetric?.labelZh ?? primaryDiagnostic?.labelZh ?? '材质'}」，不是重做整个音色。`,
+    },
+    playTargets: {
+      current: {
+        labelZh: 'Current 当前',
+        macros: {},
+        options: { outputMode: 'comfort', engineMode: patch.engineMode, qualityMode: patch.qualityMode },
+        listenZh: '先记住当前声音，不要边听边改。',
+      },
+      target: {
+        labelZh: 'Target 目标参考',
+        macros: macroTargets,
+        options: { layerMix: layerTargets, outputMode: 'studio', engineMode: 'hq', qualityMode: 'studio' },
+        listenZh: '目标参考不是最终答案，而是给耳朵一个方向：听四段结构是否更清楚。',
+      },
+      nudge: {
+        labelZh: 'Nudge 微调版',
+        macros: nudgeMacros,
+        options: { layerMix: nudgeLayerMix, outputMode: 'comfort', engineMode: patch.engineMode, qualityMode: patch.qualityMode },
+        listenZh: '微调版只向目标靠近一小步，适合判断保留或撤回。',
+      },
+    },
+    controls,
+    synthMap: {
+      serum: 'Serum: 把 Target 当成 Macro 快照；Material 对应 FM/warp/filter Q，Space 对应 FX mix，Layer 变化用 Noise/Sub/OSC level 复刻。',
+      phasePlant: 'Phase Plant: 按 lane 管理 transient/body/texture/tail；只把当前最弱维度映射到一个 Macro，避免整条链一起乱动。',
+      vital: 'Vital: 用 Macro 控 FM/spectral warp/noise level/reverb mix；先复制当前 preset，再把 Nudge 数值作为 B 版本。',
+    },
+    reaperNoteZh: `REAPER A/B: ${family?.titleZh ?? 'Sound Lab'} / ${profile.nameZh}; Current -> Nudge; 只改一个方向=${weakestMetric?.labelZh ?? 'target'}; 保留/撤回=____。`,
+  };
+}
+
 function buildTargetMatchCoach(family, patch, patchDoctor, macroList = []) {
   const values = patch.macros ?? {};
   const layerMix = patch.layerMix ?? {};
-  const familyTargets = {
-    'metal-impact': { transient: 76, body: 66, material: 84, space: 42 },
-    'glass-ping': { transient: 58, body: 54, material: 66, space: 64 },
-    'electric-crackle': { transient: 68, body: 42, material: 78, space: 38 },
-    'air-whoosh': { transient: 34, body: 38, material: 46, space: 74 },
-    'servo-tick': { transient: 72, body: 58, material: 68, space: 30 },
-    'energy-charge': { transient: 48, body: 62, material: 64, space: 68 },
-  };
-  const target = familyTargets[family?.id] ?? { transient: 62, body: 60, material: 68, space: 54 };
+  const profile = getTargetMatchProfile(family);
+  const target = profile.metricTargets;
   const brightness = values.brightness ?? 50;
   const material = values.material ?? 50;
   const motion = values.motion ?? 50;
@@ -1703,6 +1848,14 @@ function buildTargetMatchCoach(family, patch, patchDoctor, macroList = []) {
         '把保留/撤回理由写进 REAPER item notes。',
       ],
     },
+    referenceMatch: buildReferenceMatch({
+      family,
+      patch,
+      profile,
+      metrics,
+      primaryDiagnostic,
+      macroList,
+    }),
   };
 }
 
