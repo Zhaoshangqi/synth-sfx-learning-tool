@@ -21250,3 +21250,1765 @@ body.is-direct-manipulating .visual-spotlight {
     filter: none !important;
   }
 }
+
+/* Reference showcase visual system v8.3 final override: must stay last */
+.dashboard-hero {
+  grid-template-columns: minmax(0, 0.88fr) minmax(360px, 0.9fr) !important;
+  gap: clamp(24px, 5vw, 78px) !important;
+}
+
+.hero-copy {
+  max-width: 680px !important;
+}
+
+.hero-copy h3 {
+  max-width: 680px !important;
+  font-size: clamp(36px, 4.85vw, 68px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.032em !important;
+  text-wrap: balance;
+}
+
+.hero-copy h3 .word-reveal {
+  display: inline-block !important;
+  margin-right: 0.08em !important;
+}
+
+.hero-copy p {
+  max-width: 650px !important;
+}
+
+.hero-sound-visual {
+  min-height: 520px !important;
+}
+
+.dashboard-starter-strip {
+  width: min(100%, 560px) !important;
+}
+
+.sound-family-rail .material-select-button,
+.sound-family-rail .material-select-button :where(strong, span, small, em) {
+  color: var(--ref-ink) !important;
+}
+
+.sound-family-rail .material-select-button.is-active {
+  background: rgba(17, 17, 17, 0.72) !important;
+  color: var(--ref-paper) !important;
+}
+
+.sound-family-rail .material-select-button.is-active :where(strong, span, small, em) {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, button, output) {
+  color: var(--ref-paper) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.76) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar h3 {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar p,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-breadcrumb {
+  color: rgba(244, 241, 232, 0.72) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button {
+  background: rgba(244, 241, 232, 0.09) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button :where(strong, span, small) {
+  color: inherit !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node > span,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workflow-context-strip span:first-child {
+  color: rgba(117, 197, 222, 0.96) !important;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .hero-sound-visual {
+    min-height: 340px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .hero-copy h3 {
+    font-size: clamp(36px, 12vw, 58px) !important;
+    line-height: 1.06 !important;
+  }
+}
+
+/* Reference showcase visual system v8.2 final cascade lock */
+.dashboard-hero {
+  grid-template-columns: minmax(0, 0.88fr) minmax(360px, 0.9fr) !important;
+  gap: clamp(24px, 5vw, 78px) !important;
+}
+
+.hero-copy {
+  max-width: 680px !important;
+}
+
+.hero-copy h3 {
+  max-width: 680px !important;
+  font-size: clamp(36px, 4.85vw, 68px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.032em !important;
+  text-wrap: balance;
+}
+
+.hero-copy h3 .word-reveal {
+  display: inline-block !important;
+  margin-right: 0.08em !important;
+}
+
+.hero-copy p {
+  max-width: 650px !important;
+}
+
+.hero-sound-visual {
+  min-height: 520px !important;
+}
+
+.dashboard-starter-strip {
+  width: min(100%, 560px) !important;
+}
+
+.sound-family-rail .material-select-button,
+.sound-family-rail .material-select-button :where(strong, span, small, em) {
+  color: var(--ref-ink) !important;
+}
+
+.sound-family-rail .material-select-button.is-active {
+  background: rgba(17, 17, 17, 0.72) !important;
+  color: var(--ref-paper) !important;
+}
+
+.sound-family-rail .material-select-button.is-active :where(strong, span, small, em) {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, button, output) {
+  color: var(--ref-paper) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.76) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar h3 {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar p,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-breadcrumb {
+  color: rgba(244, 241, 232, 0.72) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button {
+  background: rgba(244, 241, 232, 0.09) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button :where(strong, span, small) {
+  color: inherit !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node > span,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workflow-context-strip span:first-child {
+  color: rgba(117, 197, 222, 0.96) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-play-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-actions button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-action {
+  color: var(--ref-paper) !important;
+  background: rgba(244, 241, 232, 0.08) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-play-button:hover,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-actions button:hover,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-action:hover {
+  color: var(--ref-paper) !important;
+  background: rgba(117, 197, 222, 0.18) !important;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .hero-sound-visual {
+    min-height: 340px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .hero-copy h3 {
+    font-size: clamp(36px, 12vw, 58px) !important;
+    line-height: 1.06 !important;
+  }
+}
+
+/* Reference showcase visual system v8.1: screenshot readability polish */
+.dashboard-hero {
+  grid-template-columns: minmax(0, 0.88fr) minmax(360px, 0.9fr) !important;
+  gap: clamp(24px, 5vw, 78px) !important;
+}
+
+.hero-copy {
+  max-width: 680px !important;
+}
+
+.hero-copy h3 {
+  max-width: 680px !important;
+  font-size: clamp(36px, 4.85vw, 68px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.032em !important;
+  text-wrap: balance;
+}
+
+.hero-copy h3 .word-reveal {
+  display: inline-block !important;
+  margin-right: 0.08em !important;
+}
+
+.hero-copy p {
+  max-width: 650px !important;
+}
+
+.hero-sound-visual {
+  min-height: 520px !important;
+}
+
+.dashboard-starter-strip {
+  width: min(100%, 560px) !important;
+}
+
+.sound-family-rail .material-select-button,
+.sound-family-rail .material-select-button :where(strong, span, small, em) {
+  color: var(--ref-ink) !important;
+}
+
+.sound-family-rail .material-select-button.is-active {
+  background: rgba(17, 17, 17, 0.72) !important;
+  color: var(--ref-paper) !important;
+}
+
+.sound-family-rail .material-select-button.is-active :where(strong, span, small, em) {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, button, output) {
+  color: var(--ref-paper) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.76) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar h3 {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar p,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-breadcrumb {
+  color: rgba(244, 241, 232, 0.72) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button {
+  background: rgba(244, 241, 232, 0.09) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button :where(strong, span, small) {
+  color: inherit !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node > span,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workflow-context-strip span:first-child {
+  color: rgba(117, 197, 222, 0.96) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-play-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-actions button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-action {
+  color: var(--ref-paper) !important;
+  background: rgba(244, 241, 232, 0.08) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-play-button:hover,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-actions button:hover,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-action:hover {
+  color: var(--ref-paper) !important;
+  background: rgba(117, 197, 222, 0.18) !important;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .hero-sound-visual {
+    min-height: 340px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .hero-copy h3 {
+    font-size: clamp(36px, 12vw, 58px) !important;
+    line-height: 1.06 !important;
+  }
+}
+
+/* Reference showcase visual system v8.0: supplied light studio, capsule motion, readable production modules */
+:root {
+  color-scheme: light;
+  --ref-canvas: #e4e4e4;
+  --ref-paper: #f4f1e8;
+  --ref-paper-2: #fbfaf5;
+  --ref-ink: #111111;
+  --ref-ink-soft: #2b313a;
+  --ref-muted: rgba(17, 17, 17, 0.66);
+  --ref-faint: rgba(17, 17, 17, 0.42);
+  --ref-cyan: #75c5de;
+  --ref-cyan-2: #258ca6;
+  --ref-violet: #8f84db;
+  --ref-mint: #65d8c7;
+  --ref-menu: #111111;
+  --ref-line: rgba(17, 17, 17, 0.11);
+  --ref-line-strong: rgba(17, 17, 17, 0.22);
+  --ref-panel: rgba(255, 255, 255, 0.68);
+  --ref-panel-strong: rgba(255, 255, 255, 0.82);
+  --ref-stage-shadow: 0 34px 110px rgba(17, 17, 17, 0.14);
+  --ref-soft-shadow: 0 18px 52px rgba(17, 17, 17, 0.08);
+  --ref-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ref-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --bg: var(--ref-canvas);
+  --surface: var(--ref-paper-2);
+  --surface-2: #ffffff;
+  --surface-3: #eef4f7;
+  --text: var(--ref-ink);
+  --muted: var(--ref-muted);
+  --line: var(--ref-line);
+  --accent: var(--ref-cyan);
+  --accent-2: var(--ref-violet);
+  --accent-3: var(--ref-mint);
+}
+
+html,
+body {
+  overflow-x: clip !important;
+  background: var(--ref-canvas) !important;
+  color: var(--ref-ink) !important;
+}
+
+body {
+  grid-template-columns: minmax(0, 1fr) !important;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at var(--spot-x, 64vw) var(--spot-y, 34vh), rgba(255, 255, 255, 0.72), transparent 22rem),
+    radial-gradient(circle at 82% 18%, rgba(117, 197, 222, 0.24), transparent 28rem),
+    radial-gradient(circle at 22% 82%, rgba(143, 132, 219, 0.12), transparent 26rem),
+    linear-gradient(180deg, #eeeeee 0%, var(--ref-canvas) 44%, #dadde1 100%) !important;
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+body::after {
+  background:
+    linear-gradient(90deg, rgba(17, 17, 17, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px) !important;
+  background-size: 72px 72px !important;
+  opacity: 0.72 !important;
+}
+
+.audio-space {
+  z-index: -4 !important;
+  background:
+    linear-gradient(90deg, rgba(17, 17, 17, 0.028) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(17, 17, 17, 0.023) 1px, transparent 1px) !important;
+  background-size: 60px 60px !important;
+  contain: paint;
+  opacity: 0.84 !important;
+}
+
+#particle-canvas {
+  opacity: 0.16 !important;
+  mix-blend-mode: multiply !important;
+}
+
+.space-glow {
+  filter: blur(88px) !important;
+  opacity: 0.24 !important;
+}
+
+.glow-a {
+  background: rgba(117, 197, 222, 0.48) !important;
+}
+
+.glow-b {
+  background: rgba(143, 132, 219, 0.22) !important;
+}
+
+.signal-field {
+  opacity: 0.12 !important;
+  max-width: calc(100vw - 36px);
+  contain: paint;
+  mix-blend-mode: multiply;
+}
+
+.space-noise {
+  opacity: 0.045 !important;
+  mix-blend-mode: multiply;
+}
+
+.visual-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--spot-x, 64vw) var(--spot-y, 32vh), rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.24) 126px, transparent 326px),
+    radial-gradient(circle at calc(var(--spot-x, 64vw) + 14vw) calc(var(--spot-y, 32vh) + 16vh), rgba(117, 197, 222, 0.16), transparent 390px);
+  mix-blend-mode: soft-light;
+  opacity: 0.78;
+  transition: opacity 280ms ease;
+}
+
+.visual-splash {
+  pointer-events: none;
+  background: transparent !important;
+  animation: studio-splash-hide 0.28s ease forwards !important;
+  animation-delay: 1.25s !important;
+}
+
+.visual-splash-row span {
+  background: var(--ref-cyan) !important;
+}
+
+.visual-splash.is-done {
+  display: none !important;
+}
+
+.visual-logo-wrapper {
+  top: 30px !important;
+  left: 28px !important;
+  width: max-content !important;
+  max-width: min(540px, calc(100vw - 116px)) !important;
+  z-index: 96 !important;
+  color: var(--ref-ink) !important;
+  mix-blend-mode: normal !important;
+}
+
+.visual-logo-mark {
+  width: 44px !important;
+  height: 44px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: var(--ref-ink) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: 0 18px 42px rgba(17, 17, 17, 0.2) !important;
+}
+
+.visual-logo-wrapper span {
+  color: var(--ref-ink) !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0 !important;
+}
+
+.visual-burger-wrapper {
+  top: 18px !important;
+  right: 18px !important;
+  z-index: 99 !important;
+}
+
+.visual-burger-btn {
+  width: 60px !important;
+  height: 60px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: var(--ref-paper) !important;
+  box-shadow: 0 18px 54px rgba(17, 17, 17, 0.14) !important;
+  transition:
+    transform 260ms var(--ref-ease),
+    background 260ms var(--ref-ease),
+    box-shadow 260ms var(--ref-ease) !important;
+}
+
+.visual-burger-btn span {
+  background: var(--ref-ink) !important;
+}
+
+.visual-burger-btn:hover,
+.visual-burger-btn:focus-visible,
+.visual-burger-btn.is-open {
+  background: var(--ref-ink) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 24px 72px rgba(17, 17, 17, 0.22) !important;
+}
+
+.visual-burger-btn:hover span,
+.visual-burger-btn:focus-visible span,
+.visual-burger-btn.is-open span {
+  background: var(--ref-paper) !important;
+}
+
+.visual-burger-btn:active,
+.primary-button:active,
+.secondary-button:active,
+.dashboard-actions button:active,
+.signal-atlas-console button:active,
+.synth-workbench-layout button:active {
+  transform: translateY(1px) scale(0.985) !important;
+}
+
+.workspace {
+  position: relative;
+  width: 100% !important;
+  min-height: 100dvh;
+  margin: 0 !important;
+  padding: 100px 0 68px !important;
+  background: transparent !important;
+}
+
+.content {
+  width: min(1240px, calc(100% - 40px)) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  color: var(--ref-ink) !important;
+}
+
+.toolbar {
+  position: sticky !important;
+  top: 18px !important;
+  z-index: 42 !important;
+  width: min(1180px, calc(100% - 40px)) !important;
+  margin: 0 auto 28px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 999px !important;
+  background: rgba(244, 241, 232, 0.72) !important;
+  box-shadow: 0 24px 70px rgba(17, 17, 17, 0.08) !important;
+  backdrop-filter: blur(24px) saturate(1.08) !important;
+}
+
+.toolbar .field {
+  border: 1px solid rgba(17, 17, 17, 0.08) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.64) !important;
+  color: var(--ref-ink) !important;
+}
+
+.toolbar .field span,
+.toolbar input,
+.toolbar select {
+  color: var(--ref-ink) !important;
+}
+
+.toolbar input::placeholder {
+  color: rgba(17, 17, 17, 0.42) !important;
+}
+
+.notification-button {
+  background: var(--ref-ink) !important;
+  color: var(--ref-paper) !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+}
+
+.notification-button span {
+  background: #b91c2b !important;
+  color: #ffffff !important;
+}
+
+.view-header {
+  margin: 0 0 22px !important;
+  padding: 0 2px !important;
+  color: var(--ref-ink) !important;
+}
+
+.view-header h2 {
+  color: var(--ref-ink) !important;
+  font-size: clamp(34px, 5.7vw, 74px) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.view-header p,
+.view-header span {
+  color: var(--ref-muted) !important;
+}
+
+.workspace:has(.dashboard-hero) {
+  padding-top: 86px !important;
+}
+
+.workspace:has(.dashboard-hero) .toolbar,
+.content:has(.dashboard-hero) > .view-header {
+  display: none !important;
+}
+
+.content:has(.dashboard-hero) {
+  width: min(1480px, calc(100% - 32px)) !important;
+  margin-top: 0 !important;
+}
+
+.dashboard-hero {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: minmax(0, 0.98fr) minmax(320px, 0.78fr) !important;
+  align-items: center !important;
+  gap: clamp(24px, 4vw, 68px) !important;
+  min-height: min(790px, calc(100dvh - 104px)) !important;
+  padding: clamp(24px, 4.2vw, 58px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.66) !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at var(--spot-x, 70vw) var(--spot-y, 32vh), rgba(117, 197, 222, 0.22), transparent 28rem),
+    linear-gradient(135deg, rgba(244, 241, 232, 0.78), rgba(255, 255, 255, 0.56) 56%, rgba(117, 197, 222, 0.14)) !important;
+  box-shadow: var(--ref-stage-shadow) !important;
+}
+
+.dashboard-hero::before {
+  content: "Sonic" !important;
+  position: absolute;
+  left: 50%;
+  right: auto !important;
+  bottom: -0.2em !important;
+  z-index: 0;
+  transform: translateX(-50%) !important;
+  color: rgba(244, 241, 232, 0.96) !important;
+  font-size: clamp(160px, 28vw, 560px) !important;
+  line-height: 0.78 !important;
+  letter-spacing: -0.06em !important;
+  font-weight: 560 !important;
+  text-shadow: 0 28px 78px rgba(17, 17, 17, 0.08) !important;
+  pointer-events: none;
+}
+
+.dashboard-hero::after {
+  background:
+    radial-gradient(circle at var(--spot-x, 70vw) var(--spot-y, 34vh), rgba(255, 255, 255, 0.58), transparent 16rem),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(17, 17, 17, 0.034) 1px, transparent 1px) !important;
+  background-size: auto, 72px 72px, 72px 72px !important;
+  opacity: 0.62 !important;
+}
+
+.dashboard-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-copy {
+  max-width: 720px !important;
+  color: var(--ref-ink) !important;
+  animation: ref-copy-in 780ms var(--ref-ease-out) both !important;
+}
+
+@keyframes ref-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-copy h3 {
+  max-width: 820px !important;
+  color: var(--ref-ink) !important;
+  font-size: clamp(46px, 6.9vw, 108px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.055em !important;
+  font-weight: 760 !important;
+}
+
+.hero-copy p {
+  max-width: 760px !important;
+  color: var(--ref-muted) !important;
+  font-size: clamp(16px, 1.42vw, 21px) !important;
+  line-height: 1.68 !important;
+}
+
+.word-reveal {
+  animation: ref-word-reveal 0.46s ease forwards !important;
+}
+
+@keyframes ref-word-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.hero-copy .card-kicker,
+.module-priority-badge,
+.card-kicker,
+.tag,
+.source-pill,
+.badge {
+  border: 1px solid rgba(17, 17, 17, 0.12) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  color: rgba(17, 17, 17, 0.72) !important;
+  box-shadow: none !important;
+}
+
+.dashboard-starter-strip,
+.hero-status-strip,
+.dashboard-actions {
+  border: 1px solid rgba(17, 17, 17, 0.08) !important;
+  border-radius: 26px !important;
+  background: rgba(244, 241, 232, 0.62) !important;
+  box-shadow: 0 18px 54px rgba(17, 17, 17, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(1.04) !important;
+}
+
+.dashboard-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+  gap: 12px !important;
+  padding: 10px !important;
+}
+
+.primary-button,
+.secondary-button,
+.dashboard-actions button,
+.dashboard-starter-strip button,
+.source-link,
+.daily-video-card a,
+.daily-video-card button,
+.material-select-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(17, 17, 17, 0.12) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  color: var(--ref-ink) !important;
+  box-shadow: none !important;
+  transition:
+    transform 260ms var(--ref-ease),
+    border-color 260ms ease,
+    background 260ms ease,
+    box-shadow 260ms ease !important;
+}
+
+.primary-button::before,
+.secondary-button::before,
+.dashboard-actions button::before,
+.dashboard-starter-strip button::before,
+.source-link::before,
+.daily-video-card a::before,
+.daily-video-card button::before,
+.material-select-button::before {
+  content: "";
+  position: absolute;
+  inset: 6px auto 6px 8px;
+  width: 42%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.92);
+  opacity: 0.92;
+  z-index: -1;
+  transition: width 360ms var(--ref-ease), opacity 260ms ease;
+}
+
+.dashboard-actions .launchpad-button::before {
+  inset: 7px 68px 7px 8px !important;
+  width: auto !important;
+}
+
+.primary-button:hover::before,
+.primary-button:focus-visible::before,
+.secondary-button:hover::before,
+.secondary-button:focus-visible::before,
+.dashboard-actions button:hover::before,
+.dashboard-actions button:focus-visible::before,
+.dashboard-starter-strip button:hover::before,
+.dashboard-starter-strip button:focus-visible::before,
+.source-link:hover::before,
+.source-link:focus-visible::before,
+.daily-video-card a:hover::before,
+.daily-video-card a:focus-visible::before,
+.daily-video-card button:hover::before,
+.daily-video-card button:focus-visible::before,
+.material-select-button:hover::before,
+.material-select-button:focus-visible::before,
+.material-select-button.is-active::before {
+  width: calc(100% - 16px);
+}
+
+.dashboard-actions .launchpad-button:hover::before,
+.dashboard-actions .launchpad-button:focus-visible::before {
+  inset-right: 8px !important;
+}
+
+.primary-button:hover,
+.primary-button:focus-visible,
+.secondary-button:hover,
+.secondary-button:focus-visible,
+.dashboard-actions button:hover,
+.dashboard-actions button:focus-visible,
+.dashboard-starter-strip button:hover,
+.dashboard-starter-strip button:focus-visible,
+.source-link:hover,
+.source-link:focus-visible,
+.daily-video-card a:hover,
+.daily-video-card a:focus-visible,
+.daily-video-card button:hover,
+.daily-video-card button:focus-visible,
+.material-select-button:hover,
+.material-select-button:focus-visible,
+.material-select-button.is-active {
+  transform: translateY(-2px);
+  border-color: rgba(17, 17, 17, 0.22) !important;
+  box-shadow: 0 18px 54px rgba(17, 17, 17, 0.12) !important;
+}
+
+.primary-button *,
+.secondary-button *,
+.dashboard-actions button *,
+.dashboard-starter-strip button *,
+.source-link *,
+.daily-video-card a *,
+.daily-video-card button *,
+.material-select-button * {
+  color: inherit !important;
+}
+
+.hero-sound-visual {
+  align-self: stretch !important;
+  min-height: 460px !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at var(--spot-x, 68vw) var(--spot-y, 32vh), rgba(117, 197, 222, 0.38), transparent 18rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.46), rgba(244, 241, 232, 0.2)) !important;
+  filter: drop-shadow(0 30px 72px rgba(17, 17, 17, 0.14)) !important;
+  animation: ref-visual-in 920ms var(--ref-ease-out) 160ms both;
+}
+
+@keyframes ref-visual-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1) rotate(1.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.hero-sound-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at var(--spot-x, 66vw) var(--spot-y, 34vh), rgba(255, 255, 255, 0.88), transparent 11rem),
+    radial-gradient(circle at 50% 52%, rgba(117, 197, 222, 0.2), transparent 40%),
+    linear-gradient(110deg, rgba(17, 17, 17, 0.04), transparent 62%);
+  mask-image: radial-gradient(circle at var(--spot-x, 64vw) var(--spot-y, 34vh), #000 0 10rem, rgba(0, 0, 0, 0.58) 14rem, transparent 22rem);
+  pointer-events: none;
+}
+
+.hero-reveal-layer {
+  background:
+    radial-gradient(circle at var(--spot-x, 66vw) var(--spot-y, 34vh), rgba(117, 197, 222, 0.48), transparent 16rem),
+    conic-gradient(from 180deg, rgba(117, 197, 222, 0.1), rgba(143, 132, 219, 0.12), rgba(244, 241, 232, 0.42), rgba(117, 197, 222, 0.1)) !important;
+  mask-image: radial-gradient(circle at var(--spot-x, 64vw) var(--spot-y, 34vh), #000 0 10rem, rgba(0, 0, 0, 0.62) 14rem, transparent 21rem) !important;
+}
+
+.hero-creator-word {
+  color: rgba(17, 17, 17, 0.06) !important;
+  font-size: clamp(92px, 13vw, 230px) !important;
+  letter-spacing: -0.045em !important;
+}
+
+.hero-sonic-core {
+  box-shadow: 0 24px 80px rgba(17, 17, 17, 0.12) !important;
+}
+
+.hero-wave-strip span {
+  animation-duration: 3.6s !important;
+}
+
+.sidebar {
+  position: fixed !important;
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: min(460px, calc(100vw - 16px)) !important;
+  height: auto !important;
+  min-height: min(700px, calc(100dvh - 16px));
+  max-height: calc(100dvh - 16px);
+  z-index: 92 !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 24px !important;
+  padding: 78px clamp(26px, 4vw, 54px) 36px !important;
+  border: 0 !important;
+  border-radius: 20px !important;
+  background: rgba(17, 17, 17, 0.965) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: 0 42px 130px rgba(17, 17, 17, 0.38) !important;
+  backdrop-filter: blur(28px) saturate(1.12) !important;
+  transform: translateY(-112%) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  overflow-y: auto;
+  transition:
+    transform 520ms var(--ref-ease),
+    opacity 320ms ease,
+    visibility 0s linear 520ms !important;
+}
+
+.shell-menu-open .sidebar {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transition:
+    transform 520ms var(--ref-ease),
+    opacity 320ms ease,
+    visibility 0s !important;
+}
+
+.sidebar .brand h1,
+.sidebar .brand p,
+.sidebar .sidebar-progress-card strong,
+.sidebar .daily-suggestion-card strong,
+.sidebar .nav-section-label,
+.sidebar .nav-label,
+.sidebar .nav-index {
+  color: var(--ref-paper) !important;
+}
+
+.sidebar .brand p,
+.sidebar .sidebar-progress-card span,
+.sidebar .daily-suggestion-card span,
+.sidebar .daily-suggestion-card small {
+  color: rgba(244, 241, 232, 0.64) !important;
+}
+
+.sidebar .tabs {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  overflow: visible !important;
+}
+
+.sidebar .nav-section {
+  display: grid !important;
+  gap: 7px !important;
+}
+
+.sidebar .nav-section-label {
+  margin-bottom: 6px;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  opacity: 0.46;
+}
+
+.sidebar .tab,
+.sidebar .tab[data-priority="primary"],
+.sidebar .tab[data-priority="secondary"] {
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(244, 241, 232, 0.76) !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) !important;
+  align-items: baseline !important;
+  text-align: left !important;
+  transition:
+    transform 240ms var(--ref-ease),
+    color 180ms ease,
+    opacity 180ms ease !important;
+}
+
+.sidebar .tab[data-priority="primary"] .nav-label {
+  font-size: clamp(28px, 4vw, 42px) !important;
+  line-height: 1.08 !important;
+  font-weight: 740 !important;
+}
+
+.sidebar .tab[data-priority="secondary"] .nav-label {
+  font-size: 18px !important;
+  line-height: 1.24 !important;
+  font-weight: 650 !important;
+}
+
+.sidebar .nav-index {
+  color: var(--ref-cyan) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  opacity: 0.86;
+}
+
+.sidebar .tab:hover,
+.sidebar .tab:focus-visible,
+.sidebar .tab.is-active {
+  transform: translateX(7px);
+  color: #ffffff !important;
+}
+
+.sidebar .tab.is-active .nav-label {
+  color: #ffffff !important;
+  text-decoration: underline;
+  text-decoration-color: var(--ref-cyan);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 8px;
+}
+
+.sidebar-progress-card,
+.daily-suggestion-card {
+  border: 1px solid rgba(244, 241, 232, 0.1) !important;
+  background: rgba(244, 241, 232, 0.055) !important;
+  box-shadow: none !important;
+}
+
+.daily-suggestion-card button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--ref-paper) !important;
+  color: var(--ref-ink) !important;
+  font-weight: 800 !important;
+}
+
+.grid,
+.dashboard-grid,
+.dashboard-spotlight,
+.dashboard-learning-console,
+.dashboard-module-directory,
+.dashboard-practice-prescription,
+.learning-flow,
+.micro-route-shell,
+.research-workspace,
+.sound-lab-shell,
+.sound-lab-secondary-section,
+.integration-console,
+.daily-sync-panel,
+.source-result-toolbar,
+.source-form-compact {
+  gap: 18px !important;
+}
+
+.card,
+.daily-video-card,
+.source-card,
+.technique-card,
+.community-technique-card,
+.deep-dive-card,
+.interactive-lab-card,
+.micro-lesson-card,
+.practice-reference-card,
+.knowledge-card,
+.recipe-card,
+.advanced-feature-card,
+.content-card,
+.dashboard-learning-console,
+.dashboard-module-directory,
+.dashboard-practice-prescription,
+.learning-flow,
+.micro-route-shell,
+.research-command-panel,
+.source-result-toolbar,
+.source-form-compact,
+.integration-console,
+.daily-sync-panel,
+.sound-lab-secondary-section,
+.module-directory-card,
+.learning-path-step,
+.learning-coach-card,
+.signature-proof-card {
+  border: 1px solid rgba(17, 17, 17, 0.09) !important;
+  border-radius: 22px !important;
+  background: var(--ref-panel) !important;
+  color: var(--ref-ink) !important;
+  box-shadow: var(--ref-soft-shadow) !important;
+  backdrop-filter: blur(22px) saturate(1.06) !important;
+}
+
+.content :where(.card, .daily-video-card, .source-card, .technique-card, .community-technique-card, .deep-dive-card, .interactive-lab-card, .micro-lesson-card, .practice-reference-card, .knowledge-card, .recipe-card, .advanced-feature-card, .content-card, .dashboard-learning-console, .dashboard-module-directory, .dashboard-practice-prescription, .learning-flow, .micro-route-shell, .research-command-panel, .source-result-toolbar, .source-form-compact, .integration-console, .daily-sync-panel, .sound-lab-secondary-section, .module-directory-card, .learning-path-step, .learning-coach-card, .signature-proof-card) :where(h2, h3, h4, h5, strong, b) {
+  color: var(--ref-ink) !important;
+}
+
+.content :where(.card, .daily-video-card, .source-card, .technique-card, .community-technique-card, .deep-dive-card, .interactive-lab-card, .micro-lesson-card, .practice-reference-card, .knowledge-card, .recipe-card, .advanced-feature-card, .content-card, .dashboard-learning-console, .dashboard-module-directory, .dashboard-practice-prescription, .learning-flow, .micro-route-shell, .research-command-panel, .source-result-toolbar, .source-form-compact, .integration-console, .daily-sync-panel, .sound-lab-secondary-section, .module-directory-card, .learning-path-step, .learning-coach-card, .signature-proof-card) :where(p, li, small, span, label, em, dt, dd) {
+  color: var(--ref-muted) !important;
+}
+
+.content :where(.daily-video-card, .source-card, .content-card, .knowledge-card, .recipe-card, .advanced-feature-card, .learning-path-step, .deep-dive-card):hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(37, 140, 166, 0.22) !important;
+  box-shadow: 0 22px 64px rgba(17, 17, 17, 0.11) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout,
+.signal-atlas-console,
+.synth-workbench-layout {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 82% 0%, rgba(117, 197, 222, 0.18), transparent 30%),
+    linear-gradient(135deg, #101216 0%, #11161c 52%, #171a22 100%) !important;
+  background-color: #111315 !important;
+  color: var(--ref-paper) !important;
+  box-shadow: 0 34px 110px rgba(17, 17, 17, 0.28) !important;
+}
+
+.signal-atlas-console :where(.workbench-topbar, .atlas-signal-ribbon, .session-transport-dock, .mission-brief-panel, .target-match-coach-panel, .perceptual-signature-panel, .sound-quality-coach-panel, .atlas-main-console, .atlas-support-grid, .workbench-footer-grid, .sound-lab-export, .sound-lab-engine-panel, .sound-lab-dna-panel, .sound-lab-control-console, .sound-lab-source-drawer, .professional-module-panel, .workbench-panel),
+.sound-lab-workbench :where(.workbench-topbar, .atlas-signal-ribbon, .session-transport-dock, .mission-brief-panel, .target-match-coach-panel, .perceptual-signature-panel, .sound-quality-coach-panel, .atlas-main-console, .atlas-support-grid, .workbench-footer-grid, .sound-lab-export, .sound-lab-engine-panel, .sound-lab-dna-panel, .sound-lab-control-console, .sound-lab-source-drawer, .professional-module-panel, .workbench-panel) {
+  border: 1px solid rgba(244, 241, 232, 0.12) !important;
+  border-radius: 22px !important;
+  background: rgba(244, 241, 232, 0.07) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(1.08) !important;
+}
+
+.signal-atlas-console :where(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, output),
+.sound-lab-workbench :where(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, output) {
+  color: var(--ref-paper) !important;
+  text-shadow: none !important;
+}
+
+.signal-atlas-console :where(p, li, small, span, em, label, dt, dd),
+.sound-lab-workbench :where(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.74) !important;
+  text-shadow: none !important;
+}
+
+.signal-atlas-console .card-kicker,
+.signal-atlas-console .badge,
+.signal-atlas-console .tag,
+.sound-lab-workbench .card-kicker,
+.sound-lab-workbench .badge,
+.sound-lab-workbench .tag {
+  border-color: rgba(117, 197, 222, 0.22) !important;
+  background: rgba(117, 197, 222, 0.11) !important;
+  color: rgba(117, 197, 222, 0.96) !important;
+}
+
+.atlas-signal-node,
+.mission-brief-step,
+.target-match-card,
+.quality-mode-button,
+.dna-card,
+.engine-mode-button,
+.sound-preset-card,
+.advanced-module-pill,
+.workbench-module-tabs button,
+.synth-tab,
+.compare-tab,
+.session-output-compare button,
+.layer-audition-buttons button,
+.fx-rack-item,
+.macro-button,
+.material-choice,
+.mod-route-row,
+.fx-chain-row,
+.library-sync-row,
+.batch-export-preview {
+  border: 1px solid rgba(244, 241, 232, 0.12) !important;
+  border-radius: 18px !important;
+  background: rgba(244, 241, 232, 0.08) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: none !important;
+}
+
+.atlas-signal-node:hover,
+.mission-brief-step:hover,
+.target-match-card:hover,
+.quality-mode-button:hover,
+.dna-card:hover,
+.engine-mode-button:hover,
+.sound-preset-card:hover,
+.advanced-module-pill:hover,
+.workbench-module-tabs button:hover,
+.synth-tab:hover,
+.compare-tab:hover,
+.session-output-compare button:hover,
+.layer-audition-buttons button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(117, 197, 222, 0.34) !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.2) !important;
+}
+
+.atlas-signal-node.is-active,
+.mission-brief-step.is-active,
+.quality-mode-button.is-active,
+.dna-card.is-active,
+.engine-mode-button.is-active,
+.advanced-module-pill.is-active,
+.workbench-module-tabs button.is-active,
+.synth-tab.is-active,
+.compare-tab.is-active,
+.session-output-compare button.is-active,
+.layer-audition-buttons button.is-active {
+  border-color: rgba(117, 197, 222, 0.46) !important;
+  background: linear-gradient(135deg, rgba(117, 197, 222, 0.2), rgba(244, 241, 232, 0.1)) !important;
+}
+
+.signal-atlas-console .xy-pad,
+.signal-atlas-console .macro-morph-card,
+.signal-atlas-console .export-name-rule,
+.signal-atlas-console .library-sync-grid button,
+.signal-atlas-console .coach-explain,
+.signal-atlas-console .coach-diagram,
+.signal-atlas-console .coach-route-panel > div,
+.signal-atlas-console .envelope-focus-grid > div,
+.signal-atlas-console .mod-matrix-row,
+.signal-atlas-console .fx-chain-slot,
+.signal-atlas-console .ab-diff-row span,
+.signal-atlas-console .lab-control {
+  border: 1px solid rgba(244, 241, 232, 0.12) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--ref-paper) !important;
+  box-shadow: none !important;
+}
+
+.range-shell,
+.signal-atlas-console .range-shell,
+.synth-workbench-layout .range-shell {
+  max-width: 100% !important;
+  border: 1px solid rgba(117, 197, 222, 0.18) !important;
+  border-radius: 999px !important;
+  background: rgba(244, 241, 232, 0.1) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.range-shell::before,
+.signal-atlas-console .range-shell::before,
+.synth-workbench-layout .range-shell::before {
+  background: linear-gradient(90deg, var(--ref-cyan), var(--ref-mint)) !important;
+}
+
+.signal-atlas-console input[type="range"],
+.synth-workbench-layout input[type="range"] {
+  min-height: 40px !important;
+  cursor: grab !important;
+  touch-action: none !important;
+}
+
+.signal-atlas-console input[type="range"]:active,
+.signal-atlas-console .range-shell.is-dragging,
+.synth-workbench-layout input[type="range"]:active,
+.synth-workbench-layout .range-shell.is-dragging {
+  cursor: grabbing !important;
+}
+
+.signal-atlas-console .macro-knob input,
+.synth-workbench-layout .macro-knob input {
+  left: 10px !important;
+  width: auto !important;
+  max-width: calc(100% - 20px) !important;
+}
+
+.signal-atlas-console .vertical-slider input,
+.synth-workbench-layout .vertical-slider input {
+  width: 44px !important;
+}
+
+.lab-svg {
+  color: var(--ref-paper) !important;
+}
+
+.svg-label {
+  fill: rgba(244, 241, 232, 0.64) !important;
+}
+
+.svg-axis {
+  stroke: rgba(244, 241, 232, 0.18) !important;
+}
+
+.svg-envelope,
+.svg-filter-curve,
+.workbench-waveform-svg polyline {
+  stroke: var(--ref-cyan) !important;
+}
+
+.adsr-handle {
+  fill: var(--ref-cyan) !important;
+  stroke: #ffffff !important;
+}
+
+.content.is-view-switching > * {
+  animation: ref-view-enter 360ms var(--ref-ease-out) both !important;
+}
+
+@keyframes ref-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content.is-same-view-rendering,
+.content.is-same-view-rendering > *,
+body.is-direct-manipulating .content,
+body.is-direct-manipulating .dashboard-hero,
+body.is-direct-manipulating .sound-lab-workbench,
+body.is-direct-manipulating .signal-atlas-console {
+  animation: none !important;
+  filter: none !important;
+}
+
+body.is-direct-manipulating .visual-spotlight {
+  opacity: 0.28 !important;
+}
+
+body.is-direct-manipulating .range-shell,
+body.is-direct-manipulating .visual-spotlight,
+body.is-direct-manipulating .audio-space {
+  transition: none !important;
+}
+
+.is-pressing {
+  filter: none !important;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-height: auto !important;
+  }
+
+  .hero-sound-visual {
+    min-height: 340px !important;
+  }
+
+  .dashboard-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .visual-logo-wrapper {
+    top: 22px !important;
+    left: 18px !important;
+  }
+
+  .visual-logo-wrapper span {
+    display: none !important;
+  }
+
+  .visual-burger-wrapper {
+    top: 12px !important;
+    right: 12px !important;
+  }
+
+  .visual-burger-btn {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .workspace {
+    padding-top: 82px !important;
+  }
+
+  .workspace:has(.dashboard-hero) {
+    padding-top: 74px !important;
+  }
+
+  .content,
+  .content:has(.dashboard-hero),
+  .toolbar {
+    width: min(100% - 20px, 760px) !important;
+  }
+
+  .toolbar {
+    position: relative !important;
+    top: auto !important;
+    grid-template-columns: 1fr !important;
+    border-radius: 22px !important;
+  }
+
+  .dashboard-hero {
+    padding: 22px !important;
+    border-radius: 24px !important;
+  }
+
+  .dashboard-hero::before {
+    font-size: clamp(94px, 30vw, 180px) !important;
+  }
+
+  .hero-copy h3 {
+    font-size: clamp(42px, 15vw, 72px) !important;
+    line-height: 0.96 !important;
+  }
+
+  .dashboard-starter-strip,
+  .hero-status-strip,
+  .dashboard-actions {
+    border-radius: 22px !important;
+  }
+
+  .dashboard-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar {
+    width: calc(100vw - 16px) !important;
+    padding: 72px 28px 32px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual-splash,
+  .visual-splash-row span,
+  .content.is-view-switching > *,
+  .word-reveal,
+  .hero-copy,
+  .hero-sound-visual,
+  .hero-wave-strip span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Reference showcase visual system v8.4 final cascade lock: anchored after v8.0 */
+.dashboard-hero {
+  grid-template-columns: minmax(0, 0.88fr) minmax(360px, 0.9fr) !important;
+  gap: clamp(24px, 5vw, 78px) !important;
+}
+
+.hero-copy,
+.hero-copy h3 {
+  max-width: 680px !important;
+}
+
+.hero-copy h3 {
+  font-size: clamp(36px, 4.85vw, 68px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.032em !important;
+  text-wrap: balance;
+}
+
+.hero-copy h3 .word-reveal {
+  display: inline-block !important;
+  margin-right: 0.08em !important;
+}
+
+.hero-copy p {
+  max-width: 650px !important;
+}
+
+.hero-sound-visual {
+  min-height: 520px !important;
+}
+
+.dashboard-starter-strip {
+  width: min(100%, 560px) !important;
+}
+
+.sound-family-rail .material-select-button,
+.sound-family-rail .material-select-button :where(strong, span, small, em) {
+  color: var(--ref-ink) !important;
+}
+
+.sound-family-rail .material-select-button.is-active,
+.sound-family-rail .material-select-button.is-active :where(strong, span, small, em) {
+  color: var(--ref-paper) !important;
+}
+
+.sound-family-rail .material-select-button.is-active {
+  background: rgba(17, 17, 17, 0.72) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(h2, h3, h4, h5, strong, b, .workbench-breadcrumb, button, output) {
+  color: var(--ref-paper) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout :is(
+  .atlas-topbar,
+  .atlas-signal-ribbon,
+  .session-transport-dock,
+  .layer-audition-strip,
+  .workflow-context-strip,
+  .mission-brief-panel,
+  .target-match-coach-panel,
+  .perceptual-signature-panel,
+  .sound-quality-coach-panel,
+  .atlas-main-console,
+  .atlas-right-rail,
+  .workbench-panel,
+  .professional-module-panel
+) :is(p, li, small, span, em, label, dt, dd) {
+  color: rgba(244, 241, 232, 0.76) !important;
+  text-shadow: none !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar h3 {
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-topbar p,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-breadcrumb {
+  color: rgba(244, 241, 232, 0.72) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button {
+  background: rgba(244, 241, 232, 0.09) !important;
+  color: var(--ref-paper) !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .mission-brief-step :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .target-match-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .quality-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .dna-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .engine-mode-button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .sound-preset-card :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .advanced-module-pill :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workbench-module-tabs button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .synth-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .compare-tab :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .session-output-compare button :where(strong, span, small),
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .layer-audition-buttons button :where(strong, span, small) {
+  color: inherit !important;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .atlas-signal-node > span,
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout .workflow-context-strip span:first-child {
+  color: rgba(117, 197, 222, 0.96) !important;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .hero-sound-visual {
+    min-height: 340px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .hero-copy h3 {
+    font-size: clamp(36px, 12vw, 58px) !important;
+    line-height: 1.06 !important;
+  }
+}
