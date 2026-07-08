@@ -2472,6 +2472,74 @@ function renderPracticeFocusStrip(model = {}) {
   `;
 }
 
+function renderEarTrainingChainPanel(model = {}) {
+  const chain = model.earTrainingChain ?? {};
+  const steps = chain.steps ?? [];
+  const synthMap = chain.synthMap ?? {};
+  if (!steps.length) return '';
+
+  const renderStepAttributes = (step) => {
+    const attrs = [`data-ear-chain-step="${escapeHtml(step.id)}"`];
+    if (step.action) {
+      attrs.push(`data-workbench-action="${escapeHtml(step.action)}"`);
+    }
+    if (step.waveformDrillStep) {
+      attrs.push(`data-waveform-drill-step="${escapeHtml(step.waveformDrillStep)}"`);
+    }
+    if (step.playAction) {
+      attrs.push('data-sound-lab-play');
+    }
+    if (step.layerAudition) {
+      attrs.push(`data-layer-audition="${escapeHtml(step.layerAudition)}"`);
+    }
+    if (step.applyDiagnosticId) {
+      attrs.push(`data-doctor-apply="${escapeHtml(step.applyDiagnosticId)}"`);
+    }
+    if (step.outputMode) {
+      attrs.push(`data-output-compare="${escapeHtml(step.outputMode)}"`);
+    }
+    return attrs.join(' ');
+  };
+
+  return `
+    <section class="ear-chain-panel" aria-label="Beginner Ear Chain 听音诊断链">
+      <div class="ear-chain-head">
+        <span>Beginner Ear Chain</span>
+        <strong>${escapeHtml(chain.titleZh ?? 'Beginner Ear Chain：听音诊断链')}</strong>
+        <p>${escapeHtml(chain.summaryZh ?? '')}</p>
+      </div>
+      <div class="ear-chain-step-grid">
+        ${steps.map((step) => {
+          const isActive = step.id === chain.activeStepId;
+          return `
+            <button
+              class="ear-chain-step ${isActive ? 'is-active' : ''}"
+              type="button"
+              ${renderStepAttributes(step)}
+              aria-pressed="${isActive ? 'true' : 'false'}"
+            >
+              <span>${escapeHtml(step.labelZh ?? '')}</span>
+              <strong>${escapeHtml(step.titleZh ?? '')}</strong>
+              <p>${escapeHtml(step.listenZh ?? '')}</p>
+              <small>${escapeHtml(step.proofZh ?? '')}</small>
+              <em>${escapeHtml(step.actionLabelZh ?? '开始')}</em>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      <div class="ear-chain-synth-map">
+        <article><strong>Serum</strong><p>${escapeHtml(synthMap.serum ?? '')}</p></article>
+        <article><strong>Phase Plant</strong><p>${escapeHtml(synthMap.phasePlant ?? '')}</p></article>
+        <article><strong>Vital</strong><p>${escapeHtml(synthMap.vital ?? '')}</p></article>
+      </div>
+      <div class="ear-chain-proof">
+        <span>REAPER Proof</span>
+        <code>${escapeHtml(chain.reaperNoteTemplate ?? '')}</code>
+      </div>
+    </section>
+  `;
+}
+
 function renderMissionBriefPanel(model = {}) {
   const mission = model.missionBrief ?? {};
   const steps = mission.steps ?? [];
@@ -3145,6 +3213,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
       </header>
       ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
       ${renderPracticeFocusStrip(model)}
+      ${renderEarTrainingChainPanel(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
       <div class="synth-tab-row">
@@ -3241,6 +3310,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
       ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
       ${renderPracticeFocusStrip(model)}
+      ${renderEarTrainingChainPanel(model)}
       ${renderMissionBriefPanel(model)}
       ${renderTargetMatchCoachPanel(model)}
       <main class="atlas-main-console">

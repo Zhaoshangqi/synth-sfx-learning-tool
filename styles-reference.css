@@ -2026,6 +2026,221 @@ body.is-direct-manipulating .content:not(.is-view-switching) .signal-atlas-conso
   }
 }
 
+/* Beginner Ear Chain v10.0
+   A first-screen learning route for beginners: listen, isolate, change once,
+   then prove the decision in REAPER. */
+
+.ear-chain-panel {
+  position: relative;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(110, 231, 249, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(110, 231, 249, 0.14), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(167, 139, 250, 0.14), transparent 32%),
+    linear-gradient(135deg, rgba(8, 10, 18, 0.88), rgba(14, 20, 35, 0.92));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #f4f7fb;
+}
+
+.ear-chain-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(110, 231, 249, 0.18) 36%, rgba(255, 255, 255, 0.12) 48%, transparent 68%),
+    repeating-linear-gradient(90deg, transparent 0 72px, rgba(110, 231, 249, 0.052) 72px 73px);
+  background-size: 320% 100%, 120px 100%;
+  opacity: 0.42;
+  mix-blend-mode: screen;
+  animation: ear-chain-route-current 18s cubic-bezier(0.21, 0.61, 0.35, 1) infinite;
+}
+
+.ear-chain-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ear-chain-panel :where(p, small, span, em, li) {
+  color: rgba(244, 247, 251, 0.78);
+}
+
+.ear-chain-head {
+  display: grid;
+  gap: 6px;
+  max-width: 920px;
+}
+
+.ear-chain-head > span,
+.ear-chain-proof > span {
+  width: fit-content;
+  padding: 4px 10px;
+  border: 1px solid rgba(110, 231, 249, 0.26);
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.1);
+  color: rgba(110, 231, 249, 0.94);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ear-chain-head strong {
+  color: #f4f7fb;
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.12;
+}
+
+.ear-chain-step-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ear-chain-step {
+  position: relative;
+  overflow: hidden;
+  min-height: 184px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(244, 247, 251, 0.12);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.68);
+  color: #f4f7fb;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.ear-chain-step::after {
+  content: "";
+  position: absolute;
+  inset: auto 12px 10px 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(110, 231, 249, 0), rgba(110, 231, 249, 0.74), rgba(167, 139, 250, 0));
+  opacity: 0.44;
+}
+
+.ear-chain-step:hover,
+.ear-chain-step:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(110, 231, 249, 0.52);
+  background: rgba(16, 24, 42, 0.82);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.ear-chain-step.is-active {
+  border-color: rgba(110, 231, 249, 0.72);
+  background:
+    radial-gradient(circle at 16% 8%, rgba(110, 231, 249, 0.2), transparent 38%),
+    rgba(14, 28, 46, 0.86);
+}
+
+.ear-chain-step span {
+  color: rgba(110, 231, 249, 0.92);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ear-chain-step strong {
+  color: #f4f7fb;
+  font-size: 14px;
+  line-height: 1.24;
+}
+
+.ear-chain-step p,
+.ear-chain-step small {
+  margin: 0;
+  line-height: 1.52;
+}
+
+.ear-chain-step em {
+  align-self: end;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.1);
+  color: rgba(244, 247, 251, 0.86);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ear-chain-synth-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ear-chain-synth-map article,
+.ear-chain-proof {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(244, 247, 251, 0.1);
+  border-radius: 12px;
+  background: rgba(244, 247, 251, 0.055);
+}
+
+.ear-chain-synth-map strong {
+  color: rgba(110, 231, 249, 0.92);
+}
+
+.ear-chain-proof code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: rgba(244, 247, 251, 0.88);
+}
+
+body.is-direct-manipulating .ear-chain-panel::before,
+body.is-direct-manipulating .ear-chain-step::after {
+  animation-play-state: paused !important;
+  opacity: 0.16 !important;
+  transition: none !important;
+}
+
+@keyframes ear-chain-route-current {
+  0% {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0);
+  }
+  100% {
+    background-position: 100% 50%, 120px 0;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 5px), 0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .ear-chain-step-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ear-chain-synth-map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .ear-chain-panel {
+    padding: 14px;
+  }
+
+  .ear-chain-step-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .audio-space::before,
   .hero-sound-visual::after,
@@ -2035,7 +2250,9 @@ body.is-direct-manipulating .content:not(.is-view-switching) .signal-atlas-conso
   .source-link::before,
   .visual-burger-btn::before,
   .dashboard-hero .hero-copy::after,
-  .signal-atlas-console::after {
+  .signal-atlas-console::after,
+  .ear-chain-panel::before,
+  .ear-chain-step::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     animation-play-state: paused !important;
