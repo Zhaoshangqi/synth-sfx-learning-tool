@@ -20,6 +20,152 @@ export const SOUND_LAB_MACRO_DEFS = [
   { id: 'variation', labelZh: 'Variation 变体', lowZh: '可重复、稳定', highZh: '随机、活、可导多版' },
 ];
 
+export const SOUND_LAB_PARAMETER_COACH = {
+  macros: {
+    brightness: {
+      titleZh: 'Brightness 明暗',
+      targetZh: 'Filter cutoff / WT position / harmonic brightness',
+      listenZh: '先听 3k-10k 的边缘：变亮会更容易识别金属和电流，但过高会刺耳、变薄。',
+      synthZh: 'Serum/Vital 调 filter cutoff、wavetable position 或 noise bright；Phase Plant 调 filter 与 harmonic lane。',
+      reaperZh: '导出两版只改 Brightness，频谱里检查 3k-10k 是否增加但峰值不过尖。',
+    },
+    motion: {
+      titleZh: 'Motion 动态',
+      targetZh: 'LFO rate / envelope movement / sweep depth',
+      listenZh: '听声音是否有方向感：上扫、抖动和速度来自 motion；太高会像音色不稳定。',
+      synthZh: 'Serum 用 LFO 推 WT/filter；Phase Plant 用 LFO/Random 调 generator；Vital 用 LFO 或 Random 推 filter/pan。',
+      reaperZh: '连续触发三次，确认变化有生命感但仍像同一个 Patch。',
+    },
+    material: {
+      titleZh: 'Material 材质',
+      targetZh: 'FM depth / inharmonic partials / resonator density',
+      listenZh: '听主体是不是更硬、更金属、更非谐波；材质高时要注意不要只剩尖锐 click。',
+      synthZh: 'Serum/Vital 增加 FM/ring/warp 与短 resonant filter；Phase Plant 增加 FM lane 或 modal layer。',
+      reaperZh: '用 dry 版先判断材质，再加空间；否则 reverb 会掩盖材质真假。',
+    },
+    space: {
+      titleZh: 'Space 空间',
+      targetZh: 'Reverb mix / delay send / stereo width',
+      listenZh: '听尾巴长度、左右宽度和距离感；空间只服务交付，不应该盖住 transient。',
+      synthZh: 'Serum/Vital 控 reverb mix/width；Phase Plant 放到 FX lane，优先做 send 感而不是全湿。',
+      reaperZh: '导出 dry/full/tail-only 三版，确认 tail 不抢主体。',
+    },
+    variation: {
+      titleZh: 'Variation 变体',
+      targetZh: 'random seed / sample offset / micro pitch drift',
+      listenZh: '听每次触发是不是有细微差异；变体太高会让同一按钮像多个音色。',
+      synthZh: 'Serum/Vital 用 Chaos/Random 做小幅变化；Phase Plant 用 Random modulator 控 texture，不要同时大改音高。',
+      reaperZh: '渲染 3-5 个 variant，保留最好的一版并写清楚改动。',
+    },
+  },
+  performance: {
+    velocity: {
+      titleZh: 'Velocity 力度',
+      targetZh: 'transient gain / drive / filter response',
+      listenZh: '听轻触和重触的起音差异：力度应该让声音更有演奏感，而不是只变大声。',
+      synthZh: '三款合成器都把 velocity 映射到 amp、filter 或 drive，深度先小后大。',
+      reaperZh: '用两个 MIDI velocity 渲染 A/B，检查动态差异是否可听。',
+    },
+    glide: {
+      titleZh: 'Glide 滑音',
+      targetZh: 'portamento / parameter smoothing',
+      listenZh: '听音高和参数是否连续移动；合成器感来自平滑过渡，不是硬切。',
+      synthZh: 'Serum/Vital 打开 mono/porta；Phase Plant 用 glide 或 pitch envelope 做上扬。',
+      reaperZh: '拖动时录屏或渲染长音，确认没有 zipper noise 和突兀台阶。',
+    },
+    octave: {
+      titleZh: 'Octave 八度',
+      targetZh: 'root pitch / body weight / spectral range',
+      listenZh: '低八度更重更厚，高八度更轻更亮；先定音区再调材质。',
+      synthZh: '先改 oscillator octave，再微调 filter 和 envelope，不要反过来补救。',
+      reaperZh: '同一 MIDI item 渲染三档八度，选最贴近画面尺寸的一档。',
+    },
+  },
+  layers: {
+    transient: {
+      titleZh: 'Transient 瞬态层',
+      targetZh: 'click / snap / first 20ms',
+      listenZh: '听第一下是否清楚但不扎耳；过多会像 UI click，过少会没有命中感。',
+      synthZh: '用 noise burst、短 envelope 或 sample click 独立成层。',
+      reaperZh: '放大波形前 50ms，检查 transient 是否和主体对齐。',
+    },
+    body: {
+      titleZh: 'Body 主体层',
+      targetZh: 'fundamental / modal body / weight',
+      listenZh: '听声音是否有可识别的主体重量；body 不够会只剩噪声和尖峰。',
+      synthZh: '用 sine/triangle/FM carrier 或 modal partial 做主体，不要让噪声承担全部重量。',
+      reaperZh: '高通/低通各听一次，确认主体频段真实存在。',
+    },
+    texture: {
+      titleZh: 'Texture 质感层',
+      targetZh: 'noise / grain / edge detail',
+      listenZh: '听空气、电流、刮擦或金属碎屑；texture 应该贴着主体，不应单独抢戏。',
+      synthZh: '用 noise、sample grains、filter resonance 或 wavetable edge 做细节。',
+      reaperZh: '导出 texture-only 辅助检查，确认它是细节不是另一个声音。',
+    },
+    tail: {
+      titleZh: 'Tail 尾音层',
+      targetZh: 'release / room / delay tail',
+      listenZh: '听尾巴是否自然退场；过长会拖慢动作，过短会显得干瘪。',
+      synthZh: '用 release、delay send、reverb send 控尾巴，保留 dry transient。',
+      reaperZh: '导出 tail-only，检查结尾有没有噪声、爆音或多余低频。',
+    },
+  },
+  envelope: {
+    attack: {
+      titleZh: 'Attack 起音',
+      targetZh: 'amp envelope attack',
+      listenZh: 'Attack 越短越硬，越长越软；做 UI/impact 通常先保持短。',
+      synthZh: '三款合成器先调 Amp Env attack，再看是否需要 filter envelope。',
+      reaperZh: '只改 attack 渲染 A/B，观察波形前沿是否变钝。',
+    },
+    decay: {
+      titleZh: 'Decay 衰减',
+      targetZh: 'amp/filter envelope decay',
+      listenZh: 'Decay 决定主体持续多久；短是 pluck/click，长是 hit/body。',
+      synthZh: '把 Amp Decay 和 Filter Decay 分开听，避免同时乱动。',
+      reaperZh: '看波形从峰值掉到主体的速度，确认动作长度合适。',
+    },
+    sustain: {
+      titleZh: 'Sustain 延音',
+      targetZh: 'held body level',
+      listenZh: 'Sustain 高会变成持续音，低会更像一次性音效。',
+      synthZh: '音效里 sustain 通常很低，除非做能量充能、机械循环或氛围。',
+      reaperZh: '用短 MIDI note 和长 MIDI note 各渲染一次，确认释放逻辑。',
+    },
+    release: {
+      titleZh: 'Release 释放',
+      targetZh: 'tail after note off',
+      listenZh: 'Release 控尾巴退场；太短会被切断，太长会糊后续动作。',
+      synthZh: '先调 Amp Release，再让 reverb/delay 接住空间。',
+      reaperZh: '检查 item 结尾有没有截断，必要时导出 tail-only。',
+    },
+  },
+  special: {
+    xyPad: {
+      titleZh: 'XY Pad 手势调制',
+      targetZh: 'X = tone/material, Y = space/motion',
+      listenZh: '听一个手势是否同时改变材质和空间；手势要有方向，不要只是变乱。',
+      synthZh: 'Serum/Vital 用 Macro 或 XY 映射；Phase Plant 用 Macro controls 映射多个目标。',
+      reaperZh: '录一段 automation，确认动作曲线和画面动作同步。',
+    },
+    macroMorph: {
+      titleZh: 'Macro Morph A/B',
+      targetZh: 'morph between two macro snapshots',
+      listenZh: '听 A 到 B 是否是连续变化；如果中间塌陷，说明两个快照目标不一致。',
+      synthZh: '把 A/B 差异限制在 2-3 个宏，避免所有参数一起漂。',
+      reaperZh: '导出 A、中间、B 三版，检查中间态是否可用。',
+    },
+    modRoute: {
+      titleZh: 'Mod Matrix 深度',
+      targetZh: 'source -> target amount',
+      listenZh: '听调制是否刚好可感知；太深会像参数失控，太浅会像没动。',
+      synthZh: '先固定 source，再只改 amount；不要同时换 source 和 target。',
+      reaperZh: 'A/B 一版关闭调制，一版打开调制，确认变化来自目标参数。',
+    },
+  },
+};
+
 export const SOUND_LAB_QUALITY_MODES = [
   { id: 'draft', labelZh: 'Draft', noteZh: '低 CPU，适合快速找方向。', layerScale: 0.82, fxScale: 0.72 },
   { id: 'balanced', labelZh: 'Balanced', noteZh: '默认练习模式，层次和性能平衡。', layerScale: 1, fxScale: 1 },
@@ -1282,6 +1428,27 @@ function buildPerformanceControls(patch) {
   ];
 }
 
+function buildParameterCoach(patch, macroList) {
+  const macroFocus = [...macroList]
+    .sort((a, b) => Math.abs((b.value ?? 50) - 50) - Math.abs((a.value ?? 50) - 50))[0] ?? macroList[0];
+  const macroCopy = SOUND_LAB_PARAMETER_COACH.macros[macroFocus?.id] ?? SOUND_LAB_PARAMETER_COACH.macros.material;
+  return {
+    titleZh: '实时参数导师',
+    summaryZh: '拖动任意宏、包络、层级或 XY 时，这里会立刻说明：听哪里、改了什么、怎样在 Serum / Phase Plant / Vital 里复刻。',
+    focus: {
+      id: macroFocus?.id ?? 'material',
+      value: macroFocus?.value ?? 50,
+      categoryZh: 'Macro',
+      ...macroCopy,
+    },
+    checklist: [
+      '先听 dry 主体，不急着加空间。',
+      '一次只改一个参数，并用 A/B 复听。',
+      '把听感变化翻译成插件里的一个目标参数。',
+    ],
+  };
+}
+
 function buildKeyboardNotes(baseOctave = 3) {
   const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   return names.map((name, index) => ({
@@ -1506,6 +1673,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor: buildPatchDoctor(family, patch, macroList),
+    parameterCoach: buildParameterCoach(patch, macroList),
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,

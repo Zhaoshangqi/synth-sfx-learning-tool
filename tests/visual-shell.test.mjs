@@ -679,6 +679,23 @@ test('sound lab app wires advanced controls and live analyzer drawing', () => {
   assert.match(audioPlayerJs, /getByteTimeDomainData/);
 });
 
+test('sound lab live controls update the parameter coach without forcing rerenders', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-live-parameter-coach/);
+  assert.match(renderJs, /data-live-coach-listen/);
+  assert.match(appJs, /SOUND_LAB_PARAMETER_COACH/);
+  assert.match(appJs, /function updateParameterCoach/);
+  assert.match(appJs, /coachTopicForInput/);
+  assert.match(appJs, /updateParameterCoach\(coachTopicForInput\(input\)/);
+  assert.match(appJs, /SOUND_LAB_PARAMETER_COACH\.special\.xyPad/);
+  assert.doesNotMatch(appJs, /function updateParameterCoach[\s\S]{0,1200}renderSameView\(/);
+  assert.match(css, /\.parameter-coach-panel\s*\{/);
+  assert.match(css, /\.parameter-coach-meter i\s*\{[\s\S]*transition:\s*width 120ms/);
+});
+
 test('sound lab envelope sliders stay inside their panel and keep real pointer targets', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 

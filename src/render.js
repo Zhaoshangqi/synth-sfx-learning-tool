@@ -2070,6 +2070,53 @@ function renderWorkbenchPlayback(model = {}, isPlaying = false) {
   `;
 }
 
+function renderParameterCoachPanel(model = {}) {
+  const coach = model.parameterCoach ?? {};
+  const focus = coach.focus ?? {};
+  const checklist = coach.checklist ?? [];
+  return `
+    <section
+      class="workbench-panel parameter-coach-panel"
+      data-live-parameter-coach
+      style="--coach-level:${formatNumber(focus.value ?? 50)}%"
+      aria-label="实时参数导师"
+    >
+      <div class="mini-panel-head">
+        <strong>${escapeHtml(coach.titleZh ?? '实时参数导师')}</strong>
+        <span data-live-coach-category>${escapeHtml(focus.categoryZh ?? 'Macro')}</span>
+      </div>
+      <p>${escapeHtml(coach.summaryZh ?? '拖动参数时，立刻把听感变化翻译成合成器动作。')}</p>
+      <div class="parameter-coach-now">
+        <span>当前关注</span>
+        <strong data-live-coach-title>${escapeHtml(focus.titleZh ?? 'Material 材质')}</strong>
+        <output data-live-coach-value>${escapeHtml(String(focus.value ?? 50))}</output>
+      </div>
+      <div class="parameter-coach-meter" aria-hidden="true"><i></i></div>
+      <div class="parameter-coach-grid">
+        <article>
+          <span>听什么</span>
+          <p data-live-coach-listen>${escapeHtml(focus.listenZh ?? '')}</p>
+        </article>
+        <article>
+          <span>插件里改什么</span>
+          <p data-live-coach-synth>${escapeHtml(focus.synthZh ?? '')}</p>
+        </article>
+        <article>
+          <span>REAPER 验证</span>
+          <p data-live-coach-reaper>${escapeHtml(focus.reaperZh ?? '')}</p>
+        </article>
+      </div>
+      <div class="parameter-coach-target">
+        <strong>目标参数</strong>
+        <span data-live-coach-target>${escapeHtml(focus.targetZh ?? '')}</span>
+      </div>
+      <ol class="parameter-coach-checklist">
+        ${checklist.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+      </ol>
+    </section>
+  `;
+}
+
 function renderSessionTransportDock(family = {}, model = {}, options = {}) {
   const outputCompare = model.outputCompare ?? {};
   const outputModes = outputCompare.modes ?? [];
@@ -2610,6 +2657,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
             ${renderWorkbenchMacroPanel(model)}
             ${renderWorkbenchModulation(model)}
           </div>
+          ${renderParameterCoachPanel(model)}
           <div class="control-bottom-grid">
             ${renderWorkbenchMaterialPanel(family)}
             ${renderWorkbenchPlayback(model, isPlaying)}
@@ -2692,6 +2740,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
             ${renderWorkbenchEnvelope(model)}
             ${renderWorkbenchMacroPanel(model)}
             ${renderXYMacroPanel(model)}
+            ${renderParameterCoachPanel(model)}
           </div>
         </section>
         ${renderAtlasCommandDock(model, { ...options, isPlaying })}
@@ -2705,6 +2754,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
           ${renderProfessionalControlGrid(model, options.activeAdvancedModule)}
           ${renderWorkbenchModuleMap(family, options.activeWorkflowStep, options.activeAdvancedModule, options.activeModuleMapId)}
           ${renderWorkbenchUsageGuide(family, options.activeWorkflowStep)}
+          ${renderParameterCoachPanel(model)}
           ${renderWorkbenchModulation(model)}
           <div class="control-bottom-grid">
             ${renderWorkbenchMaterialPanel(family)}

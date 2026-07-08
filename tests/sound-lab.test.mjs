@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { sources, soundLabFamilies } from '../src/content.js';
 import {
   SOUND_LAB_MACROS,
+  SOUND_LAB_PARAMETER_COACH,
   buildSoundLabPatch,
   buildSoundLabViewModel,
   buildWorkletMessage,
@@ -64,6 +65,24 @@ test('buildSoundLabViewModel exposes meters, macro labels, evidence, and export 
   assert.ok(model.evidence.length >= 1);
   assert.match(model.patchJson, /"familyId"/);
   assert.match(model.reaperNotes, /REAPER/);
+});
+
+test('buildSoundLabViewModel exposes a live parameter coach for beginner control feedback', () => {
+  const model = buildSoundLabViewModel(soundLabFamilies[0], {
+    brightness: 42,
+    motion: 38,
+    material: 92,
+    space: 30,
+    variation: 18,
+  });
+
+  assert.ok(SOUND_LAB_PARAMETER_COACH.macros.material.listenZh);
+  assert.ok(SOUND_LAB_PARAMETER_COACH.performance.glide.synthZh);
+  assert.ok(SOUND_LAB_PARAMETER_COACH.layers.transient.reaperZh);
+  assert.equal(model.parameterCoach.titleZh, '实时参数导师');
+  assert.equal(model.parameterCoach.focus.id, 'material');
+  assert.match(model.parameterCoach.focus.listenZh, /材质|非谐波|主体/);
+  assert.ok(model.parameterCoach.checklist.length >= 3);
 });
 
 test('buildSoundLabViewModel explains the basic waveform ingredients behind a patch', () => {

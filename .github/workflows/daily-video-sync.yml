@@ -1,0 +1,89 @@
+name: Daily synth SFX tutorial sync
+
+on:
+  schedule:
+    # 10:20 Beijing time. GitHub schedules are UTC.
+    - cron: "20 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-video-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python for yt-dlp
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install video search helper
+        run: python -m pip install --upgrade yt-dlp
+
+      - name: Refresh daily tutorial feed
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scripts/update-video-feed.mjs --limit=4 --max-items=90
+
+      - name: Verify static app
+        run: npm test
+
+      - name: Commit refreshed data to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily-video-feed.json src/daily-video-feed.js
+          if git diff --cached --quiet; then
+            echo "No daily video feed changes."
+          else
+            git commit -m "Update daily synth SFX tutorial feed"
+            git push origin main
+          fi
+
+      - name: Publish static site to gh-pages
+        shell: bash
+        run: |
+          git fetch origin gh-pages || true
+          rm -rf _gh_pages
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add _gh_pages origin/gh-pages
+          else
+            git worktree add --detach _gh_pages
+            cd _gh_pages
+            git checkout --orphan gh-pages
+            cd ..
+          fi
+
+          find _gh_pages -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+          cp index.html styles.css package.json README.md _gh_pages/
+          for dir in src tests docs vendor data; do
+            if [ -d "$dir" ]; then
+              cp -r "$dir" _gh_pages/
+            fi
+          done
+          touch _gh_pages/.nojekyll
+
+          cd _gh_pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No gh-pages changes."
+          else
+            git commit -m "Deploy daily synth SFX tutorial feed"
+            git push origin HEAD:gh-pages
+          fi
