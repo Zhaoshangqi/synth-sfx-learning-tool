@@ -1475,13 +1475,21 @@ function renderWorkbenchOutputMeter(model = {}) {
   `;
 }
 
-function renderWaveformDetectivePanel(model = {}) {
+function renderWaveformDetectivePanel(model = {}, options = {}) {
   const fingerprint = model.waveformFingerprint ?? {};
   const ingredients = fingerprint.ingredients ?? [];
   const steps = fingerprint.listeningSteps ?? [];
   const drillSteps = fingerprint.drillSteps ?? [];
-  const renderDrillAttributes = (step) => {
-    const attrs = [`data-waveform-drill-step="${escapeHtml(step.id)}"`];
+  const activeDrillStepId = options.activeWaveformDrillStep ?? drillSteps[0]?.id ?? '';
+  const completedDrillSteps = new Set(options.completedWaveformDrillSteps ?? []);
+  const activeDrillStep = drillSteps.find((step) => step.id === activeDrillStepId) ?? drillSteps[0] ?? {};
+  const renderDrillAttributes = (step, isActive) => {
+    const attrs = [
+      `data-waveform-drill-step="${escapeHtml(step.id)}"`,
+      `data-waveform-drill-feedback="${escapeHtml(step.feedbackZh ?? '')}"`,
+      `data-waveform-drill-next="${escapeHtml(step.nextZh ?? '')}"`,
+      `aria-pressed="${isActive ? 'true' : 'false'}"`,
+    ];
     if (step.playAction) {
       attrs.push('data-sound-lab-play');
     } else if (step.layerAudition) {
@@ -1520,16 +1528,28 @@ function renderWaveformDetectivePanel(model = {}) {
             <strong>Waveform Reverse Drill</strong>
             <span>听证据 → solo 层 → 只改一个参数 → A/B 写结论</span>
           </div>
+          <div class="waveform-drill-progress" data-waveform-drill-progress>
+            <strong>当前训练：${escapeHtml(activeDrillStep.labelZh ?? '')} ${escapeHtml(activeDrillStep.titleZh ?? '')}</strong>
+            <span>下一步：${escapeHtml(activeDrillStep.nextZh ?? '先听完整 Patch，再拆开每一层验证。')}</span>
+          </div>
           <div class="waveform-drill-grid">
-            ${drillSteps.map((step) => `
-              <button class="waveform-drill-step" type="button" ${renderDrillAttributes(step)}>
+            ${drillSteps.map((step) => {
+              const isActive = step.id === activeDrillStepId;
+              const isComplete = completedDrillSteps.has(step.id);
+              const className = ['waveform-drill-step', isActive ? 'is-active' : '', isComplete ? 'is-complete' : '']
+                .filter(Boolean)
+                .join(' ');
+              return `
+              <button class="${className}" type="button" ${renderDrillAttributes(step, isActive)}>
                 <span>${escapeHtml(step.labelZh ?? '')}</span>
                 <strong>${escapeHtml(step.titleZh ?? '')}</strong>
                 <p>${escapeHtml(step.listenZh ?? '')}</p>
                 <small>${escapeHtml(step.synthZh ?? '')}</small>
                 <em>${escapeHtml(step.proofZh ?? '')}</em>
+                <b class="waveform-drill-state">${escapeHtml(isActive ? '当前训练' : isComplete ? '已验证' : '待验证')}</b>
               </button>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       ` : ''}
@@ -3142,7 +3162,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
             ${renderWorkbenchSpectrum(model, options.analyzerMode)}
             ${renderWorkbenchOutputMeter(model)}
           </div>
-          ${renderWaveformDetectivePanel(model)}
+          ${renderWaveformDetectivePanel(model, options)}
           ${renderPerceptualSignaturePanel(model)}
           ${renderMaterialResonancePanel(model)}
           ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
@@ -3236,7 +3256,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
               ${renderWorkbenchSpectrum(model, options.analyzerMode)}
               ${renderWorkbenchOutputMeter(model)}
             </div>
-            ${renderWaveformDetectivePanel(model)}
+            ${renderWaveformDetectivePanel(model, options)}
             ${renderPerceptualSignaturePanel(model)}
             ${renderMaterialResonancePanel(model)}
           </div>

@@ -373,7 +373,11 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
     presetId: 'vital-metal-modal-hit',
     qualityMode: 'studio',
   });
-  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWaveformDrillStep: 'body-solo',
+    completedWaveformDrillSteps: ['anchor', 'body-solo'],
+  });
 
   assert.match(html, /waveform-detective-panel/);
   assert.match(html, /波形拆解/);
@@ -396,6 +400,14 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
   assert.match(html, /Phase Plant/);
   assert.match(html, /Vital/);
   assert.match(html, /REAPER|A\/B/);
+  assert.match(html, /waveform-drill-progress/);
+  assert.match(html, /data-waveform-drill-feedback=/);
+  assert.match(html, /data-waveform-drill-next=/);
+  assert.match(html, /class="waveform-drill-step is-complete"/);
+  assert.match(html, /class="waveform-drill-step is-active is-complete"/);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /当前训练/);
+  assert.match(html, /下一步/);
 });
 
 test('renderSoundLabWorkbench exposes a guided A/B practice loop for beginners', () => {

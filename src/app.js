@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260708-aether-wake';
+} from './sound-lab-model.js?v=20260708-aether-pressure';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260708-aether-wake';
+import { createLabAudioPlayer } from './audio-player.js?v=20260708-aether-pressure';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-aether-wake';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-aether-pressure';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260708-aether-wake';
+} from './render.js?v=20260708-aether-pressure';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -351,6 +351,8 @@ const state = {
   soundLabAbSlot: 'a',
   soundLabAuditionMode: 'full',
   soundLabWorkflowStep: 'source',
+  activeWaveformDrillStep: 'anchor',
+  completedWaveformDrillSteps: [],
   activeAtlasNode: 'source',
   activeWorkbenchModuleMapId: 'source',
   soundLabAnalyzerMode: 'live',
@@ -1057,6 +1059,8 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabAbSlot = 'a';
   state.soundLabAuditionMode = 'full';
   state.soundLabWorkflowStep = focusMode.workflowStep;
+  state.activeWaveformDrillStep = 'anchor';
+  state.completedWaveformDrillSteps = [];
   state.activeAtlasNode = focusMode.atlasNode;
   state.activeWorkbenchModuleMapId = focusMode.moduleMapId;
   state.activeAdvancedModule = focusMode.advancedModule;
@@ -1101,6 +1105,8 @@ function getSoundLabOptions(optionOverrides = {}) {
     gitSync: state.soundLabGitSync,
     midiMappings: state.soundLabMidiMappings,
     activeWorkflowStep: state.soundLabWorkflowStep,
+    activeWaveformDrillStep: state.activeWaveformDrillStep,
+    completedWaveformDrillSteps: state.completedWaveformDrillSteps,
     activeAtlasNode: state.activeAtlasNode,
     activeModuleMapId: state.activeWorkbenchModuleMapId,
     analyzerMode: state.soundLabAnalyzerMode,
@@ -2079,6 +2085,64 @@ function drawSoundLabAnalyserFrame(frame) {
   });
 }
 
+function getWaveformDrillStep(stepId, model = getSoundLabModel()) {
+  const steps = model.waveformFingerprint?.drillSteps ?? [];
+  return steps.find((step) => step.id === stepId) ?? null;
+}
+
+function completeWaveformDrillStep(stepId) {
+  if (!stepId || state.completedWaveformDrillSteps.includes(stepId)) return;
+  state.completedWaveformDrillSteps = [...state.completedWaveformDrillSteps, stepId];
+}
+
+function formatWaveformDrillFeedback(step = {}) {
+  const label = [step.labelZh, step.titleZh].filter(Boolean).join(' ');
+  return `波形反推 ${label}：${step.feedbackZh ?? '听完后把证据写成一句可复刻的结论。'} 下一步：${step.nextZh ?? '回到 A/B 验证。'}`;
+}
+
+function updateWaveformDrillRuntimeUi(model = getSoundLabModel()) {
+  const steps = model.waveformFingerprint?.drillSteps ?? [];
+  const activeStep = getWaveformDrillStep(state.activeWaveformDrillStep, model) ?? steps[0] ?? {};
+  const completedSteps = new Set(state.completedWaveformDrillSteps);
+
+  document.querySelectorAll('[data-waveform-drill-step]').forEach((button) => {
+    const stepId = button.dataset.waveformDrillStep;
+    const isActive = stepId === activeStep.id;
+    const isComplete = completedSteps.has(stepId);
+    button.classList.toggle('is-active', isActive);
+    button.classList.toggle('is-complete', isComplete);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    const stateLabel = button.querySelector('.waveform-drill-state');
+    if (stateLabel) {
+      stateLabel.textContent = isActive ? '当前训练' : isComplete ? '已验证' : '待验证';
+    }
+  });
+
+  document.querySelectorAll('[data-waveform-drill-progress]').forEach((progress) => {
+    const title = progress.querySelector('strong');
+    const next = progress.querySelector('span');
+    if (title) {
+      title.textContent = `当前训练：${[activeStep.labelZh, activeStep.titleZh].filter(Boolean).join(' ')}`;
+    }
+    if (next) {
+      next.textContent = `下一步：${activeStep.nextZh ?? '先听完整 Patch，再拆开每一层验证。'}`;
+    }
+  });
+}
+
+function handleWaveformDrillStep(stepId, button) {
+  const model = getSoundLabModel();
+  const step = getWaveformDrillStep(stepId, model);
+  if (!step) return;
+  state.activeWaveformDrillStep = step.id;
+  completeWaveformDrillStep(step.id);
+  state.workbenchActionFeedback = formatWaveformDrillFeedback(step);
+  button?.classList.add('is-confirmed');
+  globalThis.setTimeout(() => button?.classList.remove('is-confirmed'), 720);
+  document.dispatchEvent(new CustomEvent('synth:flow-pulse', { detail: { from: 'waveform-drill', to: step.id } }));
+  refreshSoundLabRuntimeUi(model);
+}
+
 function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
   if (state.view !== 'soundlab') return;
   const isPlaying = Boolean(state.isSoundLabPlaying);
@@ -2107,6 +2171,7 @@ function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
   document.querySelectorAll('.workbench-feedback, .atlas-dock-status small').forEach((status) => {
     status.textContent = state.workbenchActionFeedback;
   });
+  updateWaveformDrillRuntimeUi(model);
 }
 
 function syncActiveSoundLabPatch() {
@@ -3568,6 +3633,12 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-workbench-action]').forEach((button) => {
     button.addEventListener('click', async () => {
       await handleWorkbenchAction(button.dataset.workbenchAction, button);
+    });
+  });
+
+  document.querySelectorAll('[data-waveform-drill-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+      globalThis.queueMicrotask(() => handleWaveformDrillStep(button.dataset.waveformDrillStep, button));
     });
   });
 }

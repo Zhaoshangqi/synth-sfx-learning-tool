@@ -132,6 +132,8 @@ test('buildSoundLabViewModel turns waveform detective into a playable reverse-en
   assert.ok(drill.some((step) => step.outputMode === 'comfort'));
   assert.ok(drill.every((step) => /Serum|Phase Plant|Vital/.test(step.synthZh)));
   assert.ok(drill.every((step) => /A\/B|REAPER|solo|pitch|filter|FM/i.test(step.proofZh + step.listenZh)));
+  assert.ok(drill.every((step) => step.feedbackZh && step.nextZh), 'each drill step should explain what just happened and what to do next');
+  assert.ok(drill.every((step) => /下一步|记录|验证|solo|A\/B|REAPER|filter|Brightness/i.test(step.nextZh + step.feedbackZh)));
 });
 
 test('buildSoundLabViewModel creates a beginner practice loop with one-change A/B guidance', () => {
