@@ -236,6 +236,34 @@ test('audio-space script includes layered signal particles and pointer-reactive 
   assert.match(js, /mouseInfluence/);
 });
 
+test('aether flow prompt is adapted as native signal flow without viewport flashes', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(js, /AETHER_MOUSE_RADIUS/);
+  assert.match(js, /AETHER_CONNECTION_RADIUS/);
+  assert.match(js, /drawAetherFlowWeb/);
+  assert.match(js, /aetherRepel/);
+  assert.match(js, /isAetherFlowPaused/);
+  assert.doesNotMatch(js, /ctx\.fillStyle\s*=\s*['"]black['"]/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react/);
+  assert.match(css, /Reference aether flow motion v9\.1/);
+  assert.match(css, /@keyframes ref9-aether-flow/);
+  assert.match(css, /@keyframes ref9-edge-flow/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-aether-flow/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-flow/);
+});
+
+test('direct hash routes skip the opening splash to avoid route flash', () => {
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(shellJs, /function shouldSkipSplash/);
+  assert.match(shellJs, /globalThis\.location\.hash/);
+  assert.match(shellJs, /shouldSkipSplash\(\)/);
+  assert.match(shellJs, /settleSplash\(\)/);
+});
+
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');

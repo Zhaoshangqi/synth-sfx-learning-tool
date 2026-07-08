@@ -834,6 +834,28 @@ test('renderSoundLabWorkbench renders a perceptual signature coach for realistic
   assert.match(html, /data-workbench-action="focus-controls"|data-workbench-action="focus-practice-loop"|data-workbench-action="analyze-patch"/);
 });
 
+test('renderSoundLabWorkbench shows motion bus realism in the quality card', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'energy-charge');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 76,
+    motion: 82,
+    material: 62,
+    space: 68,
+    variation: 74,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'shape',
+    layerMix: { transient: 62, body: 72, texture: 76, tail: 70 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(qualityBlock, 'quality card should render as a distinct panel');
+  assert.match(qualityBlock, /Micro Motion|生命感|微动态/);
+  assert.match(qualityBlock, /transient shield|tail bloom|wow|瞬态|尾巴/i);
+});
+
 test('renderSoundLabWorkbench renders live parameter coach with synth and REAPER guidance', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

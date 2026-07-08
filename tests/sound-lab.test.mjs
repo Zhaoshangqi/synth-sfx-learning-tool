@@ -515,6 +515,29 @@ test('sound quality exposes beginner-readable comfort bus metrics', () => {
   assert.ok(comfort.value >= 30);
 });
 
+test('sound quality explains motion bus as beginner-readable synth realism', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'energy-charge');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 76,
+    motion: 82,
+    material: 62,
+    space: 68,
+    variation: 74,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 62, body: 72, texture: 76, tail: 70 },
+  });
+
+  const motion = model.soundQuality.find((item) => item.id === 'motion-bus');
+  assert.ok(motion, 'quality card should explain the new motion bus instead of hiding it in the audio engine');
+  assert.match(motion.labelZh, /Motion|生命感|微动态/i);
+  assert.match(motion.statusZh, /微动态|呼吸|motion/i);
+  assert.match(motion.noteZh, /transient shield|tail bloom|wow|瞬态|尾巴/i);
+  assert.ok(motion.value >= 35 && motion.value <= 100);
+});
+
 test('sound lab exposes perceptual calibration for gain-matched comfortable synthesis', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

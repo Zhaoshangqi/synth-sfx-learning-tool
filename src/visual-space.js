@@ -13,6 +13,28 @@ const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: r
 
 const random = (min, max) => min + Math.random() * (max - min);
 const WAVE_ROWS = [0.28, 0.52, 0.76];
+const AETHER_MOUSE_RADIUS = 210;
+const AETHER_CONNECTION_RADIUS = 136;
+const AETHER_WEB_STRIDE = 6;
+
+function isAetherFlowPaused() {
+  return Boolean(globalThis.__synthDirectManipulating || document.body?.classList.contains('is-direct-manipulating'));
+}
+
+function aetherRepel(x, y, z = 1) {
+  if (isAetherFlowPaused()) return { x, y, force: 0 };
+  const dx = x - pointer.screenX;
+  const dy = y - pointer.screenY;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const force = Math.max(0, 1 - distance / AETHER_MOUSE_RADIUS) * z;
+  const lift = force * (10 + z * 14);
+
+  return {
+    x: x + (dx / distance) * lift,
+    y: y + (dy / distance) * lift * 0.78,
+    force,
+  };
+}
 
 function resize() {
   if (!canvas || !ctx) return;
@@ -69,14 +91,12 @@ function drawParticle(particle, time) {
   const color = particle.hue === 'violet' ? '124, 140, 255' : '110, 231, 249';
   const baseX = particle.x + parallaxX;
   const baseY = particle.y + parallaxY;
-  const pointerDistance = Math.hypot(baseX - pointer.screenX, baseY - pointer.screenY);
-  const mouseInfluence = Math.max(0, 1 - pointerDistance / 180) * particle.z;
-  const drawX = baseX + (pointer.screenX - baseX) * mouseInfluence * 0.025;
-  const drawY = baseY + (pointer.screenY - baseY) * mouseInfluence * 0.025;
+  const flow = aetherRepel(baseX, baseY, particle.z);
+  const mouseInfluence = flow.force;
 
   ctx.beginPath();
   ctx.fillStyle = `rgba(${color}, ${0.08 + pulse * 0.12 + mouseInfluence * 0.09})`;
-  ctx.arc(drawX, drawY, particle.r + mouseInfluence * 0.85, 0, Math.PI * 2);
+  ctx.arc(flow.x, flow.y, particle.r + mouseInfluence * 0.85, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -88,21 +108,55 @@ function drawConnections(time) {
       const dx = a.x - b.x;
       const dy = a.y - b.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance > 108) continue;
+      if (distance > AETHER_CONNECTION_RADIUS) continue;
 
-      const ax = a.x + pointer.x * a.z * 12;
-      const ay = a.y + pointer.y * a.z * 8;
-      const bx = b.x + pointer.x * b.z * 12;
-      const by = b.y + pointer.y * b.z * 8;
-      const midpointDistance = Math.hypot((ax + bx) * 0.5 - pointer.screenX, (ay + by) * 0.5 - pointer.screenY);
-      const mouseInfluence = Math.max(0, 1 - midpointDistance / 220);
+      const aFlow = aetherRepel(a.x + pointer.x * a.z * 12, a.y + pointer.y * a.z * 8, a.z);
+      const bFlow = aetherRepel(b.x + pointer.x * b.z * 12, b.y + pointer.y * b.z * 8, b.z);
+      const midpointDistance = Math.hypot((aFlow.x + bFlow.x) * 0.5 - pointer.screenX, (aFlow.y + bFlow.y) * 0.5 - pointer.screenY);
+      const mouseInfluence = Math.max(aFlow.force, bFlow.force, Math.max(0, 1 - midpointDistance / AETHER_MOUSE_RADIUS));
       const shimmer = 0.012 + Math.sin(time * 0.0012 + i) * 0.006;
 
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(110, 231, 249, ${0.03 * (1 - distance / 108) + mouseInfluence * 0.04 + shimmer})`;
+      ctx.strokeStyle = `rgba(110, 231, 249, ${0.026 * (1 - distance / AETHER_CONNECTION_RADIUS) + mouseInfluence * 0.048 + shimmer})`;
       ctx.lineWidth = 0.7;
-      ctx.moveTo(ax, ay);
-      ctx.lineTo(bx, by);
+      ctx.moveTo(aFlow.x, aFlow.y);
+      ctx.lineTo(bFlow.x, bFlow.y);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawAetherFlowWeb(time) {
+  if (isAetherFlowPaused()) return;
+  const stride = width < 760 ? AETHER_WEB_STRIDE + 4 : AETHER_WEB_STRIDE;
+  const radius = width < 760 ? AETHER_CONNECTION_RADIUS * 0.82 : AETHER_CONNECTION_RADIUS;
+
+  for (let i = 0; i < particles.length; i += stride) {
+    const a = particles[i];
+    if (!a) continue;
+    const aFlow = aetherRepel(a.x + pointer.x * a.z * 20, a.y + pointer.y * a.z * 14, a.z);
+
+    for (let j = i + stride; j < particles.length; j += stride * 2) {
+      const b = particles[j];
+      if (!b) continue;
+      const bFlow = aetherRepel(b.x + pointer.x * b.z * 20, b.y + pointer.y * b.z * 14, b.z);
+      const distance = Math.hypot(aFlow.x - bFlow.x, aFlow.y - bFlow.y);
+      if (distance > radius) continue;
+
+      const influence = Math.max(aFlow.force, bFlow.force);
+      const alpha = Math.min(0.12, 0.018 * (1 - distance / radius) + influence * 0.082);
+      if (alpha < 0.006) continue;
+
+      const curve = Math.sin(time * 0.0007 + i * 0.31 + j * 0.07) * 14 * (0.5 + influence);
+      const midX = (aFlow.x + bFlow.x) * 0.5 + pointer.x * curve;
+      const midY = (aFlow.y + bFlow.y) * 0.5 + pointer.y * curve * 0.72;
+      const hue = influence > 0.18 ? '167, 139, 250' : '117, 197, 222';
+
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${hue}, ${alpha})`;
+      ctx.lineWidth = 0.55 + influence * 0.58;
+      ctx.moveTo(aFlow.x, aFlow.y);
+      ctx.quadraticCurveTo(midX, midY, bFlow.x, bFlow.y);
       ctx.stroke();
     }
   }
@@ -253,8 +307,9 @@ function tick(time = 0) {
     drawParticle(particle, time);
   });
   drawSignalParticles(time);
-  drawTransitionParticles(time);
   drawConnections(time);
+  drawAetherFlowWeb(time);
+  if (!isAetherFlowPaused()) drawTransitionParticles(time);
 
   if (!prefersReducedMotion) frameId = globalThis.requestAnimationFrame(tick);
 }

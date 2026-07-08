@@ -18,9 +18,14 @@ function settleSplash() {
   splash?.classList.add('is-done');
 }
 
+function shouldSkipSplash() {
+  const hash = globalThis.location.hash.replace(/^#/, '').trim();
+  return Boolean(hash && hash !== 'dashboard');
+}
+
 function initSplash() {
   if (!splash) return;
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion || shouldSkipSplash()) {
     settleSplash();
     return;
   }
