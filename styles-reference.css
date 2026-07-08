@@ -1610,3 +1610,184 @@ body.is-direct-manipulating .visual-burger-btn::before {
     animation: none !important;
   }
 }
+
+/* Reference aether magnetic flow v9.7 */
+.content.is-view-switching {
+  position: relative !important;
+}
+
+.content.is-view-switching::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: 34px;
+  background:
+    linear-gradient(
+      105deg,
+      transparent 0%,
+      rgba(117, 197, 222, 0) 22%,
+      rgba(117, 197, 222, 0.18) 42%,
+      rgba(244, 241, 232, 0.14) 50%,
+      rgba(167, 139, 250, 0.12) 58%,
+      rgba(94, 234, 212, 0.08) 68%,
+      transparent 86%
+    );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate3d(-18%, 0, 0) scaleX(0.96);
+  animation: ref9-route-current 740ms cubic-bezier(0.18, 0.82, 0.22, 1) both;
+}
+
+.content :where(
+  .dashboard-learning-console,
+  .dashboard-module-directory,
+  .dashboard-practice-prescription,
+  .learning-flow,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card,
+  .workbench-panel,
+  .professional-module-panel,
+  .sound-quality-coach-panel,
+  .target-match-coach-panel,
+  .listening-compass-panel,
+  .ear-triage-panel
+)::before {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(117, 197, 222, 0.08) 28%,
+      rgba(244, 241, 232, 0.15) 48%,
+      rgba(167, 139, 250, 0.08) 62%,
+      transparent 86%
+    ),
+    linear-gradient(90deg, rgba(117, 197, 222, 0.08), rgba(94, 234, 212, 0.04), rgba(167, 139, 250, 0.07));
+  background-size: 310% 100%, 116px 100%;
+  animation: ref9-magnetic-edge 10.5s linear infinite;
+}
+
+.content :where(
+  .dashboard-learning-console,
+  .dashboard-module-directory,
+  .dashboard-practice-prescription,
+  .learning-flow,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card,
+  .workbench-panel,
+  .professional-module-panel,
+  .sound-quality-coach-panel,
+  .target-match-coach-panel,
+  .listening-compass-panel,
+  .ear-triage-panel
+):hover::before,
+.content :where(
+  .dashboard-learning-console,
+  .dashboard-module-directory,
+  .dashboard-practice-prescription,
+  .learning-flow,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card,
+  .workbench-panel,
+  .professional-module-panel,
+  .sound-quality-coach-panel,
+  .target-match-coach-panel,
+  .listening-compass-panel,
+  .ear-triage-panel
+):focus-within::before {
+  animation-duration: 5.2s;
+  opacity: 0.34;
+}
+
+body.is-direct-manipulating .content.is-view-switching::after {
+  animation-name: ref9-route-current;
+  animation-play-state: paused !important;
+  opacity: 0.06 !important;
+}
+
+body.is-direct-manipulating .content :where(
+  .dashboard-learning-console,
+  .dashboard-module-directory,
+  .dashboard-practice-prescription,
+  .learning-flow,
+  .module-directory-card,
+  .daily-video-card,
+  .source-card,
+  .interactive-lab-card,
+  .micro-lesson-card,
+  .workbench-panel,
+  .professional-module-panel,
+  .sound-quality-coach-panel,
+  .target-match-coach-panel,
+  .listening-compass-panel,
+  .ear-triage-panel
+)::before {
+  animation-name: ref9-magnetic-edge;
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+@keyframes ref9-route-current {
+  0% {
+    opacity: 0;
+    transform: translate3d(-22%, 0, 0) scaleX(0.94);
+  }
+  28% {
+    opacity: 0.48;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(18%, 0, 0) scaleX(1.02);
+  }
+}
+
+@keyframes ref9-magnetic-edge {
+  0% {
+    background-position: 0% 50%, 0 50%;
+  }
+  100% {
+    background-position: 100% 50%, 116px 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content.is-view-switching::after {
+    animation-name: ref9-route-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    opacity: 0 !important;
+  }
+
+  .content :where(
+    .dashboard-learning-console,
+    .dashboard-module-directory,
+    .dashboard-practice-prescription,
+    .learning-flow,
+    .module-directory-card,
+    .daily-video-card,
+    .source-card,
+    .interactive-lab-card,
+    .micro-lesson-card,
+    .workbench-panel,
+    .professional-module-panel,
+    .sound-quality-coach-panel,
+    .target-match-coach-panel,
+    .listening-compass-panel,
+    .ear-triage-panel
+  )::before {
+    animation-name: ref9-magnetic-edge;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}

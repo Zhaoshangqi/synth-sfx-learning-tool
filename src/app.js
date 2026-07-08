@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260708-aether-pressure';
+} from './sound-lab-model.js?v=20260708-aether-flow';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260708-aether-pressure';
+import { createLabAudioPlayer } from './audio-player.js?v=20260708-aether-flow';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-aether-pressure';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-aether-flow';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260708-aether-pressure';
+} from './render.js?v=20260708-aether-flow';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
