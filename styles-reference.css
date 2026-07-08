@@ -2406,3 +2406,60 @@ body.is-direct-manipulating .sound-lab-workbench :where(
     animation-play-state: paused !important;
   }
 }
+
+/* Reference aether constellation mesh v9.11
+   Adapts the supplied Aether Flow particle-network idea into the existing
+   native canvas/CSS stack: connected, slow, cursor-reactive, and drag-safe. */
+
+.audio-space::before {
+  content: "";
+  position: fixed;
+  inset: -16%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at calc(42% + var(--space-x, 0) * 5%) calc(34% + var(--space-y, 0) * 5%), rgba(117, 197, 222, 0.14), transparent 0 16%, transparent 28%),
+    radial-gradient(circle at calc(72% - var(--space-x, 0) * 4%) calc(70% - var(--space-y, 0) * 4%), rgba(167, 139, 250, 0.12), transparent 0 15%, transparent 30%),
+    repeating-linear-gradient(115deg, transparent 0 34px, rgba(117, 197, 222, 0.026) 35px, transparent 37px);
+  opacity: 0.46;
+  mix-blend-mode: screen;
+  transform: translate3d(calc(var(--space-x, 0) * 10px), calc(var(--space-y, 0) * 8px), 0) scale(1.02);
+  filter: blur(0.2px) saturate(1.12);
+  animation: ref9-constellation-drift 34s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .audio-space::before {
+  animation-play-state: paused !important;
+  opacity: 0.18 !important;
+  transition: none !important;
+}
+
+.signal-atlas-console .analyzer-coach-panel,
+.sound-lab-workbench .analyzer-coach-panel {
+  border-color: rgba(117, 197, 222, 0.22) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(117, 197, 222, 0.12), transparent 36%),
+    radial-gradient(circle at 88% 18%, rgba(167, 139, 250, 0.1), transparent 34%),
+    linear-gradient(135deg, rgba(13, 17, 27, 0.94), rgba(18, 23, 35, 0.92)) !important;
+  color: var(--ref-paper, #f4f1e8) !important;
+}
+
+@keyframes ref9-constellation-drift {
+  0% {
+    background-position: 0% 48%, 100% 52%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.02);
+  }
+  100% {
+    background-position: 100% 52%, 0% 48%, 180px 70px;
+    transform: translate3d(calc(var(--space-x, 0) * 14px), calc(var(--space-y, 0) * 10px), 0) scale(1.045);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space::before {
+    animation-name: ref9-constellation-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}

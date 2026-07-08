@@ -23668,3 +23668,189 @@ body.is-direct-manipulating .audio-space {
     linear-gradient(90deg, rgba(110, 231, 249, 0.95), rgba(94, 234, 212, 0.42), rgba(167, 139, 250, 0.18)) !important;
 }
 
+/* Analyzer Coach v5.5
+   Turns the live waveform and spectrum into beginner-readable parameter moves. */
+
+.analyzer-coach-panel {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 14px;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  border: 1px solid rgba(117, 197, 222, 0.24);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(244, 241, 232, 0.09), rgba(117, 197, 222, 0.04)),
+    rgba(15, 17, 19, 0.92);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(244, 241, 232, 0.08);
+}
+
+.analyzer-coach-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, transparent 0 28%, rgba(117, 197, 222, 0.16) 44%, rgba(167, 139, 250, 0.11) 54%, transparent 72%),
+    radial-gradient(circle at 82% 18%, rgba(94, 234, 212, 0.12), transparent 0 32%);
+  background-size: 260% 100%, auto;
+  opacity: 0.52;
+  animation: analyzer-coach-current 18s linear infinite;
+}
+
+.analyzer-coach-head strong,
+.analyzer-coach-next strong,
+.analyzer-coach-band strong,
+.analyzer-coach-band dt,
+.analyzer-coach-band output {
+  color: var(--showcase-paper, #f4f1e8) !important;
+}
+
+.analyzer-coach-head span,
+.analyzer-coach-rule,
+.analyzer-coach-next span,
+.analyzer-coach-next small {
+  color: rgba(244, 241, 232, 0.74) !important;
+}
+
+.analyzer-coach-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 14px;
+  background: rgba(244, 241, 232, 0.055);
+}
+
+.analyzer-coach-next > div {
+  display: grid;
+  gap: 4px;
+}
+
+.analyzer-coach-next button,
+.analyzer-coach-band button {
+  min-height: 36px;
+  border: 1px solid rgba(117, 197, 222, 0.32);
+  border-radius: 999px;
+  background: rgba(117, 197, 222, 0.12);
+  color: var(--showcase-paper, #f4f1e8) !important;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.analyzer-coach-next button:hover,
+.analyzer-coach-band button:hover,
+.analyzer-coach-next button:focus-visible,
+.analyzer-coach-band button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(117, 197, 222, 0.58);
+  background: rgba(117, 197, 222, 0.18);
+  box-shadow: 0 14px 34px rgba(117, 197, 222, 0.16);
+}
+
+.analyzer-coach-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.analyzer-coach-band {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 14px;
+  background: rgba(244, 241, 232, 0.055);
+}
+
+.analyzer-coach-band-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  align-items: start;
+}
+
+.analyzer-coach-band-top span {
+  grid-column: 1 / -1;
+  color: rgba(117, 197, 222, 0.9) !important;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.analyzer-coach-band-top output {
+  min-width: 28px;
+  text-align: right;
+  font-size: 12px;
+}
+
+.analyzer-coach-meter {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(244, 241, 232, 0.11);
+}
+
+.analyzer-coach-meter i {
+  display: block;
+  width: var(--coach-value, 50%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(117, 197, 222, 0.92), rgba(94, 234, 212, 0.76), rgba(167, 139, 250, 0.62));
+}
+
+.analyzer-coach-band dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.analyzer-coach-band dt {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.analyzer-coach-band :where(p, small, dd) {
+  margin: 0;
+  color: rgba(244, 241, 232, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.46;
+}
+
+@keyframes analyzer-coach-current {
+  from {
+    background-position: 0% 50%, 0 0;
+  }
+  to {
+    background-position: 100% 50%, 0 0;
+  }
+}
+
+body.is-direct-manipulating .analyzer-coach-panel::before {
+  animation-play-state: paused !important;
+  opacity: 0.18 !important;
+}
+
+@media (max-width: 1180px) {
+  .analyzer-coach-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .analyzer-coach-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analyzer-coach-next {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

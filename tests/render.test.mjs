@@ -1155,3 +1155,30 @@ test('renderSoundLabWorkbench exposes advanced modules and live analyzer canvase
   assert.match(libraryHtml, /data-midi-learn/);
   assert.match(libraryHtml, /data-export-name-pattern/);
 });
+
+test('renderSoundLabWorkbench renders analyzer coach beside live waveform and spectrum', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 86,
+    motion: 42,
+    material: 88,
+    space: 66,
+    variation: 28,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    engineMode: 'hq',
+    workletReady: true,
+  });
+
+  assert.match(html, /analyzer-coach-panel/);
+  assert.match(html, /data-analyzer-coach-band="transient"/);
+  assert.match(html, /data-analyzer-coach-band="body"/);
+  assert.match(html, /data-analyzer-coach-band="air"/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /Serum|Phase Plant|Vital/);
+  assert.match(html, /REAPER|A\/B/);
+});

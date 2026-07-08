@@ -10,6 +10,7 @@ let aetherCurrentPackets = [];
 let aetherFlowNodes = [];
 let aetherMagneticLinks = [];
 let aetherOrbitalFields = [];
+let aetherConstellationParticles = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -34,6 +35,9 @@ const AETHER_MAGNETIC_LINK_COUNT = 11;
 const AETHER_MAGNETIC_SEGMENTS = 32;
 const AETHER_ORBITAL_FIELD_COUNT = 5;
 const AETHER_ORBITAL_SEGMENTS = 92;
+const AETHER_CONSTELLATION_COUNT = 78;
+const AETHER_CONSTELLATION_RADIUS = 164;
+const AETHER_CONSTELLATION_STRIDE = 3;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -150,6 +154,19 @@ function createAetherOrbitalField(index) {
   };
 }
 
+function createAetherConstellationParticle(index) {
+  return {
+    x: random(0, width),
+    y: random(0, height),
+    vx: random(-0.038, 0.038),
+    vy: random(-0.028, 0.028),
+    z: random(0.28, 0.96),
+    r: random(0.55, 1.45),
+    phase: random(0, Math.PI * 2),
+    color: index % 5 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function spawnCursorWake(x, y, time = performance.now()) {
   if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
   const dx = x - cursorWakeAnchor.x;
@@ -262,6 +279,8 @@ function resize() {
   aetherMagneticLinks = Array.from({ length: magneticLinkCount }, (_, index) => createAetherMagneticLink(index));
   const orbitalFieldCount = width < 760 ? 3 : AETHER_ORBITAL_FIELD_COUNT;
   aetherOrbitalFields = Array.from({ length: orbitalFieldCount }, (_, index) => createAetherOrbitalField(index));
+  const constellationCount = Math.min(AETHER_CONSTELLATION_COUNT, Math.max(width < 760 ? 24 : 44, Math.floor((width * height) / 23000)));
+  aetherConstellationParticles = Array.from({ length: constellationCount }, (_, index) => createAetherConstellationParticle(index));
   cursorWakeParticles = [];
   cursorWakeAnchor.x = pointer.screenX;
   cursorWakeAnchor.y = pointer.screenY;
@@ -640,6 +659,87 @@ function drawAetherOrbitalCurrents(time) {
   ctx.restore();
 }
 
+function drawAetherConstellationMesh(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherConstellationParticles.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  const driftScale = 0.62 + Math.sin(time * 0.00018) * 0.08;
+  const flowNodes = aetherConstellationParticles.map((particle) => {
+    particle.x += particle.vx * (0.42 + particle.z) * driftScale;
+    particle.y += particle.vy * (0.36 + particle.z) * driftScale;
+    particle.phase += 0.0018;
+
+    if (particle.x < -26) particle.x = width + 26;
+    if (particle.x > width + 26) particle.x = -26;
+    if (particle.y < -26) particle.y = height + 26;
+    if (particle.y > height + 26) particle.y = -26;
+
+    const currentX = Math.sin(time * 0.00016 + particle.phase) * 16 * particle.z;
+    const currentY = Math.cos(time * 0.00013 + particle.phase * 0.74) * 11 * particle.z;
+    const flow = aetherRepel(
+      particle.x + currentX + pointer.x * particle.z * 18,
+      particle.y + currentY + pointer.y * particle.z * 12,
+      particle.z,
+    );
+
+    particle.viewX = flow.x;
+    particle.viewY = flow.y;
+    particle.force = flow.force;
+    return particle;
+  });
+
+  const radius = width < 760 ? AETHER_CONSTELLATION_RADIUS * 0.72 : AETHER_CONSTELLATION_RADIUS;
+  for (let i = 0; i < flowNodes.length; i += AETHER_CONSTELLATION_STRIDE) {
+    const a = flowNodes[i];
+    for (let j = i + AETHER_CONSTELLATION_STRIDE; j < flowNodes.length; j += AETHER_CONSTELLATION_STRIDE) {
+      const b = flowNodes[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      if (distance > radius) continue;
+
+      const midpointDistance = Math.hypot(
+        (a.viewX + b.viewX) * 0.5 - pointer.screenX,
+        (a.viewY + b.viewY) * 0.5 - pointer.screenY,
+      );
+      const pointerBoost = Math.max(0, 1 - midpointDistance / (AETHER_MOUSE_RADIUS * 1.18)) * pointer.force;
+      const shimmer = 0.54 + Math.sin(time * 0.001 + a.phase + b.phase) * 0.2;
+      const alpha = Math.min(0.15, 0.018 * (1 - distance / radius) + pointerBoost * 0.1 + shimmer * 0.012);
+      if (alpha < 0.01) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.48, `rgba(255, 255, 255, ${alpha * 0.55})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.34 + pointerBoost * 0.72;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * 18,
+        (a.viewY + b.viewY) * 0.5 + pointer.y * 12,
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+
+  flowNodes.forEach((particle) => {
+    const pulse = 0.5 + Math.sin(time * 0.0016 + particle.phase) * 0.22 + particle.force * 0.3;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${0.075 + pulse * 0.1})`;
+    ctx.shadowColor = `rgba(${particle.color}, ${0.08 + particle.force * 0.14})`;
+    ctx.shadowBlur = 5 + particle.z * 7;
+    ctx.arc(particle.viewX, particle.viewY, particle.r + particle.force * 0.9, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -838,6 +938,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
+  if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
   if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
   if (!isAetherFlowPaused()) drawAetherMagneticLinks(time);
   particles.forEach((particle) => {

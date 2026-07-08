@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260708-aether-orbit/);
-  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
+  assert.match(html, /visual-space\.js\?v=20260709-aether-mesh/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -1844,6 +1844,21 @@ test('product stability pass contains overflow, menu hit areas, and Sound Lab co
   assert.match(css, /\.signal-atlas-console \.range-shell,[\s\S]*\.synth-workbench-layout \.range-shell\s*\{[\s\S]*max-width:\s*100%/);
 });
 
+test('sound lab analyzer coach is readable and tied to live analysis UI', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /renderAnalyzerCoachPanel/);
+  assert.match(renderJs, /analyzer-coach-panel/);
+  assert.match(renderJs, /data-analyzer-coach-band/);
+  assert.match(renderJs, /renderWorkbenchWaveform\(model\)[\s\S]*renderWorkbenchSpectrum\(model, options\.analyzerMode\)[\s\S]*renderAnalyzerCoachPanel\(model\)/);
+  assert.match(css, /\.analyzer-coach-panel\s*\{/);
+  assert.match(css, /\.analyzer-coach-grid\s*\{/);
+  assert.match(css, /\.analyzer-coach-band\s*\{/);
+  assert.match(css, /\.analyzer-coach-band :where\(p,\s*small,\s*dd\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
+  assert.match(css, /@media \(max-width: 980px\)[\s\S]*\.analyzer-coach-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
 test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const stabilityIndex = css.indexOf('Product stability pass v5.4');
@@ -1932,8 +1947,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -1953,8 +1968,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260708-ear-chain/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-orbit/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -1992,6 +2007,26 @@ test('aether flow prompt adds decaying pointer flow and control micro-currents',
   assert.match(css, /\.sound-lab-workbench :where\([\s\S]*\.engine-mode-button[\s\S]*\)::after/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-control-current/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-control-current/);
+});
+
+test('aether flow prompt adds a connected constellation mesh without canvas flashes', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherConstellationParticles/);
+  assert.match(visualSpaceJs, /AETHER_CONSTELLATION_RADIUS/);
+  assert.match(visualSpaceJs, /createAetherConstellationParticle/);
+  assert.match(visualSpaceJs, /drawAetherConstellationMesh/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherConstellationMesh\(time\)/);
+  assert.doesNotMatch(visualSpaceJs, /ctx\.fillStyle\s*=\s*['"]black['"]/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react/);
+
+  assert.match(css, /Reference aether constellation mesh v9\.11/);
+  assert.match(css, /\.audio-space::before\s*\{[\s\S]*animation:\s*ref9-constellation-drift/);
+  assert.match(css, /@keyframes ref9-constellation-drift/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.audio-space::before[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-constellation-drift/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

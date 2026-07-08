@@ -86,6 +86,30 @@ test('buildSoundLabViewModel exposes a live parameter coach for beginner control
   assert.ok(model.parameterCoach.checklist.length >= 3);
 });
 
+test('buildSoundLabViewModel exposes an analyzer coach that turns spectrum into parameter moves', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 86,
+    motion: 42,
+    material: 88,
+    space: 66,
+    variation: 28,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+  });
+
+  assert.equal(model.analyzerCoach.titleZh, '频谱 / 波形读图教练');
+  assert.ok(model.analyzerCoach.bands.length >= 4);
+  assert.ok(model.analyzerCoach.bands.some((band) => band.id === 'transient' && band.parameterId === 'transient'));
+  assert.ok(model.analyzerCoach.bands.some((band) => band.id === 'body' && band.parameterId === 'material'));
+  assert.ok(model.analyzerCoach.bands.some((band) => band.id === 'air' && band.parameterId === 'brightness'));
+  assert.ok(model.analyzerCoach.bands.every((band) => band.listenZh && band.synthZh && band.reaperZh));
+  assert.match(model.analyzerCoach.beginnerRuleZh, /先看时间|再看频段|最后 A\/B/);
+  assert.match(model.analyzerCoach.nextMove.reaperNoteZh, /REAPER|A\/B|spectrum/i);
+  assert.ok(model.analyzerCoach.nextMove.parameterId);
+});
+
 test('buildSoundLabViewModel explains the basic waveform ingredients behind a patch', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {
