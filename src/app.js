@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-xy-pad';
+} from './sound-lab-model.js?v=20260709-aether-silk';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-xy-pad';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-aether-silk';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-xy-pad';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-aether-silk';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-xy-pad';
+} from './render.js?v=20260709-aether-silk';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -403,6 +403,9 @@ let quietRenderFrame = 0;
 let lastSynthAudioPulseAt = 0;
 let activeRangeInput = null;
 let activeXyPadPointerId = null;
+let activeFxSlotId = null;
+let activeFxDropTargetId = null;
+let activeFxDropPosition = 'before';
 let directManipulationTimer = 0;
 let midiAccess = null;
 let analyzerCoachRuntimeSnapshot = null;
@@ -3303,16 +3306,108 @@ function updateSoundLabModRoute(routeId, value) {
   syncSoundLabPatchSoon();
 }
 
-function moveFxSlot(slotId, direction) {
+function normalizeFxOrder(order = state.soundLabFxOrder) {
+  const knownIds = new Set(SOUND_LAB_FX_ORDER);
+  const normalized = order.filter((id) => knownIds.has(id));
+  SOUND_LAB_FX_ORDER.forEach((id) => {
+    if (!normalized.includes(id)) normalized.push(id);
+  });
+  return normalized;
+}
+
+function fxChainOrderLabel(order = state.soundLabFxOrder) {
+  const slots = getSoundLabModel().fxChain?.slots ?? [];
+  const labels = Object.fromEntries(slots.map((slot) => [slot.id, slot.labelZh]));
+  return normalizeFxOrder(order).map((id) => labels[id] ?? id).join(' -> ');
+}
+
+function refreshFxChainRuntimeUi(list = document.querySelector('[data-fx-chain-list]')) {
+  if (!list) return;
+  const order = normalizeFxOrder(state.soundLabFxOrder);
+  const slots = new Map([...list.querySelectorAll('[data-fx-chain-slot]')].map((slot) => [slot.dataset.fxChainSlot, slot]));
+  order.forEach((slotId, index) => {
+    const slot = slots.get(slotId);
+    if (!slot) return;
+    list.append(slot);
+    slot.dataset.fxOrder = String(index + 1);
+    slot.setAttribute('aria-posinset', String(index + 1));
+    slot.setAttribute('aria-setsize', String(order.length));
+    slot.querySelector('[data-fx-index]')?.replaceChildren(document.createTextNode(String(index + 1)));
+  });
+  list.dataset.fxOrder = order.join('>');
+}
+
+function applyFxChainOrder(order, options = {}) {
+  state.soundLabFxOrder = normalizeFxOrder(order);
+  syncActiveSoundLabPatch();
+  refreshFxChainRuntimeUi(options.list);
+  state.workbenchActionFeedback = `FX Chain: ${fxChainOrderLabel(state.soundLabFxOrder)}。先听 transient 是否保留，再判断空间和尾巴是否更清楚。`;
+  refreshSoundLabRuntimeUi();
+  if (options.focusSlotId) {
+    document.querySelector(`[data-fx-chain-slot="${escapeSelector(options.focusSlotId)}"]`)?.focus?.({ preventScroll: true });
+  }
+}
+
+function moveFxSlot(slotId, direction, options = {}) {
   const order = [...state.soundLabFxOrder];
   const index = order.indexOf(slotId);
   const nextIndex = Math.max(0, Math.min(order.length - 1, index + direction));
   if (index < 0 || index === nextIndex) return;
   const [slot] = order.splice(index, 1);
   order.splice(nextIndex, 0, slot);
-  state.soundLabFxOrder = order;
-  syncActiveSoundLabPatch();
-  renderSameView();
+  applyFxChainOrder(order, { ...options, focusSlotId: slotId });
+}
+
+function reorderFxSlot(slotId, targetSlotId, position = 'before', options = {}) {
+  if (!slotId || !targetSlotId || slotId === targetSlotId) return false;
+  const order = normalizeFxOrder(state.soundLabFxOrder).filter((id) => id !== slotId);
+  const targetIndex = order.indexOf(targetSlotId);
+  if (targetIndex < 0) return false;
+  const insertIndex = targetIndex + (position === 'after' ? 1 : 0);
+  order.splice(insertIndex, 0, slotId);
+  const didChange = order.join('>') !== normalizeFxOrder(state.soundLabFxOrder).join('>');
+  if (!didChange) return false;
+  applyFxChainOrder(order, { ...options, focusSlotId: slotId });
+  return true;
+}
+
+function clearFxSlotDropMarkers(list = document.querySelector('[data-fx-chain-list]')) {
+  list?.querySelectorAll('.is-drop-before, .is-drop-after').forEach((slot) => {
+    slot.classList.remove('is-drop-before', 'is-drop-after');
+  });
+  if (list) delete list.dataset.fxDropTarget;
+}
+
+function setFxSlotDropMarker(slot, position = 'before') {
+  const list = slot?.closest('[data-fx-chain-list]');
+  if (!slot || !list) return;
+  clearFxSlotDropMarkers(list);
+  slot.classList.add(position === 'after' ? 'is-drop-after' : 'is-drop-before');
+  list.dataset.fxDropTarget = `${slot.dataset.fxChainSlot}:${position}`;
+  activeFxDropTargetId = slot.dataset.fxChainSlot;
+  activeFxDropPosition = position;
+}
+
+function fxDropPositionForEvent(slot, event) {
+  const rect = slot.getBoundingClientRect();
+  return event.clientY > rect.top + rect.height / 2 ? 'after' : 'before';
+}
+
+function setFxSlotDragging(slot, isDragging) {
+  const list = slot?.closest('[data-fx-chain-list]');
+  slot?.classList.toggle('is-dragging', Boolean(isDragging));
+  slot?.setAttribute('aria-grabbed', isDragging ? 'true' : 'false');
+  list?.classList.toggle('is-reordering', Boolean(isDragging));
+}
+
+function finishFxSlotDrag(slot) {
+  const list = slot?.closest('[data-fx-chain-list]') ?? document.querySelector('[data-fx-chain-list]');
+  clearFxSlotDropMarkers(list);
+  if (slot) setFxSlotDragging(slot, false);
+  activeFxSlotId = null;
+  activeFxDropTargetId = null;
+  activeFxDropPosition = 'before';
+  setDirectManipulation(false);
 }
 
 function setXyPadDragging(pad, isDragging) {
@@ -3742,7 +3837,57 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('[data-fx-move]').forEach((button) => {
     button.addEventListener('click', () => {
-      moveFxSlot(button.dataset.fxMove, Number(button.dataset.fxDirection));
+      moveFxSlot(button.dataset.fxMove, Number(button.dataset.fxDirection), {
+        list: button.closest('[data-fx-chain-list]'),
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-fx-chain-slot]').forEach((slot) => {
+    slot.addEventListener('dragstart', (event) => {
+      activeFxSlotId = slot.dataset.fxChainSlot;
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', activeFxSlotId);
+      }
+      setFxSlotDragging(slot, true);
+      setDirectManipulation(true);
+    });
+
+    slot.addEventListener('dragover', (event) => {
+      if (!activeFxSlotId || activeFxSlotId === slot.dataset.fxChainSlot) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+      setFxSlotDropMarker(slot, fxDropPositionForEvent(slot, event));
+    });
+
+    slot.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const slotId = activeFxSlotId || event.dataTransfer?.getData('text/plain');
+      const didReorder = reorderFxSlot(slotId, slot.dataset.fxChainSlot, activeFxDropPosition, {
+        list: slot.closest('[data-fx-chain-list]'),
+      });
+      if (!didReorder) clearFxSlotDropMarkers(slot.closest('[data-fx-chain-list]'));
+    });
+
+    slot.addEventListener('dragend', () => {
+      finishFxSlotDrag(slot);
+    });
+
+    slot.addEventListener('keydown', (event) => {
+      const directionByKey = {
+        ArrowUp: -1,
+        ArrowLeft: -1,
+        ArrowDown: 1,
+        ArrowRight: 1,
+      };
+      if (!(event.key in directionByKey)) return;
+      event.preventDefault();
+      setDirectManipulation(true);
+      moveFxSlot(slot.dataset.fxChainSlot, directionByKey[event.key], {
+        list: slot.closest('[data-fx-chain-list]'),
+      });
+      globalThis.setTimeout(() => setDirectManipulation(false), 120);
     });
   });
 

@@ -24608,3 +24608,66 @@ body.is-direct-manipulating .xy-pad.is-dragging {
   filter: none !important;
 }
 
+/* FX Chain professional reorder v9.26 */
+.signal-atlas-console .fx-chain-list,
+.synth-workbench-layout .fx-chain-list {
+  position: relative;
+}
+
+.signal-atlas-console .fx-chain-list.is-reordering,
+.synth-workbench-layout .fx-chain-list.is-reordering {
+  cursor: grabbing !important;
+}
+
+.signal-atlas-console .fx-chain-slot,
+.synth-workbench-layout .fx-chain-slot {
+  position: relative;
+  user-select: none !important;
+}
+
+.signal-atlas-console .fx-chain-slot:focus-visible,
+.synth-workbench-layout .fx-chain-slot:focus-visible {
+  border-color: rgba(94, 234, 212, 0.56) !important;
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12) !important;
+}
+
+.signal-atlas-console .fx-chain-slot.is-dragging,
+.synth-workbench-layout .fx-chain-slot.is-dragging,
+.signal-atlas-console .fx-chain-slot[aria-grabbed="true"],
+.synth-workbench-layout .fx-chain-slot[aria-grabbed="true"] {
+  cursor: grabbing !important;
+  opacity: 0.72;
+  border-color: rgba(94, 234, 212, 0.5) !important;
+  background: rgba(94, 234, 212, 0.12) !important;
+  box-shadow: 0 12px 28px rgba(8, 12, 24, 0.2) !important;
+}
+
+.signal-atlas-console .fx-chain-slot.is-drop-before::before,
+.signal-atlas-console .fx-chain-slot.is-drop-after::after,
+.synth-workbench-layout .fx-chain-slot.is-drop-before::before,
+.synth-workbench-layout .fx-chain-slot.is-drop-after::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(94, 234, 212, 0.12), rgba(94, 234, 212, 0.95), rgba(124, 140, 255, 0.7));
+  box-shadow: 0 0 14px rgba(94, 234, 212, 0.32);
+}
+
+.signal-atlas-console .fx-chain-slot.is-drop-before::before,
+.synth-workbench-layout .fx-chain-slot.is-drop-before::before {
+  top: -5px;
+}
+
+.signal-atlas-console .fx-chain-slot.is-drop-after::after,
+.synth-workbench-layout .fx-chain-slot.is-drop-after::after {
+  bottom: -5px;
+}
+
+body.is-direct-manipulating .fx-chain-slot.is-dragging {
+  transition: none !important;
+  filter: none !important;
+}
+
