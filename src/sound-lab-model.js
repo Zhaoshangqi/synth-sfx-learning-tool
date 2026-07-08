@@ -463,6 +463,12 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     widthTrim: clamp(0.03 + space * 0.08 + tailMix * 0.05 + studioBonus * 0.12, 0.02, 0.24),
     tailDuck: clamp(0.05 + transientMix * 0.14 + tailMix * 0.08 + material * 0.04 + studioBonus * 0.12, 0.04, 0.3),
   };
+  const motionBus = {
+    microDynamics: clamp(0.032 + motion * 0.052 + variation * 0.035 + studioBonus * 0.16, 0.02, 0.17),
+    transientShield: clamp(0.055 + transientMix * 0.18 + material * 0.055 + studioBonus * 0.22, 0.035, 0.34),
+    tailBloom: clamp(0.035 + space * 0.11 + tailMix * 0.08 + motion * 0.035 + studioBonus * 0.16, 0.02, 0.32),
+    wowFlutter: clamp(0.0015 + variation * 0.006 + motion * 0.0035 + studioBonus * 0.018, 0.001, 0.038),
+  };
 
   return {
     glue: clamp(0.12 + material * 0.22 + motion * 0.09 + studioBonus, 0.08, 0.62),
@@ -471,6 +477,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     transientHold: clamp(0.16 + transientMix * 0.3 + material * 0.13, 0.12, 0.72),
     bodyGain: clamp(0.98 - studioBonus * 0.12 - material * 0.05, 0.86, 1),
     comfortBus,
+    motionBus,
   };
 }
 
@@ -499,6 +506,12 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
         widthTrim: 0,
         tailDuck: 0,
       },
+      motionBus: {
+        microDynamics: 0,
+        transientShield: 0,
+        tailBloom: 0,
+        wowFlutter: 0,
+      },
     };
   }
 
@@ -521,7 +534,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, motionBus: masterPolish.motionBus },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }

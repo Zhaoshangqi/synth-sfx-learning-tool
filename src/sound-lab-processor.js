@@ -491,19 +491,32 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const monoAnchor = clamp(comfortBus.monoAnchor ?? 0, 0, 1);
     const widthTrim = clamp(comfortBus.widthTrim ?? 0, 0, 1);
     const tailDuck = clamp(comfortBus.tailDuck ?? 0, 0, 1);
+    const motionBus = polish.motionBus || {};
+    const microDynamics = clamp(motionBus.microDynamics ?? 0, 0, 0.24);
+    const transientShield = clamp(motionBus.transientShield ?? 0, 0, 0.45);
+    const tailBloom = clamp(motionBus.tailBloom ?? 0, 0, 0.42);
+    const wowFlutter = clamp(motionBus.wowFlutter ?? 0, 0, 0.05);
     const mid = (leftSample + rightSample) * 0.5;
     const side = (leftSample - rightSample) * 0.5;
     const transientWindow = Math.exp(-t * 18);
     const tailWindow = clamp(t / Math.max(0.12, duration * 0.7), 0, 1);
+    const motionRate = 0.17 + wowFlutter * 9 + tailBloom * 0.18;
+    const breath = 1 + Math.sin(t * Math.PI * 2 * motionRate + this.seed * 0.013) * microDynamics * 0.035;
+    const midFocus = 1 + transientShield * transientWindow * 0.035 - tailBloom * tailWindow * 0.018;
     const sideScale = clamp(
-      1 - monoAnchor * (0.2 + transientWindow * 0.28) - widthTrim * 0.16 - tailDuck * transientWindow * 0.12 + tailWindow * 0.04,
+      1
+        - monoAnchor * (0.2 + transientWindow * 0.28)
+        - widthTrim * 0.16
+        - tailDuck * transientWindow * 0.12
+        - transientShield * transientWindow * 0.18
+        + tailWindow * (0.04 + tailBloom * 0.22),
       0.42,
-      1.08,
+      1.16,
     );
     const duck = 1 - tailDuck * transientWindow * 0.08;
 
-    this.stereoBusLeft = (mid + side * sideScale) * loudnessMatch * duck;
-    this.stereoBusRight = (mid - side * sideScale) * loudnessMatch * duck;
+    this.stereoBusLeft = (mid * midFocus + side * sideScale) * loudnessMatch * duck * breath;
+    this.stereoBusRight = (mid * midFocus - side * sideScale) * loudnessMatch * duck * breath;
   }
 
   renderLegacy(t, duration) {

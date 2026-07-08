@@ -466,6 +466,33 @@ test('studio patches expose master polish for tighter finished synth tone', () =
   assert.deepEqual(message.payload.globalFx.masterPolish, patch.globalFx.masterPolish);
 });
 
+test('studio patches expose subtle motion bus for less static synth output', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'energy-charge');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 76,
+    motion: 82,
+    material: 62,
+    space: 68,
+    variation: 74,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 62, body: 72, texture: 76, tail: 70 },
+  });
+
+  const motionBus = patch.globalFx.masterPolish.motionBus;
+  assert.ok(motionBus, 'studio output needs a subtle motion bus so web synth patches do not feel static');
+  assert.ok(motionBus.microDynamics > 0.035 && motionBus.microDynamics < 0.18);
+  assert.ok(motionBus.transientShield > 0.06, 'transient shield should keep the attack clear before tail bloom');
+  assert.ok(motionBus.tailBloom > 0.04, 'tail bloom should let space open after the transient');
+  assert.ok(motionBus.wowFlutter > 0.001 && motionBus.wowFlutter < 0.04, 'motion should stay subtle, not seasick');
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.motionBus, motionBus);
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.motionBus));
+});
+
 test('sound quality exposes beginner-readable comfort bus metrics', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
   const model = buildSoundLabViewModel(family, {

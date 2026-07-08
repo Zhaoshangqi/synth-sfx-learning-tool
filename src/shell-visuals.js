@@ -83,6 +83,17 @@ function initSpotlight() {
   tickSpotlight();
 }
 
+function segmentHeadlineText(text) {
+  if (/\s/.test(text)) return text.split(/\s+/).filter(Boolean);
+  const phraseSegments = text.match(/“[^”]+”|[^“”]+/gu)?.map((part) => part.trim()).filter(Boolean);
+  if (phraseSegments?.length > 1) return phraseSegments;
+  if (globalThis.Intl?.Segmenter) {
+    const segmenter = new Intl.Segmenter('zh-CN', { granularity: 'grapheme' });
+    return Array.from(segmenter.segment(text), (part) => part.segment).filter(Boolean);
+  }
+  return Array.from(text).filter(Boolean);
+}
+
 function revealHeadlineWords() {
   const headline = document.querySelector('.dashboard-hero .hero-copy h3');
   if (!headline || headline.dataset.wordRevealReady === 'true') return;
@@ -90,16 +101,15 @@ function revealHeadlineWords() {
   if (!text) return;
   headline.dataset.wordRevealReady = 'true';
   headline.textContent = '';
-  const segments = /\s/.test(text)
-    ? text.split(/\s+/)
-    : text.match(/“[^”]+”|[^“”]+/gu) ?? [text];
+  const usesWordSpacing = /\s/.test(text);
+  const segments = segmentHeadlineText(text);
   segments.forEach((word, index) => {
     const span = document.createElement('span');
     span.className = 'word-reveal';
     span.textContent = word;
     span.style.animationDelay = `${0.14 + index * 0.026}s`;
     headline.append(span);
-    if (/\s/.test(text)) headline.append(document.createTextNode(' '));
+    if (usesWordSpacing && index < segments.length - 1) headline.append(document.createTextNode(' '));
   });
 }
 

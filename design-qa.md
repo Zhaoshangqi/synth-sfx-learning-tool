@@ -1,5 +1,18 @@
 # Design QA - Signal Atlas Console
 
+## 2026-07-08 Reference v9 Visual Layer
+- Source visual truth: the latest pasted HTML reference with `#E4E4E4` canvas, round fixed menu, black slide-down panel, large editorial title, soft cyan spotlight, capsule CTA motion, and restrained reveal animation.
+- Implementation approach: added `styles-reference.css` as the final stylesheet after the legacy cascade, leaving the existing product modules intact while forcing a cleaner top-level visual system and readable contrast.
+- Desktop screenshot: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ref9-qa\qa-ref9-dashboard-v2.png`.
+- Menu screenshot: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ref9-qa\qa-ref9-menu.png`.
+- Sound Lab screenshot: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ref9-qa\qa-ref9-soundlab.png`.
+- Mobile screenshot: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ref9-qa\qa-ref9-mobile-dashboard-v3.png`.
+- Browser QA: passed. Chrome loaded `styles-reference.css`, captured no console or page errors, kept mobile `scrollWidth === innerWidth === 390`, and Sound Lab range changes did not set `.content.is-view-switching`.
+- Automated checks: `node --check src\shell-visuals.js`, `node --check src\sound-lab-model.js`, `node --check src\sound-lab-processor.js`, `node --test tests\visual-shell.test.mjs`, `node --test tests\sound-lab.test.mjs`, and `npm.cmd test` all passed. Full suite: 220 passed.
+- Final result: passed.
+
+---
+
 ## Source Visual Truth
 - Reference concept: `C:\Users\zhaoshangqi\.codex\generated_images\019eb999-73c8-71c1-b564-7e2610f512b3\ig_02395f315951f373016a41e78dac708191b8a1837472650444.png`
 - Target direction: premium dark audio console, circular signal path, large waveform/spectrum stage, right-side source rail, smooth tactile controls.
