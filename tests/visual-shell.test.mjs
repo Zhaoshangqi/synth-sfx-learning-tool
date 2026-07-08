@@ -1512,3 +1512,30 @@ test('showcase reference redesign supersedes legacy dark overrides with readable
   assert.match(css, /\.signal-atlas-console input\[type="range"\],[\s\S]*\.synth-workbench-layout input\[type="range"\]\s*\{[\s\S]*min-height:\s*40px[\s\S]*cursor:\s*grab[\s\S]*touch-action:\s*none/);
   assert.match(css, /\.signal-atlas-console input\[type="range"\]:active,[\s\S]*\.synth-workbench-layout \.range-shell\.is-dragging\s*\{[\s\S]*cursor:\s*grabbing/);
 });
+
+test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+  const polishIndex = css.indexOf('Showcase interaction polish v6.2');
+  const stageIndex = css.indexOf('Showcase sonic stage v6.4');
+
+  assert.ok(stageIndex > polishIndex, 'v6.4 must load after previous showcase patches');
+  assert.match(css, /\.workspace:has\(\.dashboard-hero\) \.toolbar\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.content:has\(\.dashboard-hero\)\s*\{[\s\S]*margin-top:\s*0/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*min-height:\s*min\(780px,\s*calc\(100dvh - 108px\)\)/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*radial-gradient\(circle at var\(--spot-x/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*font-size:\s*clamp\(38px,\s*5\.2vw,\s*76px\)/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*letter-spacing:\s*-0\.035em/);
+  assert.match(css, /\.dashboard-starter-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.dashboard-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(240px,\s*1fr\)\)/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button span\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button::before\s*\{[\s\S]*inset:\s*7px 68px 7px 8px/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*visibility:\s*hidden/);
+  assert.match(css, /\.shell-menu-open \.sidebar\s*\{[\s\S]*visibility:\s*visible/);
+  assert.match(css, /\.sidebar \.tab\s*\{[\s\S]*font-size:\s*clamp\(24px,\s*4\.5vw,\s*40px\)/);
+  assert.match(css, /\.visual-spotlight\s*\{[\s\S]*mix-blend-mode:\s*soft-light/);
+  assert.match(shellJs, /setMenuOpen/);
+  assert.match(shellJs, /'关闭导航菜单'/);
+  assert.match(shellJs, /'打开导航菜单'/);
+});

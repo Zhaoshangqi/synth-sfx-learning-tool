@@ -144,3 +144,30 @@ Passed for this iteration. This pass locks the supplied showcase visual directio
 
 ## Result
 Passed for this iteration. The Dashboard route now behaves more like a guided learning coach: inspect one step, understand what to listen for, then explicitly launch the matching module when ready.
+
+---
+
+# Design QA - Showcase Sonic Stage v6.4
+
+## Focus
+- Goal: translate the supplied pasted HTML reference more faithfully into the learning app's shell: light gray stage, circular logo/menu, right black menu panel, pointer spotlight, large background word, capsule CTAs, and a dark sonic core.
+- Product constraint: do not rebuild the learning content or Sound Lab internals; keep Sound Lab as the professional dark synth console and avoid reintroducing click or range-drag screen flashes.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?v=641#dashboard`
+- Browser note: in-app browser screenshot tools were not exposed in this session; system Chrome via Playwright was used for evidence.
+- Desktop viewport: 1440 x 920.
+- Dashboard stage: passed. Search toolbar is hidden on Dashboard (`display:none`), no horizontal overflow, hero CTA labels are not clipped, and the final screenshot is `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ui-qa\after-dashboard-v641.png`.
+- Menu: passed. Burger opens a visible black right menu, `aria-label="关闭导航菜单"`, and screenshot evidence is `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-ui-qa\after-menu-v64.png`.
+- Navigation: passed. Clicking the visible menu Sound Lab item navigates to `#soundlab`; clicking the Dashboard Sound Lab CTA also navigates to `#soundlab`.
+- Sound Lab: passed. `#soundlab` renders `.signal-atlas-console`, retains the dark professional panel, has 18 range controls, and no horizontal overflow.
+- Slider feel: passed. Dragging the first Sound Lab range does not set `#app.is-view-switching`, so same-view control use does not flash the page.
+- Console logs: passed. No browser warnings or errors captured.
+
+## Automated Checks
+- TDD red: `node --test tests\visual-shell.test.mjs` failed on missing `Showcase sonic stage v6.4`.
+- TDD green: `node --test tests\visual-shell.test.mjs`: 87 passed.
+- Full suite: `npm.cmd test`: 197 passed.
+
+## Result
+Passed for this iteration. The Dashboard now reads as a cleaner supplied-reference sonic stage while the menu hit testing and Sound Lab drag behavior stay stable.
