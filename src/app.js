@@ -260,6 +260,52 @@ const DASHBOARD_LEARNING_PATH = [
   },
 ];
 
+const SOUND_LAB_FOCUS_MODES = [
+  {
+    id: 'guided',
+    index: '01',
+    labelZh: '引导模式',
+    titleZh: '新手先走听 / 改 / 验 / 交付',
+    bodyZh: '把高级面板降到背景，先用四步工作流完成一个可听、可解释、可导出的声音。',
+    workflowStep: 'source',
+    atlasNode: 'source',
+    moduleMapId: 'source',
+    workbenchModule: 'generator',
+    advancedModule: 'advanced',
+    feedbackZh: '引导模式：先听 dry 主体，再一次只改一个参数，最后用 A/B 判断是否保留。',
+  },
+  {
+    id: 'studio',
+    index: '02',
+    labelZh: '工作室模式',
+    titleZh: '把宏、分层、包络和 FX 放到手边',
+    bodyZh: '适合已经知道目标声音，想快速用宏控制、分层试听和输出模式塑形。',
+    workflowStep: 'shape',
+    atlasNode: 'envelope',
+    moduleMapId: 'envelope',
+    workbenchModule: 'envelope',
+    advancedModule: 'envelope-editor',
+    feedbackZh: '工作室模式：从包络和宏控制开始塑形，随时用 layer audition 检查每层角色。',
+  },
+  {
+    id: 'expert',
+    index: '03',
+    labelZh: '专家模式',
+    titleZh: '打开 Mod Matrix / FX Chain / Library',
+    bodyZh: '把调制矩阵、效果链重排、A/B、项目库、MIDI 和批量命名放到前台。',
+    workflowStep: 'shape',
+    atlasNode: 'modulation',
+    moduleMapId: 'mod-matrix',
+    workbenchModule: 'modulation',
+    advancedModule: 'mod-matrix',
+    feedbackZh: '专家模式：现在重点检查调制关系、FX 顺序和可复用项目库，不再只看单个旋钮。',
+  },
+];
+
+function getSoundLabFocusMode(modeId = state?.soundLabFocusMode) {
+  return SOUND_LAB_FOCUS_MODES.find((mode) => mode.id === modeId) ?? SOUND_LAB_FOCUS_MODES[0];
+}
+
 function getViewFromHash() {
   const rawHash = decodeURIComponent(globalThis.location?.hash?.replace(/^#/, '') ?? '').trim();
   return VIEW_IDS.has(rawHash) ? rawHash : 'dashboard';
@@ -310,6 +356,7 @@ const state = {
   soundLabAnalyzerMode: 'live',
   soundLabMoreOpen: false,
   activeAdvancedModule: 'advanced',
+  soundLabFocusMode: 'guided',
   activeSynthModGuideId: synthModulationGuides[0]?.id,
   activeCoachSynth: 'serum',
   workbenchActionFeedback: '先选材质或点击播放；每次只解决一个听感问题。',
@@ -996,6 +1043,7 @@ function getActiveSoundFamily() {
 function selectSoundLabFamily(familyId, shouldRender = true) {
   const family = getSoundLabFamily(soundLabFamilies, familyId);
   const presetDna = getPresetDnaForFamily(family.id)[0];
+  const focusMode = getSoundLabFocusMode();
   state.activeSoundFamilyId = family.id;
   state.activeSoundPresetDnaId = presetDna?.id;
   state.soundLabMacros = { ...SOUND_LAB_MACROS, ...(family.presets[0]?.values ?? {}), ...(presetDna?.macroHints ?? {}) };
@@ -1008,12 +1056,25 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabMacroMorph = 0;
   state.soundLabAbSlot = 'a';
   state.soundLabAuditionMode = 'full';
-  state.soundLabWorkflowStep = 'source';
-  state.activeAtlasNode = 'source';
-  state.activeWorkbenchModuleMapId = 'source';
-  state.activeAdvancedModule = 'advanced';
-  state.activeWorkbenchModule = 'generator';
-  state.workbenchActionFeedback = `已切换到 ${family.titleZh.split('：')[0]}：先听 dry 主体，再进入参数塑形。`;
+  state.soundLabWorkflowStep = focusMode.workflowStep;
+  state.activeAtlasNode = focusMode.atlasNode;
+  state.activeWorkbenchModuleMapId = focusMode.moduleMapId;
+  state.activeAdvancedModule = focusMode.advancedModule;
+  state.activeWorkbenchModule = focusMode.workbenchModule;
+  state.workbenchActionFeedback = `已切换到 ${family.titleZh.split('：')[0]}：${focusMode.feedbackZh}`;
+  syncSoundLabPatchSoon();
+  if (shouldRender) renderSameView();
+}
+
+function applySoundLabFocusMode(modeId, { shouldRender = true } = {}) {
+  const mode = getSoundLabFocusMode(modeId);
+  state.soundLabFocusMode = mode.id;
+  state.soundLabWorkflowStep = mode.workflowStep;
+  state.activeAtlasNode = mode.atlasNode;
+  state.activeWorkbenchModuleMapId = mode.moduleMapId;
+  state.activeWorkbenchModule = mode.workbenchModule;
+  state.activeAdvancedModule = mode.advancedModule;
+  state.workbenchActionFeedback = mode.feedbackZh;
   syncSoundLabPatchSoon();
   if (shouldRender) renderSameView();
 }
@@ -1154,12 +1215,40 @@ function applyTargetReferenceNudge() {
   scrollSoundLabIntoView('.reference-match-panel');
 }
 
+function renderSoundLabFocusModeSwitch(activeModeId) {
+  const activeMode = getSoundLabFocusMode(activeModeId);
+  return `
+    <section class="sound-lab-mode-switcher" data-sound-lab-focus-mode-panel="${escapeHtml(activeMode.id)}" aria-label="Sound Lab 模式选择">
+      <div class="mode-switch-copy">
+        <span>Mode Layer</span>
+        <strong>${escapeHtml(activeMode.titleZh)}</strong>
+        <p>${escapeHtml(activeMode.bodyZh)}</p>
+      </div>
+      <div class="mode-switch-grid" role="list">
+        ${SOUND_LAB_FOCUS_MODES.map((mode) => `
+          <button
+            class="mode-switch-card ${mode.id === activeMode.id ? 'is-active' : ''}"
+            type="button"
+            data-sound-lab-focus-mode="${escapeHtml(mode.id)}"
+            aria-pressed="${mode.id === activeMode.id ? 'true' : 'false'}"
+          >
+            <span>${escapeHtml(mode.index)}</span>
+            <strong>${escapeHtml(mode.labelZh)}</strong>
+            <small>${escapeHtml(mode.bodyZh)}</small>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderSoundLabView() {
   const family = getActiveSoundFamily();
   const model = getSoundLabModel();
+  const focusMode = getSoundLabFocusMode();
   return `
     ${header('Sound Lab', '可试听合成器工作台：先选材质和目标声音，再用频谱、宏控制、合成器教练和 REAPER 清单完成一次音效交付。')}
-    <section class="sound-lab-shell">
+    <section class="sound-lab-shell" data-sound-lab-focus-mode="${escapeHtml(focusMode.id)}">
       <div class="sound-family-rail" role="list" aria-label="声音族选择">
         ${soundLabFamilies.map((item, index) => `
           <button
@@ -1172,6 +1261,7 @@ function renderSoundLabView() {
           </button>
         `).join('')}
       </div>
+      ${renderSoundLabFocusModeSwitch(focusMode.id)}
       ${renderSoundLabWorkbench(family, model, {
         selectedFamilyId: family.id,
         engineMode: state.soundLabEngineMode,
@@ -1188,6 +1278,7 @@ function renderSoundLabView() {
         moreOpen: state.soundLabMoreOpen,
         activeAdvancedModule: state.activeAdvancedModule,
         activeWorkbenchSynth: state.activeWorkbenchSynth,
+        focusMode: focusMode.id,
         modulationGuides: synthModulationGuides,
         activeModulationGuideId: state.activeSynthModGuideId,
         activeCoachSynth: state.activeCoachSynth,
@@ -3117,6 +3208,12 @@ function bindSoundLabControls() {
   document.querySelectorAll('[data-workbench-family]').forEach((button) => {
     button.addEventListener('click', () => {
       selectSoundLabFamily(button.dataset.workbenchFamily);
+    });
+  });
+
+  document.querySelectorAll('button[data-sound-lab-focus-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applySoundLabFocusMode(button.dataset.soundLabFocusMode);
     });
   });
 

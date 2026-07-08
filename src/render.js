@@ -2964,11 +2964,13 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
   const activeWorkbenchSynth = options.activeWorkbenchSynth ?? 'serum';
+  const focusMode = options.focusMode ?? 'guided';
   return `
     <article
-      class="card sound-lab-workbench synth-workbench-layout ${isPlaying ? 'is-playing' : ''}"
+      class="card sound-lab-workbench synth-workbench-layout is-${escapeHtml(focusMode)}-focus ${isPlaying ? 'is-playing' : ''}"
       data-active-sound-family="${escapeHtml(family.id)}"
       data-workflow-step="${escapeHtml(options.activeWorkflowStep ?? 'source')}"
+      data-focus-mode="${escapeHtml(focusMode)}"
     >
       <header class="workbench-topbar">
         <div>
@@ -3054,11 +3056,13 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
   const activeWorkbenchSynth = options.activeWorkbenchSynth ?? 'serum';
+  const focusMode = options.focusMode ?? 'guided';
   return `
     <article
-      class="card sound-lab-workbench synth-workbench-layout signal-atlas-console ${isPlaying ? 'is-playing' : ''}"
+      class="card sound-lab-workbench synth-workbench-layout signal-atlas-console is-${escapeHtml(focusMode)}-focus ${isPlaying ? 'is-playing' : ''}"
       data-active-sound-family="${escapeHtml(family.id)}"
       data-workflow-step="${escapeHtml(options.activeWorkflowStep ?? 'source')}"
+      data-focus-mode="${escapeHtml(focusMode)}"
       data-atlas-console="signal-atlas"
     >
       <div class="atlas-orb" aria-hidden="true"></div>

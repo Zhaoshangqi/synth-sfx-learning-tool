@@ -1214,8 +1214,8 @@ test('sound lab exposes a guided workflow map and real material family switching
   assert.match(renderJs, /material-workflow-hint/);
   assert.match(appJs, /data-workbench-family/);
   assert.match(appJs, /selectSoundLabFamily/);
-  assert.match(appJs, /已切换到 \$\{family\.titleZh\.split\('：'\)\[0\]\}：先听 dry 主体，再进入参数塑形。/);
-  assert.match(appJs, /function selectSoundLabFamily[\s\S]*state\.activeWorkbenchModule = 'generator'/);
+  assert.match(appJs, /const focusMode = getSoundLabFocusMode\(\)/);
+  assert.match(appJs, /function selectSoundLabFamily[\s\S]*state\.activeWorkbenchModule = focusMode\.workbenchModule/);
   assert.match(appJs, /activeAdvancedModule:\s*'advanced'/);
   assert.match(css, /\.control-bottom-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(250px,\s*0\.44fr\)/);
   assert.match(css, /\.material-selector-grid\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
@@ -1230,6 +1230,26 @@ test('sound lab keeps the primary workbench before secondary preset browsing', (
   assert.match(css, /\.sound-family-rail\s*\{[\s\S]*order:\s*0/);
   assert.match(css, /\.sound-lab-shell \.synth-workbench-layout\s*\{[\s\S]*order:\s*1/);
   assert.match(css, /\.sound-lab-secondary-section\s*\{[\s\S]*order:\s*3/);
+});
+
+test('sound lab focus modes are real routed controls, not decorative pills', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /SOUND_LAB_FOCUS_MODES/);
+  assert.match(appJs, /id:\s*'guided'/);
+  assert.match(appJs, /id:\s*'studio'/);
+  assert.match(appJs, /id:\s*'expert'/);
+  assert.match(appJs, /function applySoundLabFocusMode/);
+  assert.match(appJs, /button\[data-sound-lab-focus-mode\]/);
+  assert.match(appJs, /state\.soundLabWorkflowStep = mode\.workflowStep/);
+  assert.match(appJs, /state\.activeAdvancedModule = mode\.advancedModule/);
+  assert.match(renderJs, /data-focus-mode="\$\{escapeHtml\(focusMode\)\}"/);
+  assert.match(css, /\.sound-lab-mode-switcher\s*\{/);
+  assert.match(css, /\.mode-switch-card\.is-active\s*\{/);
+  assert.match(css, /\.sound-lab-shell\[data-sound-lab-focus-mode="guided"\] \.signal-atlas-console \.atlas-support-grid\s*\{[\s\S]*opacity:\s*0\.58/);
+  assert.match(css, /\.signal-atlas-console\[data-focus-mode="expert"\] \.atlas-support-grid\s*\{[\s\S]*opacity:\s*1/);
 });
 
 test('sound lab workstation utility controls have real stateful handlers', () => {
