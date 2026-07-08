@@ -1475,6 +1475,52 @@ function renderWorkbenchOutputMeter(model = {}) {
   `;
 }
 
+function renderAnalyzerCoachPanel(model = {}) {
+  const coach = model.analyzerCoach;
+  if (!coach) return '';
+  const bands = coach.bands ?? [];
+  const nextMove = coach.nextMove ?? {};
+
+  return `
+    <section class="workbench-panel analyzer-coach-panel" data-flow-surface aria-label="频谱波形读图教练">
+      <div class="mini-panel-head analyzer-coach-head">
+        <strong>${escapeHtml(coach.titleZh ?? '频谱 / 波形读图教练')}</strong>
+        <span>Waveform / Spectrum / REAPER A/B</span>
+      </div>
+      <p class="analyzer-coach-rule">${escapeHtml(coach.beginnerRuleZh ?? '先看时间，再看频段，最后做 A/B。')}</p>
+      <div class="analyzer-coach-next">
+        <div>
+          <span>下一步</span>
+          <strong>${escapeHtml(nextMove.labelZh ?? 'Body 主体')}</strong>
+          <small>${escapeHtml(nextMove.reaperNoteZh ?? 'REAPER A/B: 只改一个参数并记录 waveform/spectrum 证据。')}</small>
+        </div>
+        <button type="button" data-workbench-action="${escapeHtml(nextMove.action ?? 'focus-controls')}">定位参数</button>
+      </div>
+      <div class="analyzer-coach-grid">
+        ${bands.map((band) => `
+          <article class="analyzer-coach-band" data-analyzer-coach-band="${escapeHtml(band.id)}" style="--coach-value:${formatNumber(band.value ?? 50)}%">
+            <div class="analyzer-coach-band-top">
+              <span>${escapeHtml(band.rangeZh)}</span>
+              <strong>${escapeHtml(band.labelZh)}</strong>
+              <output>${escapeHtml(band.value ?? 50)}</output>
+            </div>
+            <div class="analyzer-coach-meter" aria-hidden="true"><i></i></div>
+            <dl>
+              <dt>听感</dt>
+              <dd>${escapeHtml(band.listenZh)}</dd>
+              <dt>Serum / Phase Plant / Vital</dt>
+              <dd>${escapeHtml(band.synthZh)}</dd>
+              <dt>REAPER</dt>
+              <dd>${escapeHtml(band.reaperZh)}</dd>
+            </dl>
+            <button type="button" data-workbench-action="${escapeHtml(band.action ?? 'focus-controls')}" data-analyzer-coach-target="${escapeHtml(band.parameterId)}">${escapeHtml(band.actionLabelZh ?? '定位')}</button>
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
 function renderWaveformDetectivePanel(model = {}, options = {}) {
   const fingerprint = model.waveformFingerprint ?? {};
   const ingredients = fingerprint.ingredients ?? [];
@@ -3253,6 +3299,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
           <div class="analyzer-row">
             ${renderWorkbenchWaveform(model)}
             ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+            ${renderAnalyzerCoachPanel(model)}
             ${renderWorkbenchOutputMeter(model)}
           </div>
           ${renderWaveformDetectivePanel(model, options)}
@@ -3348,6 +3395,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
             <div class="analyzer-row atlas-analyzer-row">
               ${renderWorkbenchWaveform(model)}
               ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+              ${renderAnalyzerCoachPanel(model)}
               ${renderWorkbenchOutputMeter(model)}
             </div>
             ${renderWaveformDetectivePanel(model, options)}

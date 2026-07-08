@@ -2701,6 +2701,97 @@ function buildParameterCoach(patch, macroList) {
   };
 }
 
+function buildAnalyzerCoach(patch, macroList = []) {
+  const macros = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const macroById = new Map(macroList.map((macro) => [macro.id, macro]));
+  const macroValue = (id, fallback = 50) => clamp(macroById.get(id)?.value ?? macros[id] ?? fallback, 0, 100);
+  const layerValue = (id, fallback = 50) => clamp(layerMix[id] ?? fallback, 0, 100);
+  const envelope = patch.envelope ?? {};
+  const attackMs = Math.round((envelope.attack ?? 0.006) * 1000);
+  const releaseMs = Math.round((envelope.release ?? 0.32) * 1000);
+  const resonatorCount = patch.dsp?.resonators?.length ?? 0;
+
+  const bands = [
+    {
+      id: 'transient',
+      labelZh: 'Transient 起音',
+      rangeZh: '0-80ms / 2k-12k',
+      parameterId: 'transient',
+      value: Math.round((layerValue('transient', 70) + Math.max(0, 90 - attackMs)) / 2),
+      listenZh: '波形最前面越陡，click 越硬；如果第一下刺耳，先减 transient 或拉长 Attack。',
+      synthZh: 'Serum / Phase Plant / Vital: 缩短 noise burst 或 Amp Env，必要时降低 click/noise gain。',
+      reaperZh: 'REAPER 放大前 50ms，对比 dry 和 full；A/B 时确认变化不是整体音量变小。',
+      action: 'focus-waveform',
+      actionLabelZh: '看前沿',
+    },
+    {
+      id: 'body',
+      labelZh: 'Body 主体',
+      rangeZh: '120Hz-1.2k',
+      parameterId: 'material',
+      value: Math.round((layerValue('body', 70) + macroValue('material', 58)) / 2),
+      listenZh: '频谱中段决定重量和材质身份；主体不够时声音会只剩噪声、亮边或空间尾巴。',
+      synthZh: 'Serum / Vital 用 sine、triangle、FM carrier 或 resonant filter；Phase Plant 用独立 body lane。',
+      reaperZh: 'REAPER 用低通/高通各听一遍，检查 body-only 是否仍然像目标音效。',
+      action: 'focus-controls',
+      actionLabelZh: '调材质',
+    },
+    {
+      id: 'air',
+      labelZh: 'Air / Edge 高频边缘',
+      rangeZh: '4k-16k',
+      parameterId: 'brightness',
+      value: Math.round((macroValue('brightness', 66) + layerValue('texture', 48)) / 2),
+      listenZh: '高频让金属、玻璃、电流更容易被识别；过多会薄、尖、像普通点击。',
+      synthZh: 'Serum / Vital 调 filter cutoff、warp、noise bright；Phase Plant 调 filter lane 或 harmonic lane。',
+      reaperZh: 'REAPER 看 spectrum 里 4k-10k 是否尖峰过高，响度匹配后再决定保留。',
+      action: 'focus-controls',
+      actionLabelZh: '调明暗',
+    },
+    {
+      id: 'tail',
+      labelZh: 'Tail 空间尾巴',
+      rangeZh: `${releaseMs}ms+ / reverb send`,
+      parameterId: 'space',
+      value: Math.round((macroValue('space', 32) + layerValue('tail', 36)) / 2),
+      listenZh: '尾巴负责距离感和退场；如果尾巴盖住主体，先减 wet/send，再补短 room。',
+      synthZh: 'Serum / Vital 用 reverb/delay mix 和 release；Phase Plant 把 room/reverb 放到 FX lane 后段。',
+      reaperZh: 'REAPER 导出 dry / full / tail-only 三版，A/B 确认 tail 没有遮挡 transient。',
+      action: 'focus-practice-loop',
+      actionLabelZh: '听尾巴',
+    },
+    {
+      id: 'motion',
+      labelZh: 'Motion 调制运动',
+      rangeZh: `${resonatorCount || 3} resonators / LFO`,
+      parameterId: 'motion',
+      value: macroValue('motion', 48),
+      listenZh: '频谱峰值左右移动说明参数正在调制；运动要能听见，但不能让目标材质失焦。',
+      synthZh: 'Serum / Vital 用 LFO/Random 小幅推 WT、filter 或 FM；Phase Plant 用 mod source 控 lane 参数。',
+      reaperZh: 'REAPER 连续触发三次，确认每次变化像同一套音色，而不是随机乱跳。',
+      action: 'focus-controls',
+      actionLabelZh: '调运动',
+    },
+  ];
+
+  const nextMove = [...bands]
+    .sort((a, b) => Math.abs((b.value ?? 50) - 55) - Math.abs((a.value ?? 50) - 55))[0] ?? bands[1];
+
+  return {
+    titleZh: '频谱 / 波形读图教练',
+    beginnerRuleZh: '先看时间：前 80ms 是起音；再看频段：中低频是主体，高频是边缘；最后 A/B：只改一个参数并在 REAPER 记录结论。',
+    nextMove: {
+      parameterId: nextMove.parameterId,
+      labelZh: nextMove.labelZh,
+      value: nextMove.value,
+      action: nextMove.action ?? 'focus-controls',
+      reaperNoteZh: `REAPER A/B: 只改 ${nextMove.labelZh} 相关参数，先看 waveform/spectrum，再写下保留或撤回理由。`,
+    },
+    bands,
+  };
+}
+
 function buildKeyboardNotes(baseOctave = 3) {
   const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   return names.map((name, index) => ({
@@ -3029,6 +3120,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
+    analyzerCoach: buildAnalyzerCoach(patch, macroList),
     performanceFeel: patch.performanceFeel,
     evidence: family.sourceIds,
     patchJson,
