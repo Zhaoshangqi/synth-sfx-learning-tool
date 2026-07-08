@@ -640,6 +640,40 @@ test('buildWorkletMessage sends layered DSP data without dropping the legacy con
   assert.ok(message.payload.layers.some((layer) => layer.engine === 'modalResonator'));
 });
 
+test('sound lab performance feel shapes playable dynamics and worklet payload', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 76,
+    motion: 62,
+    material: 86,
+    space: 44,
+    variation: 58,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    performance: { note: 'D3', velocity: 104, glide: 46, hold: false, octave: 0 },
+  });
+  const model = buildSoundLabViewModel(family, patch.macros, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    performance: patch.performance,
+  });
+  const message = buildWorkletMessage(patch);
+
+  assert.ok(patch.performanceFeel, 'patch should expose audible performance feel data');
+  assert.ok(patch.performanceFeel.transientPunch > 1, 'higher velocity should increase transient punch');
+  assert.ok(patch.performanceFeel.microTimingMs > 1, 'motion and variation should add controlled timing feel');
+  assert.ok(patch.performanceFeel.pitchDriftCents > 1, 'variation should create subtle pitch drift');
+  assert.ok(patch.performanceFeel.triggerPattern.length === 3, 'performance feel should provide a three-hit gesture');
+  assert.ok(patch.layers.some((layer) => layer.performanceFeel?.velocityGain > 1), 'layers should receive performance gain shaping');
+  assert.ok(patch.layers.some((layer) => layer.performanceFeel?.microOffsetMs !== 0), 'layers should receive micro-timing offsets');
+  assert.equal(message.payload.performanceFeel.mode, patch.performanceFeel.mode);
+  assert.equal(message.payload.performanceFeel.triggerPattern.length, 3);
+  assert.ok(model.performanceFeel.controls.some((control) => control.id === 'microTiming'));
+  assert.match(model.performanceFeel.beginnerZh, /力度|微漂移|三连|真实|手感/);
+  assert.match(model.performanceFeel.reaperZh, /REAPER|velocity|A\/B|三连/);
+});
+
 test('buildSoundLabPatch exposes HQ synth engine graph and playable performance controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'energy-charge');
   const patch = buildSoundLabPatch(family, {

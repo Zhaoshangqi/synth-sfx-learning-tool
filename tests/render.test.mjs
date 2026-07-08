@@ -575,6 +575,33 @@ test('renderSoundLabWorkbench exposes HQ engine, playable keyboard, and FX rack 
   assert.match(html, /data-sound-lab-ab="tone"/);
 });
 
+test('renderSoundLabWorkbench exposes a beginner-readable Performance Feel panel', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 78,
+    motion: 64,
+    material: 88,
+    space: 48,
+    variation: 56,
+  }, {
+    qualityMode: 'studio',
+    performance: { note: 'D3', velocity: 104, glide: 48, hold: false, octave: 0 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, engineMode: 'worklet' });
+
+  assert.match(html, /performance-feel-panel/);
+  assert.match(html, /Performance Feel|演奏手感/);
+  assert.match(html, /data-performance-feel-play="gesture"/);
+  assert.match(html, /data-performance-feel-apply="tight"/);
+  assert.match(html, /data-performance-feel-apply="expressive"/);
+  assert.match(html, /performance-feel-meter/);
+  assert.match(html, /三连|力度|微漂移|空间/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER/);
+});
+
 test('renderSoundLabWorkbench exposes layer audition buttons for realistic SFX listening', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

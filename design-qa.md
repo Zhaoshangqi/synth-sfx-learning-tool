@@ -318,3 +318,36 @@ Passed for this iteration. The first viewport is calmer and closer to the suppli
 
 ## Result
 Passed for this iteration. Sound Lab now has a more professional ear-training loop: users can hear a synthesized target reference, compare a small nudge, then apply only a controlled step toward the target with REAPER documentation guidance.
+
+---
+
+# Design QA - Showcase Visual System v7.0 + Performance Feel
+
+## Source Visual Truth
+- Reference source: attached pasted HTML in this thread, a light gray creative-studio showcase with cyan block splash, circular SFX mark, round cream burger, black menu panel, oversized background type, capsule controls, word reveal, and pointer spotlight.
+- Target translation: use that visual language for the synth learning platform without losing the real Sound Lab controls, routing, analyzers, and audio playback.
+
+## Implementation Screenshots
+- Dashboard first viewport: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\v7-final-dashboard.png`
+- Sound Lab first viewport: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\v7-final-soundlab.png`
+- Sound Lab mobile: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\v7-final-soundlab-mobile.png`
+
+## Browser QA
+- Local URL: `http://localhost:5177/` and `http://localhost:5177/#soundlab`.
+- Browser note: Browser plugin screenshot tools were not exposed; Python Playwright Chromium was used for evidence.
+- Desktop viewport: 1440 x 1000. Mobile viewport: 390 x 844.
+- Dashboard visual match: passed. Light gray studio canvas, large `SOUND` backdrop, circular mark/menu, soft cyan spotlight, capsule controls, and quiet motion are present.
+- Sound Lab readability: passed. Historical dark text/background conflicts were scanned in the browser; final dark/low-contrast count is `0`.
+- Interaction: passed. `Expressive` applies Performance Feel state, `三连试听` updates feedback, and velocity range dragging does not create view-switch flashes.
+- Overflow: passed. Desktop Sound Lab overflow `0`; mobile Sound Lab overflow `0`.
+- Console logs: passed. No browser warnings or errors captured.
+
+## Automated Checks
+- `node --check src\sound-lab-model.js`: passed.
+- `node --check src\render.js`: passed.
+- `node --check src\app.js`: passed.
+- `node --test --test-name-pattern "performance feel|Performance Feel" tests\sound-lab.test.mjs tests\render.test.mjs tests\visual-shell.test.mjs`: passed.
+- `npm.cmd test`: 215 passed.
+
+## Result
+Passed for this iteration. This pass replaces the old mixed dark/light overrides with a coherent light showcase system, fixes Sound Lab module contrast at the computed-style level, and adds a real patch-driven Performance Feel panel with gesture playback and tight/expressive presets.
