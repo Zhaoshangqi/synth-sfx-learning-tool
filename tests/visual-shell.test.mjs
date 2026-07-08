@@ -118,8 +118,8 @@ test('stitch visual refit keeps the supplied showcase motion but removes click f
   assert.match(shellJs, /splash\?\.classList\.add\('is-done'\)/);
   assert.match(shellJs, /function tickSpotlight/);
   assert.match(shellJs, /requestAnimationFrame\(tickSpotlight\)/);
-  assert.match(shellJs, /'关闭导航菜单'/);
-  assert.match(shellJs, /'打开导航菜单'/);
+  assert.match(shellJs, /Close navigation menu/);
+  assert.match(shellJs, /Open navigation menu/);
   assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
 });
 
@@ -1658,6 +1658,40 @@ test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage
   assert.match(css, /\.sidebar \.tab\s*\{[\s\S]*font-size:\s*clamp\(24px,\s*4\.5vw,\s*40px\)/);
   assert.match(css, /\.visual-spotlight\s*\{[\s\S]*mix-blend-mode:\s*soft-light/);
   assert.match(shellJs, /setMenuOpen/);
-  assert.match(shellJs, /'关闭导航菜单'/);
-  assert.match(shellJs, /'打开导航菜单'/);
+  assert.match(shellJs, /Close navigation menu/);
+  assert.match(shellJs, /Open navigation menu/);
+  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
+});
+
+test('reference v8 applies the supplied showcase aesthetic after all legacy style layers', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+  const v7Index = css.indexOf('v7.0 showcase reference system');
+  const v8Index = css.indexOf('Reference showcase visual system v8.0');
+  const v84Index = css.indexOf('Reference showcase visual system v8.4');
+
+  assert.ok(v8Index > v7Index, 'v8 reference system must load after older showcase patches');
+  assert.ok(v84Index > v8Index, 'v8.4 must lock the final cascade after v8.0');
+  assert.match(css, /Reference showcase visual system v8\.1/);
+  assert.match(css, /Reference showcase visual system v8\.4/);
+  assert.match(css, /--ref-canvas:\s*#e4e4e4/);
+  assert.match(css, /--ref-paper:\s*#f4f1e8/);
+  assert.match(css, /--ref-cyan:\s*#75c5de/);
+  assert.match(css, /\.visual-splash\.is-done\s*\{[\s\S]*display:\s*none !important/);
+  assert.match(css, /\.visual-burger-btn\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.match(css, /\.workspace:has\(\.dashboard-hero\) \.toolbar,[\s\S]*\.content:has\(\.dashboard-hero\) > \.view-header\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*0\.98fr\)\s*minmax\(320px,\s*0\.78fr\)/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /\.hero-sound-visual::before\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button::before\s*\{[\s\S]*inset:\s*7px 68px 7px 8px/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*font-size:\s*clamp\(36px,\s*4\.85vw,\s*68px\)/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout :is\([\s\S]*\.atlas-topbar,[\s\S]*\.professional-module-panel[\s\S]*\) :is\(h2, h3, h4, h5, strong, b, \.workbench-breadcrumb, button, output\)\s*\{[\s\S]*color:\s*var\(--ref-paper\) !important/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout,[\s\S]*\.signal-atlas-console,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*#111315 !important/);
+  assert.match(css, /\.signal-atlas-console :where\(p, li, small, span, em, label, dt, dd\),[\s\S]*\.sound-lab-workbench :where\(p, li, small, span, em, label, dt, dd\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.74\) !important/);
+  assert.match(css, /body\.is-direct-manipulating \.visual-spotlight\s*\{[\s\S]*opacity:\s*0\.28 !important/);
+  assert.match(shellJs, /Close navigation menu/);
+  assert.match(shellJs, /Open navigation menu/);
+  assert.match(shellJs, /text\.match\(\/“\[\^”\]\+”\|\[\^“”\]\+\/gu\)/);
+  assert.match(shellJs, /body\.classList\.contains\('is-direct-manipulating'\)/);
+  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
 });

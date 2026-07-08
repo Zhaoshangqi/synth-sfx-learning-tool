@@ -11,7 +11,7 @@ function setMenuOpen(isOpen) {
   body.classList.toggle('shell-menu-open', isOpen);
   menuButton?.classList.toggle('is-open', isOpen);
   menuButton?.setAttribute('aria-expanded', String(isOpen));
-  menuButton?.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
+  menuButton?.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
 }
 
 function settleSplash() {
@@ -74,7 +74,7 @@ function initSpotlight() {
   }
 
   globalThis.addEventListener('pointermove', (event) => {
-    if (globalThis.__synthDirectManipulating) return;
+    if (globalThis.__synthDirectManipulating || body.classList.contains('is-direct-manipulating')) return;
     pointer.x = event.clientX;
     pointer.y = event.clientY;
     if (!frame) frame = globalThis.requestAnimationFrame(tickSpotlight);
@@ -92,7 +92,7 @@ function revealHeadlineWords() {
   headline.textContent = '';
   const segments = /\s/.test(text)
     ? text.split(/\s+/)
-    : Array.from(text);
+    : text.match(/“[^”]+”|[^“”]+/gu) ?? [text];
   segments.forEach((word, index) => {
     const span = document.createElement('span');
     span.className = 'word-reveal';
