@@ -302,6 +302,7 @@ const state = {
   soundLabXyPad: { x: 50, y: 50 },
   soundLabMacroMorph: 0,
   soundLabAbSlot: 'a',
+  soundLabAuditionMode: 'full',
   soundLabWorkflowStep: 'source',
   activeAtlasNode: 'source',
   activeWorkbenchModuleMapId: 'source',
@@ -1004,6 +1005,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabXyPad = { x: 50, y: 50 };
   state.soundLabMacroMorph = 0;
   state.soundLabAbSlot = 'a';
+  state.soundLabAuditionMode = 'full';
   state.soundLabWorkflowStep = 'source';
   state.activeAtlasNode = 'source';
   state.activeWorkbenchModuleMapId = 'source';
@@ -1029,6 +1031,8 @@ function getSoundLabOptions(optionOverrides = {}) {
     xyPad: state.soundLabXyPad,
     macroMorph: state.soundLabMacroMorph,
     abSlot: state.soundLabAbSlot,
+    auditionMode: state.soundLabAuditionMode,
+    activeLayerAudition: state.soundLabAuditionMode,
     favoriteIds: state.soundLabFavorites,
     projects: state.soundLabProjects,
     gitSync: state.soundLabGitSync,
@@ -1082,6 +1086,36 @@ function buildOutputCompareOverrides(mode = 'comfort') {
   };
 }
 
+function buildLayerAuditionOverrides(modeId = 'full') {
+  const model = getSoundLabModel();
+  const audition = model.layerAudition?.modes?.find((mode) => mode.id === modeId)
+    ?? model.layerAudition?.modes?.[0]
+    ?? {
+      id: 'full',
+      layerMix: state.soundLabLayerMix,
+      playOptions: {},
+    };
+
+  return {
+    ...audition.playOptions,
+    layerMix: audition.layerMix,
+  };
+}
+
+function playLayerAudition(modeId = 'full') {
+  const model = getSoundLabModel();
+  const audition = model.layerAudition?.modes?.find((mode) => mode.id === modeId)
+    ?? model.layerAudition?.modes?.[0];
+  if (!audition) return;
+
+  state.soundLabAuditionMode = audition.id;
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = audition.id === 'full' ? 'source' : 'material';
+  state.activeWorkbenchModuleMapId = audition.id === 'full' ? 'source' : 'compare';
+  state.workbenchActionFeedback = `分层试听：${audition.titleZh}。${audition.listenZh}`;
+  playSoundLabPatch({}, buildLayerAuditionOverrides(audition.id));
+}
+
 function renderSoundLabView() {
   const family = getActiveSoundFamily();
   const model = getSoundLabModel();
@@ -1111,6 +1145,7 @@ function renderSoundLabView() {
         activeWorkflowStep: state.soundLabWorkflowStep,
         activeAtlasNode: state.activeAtlasNode,
         activeModuleMapId: state.activeWorkbenchModuleMapId,
+        activeLayerAudition: state.soundLabAuditionMode,
         analyzerMode: state.soundLabAnalyzerMode,
         moreOpen: state.soundLabMoreOpen,
         activeAdvancedModule: state.activeAdvancedModule,
@@ -1911,6 +1946,9 @@ function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
   });
   document.querySelectorAll('[data-output-compare]').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.outputCompare === state.soundLabOutputMode);
+  });
+  document.querySelectorAll('[data-layer-audition]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.layerAudition === state.soundLabAuditionMode);
   });
   const outputHint = model.outputCompare?.practiceZh ?? '';
   document.querySelectorAll('.output-compare-hint').forEach((hint) => {
@@ -3173,6 +3211,12 @@ function bindSoundLabControls() {
         studio: 'Studio 输出：使用高质量抛光链，检查最终交付质感和响度。',
       }[state.soundLabOutputMode];
       playSoundLabPatch({}, buildOutputCompareOverrides(state.soundLabOutputMode));
+    });
+  });
+
+  document.querySelectorAll('[data-layer-audition]').forEach((button) => {
+    button.addEventListener('click', () => {
+      playLayerAudition(button.dataset.layerAudition);
     });
   });
 

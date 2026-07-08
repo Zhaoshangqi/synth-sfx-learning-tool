@@ -704,6 +704,25 @@ test('sound lab app wires raw comfort studio output comparison playback', () => 
   assert.match(appJs, /outputMode:\s*'studio'/);
 });
 
+test('sound lab app wires layer audition playback as real patch overrides', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const soundLabBlock = appJs.match(/function bindSoundLabControls\([\s\S]*?\r?\n}\r?\n\r?\nfunction bindMicroRouteControls/)?.[0] ?? '';
+
+  assert.match(renderJs, /data-layer-audition/);
+  assert.match(renderJs, /layerAudition/);
+  assert.match(appJs, /soundLabAuditionMode/);
+  assert.match(appJs, /function buildLayerAuditionOverrides/);
+  assert.match(appJs, /function playLayerAudition/);
+  assert.match(soundLabBlock, /data-layer-audition/);
+  assert.match(soundLabBlock, /playLayerAudition\(button\.dataset\.layerAudition\)/);
+  assert.match(appJs, /layerMix:\s*audition\.layerMix/);
+  assert.match(appJs, /state\.soundLabAuditionMode = audition\.id/);
+  assert.match(css, /\.layer-audition-strip\s*\{/);
+  assert.match(css, /\.layer-audition-strip button\.is-active/);
+});
+
 test('sound lab app preserves workstation module tab state across rerenders', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

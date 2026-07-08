@@ -1998,6 +1998,75 @@ function buildOutputCompare(patch) {
   };
 }
 
+function soloLayerMix(role, baseMix = {}) {
+  const roles = ['transient', 'body', 'texture', 'tail'];
+  return Object.fromEntries(roles.map((item) => [item, item === role ? 100 : 0]));
+}
+
+function buildLayerAuditionModes(patch, activeMode = 'full') {
+  const baseMix = patch.layerMix ?? {};
+  const baseOptions = {
+    engineMode: patch.engineMode,
+    qualityMode: patch.qualityMode,
+    outputMode: patch.outputMode,
+  };
+  const modes = [
+    {
+      id: 'full',
+      label: 'Full',
+      titleZh: '完整 Patch',
+      roleZh: 'all',
+      layerMix: { ...baseMix },
+      playOptions: { ...baseOptions, layerMix: { ...baseMix } },
+      listenZh: '听完整音效是否已经有起音、主体、材质和尾巴的顺序。',
+    },
+    {
+      id: 'transient',
+      label: 'Transient',
+      titleZh: '瞬态层',
+      roleZh: 'click',
+      layerMix: soloLayerMix('transient', baseMix),
+      playOptions: { ...baseOptions, outputMode: 'raw', qualityMode: 'draft', layerMix: soloLayerMix('transient', baseMix) },
+      listenZh: '只听前 20-80ms：动作是否清楚，是否扎耳或像普通 UI click。',
+    },
+    {
+      id: 'body',
+      label: 'Body',
+      titleZh: '主体层',
+      roleZh: 'weight',
+      layerMix: soloLayerMix('body', baseMix),
+      playOptions: { ...baseOptions, outputMode: 'comfort', layerMix: soloLayerMix('body', baseMix) },
+      listenZh: '只听主体：有没有重量、基频或 modal 锚点，关掉细节后是否仍成立。',
+    },
+    {
+      id: 'texture',
+      label: 'Texture',
+      titleZh: '质感层',
+      roleZh: 'edge',
+      layerMix: soloLayerMix('texture', baseMix),
+      playOptions: { ...baseOptions, outputMode: 'comfort', layerMix: soloLayerMix('texture', baseMix) },
+      listenZh: '只听颗粒、刮擦、空气或电流边缘；它应该补身份，不应变成另一个主声音。',
+    },
+    {
+      id: 'tail',
+      label: 'Tail',
+      titleZh: '尾音层',
+      roleZh: 'space',
+      layerMix: soloLayerMix('tail', baseMix),
+      playOptions: { ...baseOptions, outputMode: 'studio', qualityMode: 'studio', layerMix: soloLayerMix('tail', baseMix) },
+      listenZh: '只听尾巴：空间是否自然退场，tail-only 不应有多余低频或遮挡瞬态。',
+    },
+  ];
+
+  return {
+    titleZh: 'Layer Audition 分层试听',
+    activeMode: modes.some((mode) => mode.id === activeMode) ? activeMode : 'full',
+    practiceZh: '像做专业音效 stem 一样 solo transient / body / texture / tail，先听每层角色，再回到 full 判断是否真实。',
+    reaperZh: 'REAPER: 导出 dry / full / transient-only / body-only / texture-only / tail-only stem，响度匹配后记录哪一层导致问题。',
+    modes,
+  };
+}
+
 export function formatBatchExportName(pattern = '{family}_{preset}_{date}_{version}_{variant}', values = {}) {
   const sanitize = (value) => String(value ?? '')
     .trim()
@@ -2159,6 +2228,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     macroMorph: buildMacroMorph(patch.macros, options.macroMorph ?? 0),
     abCompare: buildAbCompare(patch, options.abSlot ?? 'a'),
     outputCompare: buildOutputCompare(patch),
+    layerAudition: buildLayerAuditionModes(patch, options.auditionMode ?? options.activeLayerAudition ?? 'full'),
     library: buildWorkbenchLibraryState({
       patch,
       favoriteIds: options.favoriteIds ?? [],

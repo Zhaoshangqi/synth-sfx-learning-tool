@@ -575,6 +575,30 @@ test('renderSoundLabWorkbench exposes HQ engine, playable keyboard, and FX rack 
   assert.match(html, /data-sound-lab-ab="tone"/);
 });
 
+test('renderSoundLabWorkbench exposes layer audition buttons for realistic SFX listening', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 52,
+    material: 86,
+    space: 46,
+    variation: 38,
+  }, {
+    qualityMode: 'studio',
+    layerMix: { transient: 88, body: 74, texture: 64, tail: 42 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /layer-audition-strip/);
+  assert.match(html, /data-layer-audition="full"/);
+  assert.match(html, /data-layer-audition="transient"/);
+  assert.match(html, /data-layer-audition="body"/);
+  assert.match(html, /data-layer-audition="texture"/);
+  assert.match(html, /data-layer-audition="tail"/);
+  assert.match(html, /分层试听|Layer Audition|solo/i);
+  assert.match(html, /transient|body|texture|tail/i);
+});
+
 test('renderSoundLabWorkbench explains synth realism controls in the quality card', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
