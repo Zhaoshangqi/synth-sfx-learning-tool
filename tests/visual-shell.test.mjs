@@ -760,6 +760,25 @@ test('sound lab app wires reference match playback and nudge controls', () => {
   assert.match(css, /\.reference-control-row/);
 });
 
+test('sound lab app wires performance feel gesture playback and presets', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /performanceFeel/);
+  assert.match(modelJs, /triggerPattern/);
+  assert.match(renderJs, /performance-feel-panel/);
+  assert.match(renderJs, /data-performance-feel-play/);
+  assert.match(renderJs, /data-performance-feel-apply/);
+  assert.match(appJs, /playPerformanceFeelGesture/);
+  assert.match(appJs, /applyPerformanceFeelPreset/);
+  assert.match(appJs, /\[data-performance-feel-play\]/);
+  assert.match(appJs, /\[data-performance-feel-apply\]/);
+  assert.match(css, /\.performance-feel-panel/);
+  assert.match(css, /\.performance-feel-meter/);
+});
+
 test('sound lab app preserves workstation module tab state across rerenders', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

@@ -347,6 +347,7 @@ state.soundLabGitSync = { ...state.soundLabGitSync, ...(savedSoundLabLibrary.git
 state.soundLabMidiMappings = Array.isArray(savedSoundLabLibrary.midiMappings) ? savedSoundLabLibrary.midiMappings : state.soundLabMidiMappings;
 
 let patchPlayingTimer = null;
+let performanceGestureTimers = [];
 let rangeChromeFrame = 0;
 let soundLabPatchFrame = 0;
 let quietRenderFrame = 0;
@@ -3016,6 +3017,67 @@ async function runGitPresetSync(action, button) {
   renderSameView();
 }
 
+function clearPerformanceGestureTimers() {
+  performanceGestureTimers.forEach((timer) => globalThis.clearTimeout(timer));
+  performanceGestureTimers = [];
+}
+
+function applyPerformanceFeelPreset(presetId = 'tight') {
+  const isExpressive = presetId === 'expressive';
+  state.soundLabPerformance = {
+    ...state.soundLabPerformance,
+    velocity: isExpressive ? 104 : 82,
+    glide: isExpressive ? 46 : 10,
+    hold: false,
+  };
+  state.soundLabMacros = {
+    ...state.soundLabMacros,
+    motion: clampPercent((state.soundLabMacros.motion ?? SOUND_LAB_MACROS.motion) + (isExpressive ? 12 : -10)),
+    space: clampPercent((state.soundLabMacros.space ?? SOUND_LAB_MACROS.space) + (isExpressive ? 6 : -4)),
+    variation: clampPercent((state.soundLabMacros.variation ?? SOUND_LAB_MACROS.variation) + (isExpressive ? 18 : -16)),
+  };
+  state.soundLabWorkflowStep = 'shape';
+  state.activeAtlasNode = 'modulation';
+  state.activeWorkbenchModuleMapId = 'mod-matrix';
+  state.activeAdvancedModule = 'mod-matrix';
+  state.workbenchActionFeedback = isExpressive
+    ? 'Performance Feel: Expressive 已应用，听三连里的力度、微漂移和空间响应。'
+    : 'Performance Feel: Tight 已应用，先听稳定、清晰、少漂移的专业触发。';
+  syncSoundLabPatchSoon();
+  renderSameView();
+  scrollSoundLabIntoView('.performance-feel-panel');
+}
+
+function playPerformanceFeelGesture(mode = 'gesture') {
+  clearPerformanceGestureTimers();
+  const model = getSoundLabModel();
+  const pattern = model.performanceFeel?.triggerPattern ?? [];
+  if (!pattern.length) return;
+
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = 'material';
+  state.activeWorkbenchModuleMapId = 'compare';
+  state.workbenchActionFeedback = 'Performance Feel 三连试听：轻触、常规、重触，听力度和微漂移是否像真实合成器。';
+  refreshSoundLabRuntimeUi(model);
+
+  pattern.forEach((hit, index) => {
+    const timer = globalThis.setTimeout(() => {
+      const note = index === pattern.length - 1 && hit.noteOffset > 0 ? 'D3' : state.soundLabPerformance.note;
+      playSoundLabPatch({}, {
+        performance: {
+          ...state.soundLabPerformance,
+          note,
+          velocity: hit.velocity,
+          hold: false,
+        },
+        engineMode: mode === 'hq' ? 'hq' : state.soundLabEngineMode,
+        qualityMode: mode === 'draft' ? 'balanced' : state.soundLabQualityMode,
+      });
+    }, hit.delayMs ?? index * 520);
+    performanceGestureTimers.push(timer);
+  });
+}
+
 async function playSoundLabPatch(macroOverrides = {}, optionOverrides = {}) {
   const model = getSoundLabModel(macroOverrides, optionOverrides);
   const patch = model.patch;
@@ -3233,6 +3295,14 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('[data-sound-lab-play]').forEach((button) => {
     button.addEventListener('click', () => playSoundLabPatch());
+  });
+
+  document.querySelectorAll('[data-performance-feel-play]').forEach((button) => {
+    button.addEventListener('click', () => playPerformanceFeelGesture(button.dataset.performanceFeelPlay));
+  });
+
+  document.querySelectorAll('[data-performance-feel-apply]').forEach((button) => {
+    button.addEventListener('click', () => applyPerformanceFeelPreset(button.dataset.performanceFeelApply));
   });
 
   document.querySelectorAll('[data-sound-lab-ab]').forEach((button) => {

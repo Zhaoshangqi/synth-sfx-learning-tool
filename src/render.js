@@ -1303,6 +1303,40 @@ function renderSoundLabDnaControls(model = {}) {
     '<a class="source-link" href="' + escapeHtml(drawer.sourceUrl ?? '#') + '" target="_blank" rel="noreferrer">Open Source</a></section>';
 }
 
+function renderPerformanceFeelPanel(model = {}) {
+  const feel = model.performanceFeel ?? {};
+  const controls = (feel.controls ?? []).map((control) => {
+    const meter = control.id === 'microTiming'
+      ? Math.min(100, Number(control.value ?? 0) * 7)
+      : control.id === 'pitchDrift'
+        ? Math.min(100, Number(control.value ?? 0) * 6)
+        : Math.min(100, Number(control.value ?? 0));
+    return '<div class="performance-feel-meter" style="--feel-meter:' + formatNumber(meter) + '%">' +
+      '<span><strong>' + escapeHtml(control.labelZh) + '</strong><em>' + escapeHtml(control.value) + escapeHtml(control.unit) + '</em></span>' +
+      '<i aria-hidden="true"></i>' +
+      '<small>' + escapeHtml(control.noteZh) + '</small>' +
+    '</div>';
+  }).join('');
+  const pattern = (feel.triggerPattern ?? []).map((hit) => '<li><strong>' + escapeHtml(hit.velocity) + '</strong><span>' + escapeHtml(hit.labelZh) + '</span></li>').join('');
+
+  return '<div class="performance-feel-panel" aria-label="Performance Feel 演奏手感">' +
+    '<div class="performance-feel-head"><div><h4>Performance Feel / 演奏手感</h4><p>' + escapeHtml(feel.beginnerZh ?? '用力度、微漂移和空间响应把静态按钮声音变成真实可演奏的合成器音效。') + '</p></div><span>' + escapeHtml(feel.mode ?? 'tight') + '</span></div>' +
+    '<div class="performance-feel-actions">' +
+      '<button class="secondary-button" type="button" data-performance-feel-play="gesture">三连试听</button>' +
+      '<button class="ghost-button" type="button" data-performance-feel-apply="tight">Tight</button>' +
+      '<button class="ghost-button" type="button" data-performance-feel-apply="expressive">Expressive</button>' +
+    '</div>' +
+    '<div class="performance-feel-meter-grid">' + controls + '</div>' +
+    '<ol class="performance-feel-pattern">' + pattern + '</ol>' +
+    '<div class="performance-feel-notes">' +
+      '<p><strong>Serum</strong>：Velocity -> amp/filter/drive，Chaos/Random 只推微量 pitch 或 wavetable position。</p>' +
+      '<p><strong>Phase Plant</strong>：Velocity + Random modulator 控 generator gain、filter cutoff 和 lane width。</p>' +
+      '<p><strong>Vital</strong>：Velocity 控 Env amount，Random 控 phase / spectral warp，小幅即可。</p>' +
+      '<p><strong>REAPER</strong>：' + escapeHtml(feel.reaperZh ?? '用 velocity 三连 MIDI 做 A/B，响度匹配后判断手感。') + '</p>' +
+    '</div>' +
+    '</div>';
+}
+
 function renderSoundLabEngineControls(model = {}, options = {}) {
   const activeEngine = options.engineMode ?? model.activeEngineMode ?? model.patch?.engineMode ?? 'worklet';
   const engineUsed = options.engineUsed ?? activeEngine;
@@ -1327,6 +1361,7 @@ function renderSoundLabEngineControls(model = {}, options = {}) {
     '<div class="engine-mode-row">' + engineButtons + '</div>' +
     '<div class="performance-grid"><div class="keyboard-panel" aria-label="Playable keyboard"><div class="keyboard-head"><strong>Playable Synth</strong><span>Tone.js / Native</span></div><div class="sound-lab-keyboard">' + keys + '</div><button class="secondary-button hold-button ' + (model.patch?.performance?.hold ? 'is-active' : '') + '" type="button" data-performance-hold>Hold Loop</button></div>' +
     '<div class="performance-panel" aria-label="Performance controls">' + performanceControls + '</div>' +
+    renderPerformanceFeelPanel(model) +
     '<div class="fx-rack-panel" aria-label="FX Rack"><h4>FX Rack</h4>' + fx + '</div></div>' +
     '</section>';
 }

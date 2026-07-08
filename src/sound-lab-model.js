@@ -578,6 +578,49 @@ function buildControlSmoothing(performance, quality) {
   };
 }
 
+function buildPerformanceFeel(family, values, performance, quality) {
+  const velocityNorm = clamp(performance.velocity ?? 72, 0, 127) / 127;
+  const glideNorm = clamp(performance.glide ?? 12, 0, 100) / 100;
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const space = normalize(values.space);
+  const variation = normalize(values.variation);
+  const studioBonus = quality.id === 'studio' ? 0.12 : quality.id === 'balanced' ? 0.05 : 0;
+  const familyName = family?.titleZh ?? '当前音色';
+  const microTimingMs = Number(clamp(0.6 + motion * 4.4 + variation * 7.2 + glideNorm * 3.2 + studioBonus * 3, 0.4, 14).toFixed(1));
+  const pitchDriftCents = Number(clamp(0.8 + variation * 8.5 + glideNorm * 4.8 + motion * 2.2 + studioBonus * 4, 0.4, 16).toFixed(1));
+  const transientPunch = Number(clamp(0.82 + velocityNorm * 0.5 + material * 0.14, 0.76, 1.42).toFixed(2));
+  const bodyFollow = Number(clamp(0.88 + velocityNorm * 0.2 + material * 0.08, 0.8, 1.2).toFixed(2));
+  const stereoGesture = Number(clamp(0.12 + space * 0.38 + variation * 0.22 + velocityNorm * 0.1, 0.08, 0.88).toFixed(2));
+  const mode = velocityNorm > 0.74 || variation > 0.48 || glideNorm > 0.36 ? 'expressive' : 'tight';
+  const baseVelocity = clamp(Math.round(performance.velocity ?? 72), 1, 127);
+  const triggerPattern = [
+    { id: 'hit-1', delayMs: 0, velocity: clamp(baseVelocity - 15, 1, 127), noteOffset: 0, labelZh: '轻触：先听 dry 起音' },
+    { id: 'hit-2', delayMs: 520, velocity: clamp(baseVelocity, 1, 127), noteOffset: 0, labelZh: '常规：听主体跟随' },
+    { id: 'hit-3', delayMs: 1080, velocity: clamp(baseVelocity + 18, 1, 127), noteOffset: glideNorm > 0.3 ? 1 : 0, labelZh: '重触：听瞬态和空间' },
+  ];
+
+  return {
+    mode,
+    titleZh: 'Performance Feel / 演奏手感',
+    beginnerZh: `把 ${familyName} 连续触发三次：力度决定 transient，微漂移决定真实手感，空间响应决定声音是不是像真实合成器而不是静态按钮。`,
+    synthZh: 'Serum / Phase Plant / Vital：把 velocity 映射到 amp/filter/drive，小幅 random 映射到 pitch 或 sample start，glide 只做轻微平滑。',
+    reaperZh: 'REAPER：用三连 MIDI velocity 做 A/B，响度匹配后检查每次触发是否有可听差异，但仍像同一个 Patch。',
+    transientPunch,
+    bodyFollow,
+    microTimingMs,
+    pitchDriftCents,
+    stereoGesture,
+    triggerPattern,
+    controls: [
+      { id: 'punch', labelZh: '力度响应', value: Math.round(transientPunch * 72), unit: '%', noteZh: '重触时 transient 和 drive 稍微抬起。' },
+      { id: 'microTiming', labelZh: '微时差', value: microTimingMs, unit: 'ms', noteZh: '分层不完全同时进来，避免死板。' },
+      { id: 'pitchDrift', labelZh: '微音高漂移', value: pitchDriftCents, unit: 'ct', noteZh: '只做几 cents 的活感，不让音高跑掉。' },
+      { id: 'spaceResponse', labelZh: '空间响应', value: Math.round(stereoGesture * 100), unit: '%', noteZh: '重触时宽度和尾音略微打开。' },
+    ],
+  };
+}
+
 function buildMacroModulation(values) {
   return [
     { source: 'brightness', target: 'filter.frequency + oscillator partial brightness', amount: normalize(values.brightness) },
@@ -646,26 +689,61 @@ function buildUnisonProfile(engine, quality, motion, variation, index) {
   };
 }
 
+function buildLayerPerformanceFeel(role, index, performanceFeel, variation) {
+  if (!performanceFeel) return undefined;
+  const roleGainMap = {
+    transient: performanceFeel.transientPunch,
+    body: performanceFeel.bodyFollow,
+    texture: 1 + variation * 0.08,
+    tail: 1 + performanceFeel.stereoGesture * 0.06,
+  };
+  const roleOffsetMap = {
+    transient: -0.18,
+    body: 0.34,
+    texture: 0.68,
+    tail: 1,
+  };
+  const direction = index % 2 === 0 ? -1 : 1;
+  return {
+    velocityGain: Number(clamp(roleGainMap[role] ?? 1, 0.72, 1.46).toFixed(2)),
+    microOffsetMs: Number(clamp((roleOffsetMap[role] ?? 0.4) * performanceFeel.microTimingMs + direction * variation * 1.6, -2, 22).toFixed(1)),
+    pitchDriftCents: Number(clamp(performanceFeel.pitchDriftCents * (role === 'transient' ? 0.28 : role === 'tail' ? 0.42 : 0.72), 0, 16).toFixed(1)),
+    stereoGesture: performanceFeel.stereoGesture,
+  };
+}
+
 function buildLayer(recipe, context, index) {
-  const { base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix } = context;
+  const { base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix, performanceFeel } = context;
   const role = recipe.role;
   const gain = roleGain(role, layerMix, quality, recipe.gain);
   const envelope = layerEnvelope(role, durationSeconds, material, space);
   const pan = clamp((index - 2) * 0.11 + (variation - 0.5) * 0.18, -0.55, 0.55);
   const sampleAsset = recipe.sampleAssetId ? getSampleAsset(recipe.sampleAssetId) : null;
   const unison = buildUnisonProfile(recipe.engine, quality, motion, variation, index);
+  const layerFeel = buildLayerPerformanceFeel(role, index, performanceFeel, variation);
+  const feelGain = layerFeel?.velocityGain ?? 1;
+  const feelOffset = layerFeel?.microOffsetMs ?? 0;
+  const feelStereo = layerFeel?.stereoGesture ?? 0;
 
   const common = {
     id: `${role}-${recipe.engine}-${index}`,
     role,
     engine: recipe.engine,
-    gain: recipe.engine === 'sampleGrain' ? gain * sampleMix : gain,
-    onsetMs: Number(layerOnsetMs(role, index, motion, space, variation, quality).toFixed(1)),
+    gain: clamp((recipe.engine === 'sampleGrain' ? gain * sampleMix : gain) * feelGain, 0, 1.6),
+    onsetMs: Number(clamp(layerOnsetMs(role, index, motion, space, variation, quality) + feelOffset, 0, 120).toFixed(1)),
     pan,
-    stereoSpread: layerStereoSpread(role, recipe.engine, quality, space, variation, index),
+    stereoSpread: clamp(layerStereoSpread(role, recipe.engine, quality, space, variation, index) + feelStereo * (role === 'tail' ? 0.2 : role === 'texture' ? 0.14 : 0.08), 0.02, 0.96),
     envelope,
   };
+  if (layerFeel) common.performanceFeel = layerFeel;
   if (unison) common.unison = unison;
+  if (common.unison && layerFeel) {
+    common.unison = {
+      ...common.unison,
+      detuneCents: clamp(common.unison.detuneCents + layerFeel.pitchDriftCents * 0.18, 0, 24),
+      analogDrift: clamp(common.unison.analogDrift + layerFeel.pitchDriftCents * 0.00045, 0, 0.04),
+    };
+  }
 
   if (recipe.engine === 'sampleGrain') {
     return {
@@ -729,7 +807,7 @@ function buildLayer(recipe, context, index) {
   };
 }
 
-function buildLayers({ family, base, dsp, durationSeconds, values, options, presetDna }) {
+function buildLayers({ family, base, dsp, durationSeconds, values, options, presetDna, performanceFeel }) {
   const brightness = normalize(values.brightness);
   const motion = normalize(values.motion);
   const material = normalize(values.material);
@@ -746,7 +824,7 @@ function buildLayers({ family, base, dsp, durationSeconds, values, options, pres
     { role: 'tail', engine: 'filteredNoise', gain: 0.18 },
   ];
 
-  const context = { family, base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix };
+  const context = { family, base, dsp, durationSeconds, layerMix, quality, material, brightness, motion, space, variation, sampleMix, performanceFeel };
   const layers = recipe.map((recipeLayer, index) => buildLayer(recipeLayer, context, index));
 
   if (quality.id === 'studio' && !layers.some((layer) => layer.role === 'tail' && layer.engine === 'sampleGrain')) {
@@ -827,12 +905,14 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const xyPad = xyPadValues(outputOptions.xyPad);
   const modMatrix = modMatrixValues(outputOptions.modMatrix, values, xyPad);
   const dsp = applyModMatrixToDsp(baseDsp, modMatrix, values, xyPad, performance);
-  const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options: outputOptions, presetDna });
-  const quality = getQualityMode(layerData.qualityMode);
-  const controlSmoothing = buildControlSmoothing(performance, quality);
-  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, quality, layerData), outputMode);
-  const acousticCues = buildAcousticCues(layerData.layers, values, quality);
-  const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...outputOptions, masterPolish });
+  const quality = getQualityMode(outputOptions.qualityMode);
+  const performanceFeel = buildPerformanceFeel(family, values, performance, quality);
+  const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options: outputOptions, presetDna, performanceFeel });
+  const resolvedQuality = getQualityMode(layerData.qualityMode);
+  const controlSmoothing = buildControlSmoothing(performance, resolvedQuality);
+  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, resolvedQuality, layerData), outputMode);
+  const acousticCues = buildAcousticCues(layerData.layers, values, resolvedQuality);
+  const toneGraph = buildToneGraph(family, values, dsp, resolvedQuality, performance, { ...outputOptions, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
   toneGraph.effects = fxRack;
   const macroModulation = buildMacroModulation(values);
@@ -849,6 +929,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     durationSeconds,
     macros: values,
     performance,
+    performanceFeel,
     controlSmoothing,
     presetDna,
     qualityMode: layerData.qualityMode,
@@ -861,8 +942,8 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     fxOrder: fxRack.map((slot) => slot.id),
     globalFx: {
       space: {
-        mix: clamp(dsp.space.mix * quality.fxScale, 0, 0.48),
-        decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.1, 2.8),
+        mix: clamp(dsp.space.mix * resolvedQuality.fxScale, 0, 0.48),
+        decaySeconds: clamp(dsp.space.decaySeconds * resolvedQuality.fxScale, 0.1, 2.8),
         width: dsp.space.width,
         preDelayMs: clamp(acousticCues.tailPreDelayMs, 0, 120),
         diffusion: acousticCues.diffusion,
@@ -919,6 +1000,7 @@ export function buildWorkletMessage(patch) {
       controlSmoothing: patch.controlSmoothing,
       engineMode: patch.engineMode,
       performance: patch.performance,
+      performanceFeel: patch.performanceFeel,
       toneGraph: patch.toneGraph,
       fxRack: patch.fxRack,
       macroModulation: patch.macroModulation,
@@ -2363,6 +2445,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     qualityMode: patch.qualityMode,
     presetDnaId: patch.presetDna.id,
     performance: patch.performance,
+    performanceFeel: patch.performanceFeel,
     controlSmoothing: patch.controlSmoothing,
     outputMode: patch.outputMode,
     macros: patch.macros,
@@ -2412,6 +2495,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
+    performanceFeel: patch.performanceFeel,
     evidence: family.sourceIds,
     patchJson,
     reaperNotes,
