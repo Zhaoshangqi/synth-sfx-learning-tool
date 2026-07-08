@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 test('document shell includes premium audio-space background layers', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
@@ -1683,6 +1683,37 @@ test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage
   assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
 });
 
+test('reference v9 loads a final clean visual layer after the legacy cascade', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const finalUrl = new URL('../styles-reference.css', import.meta.url);
+
+  assert.match(html, /href="\.\/styles\.css"[\s\S]*href="\.\/styles-reference\.css"/);
+  assert.ok(existsSync(finalUrl), 'final reference layer should be a separate stylesheet loaded after legacy styles.css');
+
+  const css = readFileSync(finalUrl, 'utf8');
+  assert.match(css, /Reference visual system v9\.0 final layer/);
+  assert.match(css, /--ref9-canvas:\s*#e4e4e4/);
+  assert.match(css, /--ref9-ink:\s*#111111/);
+  assert.match(css, /--ref9-paper:\s*#f4f1e8/);
+  assert.match(css, /--ref9-cyan:\s*#75c5de/);
+  assert.match(css, /body\s*\{[\s\S]*background:[\s\S]*var\(--ref9-canvas\)/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(340px,\s*0\.72fr\)/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /\.hero-copy h3\s*\{[\s\S]*font-size:\s*clamp\(42px,\s*6vw,\s*92px\)/);
+  assert.match(css, /\.reference-readable-surface\s*,[\s\S]*\.content :where\([\s\S]*\)\s*\{[\s\S]*color:\s*var\(--ref9-ink\)\s*!important/);
+  assert.match(css, /\.signal-atlas-console :where\(p,\s*li,\s*small,\s*span,\s*em,\s*label,\s*dt,\s*dd,\s*output\)\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.78\)\s*!important/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.visual-spotlight\s*\{[\s\S]*opacity:\s*0\.12\s*!important/);
+});
+
+test('headline reveal segments Chinese text without mojibake regexes', () => {
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(shellJs, /function segmentHeadlineText/);
+  assert.match(shellJs, /Intl\.Segmenter/);
+  assert.match(shellJs, /Array\.from\(text\)/);
+  assert.doesNotMatch(shellJs, /鈥|閸|妫|绱|漖|潀/);
+});
+
 test('reference v8 applies the supplied showcase aesthetic after all legacy style layers', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
@@ -1711,7 +1742,7 @@ test('reference v8 applies the supplied showcase aesthetic after all legacy styl
   assert.match(css, /body\.is-direct-manipulating \.visual-spotlight\s*\{[\s\S]*opacity:\s*0\.28 !important/);
   assert.match(shellJs, /Close navigation menu/);
   assert.match(shellJs, /Open navigation menu/);
-  assert.match(shellJs, /text\.match\(\/“\[\^”\]\+”\|\[\^“”\]\+\/gu\)/);
+  assert.match(shellJs, /segmentHeadlineText\(text\)/);
   assert.match(shellJs, /body\.classList\.contains\('is-direct-manipulating'\)/);
   assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
 });
