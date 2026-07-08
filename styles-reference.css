@@ -950,6 +950,80 @@ body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas
   }
 }
 
+/* Reference aether stream ribbons v9.2
+   Adds the pasted prompt's continuous flow feeling without pulling in React,
+   framer-motion, or heavier runtime dependencies. */
+
+.dashboard-actions .launchpad-button::before,
+.primary-button::before,
+.source-link::before {
+  background:
+    radial-gradient(circle at 88% 50%, rgba(117, 197, 222, 0.22), transparent 0 12px, transparent 13px),
+    linear-gradient(110deg, rgba(255, 255, 255, 0.96), rgba(117, 197, 222, 0.18) 42%, rgba(244, 241, 232, 0.96) 66%, rgba(255, 255, 255, 0.94)) !important;
+  background-size: 92px 100%, 230% 100% !important;
+  animation: ref9-capsule-current 12s ease-in-out infinite alternate;
+}
+
+.content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card):hover::after,
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after,
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after {
+  animation-name: ref9-hover-current;
+  animation-timing-function: cubic-bezier(0.21, 0.61, 0.35, 1);
+}
+
+body.is-direct-manipulating .dashboard-actions .launchpad-button::before,
+body.is-direct-manipulating .primary-button::before,
+body.is-direct-manipulating .source-link::before,
+body.is-direct-manipulating .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card)::after,
+body.is-direct-manipulating .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
+body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
+  animation-name: ref9-hover-current;
+  animation-play-state: paused !important;
+}
+
+@keyframes ref9-capsule-current {
+  from {
+    background-position: 0 50%, 0% 50%;
+  }
+  to {
+    background-position: 54px 50%, 100% 50%;
+  }
+}
+
+@keyframes ref9-hover-current {
+  0% {
+    opacity: 0.22;
+    transform: translate3d(-44%, 0, 0) skewX(-8deg);
+  }
+  46% {
+    opacity: 0.52;
+  }
+  100% {
+    opacity: 0.18;
+    transform: translate3d(46%, 0, 0) skewX(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-actions .launchpad-button::before,
+  .primary-button::before,
+  .source-link::before {
+    animation-name: ref9-capsule-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+
+  .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card)::after,
+  .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
+  .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
+    animation-name: ref9-hover-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
 .ear-triage-panel {
   border-color: rgba(117, 197, 222, 0.24) !important;
 }

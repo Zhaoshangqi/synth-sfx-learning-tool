@@ -431,3 +431,32 @@ Passed for this iteration. The app now has a calmer Aether-style signal flow lay
 
 ## Result
 Passed for this iteration. The prompted Aether-style flow layer remains active and drag-safe, Sound Lab now has a concrete listening triage workflow, and static module caching no longer leaves the app blank after updates.
+
+---
+
+# Design QA - Aether Stream Ribbons + Live Control Feedback
+
+## Focus
+- Goal: adapt the attached Aether Flow prompt into the existing static app without converting the project to React, shadcn, Tailwind, or framer-motion.
+- Visual upgrade: `visual-space.js` now adds continuous stream ribbons over the existing particle web, with slow canvas flow, pointer repulsion, restrained cyan/violet/mint color, and no black full-canvas fill.
+- Interaction upgrade: primary capsule buttons now use a subtle `ref9-capsule-current` flow, and hover surfaces use `ref9-hover-current`.
+- Stability upgrade: direct Sound Lab routes, range dragging, and reduced-motion mode still pause expensive flow animation instead of causing viewport flashes.
+- Learning upgrade: continuous Sound Lab parameter edits now write a concise status receipt explaining what changed, what to listen for, and how to verify in REAPER.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?flowribbons=1783512760283` and `http://localhost:5177/?flowribbons=1783512763366#soundlab`.
+- Browser path: Playwright using local Chrome, because the bundled Playwright browser binary was not installed.
+- Dashboard flow: passed. `#particle-canvas` rendered at `1440 x 980`, `visual-space.js?v=20260708-flow-ribbons` and `styles-reference.css?v=20260708-flow-ribbons` loaded, primary CTA `::before` computed animation is `ref9-capsule-current`, hero `::after` animation is `ref9-aether-flow`, splash is `display:none`, and horizontal overflow is `0`.
+- Sound Lab range edit: passed. Brightness changed to `41`, the status receipt updated to `已调 Brightness 明暗 41...REAPER...`, horizontal overflow stayed `0`, `#app.is-view-switching=false`, `body.is-direct-manipulating=false`, splash stayed `none`, and no console errors were captured.
+
+## Screenshots
+- Dashboard stream ribbons: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-flow-ribbons-dashboard.png`
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "continuous stream ribbons" tests\visual-shell.test.mjs` failed before implementation on missing `aetherStreams`.
+- Targeted green: `node --test --test-name-pattern "aether flow|continuous stream ribbons|cache-busting|live control feedback" tests\visual-shell.test.mjs`: 4 passed.
+- Syntax: `node --check src\visual-space.js` and `node --check src\app.js`: passed.
+- Full suite: `npm.cmd test`: 229 passed.
+
+## Result
+Passed for this iteration. The attached Aether Flow prompt is now represented as native, cache-busted, drag-safe canvas/CSS motion, and Sound Lab controls still update teaching feedback without rebuilding the page.

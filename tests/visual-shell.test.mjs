@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-flow-ribbons"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -255,6 +255,22 @@ test('aether flow prompt is adapted as native signal flow without viewport flash
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-flow/);
 });
 
+test('aether flow prompt adds continuous stream ribbons and restrained hover currents', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+
+  assert.match(js, /aetherStreams/);
+  assert.match(js, /AETHER_STREAM_COUNT/);
+  assert.match(js, /drawAetherStreamRibbons/);
+  assert.match(js, /createAetherStream/);
+  assert.match(js, /isAetherFlowPaused\(\)[\s\S]*drawAetherStreamRibbons/, 'stream ribbons should respect direct-control pause');
+  assert.match(css, /Reference aether stream ribbons v9\.2/);
+  assert.match(css, /@keyframes ref9-capsule-current/);
+  assert.match(css, /@keyframes ref9-hover-current/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-hover-current/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-capsule-current/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -268,8 +284,8 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-ear-triage"/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-ear-triage'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-ribbons"/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-ribbons'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -457,6 +473,20 @@ test('Sound Lab playback updates runtime chrome without rebuilding the page', ()
   assert.doesNotMatch(playBlock, /render\(/, 'playback should not trigger a raw page render');
   assert.match(feedbackBlock, /refreshSoundLabRuntimeUi\(\)/, 'small workbench feedback should update status text in place');
   assert.doesNotMatch(feedbackBlock, /renderSameView\(\)/, 'clearing a button confirmation state must not rebuild Sound Lab after a delay');
+});
+
+test('Sound Lab live control feedback explains the edit without rebuilding the page', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const feedbackBlock = appJs.match(/function updateLiveControlFeedback[\s\S]*?\r?\n}\r?\n\r?\nfunction applyImmediateControlFeedback/)?.[0] ?? '';
+  const immediateBlock = appJs.match(/function applyImmediateControlFeedback[\s\S]*?\r?\n}\r?\n\r?\nfunction scheduleRangeChromeUpdate/)?.[0] ?? '';
+
+  assert.ok(feedbackBlock, 'live control feedback should be an explicit helper that can be audited');
+  assert.match(feedbackBlock, /state\.workbenchActionFeedback\s*=/, 'live control edits should write the shared workbench status');
+  assert.match(feedbackBlock, /topic\.listenZh/, 'feedback should tell beginners what to listen for');
+  assert.match(feedbackBlock, /topic\.reaperZh/, 'feedback should include the REAPER verification habit');
+  assert.match(immediateBlock, /updateLiveControlFeedback\(topic,\s*`\$\{input\.value\}\$\{unit\}`\)/);
+  assert.match(immediateBlock, /refreshSoundLabRuntimeUi\(\)/);
+  assert.doesNotMatch(immediateBlock, /renderSameView\(\)|render\(/, 'continuous control feedback must not rebuild Sound Lab');
 });
 
 test('background parallax is throttled and pauses during direct manipulation', () => {
@@ -994,7 +1024,9 @@ test('sound lab live controls update the parameter coach without forcing rerende
   assert.match(appJs, /SOUND_LAB_PARAMETER_COACH/);
   assert.match(appJs, /function updateParameterCoach/);
   assert.match(appJs, /coachTopicForInput/);
-  assert.match(appJs, /updateParameterCoach\(coachTopicForInput\(input\)/);
+  assert.match(appJs, /const topic = coachTopicForInput\(input\)/);
+  assert.match(appJs, /updateParameterCoach\(topic/);
+  assert.match(appJs, /updateLiveControlFeedback\(topic/);
   assert.match(appJs, /SOUND_LAB_PARAMETER_COACH\.special\.xyPad/);
   assert.doesNotMatch(appJs, /function updateParameterCoach[\s\S]{0,1200}renderSameView\(/);
   assert.match(css, /\.parameter-coach-panel\s*\{/);

@@ -5,6 +5,7 @@ let width = 0;
 let height = 0;
 let particles = [];
 let signalParticles = [];
+let aetherStreams = [];
 let transitionBursts = [];
 let frameId = 0;
 let spaceParallaxFrame = 0;
@@ -16,6 +17,8 @@ const WAVE_ROWS = [0.28, 0.52, 0.76];
 const AETHER_MOUSE_RADIUS = 210;
 const AETHER_CONNECTION_RADIUS = 136;
 const AETHER_WEB_STRIDE = 6;
+const AETHER_STREAM_COUNT = 5;
+const AETHER_STREAM_SEGMENTS = 72;
 
 function isAetherFlowPaused() {
   return Boolean(globalThis.__synthDirectManipulating || document.body?.classList.contains('is-direct-manipulating'));
@@ -33,6 +36,22 @@ function aetherRepel(x, y, z = 1) {
     x: x + (dx / distance) * lift,
     y: y + (dy / distance) * lift * 0.78,
     force,
+  };
+}
+
+function createAetherStream(index) {
+  const span = AETHER_STREAM_COUNT + 1;
+  return {
+    baseY: height * ((index + 1) / span) + random(-28, 28),
+    amplitude: random(18, 52),
+    frequency: random(3.6, 6.8),
+    phase: random(0, Math.PI * 2),
+    speed: random(0.00018, 0.00034),
+    z: random(0.28, 0.9),
+    parallaxX: random(10, 28),
+    parallaxY: random(7, 18),
+    width: random(0.8, 1.8),
+    color: index % 3 === 0 ? '117, 197, 222' : index % 3 === 1 ? '167, 139, 250' : '94, 234, 212',
   };
 }
 
@@ -74,6 +93,8 @@ function resize() {
     hue: index % 4 === 0 ? 'violet' : index % 5 === 0 ? 'green' : 'cyan',
   }));
 
+  const streamCount = width < 760 ? 3 : AETHER_STREAM_COUNT;
+  aetherStreams = Array.from({ length: streamCount }, (_, index) => createAetherStream(index));
   transitionBursts = [];
 }
 
@@ -160,6 +181,42 @@ function drawAetherFlowWeb(time) {
       ctx.stroke();
     }
   }
+}
+
+function drawAetherStreamRibbons(time) {
+  if (prefersReducedMotion || isAetherFlowPaused()) return;
+
+  aetherStreams.forEach((stream, streamIndex) => {
+    const gradient = ctx.createLinearGradient(0, stream.baseY, width, stream.baseY + stream.amplitude);
+    const pulse = 0.55 + Math.sin(time * 0.00065 + stream.phase) * 0.28;
+    gradient.addColorStop(0, `rgba(${stream.color}, 0)`);
+    gradient.addColorStop(0.28, `rgba(${stream.color}, ${0.018 + pulse * 0.018})`);
+    gradient.addColorStop(0.56, `rgba(255, 255, 255, ${0.012 + stream.z * 0.014})`);
+    gradient.addColorStop(0.82, `rgba(${stream.color}, ${0.016 + pulse * 0.014})`);
+    gradient.addColorStop(1, `rgba(${stream.color}, 0)`);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_STREAM_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_STREAM_SEGMENTS;
+      const x = -90 + progress * (width + 180);
+      const phase = stream.phase + time * stream.speed + progress * stream.frequency + pointer.x * 0.45;
+      const y = stream.baseY
+        + Math.sin(phase) * stream.amplitude
+        + Math.sin(phase * 0.43 + streamIndex) * stream.amplitude * 0.38
+        + pointer.y * stream.parallaxY;
+      const flow = aetherRepel(x + pointer.x * stream.parallaxX, y, stream.z);
+      if (segment === 0) ctx.moveTo(flow.x, flow.y);
+      else ctx.lineTo(flow.x, flow.y);
+    }
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = stream.width;
+    ctx.shadowColor = `rgba(${stream.color}, 0.08)`;
+    ctx.shadowBlur = 12 * stream.z;
+    ctx.stroke();
+    ctx.restore();
+  });
 }
 
 function drawSignalWave(time) {
@@ -296,6 +353,7 @@ function tick(time = 0) {
 
   drawRippleField(time);
   drawSignalWave(time);
+  if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   particles.forEach((particle) => {
     particle.x += particle.vx * particle.z;
     particle.y += particle.vy * particle.z;
