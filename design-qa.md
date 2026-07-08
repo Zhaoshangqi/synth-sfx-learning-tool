@@ -398,3 +398,36 @@ Passed for this iteration. This pass replaces the old mixed dark/light overrides
 
 ## Result
 Passed for this iteration. The app now has a calmer Aether-style signal flow layer, fewer direct-route flash sources, verified draggable Sound Lab controls, and a more visible explanation of the subtle motion bus that makes patches feel less static.
+
+---
+
+# Design QA - Flow Cache Stability + Ear Triage
+
+## Focus
+- Goal: keep the Aether Flow motion layer from the supplied prompt, then add a beginner-readable `Ear Triage` workflow in Sound Lab.
+- Learning upgrade: `Ear Triage` turns the highest Patch Doctor diagnosis into four practical actions: listen, solo one layer, apply one small repair, and write a REAPER A/B decision.
+- Runtime stability upgrade: static entry files now use `?v=20260708-flow-ear-triage` so GitHub Pages or local browser caches do not mix a new `app.js` with an old `view-model.js`.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?browserqa=1783511350617#soundlab`.
+- Browser path: in-app browser runtime.
+- Page identity: passed. Title is `合成器音效学习工具`.
+- Render check: passed. `.sound-lab-workbench`, `.ear-triage-panel`, and `#particle-canvas` all render.
+- Flow/canvas check: passed. Canvas is active at `1280x720`; direct `#soundlab` route keeps `.visual-splash` at `display:none`.
+- Interaction: passed. Clicking `Solo Texture` set active layer audition to `texture`; clicking the triage repair changed Brightness `80 -> 72` and routed the workbench to `compare`; setting the Brightness range to `42` did not trigger view switching.
+- Stability: passed. Horizontal overflow stayed `0`; after range interaction, `body.is-direct-manipulating=false`, `#app.is-view-switching=false`, and splash stayed `none`.
+- Console note: the browser log buffer retained pre-fix module-cache errors. After versioned entry/module paths, the page rendered successfully and the failing state did not reproduce.
+
+## Screenshots
+- Sound Lab range state after QA: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-aether-flow-qa\soundlab-ear-triage-flow.png`
+- Sound Lab panel region: `C:\Users\zhaoshangqi\AppData\Local\Temp\synth-aether-flow-qa\soundlab-ear-triage-panel.png`
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "ear triage|Ear Triage" tests\sound-lab.test.mjs` failed before implementation because `model.earTriage` was missing.
+- TDD red: `node --test --test-name-pattern "Ear Triage|ear triage" tests\render.test.mjs` failed before implementation because `ear-triage-panel` was missing.
+- Cache regression red: `node --test --test-name-pattern "cache-busting" tests\visual-shell.test.mjs` failed before adding versioned static entry points.
+- Syntax: `node --check src\app.js`, `src\sound-lab-model.js`, and `src\render.js`: passed.
+- Full suite: `npm.cmd test`: 227 passed.
+
+## Result
+Passed for this iteration. The prompted Aether-style flow layer remains active and drag-safe, Sound Lab now has a concrete listening triage workflow, and static module caching no longer leaves the app blank after updates.

@@ -856,6 +856,34 @@ test('renderSoundLabWorkbench shows motion bus realism in the quality card', () 
   assert.match(qualityBlock, /transient shield|tail bloom|wow|瞬态|尾巴/i);
 });
 
+test('renderSoundLabWorkbench renders Ear Triage as a real listening workflow', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 94,
+    motion: 28,
+    material: 92,
+    space: 76,
+    variation: 44,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'compare',
+    layerMix: { transient: 92, body: 44, texture: 86, tail: 82 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+
+  assert.match(html, /ear-triage-panel/);
+  assert.match(html, /Ear Triage|听感分诊|分诊/);
+  assert.match(html, /triage-step-card/);
+  assert.match(html, /data-layer-audition="(?:transient|body|texture|tail|full)"/);
+  assert.match(html, /data-quality-coach-apply="/);
+  assert.match(html, /data-workbench-action="/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER|A\/B|保留|撤回/);
+});
+
 test('renderSoundLabWorkbench renders live parameter coach with synth and REAPER guidance', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

@@ -1663,6 +1663,53 @@ function renderListeningCompassPanel(model = {}) {
   `;
 }
 
+function renderEarTriagePanel(model = {}) {
+  const triage = model.earTriage ?? {};
+  const steps = triage.steps ?? [];
+  if (!steps.length) return '';
+  const synthMap = triage.synthMap ?? {};
+  const renderStepAction = (step) => {
+    const label = escapeHtml(step.actionLabelZh ?? '执行');
+    if (step.layerAudition) {
+      return `<button type="button" data-layer-audition="${escapeHtml(step.layerAudition)}">${label}</button>`;
+    }
+    if (step.applyDiagnosticId) {
+      return `<button type="button" data-quality-coach-apply="${escapeHtml(step.applyDiagnosticId)}">${label}</button>`;
+    }
+    return `<button type="button" data-workbench-action="${escapeHtml(step.action ?? 'focus-practice-loop')}">${label}</button>`;
+  };
+
+  return `
+    <section class="side-panel ear-triage-panel" aria-label="Ear Triage 听感分诊">
+      <div class="atlas-inspector-heading">
+        <span aria-hidden="true">Ear</span>
+        <strong>${escapeHtml(triage.titleZh ?? 'Ear Triage 听感分诊')}</strong>
+      </div>
+      <div class="ear-triage-problem">
+        <span>${escapeHtml(triage.subtitleZh ?? '当前先处理最高优先问题')}</span>
+        <p>${escapeHtml(triage.summaryZh ?? '先听、再 solo、只改一次、最后 A/B 记录。')}</p>
+      </div>
+      <div class="triage-step-grid">
+        ${steps.map((step) => `
+          <article class="triage-step-card" data-triage-step="${escapeHtml(step.id)}">
+            <div>
+              <strong>${escapeHtml(step.labelZh)}</strong>
+              ${renderStepAction(step)}
+            </div>
+            <p>${escapeHtml(step.bodyZh ?? '')}</p>
+          </article>
+        `).join('')}
+      </div>
+      <div class="triage-synth-map" aria-label="Serum Phase Plant Vital translation">
+        <span><b>Serum</b>${escapeHtml(synthMap.serum ?? '')}</span>
+        <span><b>Phase Plant</b>${escapeHtml(synthMap.phasePlant ?? '')}</span>
+        <span><b>Vital</b>${escapeHtml(synthMap.vital ?? '')}</span>
+      </div>
+      <p class="triage-decision">${escapeHtml(triage.decisionPromptZh ?? 'REAPER: A/B 后写保留/撤回原因。')}</p>
+    </section>
+  `;
+}
+
 function renderPatchDoctorPanel(model = {}) {
   const doctor = model.patchDoctor ?? {};
   const diagnostics = doctor.diagnostics ?? [];
@@ -2789,6 +2836,7 @@ function renderWorkbenchRightRail(family = {}, model = {}) {
         <p>${escapeHtml(theoryText)}</p>
       </section>
       ${renderListeningCompassPanel(model)}
+      ${renderEarTriagePanel(model)}
       ${renderPatchDoctorPanel(model)}
       ${renderPracticeLoopPanel(model)}
       <section class="side-panel source-inspector-panel">

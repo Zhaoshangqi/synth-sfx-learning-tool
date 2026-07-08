@@ -754,8 +754,8 @@ body.is-direct-manipulating .visual-spotlight {
   color: rgba(244, 241, 232, 0.78) !important;
 }
 
-.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .atlas-command-dock, .professional-module-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel, .waveform-panel, .spectrum-panel, .output-meter-strip, .macro-knob, .material-button, .xy-pad, .macro-morph-card, .fx-chain-card, .mod-matrix-panel, .envelope-editor-panel),
-.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .atlas-command-dock, .professional-module-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel, .waveform-panel, .spectrum-panel, .output-meter-strip, .macro-knob, .material-button, .xy-pad, .macro-morph-card, .fx-chain-card, .mod-matrix-panel, .envelope-editor-panel) {
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .atlas-command-dock, .professional-module-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel, .waveform-panel, .spectrum-panel, .output-meter-strip, .macro-knob, .material-button, .xy-pad, .macro-morph-card, .fx-chain-card, .mod-matrix-panel, .envelope-editor-panel),
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .atlas-command-dock, .professional-module-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel, .waveform-panel, .spectrum-panel, .output-meter-strip, .macro-knob, .material-button, .xy-pad, .macro-morph-card, .fx-chain-card, .mod-matrix-panel, .envelope-editor-panel) {
   border-color: rgba(244, 241, 232, 0.12) !important;
   background:
     linear-gradient(145deg, rgba(244, 241, 232, 0.075), rgba(244, 241, 232, 0.035)),
@@ -883,15 +883,15 @@ body.is-direct-manipulating .sound-lab-workbench {
 }
 
 .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card),
-.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel),
-.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) {
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel),
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) {
   position: relative !important;
   overflow: hidden !important;
 }
 
 .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card)::after,
-.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
-.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -907,15 +907,15 @@ body.is-direct-manipulating .sound-lab-workbench {
 }
 
 .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card):hover::after,
-.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after,
-.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after {
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after,
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel):hover::after {
   opacity: 0.5;
   animation-duration: 5.8s;
 }
 
 .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card) > *,
-.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) > *,
-.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) > * {
+.signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) > *,
+.sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel) > * {
   position: relative;
   z-index: 1;
 }
@@ -926,8 +926,8 @@ body.is-direct-manipulating .dashboard-actions .launchpad-button,
 body.is-direct-manipulating .primary-button,
 body.is-direct-manipulating .source-link,
 body.is-direct-manipulating .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card)::after,
-body.is-direct-manipulating .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
-body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
+body.is-direct-manipulating .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
+body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .patch-doctor-panel)::after {
   animation-name: ref9-aether-flow;
   animation-play-state: paused !important;
 }
@@ -948,6 +948,103 @@ body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas
   to {
     transform: translate3d(38%, 0, 0);
   }
+}
+
+.ear-triage-panel {
+  border-color: rgba(117, 197, 222, 0.24) !important;
+}
+
+.ear-triage-problem {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(117, 197, 222, 0.18);
+  border-radius: 16px;
+  background: rgba(117, 197, 222, 0.08);
+}
+
+.ear-triage-problem span {
+  color: var(--ref9-paper) !important;
+  font-weight: 800;
+}
+
+.triage-step-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.triage-step-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 15px;
+  background: rgba(244, 241, 232, 0.055);
+}
+
+.triage-step-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.triage-step-card strong {
+  font-size: 0.9rem;
+}
+
+.triage-step-card p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.triage-step-card button {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 7px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(117, 197, 222, 0.12) !important;
+  color: var(--ref9-paper) !important;
+  font-size: 0.74rem;
+  transition: transform 160ms var(--ref9-ease), border-color 180ms ease, background 180ms ease !important;
+}
+
+.triage-step-card button:hover {
+  transform: translateY(-1px);
+  background: rgba(117, 197, 222, 0.2) !important;
+}
+
+.triage-synth-map {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.triage-synth-map span {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 13px;
+  background: rgba(11, 15, 26, 0.36);
+  color: rgba(244, 241, 232, 0.76) !important;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.triage-synth-map b {
+  color: var(--ref9-paper) !important;
+}
+
+.triage-decision {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 2px solid rgba(117, 197, 222, 0.78);
+  border-radius: 10px;
+  background: rgba(117, 197, 222, 0.08);
+  color: var(--ref9-paper) !important;
+  font-weight: 700;
 }
 
 @media (max-width: 1080px) {
@@ -1036,8 +1133,8 @@ body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas
   .primary-button,
   .source-link,
   .content :where(.learning-path-step, .flow-node, .signal-node, .module-directory-card, .daily-video-card, .source-card)::after,
-  .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
-  .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
+  .signal-atlas-console :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after,
+  .sound-lab-workbench :where(.workbench-panel, .atlas-main-console, .atlas-right-rail, .atlas-goal-panel, .atlas-theory-panel, .sound-quality-coach-panel, .target-match-coach-panel, .listening-compass-panel, .ear-triage-panel, .workbench-coach-panel, .coach-route-panel, .patch-doctor-panel)::after {
     animation-name: ref9-aether-flow;
     animation: none !important;
   }

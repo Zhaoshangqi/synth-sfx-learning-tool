@@ -538,6 +538,35 @@ test('sound quality explains motion bus as beginner-readable synth realism', () 
   assert.ok(motion.value >= 35 && motion.value <= 100);
 });
 
+test('sound lab exposes an ear triage plan that turns diagnosis into one-change practice', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 94,
+    motion: 28,
+    material: 92,
+    space: 76,
+    variation: 44,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'compare',
+    layerMix: { transient: 92, body: 44, texture: 86, tail: 82 },
+  });
+
+  const triage = model.earTriage;
+  assert.ok(triage, 'view model should expose a beginner-facing ear triage plan');
+  assert.equal(triage.problemId, model.patchDoctor.diagnostics[0].id);
+  assert.match(triage.titleZh, /Ear Triage|听感分诊|分诊/i);
+  assert.deepEqual(triage.steps.map((step) => step.id), ['listen', 'isolate', 'adjust', 'verify']);
+  assert.ok(triage.steps.some((step) => step.layerAudition), 'triage needs a real layer solo action');
+  assert.ok(triage.steps.some((step) => step.applyDiagnosticId === triage.problemId), 'triage should reuse the real Patch Doctor one-change action');
+  assert.match(triage.decisionPromptZh, /A\/B|REAPER|保留|撤回/);
+  assert.match(triage.synthMap.serum, /Serum/i);
+  assert.match(triage.synthMap.phasePlant, /Phase Plant/i);
+  assert.match(triage.synthMap.vital, /Vital/i);
+});
+
 test('sound lab exposes perceptual calibration for gain-matched comfortable synthesis', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {
