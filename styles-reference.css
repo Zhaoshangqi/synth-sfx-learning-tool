@@ -2806,3 +2806,28 @@ body.is-direct-manipulating .content .sound-lab-workbench.synth-workbench-layout
   opacity: 0.08 !important;
   transition: none !important;
 }
+
+/* Reference aether adaptive mesh v9.16
+   Final native-canvas pass for the pasted Aether Flow prompt: a slow connected
+   particle mesh, pointer magnetic response, route rethreading, and no black
+   repaint loop during control drags. */
+
+#particle-canvas {
+  will-change: opacity, filter;
+  opacity: 0.48 !important;
+  filter: saturate(1.06) contrast(1.02);
+}
+
+body.is-direct-manipulating #particle-canvas {
+  opacity: 0.34 !important;
+  filter: saturate(0.96) contrast(1);
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #particle-canvas {
+    opacity: 0.24 !important;
+    filter: saturate(0.92) contrast(1);
+    transition: none !important;
+  }
+}
