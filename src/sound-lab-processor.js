@@ -402,6 +402,18 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return this.renderFilteredNoise(layer, state, t, duration);
   }
 
+  layerOnsetSeconds(layer) {
+    return clamp((layer?.onsetMs ?? 0) / 1000, 0, 0.12);
+  }
+
+  renderTimedLayer(layer, state, t, duration) {
+    const onset = this.layerOnsetSeconds(layer);
+    if (t < onset) return { mono: 0, side: 0 };
+    const localT = t - onset;
+    const localDuration = Math.max(0.05, duration - onset);
+    return this.renderLayer(layer, state, localT, localDuration);
+  }
+
   applyAnalogOutputSaturation(sample, drive, state) {
     if (!state) return sample;
     const preCoeff = 0.18 + drive * 0.06;
@@ -540,12 +552,15 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const layers = this.patch.layers || [];
     const widthTarget = clamp(this.patch.globalFx?.space?.width ?? this.patch.space?.width ?? 0.28, 0, 1);
     const spaceMixTarget = clamp(this.patch.globalFx?.space?.mix ?? this.patch.space?.mix ?? 0, 0, 0.62);
+    const spacePreDelay = clamp((this.patch.globalFx?.space?.preDelayMs ?? 0) / 1000, 0, 0.18);
+    const diffusionTarget = clamp(this.patch.globalFx?.space?.diffusion ?? 0.5, 0.2, 0.95);
 
     for (let index = 0; index < left.length; index += 1) {
       const absoluteFrame = this.frame + index;
       const t = absoluteFrame / sampleRate;
       const width = clamp(this.smoothGlobalValue('width', widthTarget, 'space'), 0, 1);
       const spaceMix = clamp(this.smoothGlobalValue('spaceMix', spaceMixTarget, 'space'), 0, 0.62);
+      const diffusion = clamp(this.smoothGlobalValue('diffusion', diffusionTarget, 'space'), 0.2, 0.95);
       if (t > duration) {
         left[index] = 0;
         right[index] = 0;
@@ -557,7 +572,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       if (layers.length) {
         for (let layerIndex = 0; layerIndex < layers.length; layerIndex += 1) {
           const layer = layers[layerIndex];
-          const rendered = this.renderLayer(layer, this.layerStates[layerIndex], t, duration);
+          const rendered = this.renderTimedLayer(layer, this.layerStates[layerIndex], t, duration);
           const value = typeof rendered === 'number' ? rendered : rendered.mono;
           const side = typeof rendered === 'number' ? 0 : rendered.side;
           const pan = clamp(this.smoothLayerValue(this.layerStates[layerIndex], 'pan', layer.pan || 0), -1, 1);
@@ -572,10 +587,11 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       }
 
       const tailMotion = Math.sin(t * Math.PI * 2 * (0.13 + width * 0.24)) * width * 0.05;
-      const spacedLeft = this.renderAllpassSpace(mixedLeft, 'left');
-      const spacedRight = this.renderAllpassSpace(mixedRight, 'right');
-      const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width;
-      const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width;
+      const spaceFade = t < spacePreDelay ? 0 : clamp((t - spacePreDelay) * 24, 0, 1);
+      const spacedLeft = this.renderAllpassSpace(mixedLeft * diffusion, 'left');
+      const spacedRight = this.renderAllpassSpace(mixedRight * diffusion, 'right');
+      const finalLeft = mixedLeft * (1 - spaceMix * 0.32) + spacedLeft * spaceMix * width * spaceFade;
+      const finalRight = mixedRight * (1 - spaceMix * 0.32) + spacedRight * spaceMix * width * spaceFade;
       this.applyStereoComfortBus(finalLeft * (1 - tailMotion), finalRight * (1 + tailMotion), t, duration);
       left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft), this.outputStageLeft);
       right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight), this.outputStageRight);

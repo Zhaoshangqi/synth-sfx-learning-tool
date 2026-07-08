@@ -628,17 +628,21 @@ export class LabAudioPlayer {
     nodes.push(bus, shaper, outputGain);
 
     for (const layer of patch.layers) {
+      const layerStartTime = now + clamp((layer.onsetMs ?? 0) / 1000, 0, 0.12);
+      const layerDuration = Math.max(0.05, patch.durationSeconds - (layerStartTime - now));
+      const layerStopAt = layerStartTime + layerDuration;
+
       if (layer.engine === 'modalResonator') {
         for (const resonator of layer.resonators ?? []) {
           const oscillator = this.context.createOscillator();
           const amp = this.context.createGain();
           oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(clamp((layer.baseFrequency ?? 180) * resonator.ratio, 30, 16000), now);
-          this.rampLayerGain(amp.gain, now, { ...layer, gain: layer.gain * resonator.gain }, patch.durationSeconds);
+          oscillator.frequency.setValueAtTime(clamp((layer.baseFrequency ?? 180) * resonator.ratio, 30, 16000), layerStartTime);
+          this.rampLayerGain(amp.gain, layerStartTime, { ...layer, gain: layer.gain * resonator.gain }, layerDuration);
           oscillator.connect(amp);
           amp.connect(bus);
-          oscillator.start(now);
-          oscillator.stop(stopAt + 0.08);
+          oscillator.start(layerStartTime);
+          oscillator.stop(layerStopAt + 0.08);
           nodes.push(oscillator, amp);
         }
         continue;
@@ -652,19 +656,19 @@ export class LabAudioPlayer {
         const osc = layer.oscillator ?? {};
         const frequency = clamp(osc.frequency ?? 220, 30, 6000);
         carrier.type = osc.shape === 'square' || osc.shape === 'sawtooth' ? osc.shape : 'sine';
-        carrier.frequency.setValueAtTime(frequency, now);
-        carrier.frequency.linearRampToValueAtTime(clamp(frequency * (1 + Math.abs(osc.sweep ?? 0) * 0.24), 30, 8000), now + patch.durationSeconds * 0.7);
+        carrier.frequency.setValueAtTime(frequency, layerStartTime);
+        carrier.frequency.linearRampToValueAtTime(clamp(frequency * (1 + Math.abs(osc.sweep ?? 0) * 0.24), 30, 8000), layerStartTime + layerDuration * 0.7);
         modulator.frequency.value = frequency * clamp(osc.fmRatio ?? 1.7, 0.25, 10);
         modGain.gain.value = clamp(osc.fmDepth ?? 0, 0, 1200);
-        this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+        this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
         modulator.connect(modGain);
         modGain.connect(carrier.frequency);
         carrier.connect(amp);
         amp.connect(bus);
-        modulator.start(now);
-        carrier.start(now);
-        modulator.stop(stopAt + 0.08);
-        carrier.stop(stopAt + 0.08);
+        modulator.start(layerStartTime);
+        carrier.start(layerStartTime);
+        modulator.stop(layerStopAt + 0.08);
+        carrier.stop(layerStopAt + 0.08);
         nodes.push(carrier, modulator, modGain, amp);
         continue;
       }
@@ -678,15 +682,15 @@ export class LabAudioPlayer {
         source.frequency.value = clamp(layer.sourceFrequency ?? 900, 40, 6000);
         delay.delayTime.value = clamp((layer.delayMs ?? 8) / 1000, 0.001, 0.06);
         feedback.gain.value = clamp(layer.feedback ?? 0.35, 0, 0.82);
-        this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+        this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
         source.connect(delay);
         delay.connect(feedback);
         feedback.connect(delay);
         delay.connect(amp);
         source.connect(amp);
         amp.connect(bus);
-        source.start(now);
-        source.stop(stopAt + 0.08);
+        source.start(layerStartTime);
+        source.stop(layerStopAt + 0.08);
         nodes.push(source, delay, feedback, amp);
         continue;
       }
@@ -695,31 +699,34 @@ export class LabAudioPlayer {
       const filter = this.context.createBiquadFilter();
       const amp = this.context.createGain();
       const filterData = layer.filter ?? {};
-      noise.buffer = createNoiseBuffer(this.context, patch.durationSeconds + 0.12);
+      noise.buffer = createNoiseBuffer(this.context, layerDuration + 0.12);
       filter.type = filterData.type === 'lowpass' ? 'lowpass' : filterData.type === 'highpass' ? 'highpass' : 'bandpass';
-      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? filterData.frequency ?? 3200, 120, 16000), now);
+      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? filterData.frequency ?? 3200, 120, 16000), layerStartTime);
       filter.Q.value = clamp(filterData.q ?? 1.2, 0.2, 16);
       if (filterData.sweep) {
-        filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), now + patch.durationSeconds * 0.75);
+        filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), layerStartTime + layerDuration * 0.75);
       }
-      this.rampLayerGain(amp.gain, now, layer, patch.durationSeconds);
+      this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
       noise.connect(filter);
       filter.connect(amp);
       amp.connect(bus);
-      noise.start(now);
-      noise.stop(stopAt + 0.08);
+      noise.start(layerStartTime);
+      noise.stop(layerStopAt + 0.08);
       nodes.push(noise, filter, amp);
     }
 
     if (globalFx.space?.mix > 0) {
+      const spacePreDelay = this.context.createDelay(0.18);
       const convolver = this.context.createConvolver();
       const wet = this.context.createGain();
       convolver.buffer = createSpaceBuffer(this.context, globalFx.space.decaySeconds);
       wet.gain.value = clamp(globalFx.space.mix, 0, 0.46);
-      bus.connect(convolver);
+      spacePreDelay.delayTime.value = clamp((globalFx.space.preDelayMs ?? 0) / 1000, 0, 0.16);
+      bus.connect(spacePreDelay);
+      spacePreDelay.connect(convolver);
       convolver.connect(wet);
       wet.connect(this.master);
-      nodes.push(convolver, wet);
+      nodes.push(spacePreDelay, convolver, wet);
     }
 
     for (const node of nodes) this.activeNodes.add(node);

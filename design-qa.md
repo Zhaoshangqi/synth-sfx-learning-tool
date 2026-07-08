@@ -85,3 +85,34 @@ Passed for this iteration. The final shell matches the supplied showcase languag
 
 ## Result
 Passed for this iteration. This pass makes the current UI more robust before the next deeper work on audio realism, analyzer behavior, and beginner learning flow depth.
+
+---
+
+# Design QA - Showcase Reference Redesign v6.2
+
+## Source Visual Truth
+- Reference source: attached pasted HTML in this thread, a light gray creative-studio showcase with cyan splash blocks, circular black logo, cream burger button, black right-side menu, capsule CTAs, oversized editorial type, and pointer spotlight reveal.
+- Target translation: keep the real synth SFX learning product intact, but restyle the shell as a premium creative audio studio and keep Sound Lab as a dark professional instrument console.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=showcase-v62#dashboard`
+- Desktop viewport: Playwright Chromium 1280 x 720.
+- Dashboard: passed. Body background computed `rgb(228, 228, 228)`, body text `rgb(17, 17, 17)`, and no horizontal overflow.
+- Hero: passed. The main title remains readable, and the compact quality panel is `328 x 338` with hidden overflow.
+- Menu: passed. Burger opens the right menu at `x=812, y=8, w=460, h=704`; transform resolves to `matrix(1, 0, 0, 1, 0, 0)`.
+- Sound Lab: passed. Hash switches to `#soundlab`, menu closes, text color is cream, and waveform/spectrum canvases are both `720 x 216`.
+- Playback: passed. Session play enters `is-playing` and both analyzer canvases are present.
+- Slider feel: passed. After scrolling the real macro range into view, dragging changed Brightness from `80` to `52` without setting `is-view-switching`.
+- Mobile: passed. 390 x 844 dashboard has no horizontal overflow; hero title box is `328 x 126` with `42.9px` type.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- `node --check src\audio-player.js`: passed.
+- `node --check src\sound-lab-processor.js`: passed.
+- `node --check src\app.js`: passed.
+- `node --test tests\sound-lab.test.mjs`: 24 passed.
+- `node --test tests\visual-shell.test.mjs`: 86 passed.
+- `npm.cmd test`: 196 passed.
+
+## Result
+Passed for this iteration. This pass locks the supplied showcase visual direction into the app shell, improves Sound Lab control hit targets, and completes the audio timing depth work for layer onset and space pre-delay in both the Worklet and browser fallback paths.

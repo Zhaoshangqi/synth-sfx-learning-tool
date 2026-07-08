@@ -1467,3 +1467,36 @@ test('product stability pass contains overflow, menu hit areas, and Sound Lab co
   assert.match(css, /\.signal-atlas-console \.vertical-slider input,[\s\S]*\.synth-workbench-layout \.vertical-slider input\s*\{[\s\S]*width:\s*44px/);
   assert.match(css, /\.signal-atlas-console \.range-shell,[\s\S]*\.synth-workbench-layout \.range-shell\s*\{[\s\S]*max-width:\s*100%/);
 });
+
+test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const stabilityIndex = css.indexOf('Product stability pass v5.4');
+  const showcaseIndex = css.indexOf('Showcase reference redesign v6.0');
+  const cleanupIndex = css.indexOf('Showcase reference v6.1');
+  const polishIndex = css.indexOf('Showcase interaction polish v6.2');
+
+  assert.ok(stabilityIndex > -1, 'legacy stability guard should remain auditable');
+  assert.ok(showcaseIndex > stabilityIndex, 'showcase redesign must load after the old dark fallback rules');
+  assert.ok(cleanupIndex > showcaseIndex, 'first viewport cleanup must load after the showcase visual system');
+  assert.ok(polishIndex > cleanupIndex, 'interaction polish must load after the viewport cleanup');
+  assert.match(css, /--showcase-canvas:\s*#E4E4E4/);
+  assert.match(css, /--showcase-ink:\s*#111111/);
+  assert.match(css, /--showcase-paper:\s*#F4F1E8/);
+  assert.match(css, /--showcase-cyan:\s*#75C5DE/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*position:\s*fixed !important[\s\S]*right:\s*8px !important[\s\S]*background:\s*var\(--showcase-menu\) !important/);
+  assert.match(css, /\.shell-menu-open \.sidebar\s*\{[\s\S]*top:\s*8px !important[\s\S]*transform:\s*translate3d\(0,\s*0,\s*0\) !important/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sonic"/);
+  assert.match(css, /Showcase reference v6\.1/);
+  assert.match(css, /\.content:has\(\.dashboard-hero\) > \.view-header\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.quality-panel\s*\{[\s\S]*position:\s*absolute[\s\S]*min-height:\s*0 !important[\s\S]*max-height:\s*none !important[\s\S]*overflow:\s*hidden/);
+  assert.match(css, /\.quality-panel \.metric-row p\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.hero-copy \.card-kicker\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button::before,[\s\S]*\.source-link::before\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.9\)/);
+  assert.match(css, /\.hero-sound-visual::before\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x/);
+  assert.match(css, /\.signal-atlas-console,[\s\S]*\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*transparent !important/);
+  assert.match(css, /\.content \.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\s*\{[\s\S]*background-color:\s*transparent !important/);
+  assert.match(css, /\.signal-atlas-console :where\(p, li, small, span, label, output\),[\s\S]*\.synth-workbench-layout :where\(p, li, small, span, label, output\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.78\) !important/);
+  assert.match(css, /\.range-shell\.is-dragging,[\s\S]*\.synth-workbench-layout \.range-shell\.is-dragging\s*\{[\s\S]*filter:\s*none !important/);
+  assert.match(css, /\.signal-atlas-console input\[type="range"\],[\s\S]*\.synth-workbench-layout input\[type="range"\]\s*\{[\s\S]*min-height:\s*40px[\s\S]*cursor:\s*grab[\s\S]*touch-action:\s*none/);
+  assert.match(css, /\.signal-atlas-console input\[type="range"\]:active,[\s\S]*\.synth-workbench-layout \.range-shell\.is-dragging\s*\{[\s\S]*cursor:\s*grabbing/);
+});
