@@ -1878,6 +1878,24 @@ test('sound lab analyzer coach updates from live analyser frames without rerende
   assert.match(css, /\.analyzer-coach-band \.analyzer-coach-meter i\s*\{[\s\S]*width:\s*var\(--coach-live-value/);
 });
 
+test('sound lab live analyzer summaries keep readable Chinese fallback text', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const start = appJs.indexOf('function computeAnalyzerCoachFrame');
+  const end = appJs.indexOf('function updateAnalyzerCoachRuntimeUi');
+  const block = appJs.slice(start, end);
+  const updateStart = appJs.indexOf('function updateAnalyzerCoachRuntimeUi');
+  const updateEnd = appJs.indexOf('function drawSoundLabAnalyserFrame');
+  const updateBlock = appJs.slice(updateStart, updateEnd);
+
+  assert.ok(start > -1 && end > start, 'computeAnalyzerCoachFrame block should be inspectable');
+  assert.doesNotMatch(block, /璧烽|瀹炴椂|棰戣|涓讳綋|楂橀|灏惧|俙/);
+  assert.match(block, /summaryZh:\s*`实时读图：\$\{statusByBand\[dominant\]\}/);
+  assert.match(block, /statusByBand\[dominant\]/);
+  assert.ok(updateStart > -1 && updateEnd > updateStart, 'updateAnalyzerCoachRuntimeUi block should be inspectable');
+  assert.doesNotMatch(updateBlock, /runtimeStatusByBand/);
+  assert.match(updateBlock, /if \(status\) status\.textContent = analysis\.summaryZh;/);
+});
+
 test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const stabilityIndex = css.indexOf('Product stability pass v5.4');
