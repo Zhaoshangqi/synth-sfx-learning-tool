@@ -401,6 +401,37 @@ Passed for this iteration. The app now has a calmer Aether-style signal flow lay
 
 ---
 
+# Design QA - Aether Packet Flow + Temporal Masking
+
+## Focus
+- Goal: adapt the supplied Aether Flow prompt as native canvas/CSS motion in the existing static app, without adding React, Tailwind, shadcn, framer-motion, or lucide dependencies.
+- Visual upgrade: `visual-space.js` now adds packet currents that travel along the existing Aether stream ribbons, plus a slow `audio-space::after` ambient field drift in `styles-reference.css`.
+- Audio upgrade: Sound Lab studio patches now expose `Temporal Mask`; the Worklet separates dry transient and wet space, ducks the wet tail during the attack window, then sends the result into the comfort bus, master polish, and limiter.
+- Cache stability: entry/module URLs now use `?v=20260708-aether-mask`, including `app.js`, `visual-space.js`, `sound-lab-model.js`, `audio-player.js`, `render.js`, and the Worklet module URL.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=20260708-aether-mask#soundlab`.
+- Browser path: Python Playwright Chromium against the local static server.
+- Page/render check: passed. `.sound-lab-workbench` rendered, `Temporal Mask` appeared in the quality card, `visual-space.js?v=20260708-aether-mask` loaded, `#particle-canvas` opacity computed as `0.18`, and `audio-space::after` animation computed as `ref9-aether-field-drift`.
+- Drag stability: passed. Dragging a visible Sound Lab range kept `.content.is-view-switching=false`, no viewport transition restarted, and canvas opacity stayed `0.18`.
+- Audio click path: passed. Clicking Sound Lab play set a play button to `is-playing`, both waveform and spectrum canvases were present, and no console/page errors were captured.
+
+## Screenshots
+- Sound Lab top after Aether/Temporal QA: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\qa-aether-mask-soundlab.png`
+
+## Automated Checks
+- Targeted green: `node --test --test-name-pattern "temporal masking" tests\sound-lab.test.mjs tests\render.test.mjs`: 3 passed.
+- Targeted green: `node --test --test-name-pattern "aether flow" tests\visual-shell.test.mjs`: 3 passed.
+- Visual shell suite: `node --test tests\visual-shell.test.mjs`: 104 passed.
+- Sound Lab/render suite: `node --test tests\sound-lab.test.mjs tests\render.test.mjs`: 74 passed.
+- Syntax: `node --check src\sound-lab-model.js`, `src\sound-lab-processor.js`, `src\visual-space.js`, `src\audio-player.js`, and `src\app.js`: passed.
+- Full suite: `npm.cmd test`: 233 passed.
+
+## Result
+Passed for this iteration. The supplied Aether Flow idea is now represented as native, drag-safe packet currents and ambient field drift, while Sound Lab's studio output now teaches and applies transient-aware wet-tail masking for a cleaner, more synth-like impact.
+
+---
+
 # Design QA - Flow Cache Stability + Ear Triage
 
 ## Focus

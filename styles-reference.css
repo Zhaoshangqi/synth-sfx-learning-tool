@@ -1024,6 +1024,53 @@ body.is-direct-manipulating .sound-lab-workbench :where(.workbench-panel, .atlas
   }
 }
 
+/* Reference aether packet field v9.3
+   Adds a slow ambient current layer behind the new canvas packet streams. */
+
+.audio-space::after {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 26%, rgba(117, 197, 222, 0.18), transparent 0 12px, transparent 13px),
+    radial-gradient(circle at 74% 64%, rgba(167, 139, 250, 0.13), transparent 0 10px, transparent 11px),
+    conic-gradient(from 130deg at 48% 52%, transparent 0 18%, rgba(117, 197, 222, 0.13) 24%, transparent 34% 58%, rgba(94, 234, 212, 0.08) 66%, transparent 76% 100%),
+    repeating-linear-gradient(118deg, transparent 0 54px, rgba(17, 17, 17, 0.026) 55px, transparent 57px);
+  background-size: 180px 180px, 230px 230px, 100% 100%, 160px 160px;
+  mix-blend-mode: multiply;
+  opacity: 0.18;
+  transform: translate3d(calc(var(--space-x, 0) * 7px), calc(var(--space-y, 0) * 5px), 0) rotate(0.001deg);
+  animation: ref9-aether-field-drift 26s ease-in-out infinite alternate;
+}
+
+body.is-direct-manipulating .audio-space::after {
+  animation-play-state: paused !important;
+  opacity: 0.11 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-aether-field-drift {
+  from {
+    background-position: 0 0, 0 0, 50% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 5px), calc(var(--space-y, 0) * 4px), 0) rotate(-0.6deg);
+  }
+  to {
+    background-position: 68px -32px, -44px 56px, 52% 49%, 88px 44px;
+    transform: translate3d(calc(var(--space-x, 0) * 9px), calc(var(--space-y, 0) * 6px), 0) rotate(0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space::after {
+    animation-name: ref9-aether-field-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+  }
+}
+
 .ear-triage-panel {
   border-color: rgba(117, 197, 222, 0.24) !important;
 }

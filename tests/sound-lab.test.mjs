@@ -493,6 +493,56 @@ test('studio patches expose subtle motion bus for less static synth output', () 
   assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.motionBus));
 });
 
+test('studio patches expose temporal masking so tails do not smear the transient', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 82,
+    motion: 48,
+    material: 88,
+    space: 76,
+    variation: 52,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 92, body: 64, texture: 72, tail: 86 },
+  });
+
+  const masking = patch.globalFx.masterPolish.temporalMasking;
+  assert.ok(masking, 'studio output needs transient-aware temporal masking');
+  assert.ok(masking.attackHoldMs >= 18, 'masking should protect the first hit window');
+  assert.ok(masking.releaseMs >= 80, 'masking should recover smoothly after the transient');
+  assert.ok(masking.wetDuck > 0.08, 'wet tail should duck enough to avoid smearing the hit');
+  assert.ok(masking.tailDuckDb >= 1.5, 'model should expose an understandable duck depth');
+  assert.ok(masking.transientProtect > 0.08, 'dry transient should stay forward while wet tail ducks');
+
+  const model = buildSoundLabViewModel(family, patch.macros, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: patch.layerMix,
+  });
+  const temporal = model.soundQuality.find((item) => item.id === 'temporal-mask');
+  assert.ok(temporal, 'quality card should teach temporal masking as a real synth realism metric');
+  assert.match(temporal.labelZh, /Temporal|遮蔽|尾巴/);
+  assert.match(temporal.noteZh, /duck|瞬态|tail|尾巴/i);
+  assert.ok(temporal.value >= 35 && temporal.value <= 100);
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.temporalMasking, masking);
+});
+
+test('sound lab processor applies temporal masking to wet space before output polish', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /applyTemporalMasking/);
+  assert.match(processorJs, /temporalMasking/);
+  assert.match(processorJs, /wetDuck/);
+  assert.match(processorJs, /maskedWetLeft/);
+  assert.match(processorJs, /maskedWetRight/);
+  assert.match(processorJs, /transientProtect/);
+});
+
 test('sound quality exposes beginner-readable comfort bus metrics', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
   const model = buildSoundLabViewModel(family, {

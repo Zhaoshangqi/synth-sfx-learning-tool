@@ -2578,7 +2578,7 @@ function renderWorkbenchQuality(model = {}) {
       statusZh: (item.amount ?? 0) > 0.66 ? '优秀' : '良好',
       noteZh: item.type ?? 'FX',
     }))
-  ).slice(0, 7);
+  ).slice(0, 8);
   const calibration = model.polishCalibration ?? {};
   const calibrationSteps = calibration.steps ?? [];
   const calibrationMeters = calibration.meters ?? [];

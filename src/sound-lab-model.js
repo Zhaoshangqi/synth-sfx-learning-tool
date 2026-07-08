@@ -463,6 +463,15 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     widthTrim: clamp(0.03 + space * 0.08 + tailMix * 0.05 + studioBonus * 0.12, 0.02, 0.24),
     tailDuck: clamp(0.05 + transientMix * 0.14 + tailMix * 0.08 + material * 0.04 + studioBonus * 0.12, 0.04, 0.3),
   };
+  const temporalWetDuck = clamp(0.08 + transientMix * 0.18 + tailMix * 0.16 + space * 0.12 + studioBonus * 0.24, 0.05, 0.56);
+  const temporalMasking = {
+    attackHoldMs: Math.round(clamp(18 + transientMix * 28 + material * 12 + studioBonus * 48, 12, 74)),
+    releaseMs: Math.round(clamp(80 + tailMix * 150 + space * 100 + motion * 34 + studioBonus * 120, 70, 360)),
+    wetDuck: Number(temporalWetDuck.toFixed(3)),
+    tailDuckDb: Number(clamp(temporalWetDuck * 13.5, 1, 9).toFixed(1)),
+    transientProtect: Number(clamp(0.07 + transientMix * 0.18 + material * 0.08 + studioBonus * 0.16, 0.04, 0.42).toFixed(3)),
+    sideDuck: Number(clamp(0.035 + tailMix * 0.12 + space * 0.1 + studioBonus * 0.08, 0.02, 0.28).toFixed(3)),
+  };
   const motionBus = {
     microDynamics: clamp(0.032 + motion * 0.052 + variation * 0.035 + studioBonus * 0.16, 0.02, 0.17),
     transientShield: clamp(0.055 + transientMix * 0.18 + material * 0.055 + studioBonus * 0.22, 0.035, 0.34),
@@ -477,6 +486,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     transientHold: clamp(0.16 + transientMix * 0.3 + material * 0.13, 0.12, 0.72),
     bodyGain: clamp(0.98 - studioBonus * 0.12 - material * 0.05, 0.86, 1),
     comfortBus,
+    temporalMasking,
     motionBus,
   };
 }
@@ -506,6 +516,14 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
         widthTrim: 0,
         tailDuck: 0,
       },
+      temporalMasking: {
+        attackHoldMs: 0,
+        releaseMs: 0,
+        wetDuck: 0,
+        tailDuckDb: 0,
+        transientProtect: 0,
+        sideDuck: 0,
+      },
       motionBus: {
         microDynamics: 0,
         transientShield: 0,
@@ -534,7 +552,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, motionBus: masterPolish.motionBus },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -1052,6 +1070,7 @@ function buildSoundQuality(patch) {
   const polish = patch.globalFx?.masterPolish ?? {};
   const comfortBus = polish.comfortBus ?? {};
   const motionBus = polish.motionBus ?? {};
+  const temporalMasking = polish.temporalMasking ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
       + (polish.lowTighten ?? 0) * 28
@@ -1073,6 +1092,14 @@ function buildSoundQuality(patch) {
       + (motionBus.transientShield ?? 0) * 116
       + (motionBus.tailBloom ?? 0) * 96
       + (motionBus.wowFlutter ?? 0) * 620,
+    0,
+    100,
+  );
+  const temporalScore = clamp(
+    (temporalMasking.wetDuck ?? 0) * 120
+      + (temporalMasking.transientProtect ?? 0) * 160
+      + clamp((temporalMasking.attackHoldMs ?? 0) / 74, 0, 1) * 22
+      + (temporalMasking.tailDuckDb ?? 0) * 7,
     0,
     100,
   );
@@ -1121,6 +1148,13 @@ function buildSoundQuality(patch) {
       noteZh: `transient shield ${formatQualityNumber((motionBus.transientShield ?? 0) * 100)}% / tail bloom ${formatQualityNumber((motionBus.tailBloom ?? 0) * 100)}% / wow ${formatQualityNumber((motionBus.wowFlutter ?? 0) * 100)}%`,
     },
     {
+      id: 'temporal-mask',
+      labelZh: 'Temporal Mask',
+      value: temporalScore,
+      statusZh: '尾巴避让',
+      noteZh: `tail duck ${formatQualityNumber(temporalMasking.tailDuckDb ?? 0)}dB / hold ${Math.round(temporalMasking.attackHoldMs ?? 0)}ms / release ${Math.round(temporalMasking.releaseMs ?? 0)}ms`,
+    },
+    {
       id: 'polish',
       labelZh: 'Polish',
       value: polishScore,
@@ -1133,6 +1167,7 @@ function buildSoundQuality(patch) {
 function buildPolishCalibration(patch) {
   const polish = patch.globalFx?.masterPolish ?? {};
   const comfortBus = polish.comfortBus ?? {};
+  const temporalMasking = polish.temporalMasking ?? {};
   const percent = (value, scale = 1) => Math.round(clamp((value ?? 0) * scale, 0, 1) * 100);
   const loudness = clamp(comfortBus.loudnessMatch ?? 1, 0.72, 1.05);
   const headroom = clamp(comfortBus.headroom ?? 0, 0, 0.22);
@@ -1140,6 +1175,7 @@ function buildPolishCalibration(patch) {
   const transientHold = clamp(polish.transientHold ?? 0, 0, 1);
   const stereoSafety = clamp((comfortBus.monoAnchor ?? 0) * 0.62 + (comfortBus.widthTrim ?? 0) * 0.88, 0, 1);
   const tailDuck = clamp(comfortBus.tailDuck ?? 0, 0, 1);
+  const temporalDuck = clamp((temporalMasking.wetDuck ?? 0) * 1.8 + (temporalMasking.transientProtect ?? 0) * 0.9, 0, 1);
 
   return {
     mode: polish.mode ?? patch.outputMode ?? 'comfort',
@@ -1176,15 +1212,16 @@ function buildPolishCalibration(patch) {
       {
         id: 'tail',
         labelZh: '尾巴避让',
-        value: percent(tailDuck, 2.8),
-        listenZh: '空间尾巴不应盖住起音，尾音应在瞬态之后自然浮出来。',
-        actionZh: '给 reverb/delay 做 predelay 或 duck；导出 dry / full / tail-only 三版做对照。',
+        value: Math.max(percent(tailDuck, 2.8), percent(temporalDuck, 1)),
+        listenZh: '空间尾巴不应盖住起音；前 20-80ms 先听 dry transient，尾音应在瞬态之后自然浮出来。',
+        actionZh: '用 Temporal Mask 给 wet tail 做 duck，再配合 predelay；导出 dry / full / tail-only 三版做对照。',
       },
     ],
     meters: [
       { id: 'headroom', labelZh: 'Headroom', value: percent(headroom, 7.2), detailZh: `${formatQualityNumber(headroom * 100)}% safety` },
       { id: 'match', labelZh: 'Match', value: Math.round(loudness * 100), detailZh: `${formatQualityNumber(loudness)}x` },
       { id: 'mono', labelZh: 'Mono', value: percent(comfortBus.monoAnchor ?? 0, 3.2), detailZh: 'body anchor' },
+      { id: 'mask', labelZh: 'Mask', value: percent(temporalMasking.wetDuck ?? 0, 1.8), detailZh: `${formatQualityNumber(temporalMasking.tailDuckDb ?? 0)}dB duck` },
     ],
   };
 }
