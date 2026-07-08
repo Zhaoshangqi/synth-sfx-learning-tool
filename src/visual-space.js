@@ -22,6 +22,7 @@ let aetherComponentRelayLinks = [];
 let aetherRelayPackets = [];
 let aetherSurfaceThreads = [];
 let aetherLaminarCurrents = [];
+let aetherFlowFieldParticles = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -35,6 +36,7 @@ let aetherRelayEnergy = 0;
 let aetherSurfaceThreadEnergy = 0;
 let aetherViscousCurrentEnergy = 0;
 let aetherLaminarCurrentEnergy = 0;
+let aetherFlowFieldEnergy = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -84,6 +86,10 @@ const AETHER_SURFACE_THREAD_PACKET_TAIL = 0.075;
 const AETHER_LAMINAR_CURRENT_COUNT = 6;
 const AETHER_LAMINAR_SEGMENTS = 88;
 const AETHER_LAMINAR_PACKET_TAIL = 0.082;
+const AETHER_FLOW_FIELD_COUNT = 86;
+const AETHER_FLOW_FIELD_CONNECTION_RADIUS = 148;
+const AETHER_FLOW_FIELD_MOUSE_RADIUS = 238;
+const AETHER_FLOW_FIELD_STRIDE = 2;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -496,6 +502,54 @@ function createAetherLaminarCurrent(index, seed = 0) {
     packetSpeed: random(0.000024, 0.000058) * direction,
     color: index % 4 === 0 ? '167, 139, 250' : index % 3 === 0 ? '94, 234, 212' : '117, 197, 222',
   };
+}
+
+function createAetherFlowFieldParticle(index, seed = 0) {
+  const lane = (index % 9) / 8;
+  const angle = random(0, Math.PI * 2) + seed * 0.041 + index * 0.013;
+  const speed = random(0.038, 0.118);
+  const depth = random(0.28, 1);
+
+  return {
+    x: random(width * 0.02, width * 0.98),
+    y: random(height * 0.03, height * 0.97),
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed * 0.66,
+    homeX: width * (0.14 + lane * 0.72) + Math.sin(seed + index * 0.37) * width * 0.035,
+    homeY: height * (0.14 + ((index * 5) % 9) / 8 * 0.72) + Math.cos(seed * 0.7 + index * 0.31) * height * 0.032,
+    z: depth,
+    r: random(0.55, 1.65),
+    phase: random(0, Math.PI * 2) + seed * 0.12,
+    viscosity: random(0.62, 0.94),
+    color: index % 6 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
+function resetAetherFlowField(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'flow-field').length;
+  const count = Math.min(
+    AETHER_FLOW_FIELD_COUNT,
+    Math.max(width < 760 ? 26 : 44, Math.floor((width * height) / 23000)),
+  );
+  aetherFlowFieldParticles = Array.from({ length: count }, (_, index) => createAetherFlowFieldParticle(index, seed));
+  aetherFlowFieldEnergy = Math.min(1, aetherFlowFieldEnergy + 0.18);
+}
+
+function energizeAetherFlowField(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherFlowFieldParticles.length) resetAetherFlowField(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.42)));
+  if (level < 0.035) return;
+  const seed = String(detail.selector ?? detail.source ?? detail.familyId ?? 'flow-field-audio').length;
+  aetherFlowFieldEnergy = Math.min(1, aetherFlowFieldEnergy + level * 0.34);
+  aetherFlowFieldParticles.forEach((particle, index) => {
+    const angle = seed * 0.21 + index * 0.47 + particle.phase;
+    particle.vx += Math.cos(angle) * level * 0.012;
+    particle.vy += Math.sin(angle) * level * 0.008;
+    particle.phase += 0.03 + level * 0.08;
+  });
 }
 
 function resetAetherHeroFlowNetwork(detail = {}) {
@@ -1020,6 +1074,7 @@ function resize() {
   resetAetherFlowRivers();
   resetAetherViscousCurrents();
   resetAetherLaminarCurrents();
+  resetAetherFlowField();
   refreshAetherSurfaceThreads();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
@@ -1046,6 +1101,7 @@ function resize() {
   aetherComponentFlowEnergy = 0;
   aetherRelayEnergy = 0;
   aetherLaminarCurrentEnergy = 0;
+  aetherFlowFieldEnergy = 0;
 }
 
 function waveY(x, rowIndex, time) {
@@ -2103,6 +2159,102 @@ function drawAetherLaminarCurrents(time) {
   ctx.restore();
 }
 
+function drawAetherFlowFieldNetwork(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherFlowFieldParticles.length) return;
+
+  aetherFlowFieldEnergy *= 0.935;
+  if (aetherFlowFieldEnergy < 0.004) aetherFlowFieldEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  const flowParticles = aetherFlowFieldParticles.map((particle) => {
+    const homePullX = (particle.homeX - particle.x) * (0.0008 + particle.z * 0.00036);
+    const homePullY = (particle.homeY - particle.y) * (0.0007 + particle.z * 0.00032);
+    const breath = 0.72 + Math.sin(time * 0.00024 + particle.phase) * 0.1;
+    particle.vx = (particle.vx + homePullX) * (0.996 - (1 - particle.viscosity) * 0.002);
+    particle.vy = (particle.vy + homePullY) * (0.996 - (1 - particle.viscosity) * 0.002);
+    particle.x += particle.vx * (0.58 + particle.z * 0.58) * breath + pointer.x * particle.z * 0.009;
+    particle.y += particle.vy * (0.52 + particle.z * 0.48) * breath + pointer.y * particle.z * 0.007;
+    particle.phase += 0.001 + aetherFlowFieldEnergy * 0.0017;
+
+    if (particle.x < -28) particle.x = width + 28;
+    if (particle.x > width + 28) particle.x = -28;
+    if (particle.y < -28) particle.y = height + 28;
+    if (particle.y > height + 28) particle.y = -28;
+
+    const driftX = Math.sin(time * 0.0002 + particle.phase * 0.8) * (10 + particle.z * 12);
+    const driftY = Math.cos(time * 0.00017 + particle.phase * 0.6) * (7 + particle.z * 9);
+    const baseX = particle.x + driftX + pointer.x * particle.z * 15;
+    const baseY = particle.y + driftY + pointer.y * particle.z * 11;
+    const pointerDistance = Math.max(1, Math.hypot(baseX - pointer.screenX, baseY - pointer.screenY));
+    const pointerPressure = Math.max(0, 1 - pointerDistance / AETHER_FLOW_FIELD_MOUSE_RADIUS) * pointer.force;
+    const repelX = ((baseX - pointer.screenX) / pointerDistance) * pointerPressure * (12 + particle.z * 18);
+    const repelY = ((baseY - pointer.screenY) / pointerDistance) * pointerPressure * (8 + particle.z * 13);
+
+    particle.viewX = baseX + repelX;
+    particle.viewY = baseY + repelY;
+    particle.pointerPressure = pointerPressure;
+    return particle;
+  });
+
+  const radius = width < 760 ? AETHER_FLOW_FIELD_CONNECTION_RADIUS * 0.72 : AETHER_FLOW_FIELD_CONNECTION_RADIUS;
+  for (let i = 0; i < flowParticles.length; i += AETHER_FLOW_FIELD_STRIDE) {
+    const a = flowParticles[i];
+    for (let j = i + AETHER_FLOW_FIELD_STRIDE; j < flowParticles.length; j += AETHER_FLOW_FIELD_STRIDE) {
+      const b = flowParticles[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      const activeRadius = radius + Math.max(a.pointerPressure, b.pointerPressure) * 68;
+      if (distance > activeRadius) continue;
+
+      const linkStrength = Math.max(0, 1 - distance / activeRadius);
+      const pressure = Math.max(a.pointerPressure, b.pointerPressure);
+      const shimmer = 0.48 + Math.sin(time * 0.001 + a.phase + b.phase) * 0.2;
+      const alpha = Math.min(0.17, linkStrength * 0.032 + pressure * 0.105 + aetherFlowFieldEnergy * 0.058 + shimmer * 0.007);
+      if (alpha < 0.008) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.48, `rgba(255, 255, 255, ${alpha * (0.46 + pressure * 0.3)})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.32 + pressure * 0.78 + aetherFlowFieldEnergy * 0.22;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * (18 + pressure * 18),
+        (a.viewY + b.viewY) * 0.5 + pointer.y * (12 + pressure * 14),
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+
+  flowParticles.forEach((particle) => {
+    const pulse = 0.48
+      + Math.sin(time * 0.0015 + particle.phase) * 0.2
+      + particle.pointerPressure * 0.32
+      + aetherFlowFieldEnergy * 0.24;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${0.058 + pulse * 0.102})`;
+    ctx.shadowColor = `rgba(${particle.color}, ${0.07 + particle.pointerPressure * 0.15 + aetherFlowFieldEnergy * 0.08})`;
+    ctx.shadowBlur = 5 + particle.z * 7 + particle.pointerPressure * 8;
+    ctx.arc(
+      particle.viewX,
+      particle.viewY,
+      particle.r + particle.pointerPressure * 0.98 + aetherFlowFieldEnergy * 0.34,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawAetherSurfaceThreads(time) {
   if (prefersReducedMotion || isAetherFlowPaused() || !aetherSurfaceThreads.length) return;
 
@@ -2420,6 +2572,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherFlowRivers(time);
   if (!isAetherFlowPaused()) drawAetherViscousCurrents(time);
   if (!isAetherFlowPaused()) drawAetherLaminarCurrents(time);
+  if (!isAetherFlowPaused()) drawAetherFlowFieldNetwork(time);
   if (!isAetherFlowPaused()) drawAetherSurfaceThreads(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
@@ -2451,6 +2604,7 @@ function tick(time = 0) {
 function init() {
   if (!canvas || !ctx) return;
   resize();
+  document.querySelector('.audio-space')?.classList.add('is-flow-field-ready');
   globalThis.requestAnimationFrame?.(() => refreshAetherSurfaceThreads({ source: 'initial-layout' }));
   globalThis.addEventListener('resize', resize);
   globalThis.addEventListener('pointermove', (event) => {
@@ -2467,6 +2621,7 @@ function init() {
     rethreadAetherFlowRivers(event.detail);
     resetAetherViscousCurrents(event.detail);
     resetAetherLaminarCurrents(event.detail);
+    resetAetherFlowField(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
     refreshAetherSurfaceThreads(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
@@ -2495,6 +2650,7 @@ function init() {
     energizeAetherRelayPackets(event.detail);
     energizeAetherSurfaceThreads(event.detail);
     energizeAetherLaminarCurrents(event.detail);
+    energizeAetherFlowField(event.detail);
   });
   tick();
 }
