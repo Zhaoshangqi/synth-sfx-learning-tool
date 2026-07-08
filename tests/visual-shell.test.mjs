@@ -377,7 +377,7 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
   assert.match(html, /visual-space\.js\?v=20260708-aether-flow/);
-  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow/);
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow-v98/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -393,11 +393,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-flow"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-flow'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-flow'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-flow'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-flow'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-spatial-image"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-spatial-image'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-spatial-image'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-spatial-image'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-spatial-image'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -769,7 +769,9 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260708-spatial-image/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
+  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260708-spatial-image/);
   assert.match(css, /\.sound-lab-workbench/);
   assert.match(css, /\.macro-knob/);
   assert.match(css, /\.spectrum-stage/);
@@ -1896,6 +1898,27 @@ test('reference v9 loads a final clean visual layer after the legacy cascade', (
   assert.match(css, /\.reference-readable-surface\s*,[\s\S]*\.content :where\([\s\S]*\)\s*\{[\s\S]*color:\s*var\(--ref9-ink\)\s*!important/);
   assert.match(css, /\.signal-atlas-console :where\(p,\s*li,\s*small,\s*span,\s*em,\s*label,\s*dt,\s*dd,\s*output\)\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.78\)\s*!important/);
   assert.match(css, /body\.is-direct-manipulating\s+\.visual-spotlight\s*\{[\s\S]*opacity:\s*0\.12\s*!important/);
+});
+
+test('reference aether flow layer adds subtle streaming motion without drag flash', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+
+  assert.match(html, /styles-reference\.css\?v=20260708-aether-flow-v98/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-flow/);
+  assert.match(css, /Reference aether flow hero current v9\.8/);
+  assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
+  assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
+  assert.match(css, /\.visual-burger-btn::before\s*\{[\s\S]*animation:\s*ref9-surface-stream/);
+  assert.match(css, /\.content\.is-view-switching::after\s*\{[\s\S]*animation:\s*ref9-route-current/);
+  assert.match(css, /body\.is-direct-manipulating\s+#particle-canvas\s*\{[\s\S]*opacity:\s*0\.08\s*!important/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.hero-sound-visual::after\s*\{[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(visualSpaceJs, /AETHER_CONNECTION_RADIUS/);
+  assert.match(visualSpaceJs, /drawAetherCurrentPackets/);
+  assert.match(visualSpaceJs, /drawAetherNodeCurrents/);
+  assert.match(visualSpaceJs, /synth:view-transition/);
+  assert.match(visualSpaceJs, /__synthDirectManipulating/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

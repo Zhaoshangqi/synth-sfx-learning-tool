@@ -590,6 +590,34 @@ test('studio patches expose temporal masking so tails do not smear the transient
   assert.deepEqual(message.payload.globalFx.masterPolish.temporalMasking, masking);
 });
 
+test('studio patches expose spatial image cues for physical distance and early reflections', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 74,
+    motion: 58,
+    material: 62,
+    space: 78,
+    variation: 66,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 54, body: 68, texture: 76, tail: 82 },
+  });
+
+  const spatial = patch.globalFx.spatialImage;
+  assert.ok(spatial, 'studio output needs a spatial image layer instead of only generic reverb');
+  assert.ok(spatial.earlyReflectionMs >= 4 && spatial.earlyReflectionMs <= 48, 'early reflections should stay in a realistic first-room window');
+  assert.ok(spatial.earlyReflectionGain > 0.03 && spatial.earlyReflectionGain < 0.24, 'early reflection gain should be audible but subtle');
+  assert.ok(spatial.distanceDamping > 0.04 && spatial.distanceDamping < 0.45, 'distance damping should tame far-field brightness');
+  assert.ok(spatial.bodyAnchor > 0.06, 'the dry body should remain anchored while the tail opens around it');
+  assert.ok(spatial.frontBack > 0.1, 'front/back placement should be explicit enough for teaching');
+  assert.ok(spatial.widthFocus > 0.08, 'width focus should distinguish body center from tail sides');
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.spatialImage, spatial);
+});
+
 test('sound lab processor applies temporal masking to wet space before output polish', () => {
   const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
 
@@ -599,6 +627,18 @@ test('sound lab processor applies temporal masking to wet space before output po
   assert.match(processorJs, /maskedWetLeft/);
   assert.match(processorJs, /maskedWetRight/);
   assert.match(processorJs, /transientProtect/);
+});
+
+test('sound lab processor applies spatial image after temporal masking and before stereo comfort', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /createSpatialImageState/);
+  assert.match(processorJs, /applySpatialImage/);
+  assert.match(processorJs, /spatialImage/);
+  assert.match(processorJs, /earlyReflectionMs/);
+  assert.match(processorJs, /distanceDamping/);
+  assert.match(processorJs, /bodyAnchor/);
+  assert.match(processorJs, /applyTemporalMasking[\s\S]*applySpatialImage[\s\S]*applyStereoComfortBus/);
 });
 
 test('sound quality exposes beginner-readable comfort bus metrics', () => {
@@ -644,6 +684,29 @@ test('sound quality explains motion bus as beginner-readable synth realism', () 
   assert.match(motion.statusZh, /微动态|呼吸|motion/i);
   assert.match(motion.noteZh, /transient shield|tail bloom|wow|瞬态|尾巴/i);
   assert.ok(motion.value >= 35 && motion.value <= 100);
+});
+
+test('sound quality explains spatial image as beginner-readable synth realism', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'glass-ping');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 74,
+    motion: 58,
+    material: 62,
+    space: 78,
+    variation: 66,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 54, body: 68, texture: 76, tail: 82 },
+  });
+
+  const spatial = model.soundQuality.find((item) => item.id === 'spatial-image');
+  assert.ok(spatial, 'quality card should teach spatial image instead of hiding distance cues in the DSP');
+  assert.match(spatial.labelZh, /Spatial|空间|距离/i);
+  assert.match(spatial.statusZh, /早期反射|距离|front/i);
+  assert.match(spatial.noteZh, /early|body|front|distance|反射|主体/i);
+  assert.ok(spatial.value >= 28 && spatial.value <= 100);
 });
 
 test('sound lab exposes an ear triage plan that turns diagnosis into one-change practice', () => {
@@ -698,10 +761,11 @@ test('sound lab exposes perceptual calibration for gain-matched comfortable synt
   assert.ok(bus.widthTrim >= 0.02, 'comfort bus should trim excessive side width before limiting');
 
   assert.ok(model.polishCalibration, 'view model should expose a beginner-facing quality calibration checklist');
-  assert.deepEqual(model.polishCalibration.steps.map((step) => step.id), ['level', 'harsh', 'transient', 'stereo', 'tail']);
+  assert.deepEqual(model.polishCalibration.steps.map((step) => step.id), ['level', 'harsh', 'transient', 'stereo', 'space-depth', 'tail']);
   assert.ok(model.polishCalibration.steps.every((step) => step.listenZh && step.actionZh && typeof step.value === 'number'));
-  assert.match(model.polishCalibration.summaryZh, /响度|刺耳|声像|尾巴/);
+  assert.match(model.polishCalibration.summaryZh, /响度|刺耳|声像|空间|距离|尾巴/);
   assert.match(model.polishCalibration.steps.find((step) => step.id === 'level').actionZh, /Raw|Comfort|Studio|-14 LUFS/);
+  assert.match(model.polishCalibration.steps.find((step) => step.id === 'space-depth').actionZh, /early reflection|predelay|空间|距离|tail-only/i);
 });
 
 test('sound lab exposes raw comfort studio output comparison for listening practice', () => {

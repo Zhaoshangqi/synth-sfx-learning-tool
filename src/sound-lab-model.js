@@ -491,6 +491,30 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
   };
 }
 
+function buildSpatialImage(values, dsp, quality, layerData = {}, acousticCues = {}, masterPolish = {}) {
+  const space = normalize(values.space);
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const variation = normalize(values.variation);
+  const transientMix = clamp((layerData.layerMix?.transient ?? SOUND_LAB_LAYER_MIX.transient) / 100, 0, 1);
+  const bodyMix = clamp((layerData.layerMix?.body ?? SOUND_LAB_LAYER_MIX.body) / 100, 0, 1);
+  const textureMix = clamp((layerData.layerMix?.texture ?? SOUND_LAB_LAYER_MIX.texture) / 100, 0, 1);
+  const tailMix = clamp((layerData.layerMix?.tail ?? SOUND_LAB_LAYER_MIX.tail) / 100, 0, 1);
+  const studioBonus = quality.id === 'studio' ? 0.13 : quality.id === 'balanced' ? 0.06 : 0;
+  const comfortBus = masterPolish.comfortBus ?? {};
+  const tailPreDelay = acousticCues.tailPreDelayMs ?? 0;
+
+  return {
+    earlyReflectionMs: Math.round(clamp(4 + space * 16 + tailMix * 12 + tailPreDelay * 0.12 + studioBonus * 30, 4, 48)),
+    earlyReflectionGain: Number(clamp(0.034 + space * 0.08 + tailMix * 0.052 + textureMix * 0.025 + studioBonus * 0.12, 0.024, 0.23).toFixed(3)),
+    distanceDamping: Number(clamp(0.048 + space * 0.13 + tailMix * 0.08 + (1 - material) * 0.04 + studioBonus * 0.08, 0.032, 0.44).toFixed(3)),
+    bodyAnchor: Number(clamp(0.068 + bodyMix * 0.16 + transientMix * 0.11 + (comfortBus.monoAnchor ?? 0) * 0.5, 0.052, 0.4).toFixed(3)),
+    frontBack: Number(clamp(0.12 + space * 0.24 + motion * 0.05 + tailMix * 0.17 + studioBonus * 0.12, 0.08, 0.66).toFixed(3)),
+    widthFocus: Number(clamp(0.09 + space * 0.2 + variation * 0.12 + (comfortBus.widthTrim ?? 0) * 0.52, 0.06, 0.58).toFixed(3)),
+    sourceFocus: Number(clamp(0.18 + transientMix * 0.24 + bodyMix * 0.2 - space * 0.06 + material * 0.05, 0.12, 0.7).toFixed(3)),
+  };
+}
+
 function normalizeOutputMode(mode = 'comfort') {
   return ['raw', 'comfort', 'studio'].includes(mode) ? mode : 'comfort';
 }
@@ -943,6 +967,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const controlSmoothing = buildControlSmoothing(performance, resolvedQuality);
   const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, resolvedQuality, layerData), outputMode);
   const acousticCues = buildAcousticCues(layerData.layers, values, resolvedQuality);
+  const spatialImage = buildSpatialImage(values, dsp, resolvedQuality, layerData, acousticCues, masterPolish);
   const toneGraph = buildToneGraph(family, values, dsp, resolvedQuality, performance, { ...outputOptions, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
   toneGraph.effects = fxRack;
@@ -988,6 +1013,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         releaseMs: layerData.qualityMode === 'draft' ? 55 : 90,
       },
       acousticCues,
+      spatialImage,
       controlSmoothing,
       masterPolish,
     },
@@ -1071,6 +1097,7 @@ function buildSoundQuality(patch) {
   const comfortBus = polish.comfortBus ?? {};
   const motionBus = polish.motionBus ?? {};
   const temporalMasking = polish.temporalMasking ?? {};
+  const spatialImage = patch.globalFx?.spatialImage ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
       + (polish.lowTighten ?? 0) * 28
@@ -1103,6 +1130,15 @@ function buildSoundQuality(patch) {
     0,
     100,
   );
+  const spatialScore = clamp(
+    (spatialImage.earlyReflectionGain ?? 0) * 240
+      + (spatialImage.distanceDamping ?? 0) * 72
+      + (spatialImage.bodyAnchor ?? 0) * 118
+      + (spatialImage.frontBack ?? 0) * 92
+      + (spatialImage.widthFocus ?? 0) * 72,
+    0,
+    100,
+  );
 
   return [
     {
@@ -1125,6 +1161,13 @@ function buildSoundQuality(patch) {
       value: clamp(maxSpread * 100, 0, 100),
       statusZh: 'wide layers',
       noteZh: `${formatQualityNumber(maxSpread * 100)}% spread`,
+    },
+    {
+      id: 'spatial-image',
+      labelZh: 'Spatial Image',
+      value: spatialScore,
+      statusZh: '早期反射 / 距离',
+      noteZh: `early ${Math.round(spatialImage.earlyReflectionMs ?? 0)}ms / body ${formatQualityNumber((spatialImage.bodyAnchor ?? 0) * 100)}% / front-back ${formatQualityNumber((spatialImage.frontBack ?? 0) * 100)}%`,
     },
     {
       id: 'tail',
@@ -1168,18 +1211,27 @@ function buildPolishCalibration(patch) {
   const polish = patch.globalFx?.masterPolish ?? {};
   const comfortBus = polish.comfortBus ?? {};
   const temporalMasking = polish.temporalMasking ?? {};
+  const spatialImage = patch.globalFx?.spatialImage ?? {};
   const percent = (value, scale = 1) => Math.round(clamp((value ?? 0) * scale, 0, 1) * 100);
   const loudness = clamp(comfortBus.loudnessMatch ?? 1, 0.72, 1.05);
   const headroom = clamp(comfortBus.headroom ?? 0, 0, 0.22);
   const deHarsh = clamp(comfortBus.deHarsh ?? 0, 0, 1);
   const transientHold = clamp(polish.transientHold ?? 0, 0, 1);
   const stereoSafety = clamp((comfortBus.monoAnchor ?? 0) * 0.62 + (comfortBus.widthTrim ?? 0) * 0.88, 0, 1);
+  const spaceDepth = clamp(
+    (spatialImage.earlyReflectionGain ?? 0) * 1.6
+      + (spatialImage.frontBack ?? 0) * 0.64
+      + (spatialImage.distanceDamping ?? 0) * 0.48
+      + (spatialImage.bodyAnchor ?? 0) * 0.3,
+    0,
+    1,
+  );
   const tailDuck = clamp(comfortBus.tailDuck ?? 0, 0, 1);
   const temporalDuck = clamp((temporalMasking.wetDuck ?? 0) * 1.8 + (temporalMasking.transientProtect ?? 0) * 0.9, 0, 1);
 
   return {
     mode: polish.mode ?? patch.outputMode ?? 'comfort',
-    summaryZh: '把响度、刺耳边缘、瞬态、声像和尾巴拆开检查，避免只因为更大声就误以为音质更好。',
+    summaryZh: '把响度、刺耳边缘、瞬态、声像、空间距离和尾巴拆开检查，避免只因为更大声就误以为音质更好。',
     steps: [
       {
         id: 'level',
@@ -1210,6 +1262,13 @@ function buildPolishCalibration(patch) {
         actionZh: '用 mono 检查低频居中；需要宽时只扩高频、颗粒或 reverb return，不扩整个 body。',
       },
       {
+        id: 'space-depth',
+        labelZh: '空间距离',
+        value: percent(spaceDepth, 1),
+        listenZh: '主体应在前面，early reflection 和 tail 在后面；距离感来自微弱反射、亮度阻尼和 predelay，而不是把整段声音泡进大混响。',
+        actionZh: '在 Serum / Phase Plant / Vital 先调 predelay 与 early reflection，再做 dry / full / tail-only A/B；如果距离太假，先收 width 或降低 tail 亮度。',
+      },
+      {
         id: 'tail',
         labelZh: '尾巴避让',
         value: Math.max(percent(tailDuck, 2.8), percent(temporalDuck, 1)),
@@ -1221,6 +1280,7 @@ function buildPolishCalibration(patch) {
       { id: 'headroom', labelZh: 'Headroom', value: percent(headroom, 7.2), detailZh: `${formatQualityNumber(headroom * 100)}% safety` },
       { id: 'match', labelZh: 'Match', value: Math.round(loudness * 100), detailZh: `${formatQualityNumber(loudness)}x` },
       { id: 'mono', labelZh: 'Mono', value: percent(comfortBus.monoAnchor ?? 0, 3.2), detailZh: 'body anchor' },
+      { id: 'depth', labelZh: 'Depth', value: percent(spaceDepth, 1), detailZh: `${Math.round(spatialImage.earlyReflectionMs ?? 0)}ms early` },
       { id: 'mask', labelZh: 'Mask', value: percent(temporalMasking.wetDuck ?? 0, 1.8), detailZh: `${formatQualityNumber(temporalMasking.tailDuckDb ?? 0)}dB duck` },
     ],
   };

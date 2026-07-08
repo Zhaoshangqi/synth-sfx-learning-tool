@@ -8,6 +8,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     this.seed = 1;
     this.layerStates = [];
     this.spaceState = this.createSpaceState();
+    this.spatialImageState = this.createSpatialImageState();
     this.polishLeft = this.createPolishState();
     this.polishRight = this.createPolishState();
     this.outputStageLeft = this.createOutputStageState();
@@ -35,6 +36,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       this.frame = 0;
       this.layerStates = (this.patch.layers || []).map((layer) => this.createLayerState(layer));
       this.spaceState = this.createSpaceState();
+      this.spatialImageState = this.createSpatialImageState();
       this.polishLeft = this.createPolishState();
       this.polishRight = this.createPolishState();
       this.outputStageLeft = this.createOutputStageState();
@@ -59,6 +61,17 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       right: new Float32Array(Math.max(32, Math.floor(sampleRate * 0.043))),
       indexLeft: 0,
       indexRight: 0,
+    };
+  }
+
+  createSpatialImageState() {
+    const length = Math.max(128, Math.floor(sampleRate * 0.065));
+    return {
+      left: new Float32Array(length),
+      right: new Float32Array(length),
+      index: 0,
+      distanceLowLeft: 0,
+      distanceLowRight: 0,
     };
   }
 
@@ -509,6 +522,50 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     };
   }
 
+  applySpatialImage(leftSample, rightSample, t, duration) {
+    const polish = this.patch?.globalFx?.masterPolish || {};
+    const spatialImage = this.patch?.globalFx?.spatialImage || {};
+    const state = this.spatialImageState || this.createSpatialImageState();
+    this.spatialImageState = state;
+    if (polish.enabled === false || !spatialImage) {
+      return { left: leftSample, right: rightSample };
+    }
+
+    const delaySamples = Math.round(clamp((spatialImage.earlyReflectionMs ?? 8) / 1000 * sampleRate, 1, state.left.length - 2));
+    const readIndex = (state.index - delaySamples + state.left.length) % state.left.length;
+    const earlyLeft = state.right[readIndex];
+    const earlyRight = state.left[readIndex];
+    state.left[state.index] = leftSample;
+    state.right[state.index] = rightSample;
+    state.index = (state.index + 1) % state.left.length;
+
+    const distanceDamping = clamp(spatialImage.distanceDamping ?? 0, 0, 0.56);
+    const dampingCoeff = 0.008 + distanceDamping * 0.038;
+    state.distanceLowLeft = this.onePole(state.distanceLowLeft, leftSample, dampingCoeff);
+    state.distanceLowRight = this.onePole(state.distanceLowRight, rightSample, dampingCoeff);
+    const dampedLeft = leftSample * (1 - distanceDamping * 0.18) + state.distanceLowLeft * distanceDamping * 0.18;
+    const dampedRight = rightSample * (1 - distanceDamping * 0.18) + state.distanceLowRight * distanceDamping * 0.18;
+
+    const earlyGain = clamp(spatialImage.earlyReflectionGain ?? 0, 0, 0.28);
+    const bodyAnchor = clamp(spatialImage.bodyAnchor ?? 0, 0, 0.52);
+    const frontBack = clamp(spatialImage.frontBack ?? 0, 0, 0.72);
+    const widthFocus = clamp(spatialImage.widthFocus ?? 0, 0, 0.72);
+    const sourceFocus = clamp(spatialImage.sourceFocus ?? 0.3, 0, 0.82);
+    const transientWindow = Math.exp(-t * 20);
+    const tailWindow = clamp(t / Math.max(0.12, duration * 0.68), 0, 1);
+    const mid = (dampedLeft + dampedRight) * 0.5;
+    const side = (dampedLeft - dampedRight) * 0.5;
+    const bodyLift = 1 + bodyAnchor * transientWindow * 0.04 + sourceFocus * transientWindow * 0.018;
+    const sideScale = clamp(1 - bodyAnchor * transientWindow * 0.22 - sourceFocus * transientWindow * 0.08 + widthFocus * tailWindow * 0.22 - frontBack * 0.045, 0.5, 1.2);
+    const earlyBlend = earlyGain * (0.32 + tailWindow * 0.68);
+    const distanceGain = 1 - frontBack * distanceDamping * 0.055;
+
+    return {
+      left: (mid * bodyLift + side * sideScale) * distanceGain + earlyLeft * earlyBlend,
+      right: (mid * bodyLift - side * sideScale) * distanceGain + earlyRight * earlyBlend,
+    };
+  }
+
   applyStereoComfortBus(leftSample, rightSample, t, duration) {
     const polish = this.patch?.globalFx?.masterPolish || {};
     if (polish.enabled === false) {
@@ -639,7 +696,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const wetLeft = spacedLeft * spaceMix * width * spaceFade;
       const wetRight = spacedRight * spaceMix * width * spaceFade;
       const masked = this.applyTemporalMasking(dryLeft, dryRight, wetLeft, wetRight, t, duration);
-      this.applyStereoComfortBus(masked.left * (1 - tailMotion), masked.right * (1 + tailMotion), t, duration);
+      const spatial = this.applySpatialImage(masked.left * (1 - tailMotion), masked.right * (1 + tailMotion), t, duration);
+      this.applyStereoComfortBus(spatial.left, spatial.right, t, duration);
       left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft), this.outputStageLeft);
       right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight), this.outputStageRight);
     }
