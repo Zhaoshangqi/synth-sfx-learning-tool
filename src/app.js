@@ -2150,16 +2150,7 @@ function updateAnalyzerCoachRuntimeUi(workbench, frame) {
   if (!analysis) return;
 
   const status = workbench.querySelector('[data-analyzer-coach-status]');
-  if (status) {
-    const runtimeStatusByBand = {
-      transient: '\u8d77\u97f3\u6700\u660e\u663e\uff1a\u5148\u68c0\u67e5\u524d 80ms \u7684 click\u3001attack \u548c transient \u5c42\u3002',
-      body: '\u4e3b\u4f53\u6700\u660e\u663e\uff1a\u91cd\u70b9\u542c\u4e2d\u4f4e\u9891 body \u662f\u5426\u652f\u6491\u6750\u8d28\u8eab\u4efd\u3002',
-      air: '\u9ad8\u9891\u8fb9\u7f18\u6700\u660e\u663e\uff1a\u6ce8\u610f 4k-10k \u662f\u5426\u53d8\u8584\u6216\u523a\u8033\u3002',
-      tail: '\u5c3e\u5df4\u6700\u660e\u663e\uff1a\u68c0\u67e5 reverb / delay / release \u662f\u5426\u76d6\u4f4f\u4e3b\u4f53\u3002',
-      motion: '\u9891\u8c31\u6b63\u5728\u79fb\u52a8\uff1a\u786e\u8ba4 LFO / random / FM \u8fd0\u52a8\u4e0d\u662f\u968f\u673a\u5931\u7126\u3002',
-    };
-    status.textContent = `\u5b9e\u65f6\u8bfb\u56fe\uff1a${runtimeStatusByBand[analysis.dominant] ?? runtimeStatusByBand.body} \u8fd9\u4e9b\u503c\u6765\u81ea\u5f53\u524d waveform / spectrum\uff0c\u53ea\u4f5c\u4e3a A/B \u65b9\u5411\u63d0\u793a\u3002`;
-  }
+  if (status) status.textContent = analysis.summaryZh;
 
   workbench.querySelectorAll('[data-analyzer-coach-live]').forEach((card) => {
     const bandId = card.dataset.analyzerCoachLive || card.dataset.analyzerCoachBand;
