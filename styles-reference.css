@@ -3536,3 +3536,113 @@ body.is-direct-manipulating .dashboard-hero.aether-flow-stage .hero-status-strip
     transition: none !important;
   }
 }
+
+/* Reference aether flow focus lens v9.28
+   Adds the pasted prompt's mouse-aware particle focus as a quiet native layer:
+   soft lens field, component glints, and drag-safe motion pauses. */
+
+.audio-space.is-flow-field-ready::after {
+  background:
+    radial-gradient(circle at calc(50% + var(--space-x, 0) * 18px) calc(48% + var(--space-y, 0) * 14px), rgba(255, 255, 255, 0.2), transparent 0 72px, transparent 120px),
+    radial-gradient(circle at calc(25% + var(--space-x, 0) * -10px) 34%, rgba(117, 197, 222, 0.16), transparent 0 16px, transparent 17px),
+    radial-gradient(circle at 74% calc(68% + var(--space-y, 0) * -12px), rgba(167, 139, 250, 0.12), transparent 0 14px, transparent 15px),
+    conic-gradient(from 118deg at 50% 48%, transparent 0 20%, rgba(117, 197, 222, 0.12) 29%, transparent 39% 58%, rgba(94, 234, 212, 0.08) 66%, transparent 76% 100%),
+    repeating-linear-gradient(112deg, transparent 0 78px, rgba(17, 17, 17, 0.025) 80px, transparent 84px) !important;
+  background-size: 100% 100%, 210px 210px, 260px 260px, 100% 100%, 180px 180px !important;
+  opacity: 0.13 !important;
+  mix-blend-mode: multiply !important;
+  filter: blur(0.1px) saturate(1.06);
+  transform: translate3d(calc(var(--space-x, 0) * -7px), calc(var(--space-y, 0) * -5px), 0) scale(1);
+  animation: ref9-focus-lens-drift 36s ease-in-out infinite alternate;
+}
+
+.dashboard-hero.aether-flow-stage .hero-reveal-layer,
+.sound-lab-workbench .macro-control-panel,
+.sound-lab-workbench .xy-pad-panel,
+.sound-lab-workbench .fx-chain-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.dashboard-hero.aether-flow-stage .hero-reveal-layer::before,
+.sound-lab-workbench .macro-control-panel::before,
+.sound-lab-workbench .xy-pad-panel::before,
+.sound-lab-workbench .fx-chain-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(117, 197, 222, 0.22) 38%, rgba(255, 255, 255, 0.14) 48%, rgba(94, 234, 212, 0.12) 58%, transparent 76%),
+    radial-gradient(circle at 82% 22%, rgba(167, 139, 250, 0.14), transparent 0 10px, transparent 11px);
+  background-size: 280% 100%, 180px 160px;
+  opacity: 0.16;
+  transform: translate3d(-28%, 0, 0) skewX(-7deg);
+  animation: ref9-control-flow-lens 15s cubic-bezier(0.21, 0.61, 0.35, 1) infinite alternate;
+}
+
+.dashboard-hero.aether-flow-stage .hero-reveal-layer > *,
+.sound-lab-workbench .macro-control-panel > *,
+.sound-lab-workbench .xy-pad-panel > *,
+.sound-lab-workbench .fx-chain-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.is-direct-manipulating .audio-space.is-flow-field-ready::after,
+body.is-direct-manipulating .dashboard-hero.aether-flow-stage .hero-reveal-layer::before,
+body.is-direct-manipulating .sound-lab-workbench .macro-control-panel::before,
+body.is-direct-manipulating .sound-lab-workbench .xy-pad-panel::before,
+body.is-direct-manipulating .sound-lab-workbench .fx-chain-panel::before {
+  animation-play-state: paused !important;
+  opacity: 0.06 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-focus-lens-drift {
+  0% {
+    background-position: 50% 50%, 0 0, 0 0, 50% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * -5px), calc(var(--space-y, 0) * -3px), 0) scale(1);
+  }
+  100% {
+    background-position: 52% 48%, 74px -46px, -58px 64px, 49% 51%, 92px 58px;
+    transform: translate3d(calc(var(--space-x, 0) * -10px), calc(var(--space-y, 0) * -7px), 0) scale(1.016);
+  }
+}
+
+@keyframes ref9-control-flow-lens {
+  0% {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(-28%, 0, 0) skewX(-7deg);
+  }
+  100% {
+    background-position: 100% 50%, 74px 34px;
+    transform: translate3d(22%, 0, 0) skewX(-7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-space.is-flow-field-ready::after {
+    animation-name: ref9-focus-lens-drift;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.08 !important;
+    transition: none !important;
+  }
+
+  .dashboard-hero.aether-flow-stage .hero-reveal-layer::before,
+  .sound-lab-workbench .macro-control-panel::before,
+  .sound-lab-workbench .xy-pad-panel::before,
+  .sound-lab-workbench .fx-chain-panel::before {
+    animation-name: ref9-control-flow-lens;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.08 !important;
+    transition: none !important;
+  }
+}

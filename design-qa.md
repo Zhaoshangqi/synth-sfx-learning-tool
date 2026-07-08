@@ -529,3 +529,22 @@ Passed for this iteration. The attached Aether Flow prompt is now represented as
 - Tests:
   - Targeted: `node --test --test-name-pattern "cursor wake currents|waveform detective is a routed beginner module" tests\visual-shell.test.mjs` passed.
   - Full suite: `npm.cmd test` passed, 238 tests.
+
+---
+
+## 2026-07-09 - Aether Flow focus lens layer
+
+- Goal: adapt the supplied `AetherFlowHero` particle prompt into the current static ES-module site as a subtle native flow effect, without adding React, Tailwind, framer-motion, or lucide.
+- Visual upgrade: `src/visual-space.js` adds `aetherFocusLensParticles`, a mouse-aware focus lens field that gently repels around the pointer and re-energizes on route/audio pulses. `styles-reference.css` adds `ref9-focus-lens-drift` to the ambient space and `ref9-control-flow-lens` on hero/control panels.
+- Stability constraint: the new field pauses under `body.is-direct-manipulating` / `__synthDirectManipulating`, avoids pointerdown-triggered flashes, and keeps the canvas clear instead of repainting the viewport black.
+- Cache stability: static module URLs now use `?v=20260709-flow-lens`, including `styles.css`, `styles-reference.css`, `visual-space.js`, `app.js`, `sound-lab-model.js`, `audio-player.js`, `view-model.js`, `render.js`, and the Sound Lab Worklet module.
+- Browser checks: passed. Dashboard loaded `styles-reference.css?v=20260709-flow-lens`, `visual-space.js?v=20260709-flow-lens`, and `app.js?v=20260709-flow-lens`; `#particle-canvas` rendered at `1440 x 980` with pixel energy `35388`; `audio-space::after` used `ref9-focus-lens-drift`; hero/control layers used `ref9-control-flow-lens`; horizontal overflow stayed `0`.
+- Headless drag note: Playwright could verify the no-flash hooks by automated tests and DOM/CSS state, but scrolling to the deep Sound Lab range controls was unreliable in headless mode for this very tall page. Existing pointer-drag regression tests remain green.
+- Screenshots:
+  - Dashboard focus lens: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-lens-dashboard.png`
+  - Sound Lab first viewport: `E:\zhaoshangqi\AI\学习\synth-sfx-learning-tool\output\playwright\flow-lens-soundlab-after-drag.png`
+- Tests:
+  - Red: `node --test --test-name-pattern "focus lens field" tests\visual-shell.test.mjs` failed before implementation on missing `aetherFocusLensParticles`.
+  - Targeted green: `node --test --test-name-pattern "aether flow|focus lens|cache-busting|Sound Lab workbench" tests\visual-shell.test.mjs` passed, 25 tests.
+  - Syntax: `node --check src\visual-space.js`, `src\app.js`, and `src\audio-player.js` passed.
+  - Full suite: `node --test` passed, 295 tests.

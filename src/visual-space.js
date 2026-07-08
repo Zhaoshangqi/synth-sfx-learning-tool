@@ -24,6 +24,7 @@ let aetherSurfaceThreads = [];
 let aetherLaminarCurrents = [];
 let aetherFlowFieldParticles = [];
 let aetherSilkCurrents = [];
+let aetherFocusLensParticles = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -39,6 +40,7 @@ let aetherViscousCurrentEnergy = 0;
 let aetherLaminarCurrentEnergy = 0;
 let aetherFlowFieldEnergy = 0;
 let aetherSilkCurrentEnergy = 0;
+let aetherFocusLensEnergy = 0;
 
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -95,6 +97,10 @@ const AETHER_FLOW_FIELD_STRIDE = 2;
 const AETHER_SILK_CURRENT_COUNT = 5;
 const AETHER_SILK_SEGMENTS = 112;
 const AETHER_SILK_PACKET_TAIL = 0.068;
+const AETHER_FOCUS_LENS_COUNT = 46;
+const AETHER_FOCUS_LENS_RADIUS = 270;
+const AETHER_FOCUS_LENS_CONNECTION_RADIUS = 132;
+const AETHER_FOCUS_LENS_STRIDE = 2;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -551,6 +557,27 @@ function createAetherSilkCurrent(index, seed = 0) {
   };
 }
 
+function createAetherFocusLensParticle(index, seed = 0) {
+  const ring = index % 4;
+  const angle = ((index * 137.5 + seed * 17) * Math.PI) / 180;
+  const radius = 0.18 + (ring / 3) * 0.58 + random(-0.04, 0.04);
+  const speed = random(0.028, 0.082);
+
+  return {
+    x: width * (0.5 + Math.cos(angle) * radius * 0.42),
+    y: height * (0.48 + Math.sin(angle) * radius * 0.34),
+    homeX: width * (0.5 + Math.cos(angle) * radius * 0.36),
+    homeY: height * (0.48 + Math.sin(angle) * radius * 0.3),
+    vx: Math.cos(angle + Math.PI / 2) * speed,
+    vy: Math.sin(angle + Math.PI / 2) * speed * 0.72,
+    orbit: radius,
+    z: random(0.34, 1),
+    r: random(0.52, 1.42),
+    phase: random(0, Math.PI * 2) + seed * 0.16,
+    color: index % 5 === 0 ? '167, 139, 250' : index % 4 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function resetAetherFlowField(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'flow-field').length;
@@ -599,6 +626,33 @@ function energizeAetherSilkCurrents(detail = {}) {
     current.phase += level * (0.035 + index * 0.004);
     current.packet = (current.packet + direction * level * 0.012 + seed * 0.0007) % 1;
     current.amplitude += Math.sin(seed + index) * level * 0.18;
+  });
+}
+
+function resetAetherFocusLens(detail = {}) {
+  if (!width || !height) return;
+  const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'focus-lens').length;
+  const count = Math.min(
+    AETHER_FOCUS_LENS_COUNT,
+    Math.max(width < 760 ? 16 : 28, Math.floor((width * height) / 36000)),
+  );
+  aetherFocusLensParticles = Array.from({ length: count }, (_, index) => createAetherFocusLensParticle(index, seed));
+  aetherFocusLensEnergy = Math.min(1, aetherFocusLensEnergy + 0.18);
+}
+
+function energizeAetherFocusLens(detail = {}) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  if (!aetherFocusLensParticles.length) resetAetherFocusLens(detail);
+
+  const level = Math.max(0, Math.min(1, Number(detail.level ?? detail.energy ?? 0.42)));
+  if (level < 0.035) return;
+  const seed = String(detail.selector ?? detail.source ?? detail.familyId ?? 'focus-audio').length;
+  aetherFocusLensEnergy = Math.min(1, aetherFocusLensEnergy + level * 0.32);
+  aetherFocusLensParticles.forEach((particle, index) => {
+    const angle = seed * 0.17 + index * 0.38 + particle.phase;
+    particle.vx += Math.cos(angle) * level * 0.01;
+    particle.vy += Math.sin(angle) * level * 0.007;
+    particle.phase += 0.026 + level * 0.07;
   });
 }
 
@@ -1143,6 +1197,7 @@ function resize() {
   resetAetherLaminarCurrents();
   resetAetherFlowField();
   resetAetherSilkCurrents();
+  resetAetherFocusLens();
   refreshAetherSurfaceThreads();
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
@@ -1170,6 +1225,7 @@ function resize() {
   aetherRelayEnergy = 0;
   aetherLaminarCurrentEnergy = 0;
   aetherFlowFieldEnergy = 0;
+  aetherFocusLensEnergy = 0;
 }
 
 function waveY(x, rowIndex, time) {
@@ -2390,6 +2446,124 @@ function drawAetherSilkCurrents(time) {
   ctx.restore();
 }
 
+function drawAetherFocusLens(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherFocusLensParticles.length) return;
+
+  aetherFocusLensEnergy *= 0.93;
+  if (aetherFocusLensEnergy < 0.004) aetherFocusLensEnergy = 0;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  const focusParticles = aetherFocusLensParticles.map((particle, index) => {
+    const orbitPhase = time * (0.00008 + particle.z * 0.000035) + particle.phase;
+    const orbitX = Math.cos(orbitPhase + index * 0.13) * width * particle.orbit * 0.055;
+    const orbitY = Math.sin(orbitPhase * 0.82 + index * 0.17) * height * particle.orbit * 0.044;
+    const homePullX = (particle.homeX + orbitX - particle.x) * (0.001 + particle.z * 0.0004);
+    const homePullY = (particle.homeY + orbitY - particle.y) * (0.0009 + particle.z * 0.00034);
+    particle.vx = (particle.vx + homePullX) * 0.995;
+    particle.vy = (particle.vy + homePullY) * 0.995;
+    particle.x += particle.vx * (0.55 + particle.z * 0.58) + pointer.x * particle.z * 0.008;
+    particle.y += particle.vy * (0.5 + particle.z * 0.52) + pointer.y * particle.z * 0.006;
+    particle.phase += 0.0009 + aetherFocusLensEnergy * 0.0016;
+
+    if (particle.x < -32) particle.x = width + 32;
+    if (particle.x > width + 32) particle.x = -32;
+    if (particle.y < -32) particle.y = height + 32;
+    if (particle.y > height + 32) particle.y = -32;
+
+    const driftX = Math.sin(time * 0.00018 + particle.phase * 0.74) * (8 + particle.z * 10);
+    const driftY = Math.cos(time * 0.00015 + particle.phase * 0.58) * (6 + particle.z * 8);
+    const baseX = particle.x + driftX + pointer.x * particle.z * 12;
+    const baseY = particle.y + driftY + pointer.y * particle.z * 9;
+    const pointerDistance = Math.max(1, Math.hypot(baseX - pointer.screenX, baseY - pointer.screenY));
+    const focusLensPressure = Math.max(0, 1 - pointerDistance / AETHER_FOCUS_LENS_RADIUS) * pointer.force;
+    const lensLift = focusLensPressure * (10 + particle.z * 16);
+    const lensX = ((baseX - pointer.screenX) / pointerDistance) * lensLift;
+    const lensY = ((baseY - pointer.screenY) / pointerDistance) * lensLift * 0.76;
+
+    particle.viewX = baseX + lensX;
+    particle.viewY = baseY + lensY;
+    particle.focusLensPressure = focusLensPressure;
+    return particle;
+  });
+
+  const radius = width < 760 ? AETHER_FOCUS_LENS_CONNECTION_RADIUS * 0.72 : AETHER_FOCUS_LENS_CONNECTION_RADIUS;
+  for (let i = 0; i < focusParticles.length; i += AETHER_FOCUS_LENS_STRIDE) {
+    const a = focusParticles[i];
+    for (let j = i + AETHER_FOCUS_LENS_STRIDE; j < focusParticles.length; j += AETHER_FOCUS_LENS_STRIDE) {
+      const b = focusParticles[j];
+      const distance = Math.hypot(a.viewX - b.viewX, a.viewY - b.viewY);
+      const pressure = Math.max(a.focusLensPressure, b.focusLensPressure);
+      const activeRadius = radius + pressure * 84 + aetherFocusLensEnergy * 28;
+      if (distance > activeRadius) continue;
+
+      const strength = Math.max(0, 1 - distance / activeRadius);
+      const alpha = Math.min(0.15, strength * 0.026 + pressure * 0.09 + aetherFocusLensEnergy * 0.05);
+      if (alpha < 0.007) continue;
+
+      const gradient = ctx.createLinearGradient(a.viewX, a.viewY, b.viewX, b.viewY);
+      gradient.addColorStop(0, `rgba(${a.color}, 0)`);
+      gradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.42})`);
+      gradient.addColorStop(1, `rgba(${b.color}, ${alpha})`);
+
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 0.26 + pressure * 0.62 + aetherFocusLensEnergy * 0.18;
+      ctx.moveTo(a.viewX, a.viewY);
+      ctx.quadraticCurveTo(
+        (a.viewX + b.viewX) * 0.5 + pointer.x * (14 + pressure * 18),
+        (a.viewY + b.viewY) * 0.5 + pointer.y * (10 + pressure * 14),
+        b.viewX,
+        b.viewY,
+      );
+      ctx.stroke();
+    }
+  }
+
+  if (pointer.force > 0.025) {
+    const lensRadius = 66 + pointer.force * 124 + aetherFocusLensEnergy * 38;
+    const gradient = ctx.createRadialGradient(
+      pointer.screenX,
+      pointer.screenY,
+      Math.max(1, lensRadius * 0.08),
+      pointer.screenX,
+      pointer.screenY,
+      lensRadius,
+    );
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${0.018 + pointer.force * 0.018})`);
+    gradient.addColorStop(0.38, `rgba(117, 197, 222, ${0.034 + pointer.force * 0.052})`);
+    gradient.addColorStop(0.72, `rgba(167, 139, 250, ${0.018 + pointer.force * 0.026})`);
+    gradient.addColorStop(1, 'rgba(117, 197, 222, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(pointer.screenX + pointer.x * 5, pointer.screenY + pointer.y * 4, lensRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  focusParticles.forEach((particle) => {
+    const pulse = 0.46
+      + Math.sin(time * 0.0014 + particle.phase) * 0.18
+      + particle.focusLensPressure * 0.34
+      + aetherFocusLensEnergy * 0.22;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${0.045 + pulse * 0.088})`;
+    ctx.shadowColor = `rgba(${particle.color}, ${0.055 + particle.focusLensPressure * 0.14 + aetherFocusLensEnergy * 0.08})`;
+    ctx.shadowBlur = 4 + particle.z * 7 + particle.focusLensPressure * 8;
+    ctx.arc(
+      particle.viewX,
+      particle.viewY,
+      particle.r + particle.focusLensPressure * 0.9 + aetherFocusLensEnergy * 0.28,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawAetherSurfaceThreads(time) {
   if (prefersReducedMotion || isAetherFlowPaused() || !aetherSurfaceThreads.length) return;
 
@@ -2709,6 +2883,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherLaminarCurrents(time);
   if (!isAetherFlowPaused()) drawAetherFlowFieldNetwork(time);
   if (!isAetherFlowPaused()) drawAetherSilkCurrents(time);
+  if (!isAetherFlowPaused()) drawAetherFocusLens(time);
   if (!isAetherFlowPaused()) drawAetherSurfaceThreads(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
@@ -2759,6 +2934,7 @@ function init() {
     resetAetherLaminarCurrents(event.detail);
     resetAetherFlowField(event.detail);
     resetAetherSilkCurrents(event.detail);
+    resetAetherFocusLens(event.detail);
     rethreadAetherAdaptiveMesh(event.detail);
     refreshAetherSurfaceThreads(event.detail);
     spawnAetherPressurePulse(width * 0.52, height * 0.46, { radius: 220, strength: 0.62, ttl: 1.3, hue: 'cyan' });
@@ -2789,6 +2965,7 @@ function init() {
     energizeAetherLaminarCurrents(event.detail);
     energizeAetherFlowField(event.detail);
     energizeAetherSilkCurrents(event.detail);
+    energizeAetherFocusLens(event.detail);
   });
   tick();
 }
