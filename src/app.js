@@ -51,7 +51,7 @@ import {
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
 import { createLabAudioPlayer } from './audio-player.js';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-flow-ear-triage';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,

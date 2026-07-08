@@ -1599,6 +1599,117 @@ function buildPatchDoctor(family, patch, macroList = []) {
   };
 }
 
+const EAR_TRIAGE_LAYER_PRESETS = {
+  'harsh-edge': {
+    layerAudition: 'texture',
+    isolateLabelZh: 'Solo Texture',
+    isolateZh: '只听 texture 质感层：如果关掉主体后仍然薄、亮、刮耳，问题多半来自噪声、warp、filter resonance 或过亮的侧频。',
+  },
+  'tail-mask': {
+    layerAudition: 'tail',
+    isolateLabelZh: 'Solo Tail',
+    isolateZh: '只听 tail 尾音层：确认 reverb、delay 或 resonator decay 是否盖住 transient，而不是自然退场。',
+  },
+  'transient-body': {
+    layerAudition: 'transient',
+    isolateLabelZh: 'Solo Transient',
+    isolateZh: '先 solo transient，再回到 full：判断第一下是否太硬，或者和 body 主体不像同一种材质。',
+  },
+  'motion-life': {
+    layerAudition: 'full',
+    isolateLabelZh: 'Loop Full',
+    isolateZh: '连续触发 full patch 三次：听运动是否像同一个音色的细微变化，而不是每次都变成新音色。',
+  },
+};
+
+function summarizeTriageMove(applyAction = {}, macroList = []) {
+  const macroLabels = Object.fromEntries((macroList ?? []).map((macro) => [macro.id, macro.labelZh ?? macro.id]));
+  const layerLabels = {
+    transient: 'Transient 瞬态',
+    body: 'Body 主体',
+    texture: 'Texture 质感',
+    tail: 'Tail 尾音',
+  };
+  const moves = [
+    ...Object.entries(applyAction.macroDelta ?? {}).map(([id, delta]) => {
+      const direction = delta > 0 ? '+' : '';
+      return `${macroLabels[id] ?? id} ${direction}${delta}`;
+    }),
+    ...Object.entries(applyAction.layerDelta ?? {}).map(([id, delta]) => {
+      const direction = delta > 0 ? '+' : '';
+      return `${layerLabels[id] ?? id} ${direction}${delta}`;
+    }),
+  ];
+  return moves.length ? moves.join(' / ') : '只改一个最相关参数';
+}
+
+function buildEarTriage(family, patch, patchDoctor, macroList = []) {
+  const primary = patchDoctor?.diagnostics?.[0];
+  const fallbackDiagnostic = {
+    id: 'harsh-edge',
+    labelZh: '刺耳边缘',
+    listenZh: '先听 3k-8k 是否薄、亮或刮耳。',
+    action: 'analyze-patch',
+    actionLabelZh: '看频谱',
+    reaperCheckZh: 'REAPER 中匹配响度后做 dry/full A/B。',
+    applyAction: {
+      id: 'harsh-edge',
+      labelZh: '试调一次',
+      summaryZh: '小幅降低 Brightness 或 Texture，再 A/B 判断是否更舒服。',
+    },
+    synthTargets: {},
+  };
+  const diagnostic = primary ?? fallbackDiagnostic;
+  const preset = EAR_TRIAGE_LAYER_PRESETS[diagnostic.id] ?? EAR_TRIAGE_LAYER_PRESETS['harsh-edge'];
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '当前音效';
+  const moveSummary = summarizeTriageMove(diagnostic.applyAction, macroList);
+  const synthMap = {
+    serum: diagnostic.synthTargets?.serum ?? 'Serum: 先锁定一个 oscillator/noise/filter 目标，只改一处再 A/B。',
+    phasePlant: diagnostic.synthTargets?.phasePlant ?? 'Phase Plant: 把问题层放到独立 lane，solo 后只动一个 Macro。',
+    vital: diagnostic.synthTargets?.vital ?? 'Vital: 先固定主包络，再检查 warp、filter 或 noise 的一个目标参数。',
+  };
+
+  return {
+    id: 'ear-triage',
+    problemId: diagnostic.id,
+    titleZh: 'Ear Triage 听感分诊',
+    subtitleZh: `当前先处理：${diagnostic.labelZh}`,
+    summaryZh: `把 ${familyName} 的问题拆成“听症状 -> solo 一层 -> 只改一次 -> A/B 结论”，避免初学者一次乱动所有旋钮。`,
+    decisionPromptZh: `REAPER 备注：A/B 后写“${diagnostic.labelZh}: ${moveSummary}，保留/撤回，因为……”。`,
+    synthMap,
+    steps: [
+      {
+        id: 'listen',
+        labelZh: '01 先听症状',
+        bodyZh: diagnostic.listenZh,
+        action: diagnostic.action ?? 'analyze-patch',
+        actionLabelZh: diagnostic.actionLabelZh ?? '看频谱',
+      },
+      {
+        id: 'isolate',
+        labelZh: '02 Solo 一层',
+        bodyZh: preset.isolateZh,
+        layerAudition: preset.layerAudition,
+        actionLabelZh: preset.isolateLabelZh,
+      },
+      {
+        id: 'adjust',
+        labelZh: '03 只改一次',
+        bodyZh: diagnostic.applyAction?.summaryZh ?? '只动 Patch Doctor 建议的一个参数，听变化方向是否符合预期。',
+        applyDiagnosticId: diagnostic.id,
+        actionLabelZh: diagnostic.applyAction?.labelZh ?? '试调一次',
+      },
+      {
+        id: 'verify',
+        labelZh: '04 A/B 结论',
+        bodyZh: diagnostic.reaperCheckZh ?? '匹配响度后再比较，不把“更大声”误判成“更好”。',
+        action: 'focus-practice-loop',
+        actionLabelZh: '回到 A/B',
+      },
+    ],
+  };
+}
+
 function buildSoundQualityCoach(patch, patchDoctor) {
   const values = patch.macros ?? {};
   const layerMix = patch.layerMix ?? {};
@@ -2519,6 +2630,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor,
+    earTriage: buildEarTriage(family, patch, patchDoctor, macroList),
     missionBrief,
     targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
     perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),

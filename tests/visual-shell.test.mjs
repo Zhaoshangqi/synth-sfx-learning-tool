@@ -264,6 +264,14 @@ test('direct hash routes skip the opening splash to avoid route flash', () => {
   assert.match(shellJs, /settleSplash\(\)/);
 });
 
+test('module entry points carry cache-busting versions for static Pages delivery', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-ear-triage"/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-ear-triage'/);
+});
+
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
@@ -1715,7 +1723,7 @@ test('reference v9 loads a final clean visual layer after the legacy cascade', (
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const finalUrl = new URL('../styles-reference.css', import.meta.url);
 
-  assert.match(html, /href="\.\/styles\.css"[\s\S]*href="\.\/styles-reference\.css"/);
+  assert.match(html, /href="\.\/styles\.css(?:\?v=[^"]+)?"[\s\S]*href="\.\/styles-reference\.css(?:\?v=[^"]+)?"/);
   assert.ok(existsSync(finalUrl), 'final reference layer should be a separate stylesheet loaded after legacy styles.css');
 
   const css = readFileSync(finalUrl, 'utf8');
