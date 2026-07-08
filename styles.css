@@ -19961,3 +19961,189 @@ body.is-direct-manipulating #particle-canvas {
 .sound-lab-workbench .material-resonance-panel .resonance-peak-card span {
   color: var(--v68-cyan) !important;
 }
+
+/* v6.9 reference match trainer: playable target, nudge, and readable control deltas */
+.signal-atlas-console .reference-match-panel {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(110, 231, 249, 0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(110, 231, 249, 0.13), transparent 36%),
+    linear-gradient(135deg, rgba(9, 13, 24, 0.86), rgba(18, 24, 38, 0.76));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 44px rgba(0, 0, 0, 0.24);
+  color: #f4f1e8;
+}
+
+.signal-atlas-console .reference-match-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.signal-atlas-console .reference-match-head span,
+.signal-atlas-console .reference-synth-map p {
+  color: rgba(110, 231, 249, 0.82);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.signal-atlas-console .reference-match-head strong {
+  color: #fffaf0;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.signal-atlas-console .reference-match-head p,
+.signal-atlas-console .reference-listen-row button span,
+.signal-atlas-console .reference-synth-map span,
+.signal-atlas-console .reference-synth-map code {
+  color: rgba(244, 241, 232, 0.74);
+}
+
+.signal-atlas-console .reference-listen-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.signal-atlas-console .reference-listen-row button {
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 14px;
+  background: rgba(244, 241, 232, 0.07);
+  color: #f4f1e8;
+  text-align: left;
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.signal-atlas-console .reference-listen-row button:hover,
+.signal-atlas-console .reference-listen-row button:focus-visible {
+  transform: translate3d(0, -2px, 0);
+  border-color: rgba(110, 231, 249, 0.48);
+  background: rgba(110, 231, 249, 0.12);
+  box-shadow: 0 10px 28px rgba(8, 12, 24, 0.26);
+}
+
+.signal-atlas-console .reference-listen-row button:active {
+  transform: translate3d(0, 0, 0) scale(0.99);
+}
+
+.signal-atlas-console .reference-listen-row button strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #fffaf0;
+}
+
+.signal-atlas-console .reference-apply-button {
+  border-color: rgba(94, 234, 212, 0.42) !important;
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.18), rgba(124, 140, 255, 0.12)) !important;
+}
+
+.signal-atlas-console .reference-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.signal-atlas-console .reference-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 42%);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(244, 241, 232, 0.1);
+  border-radius: 14px;
+  background: rgba(244, 241, 232, 0.055);
+}
+
+.signal-atlas-console .reference-control-row span {
+  color: rgba(110, 231, 249, 0.78);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.signal-atlas-console .reference-control-row strong {
+  display: block;
+  color: #fffaf0;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.signal-atlas-console .reference-control-row small {
+  color: rgba(244, 241, 232, 0.62);
+}
+
+.signal-atlas-console .reference-control-row i {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(244, 241, 232, 0.1);
+  overflow: hidden;
+}
+
+.signal-atlas-console .reference-control-row i::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--reference-current, 50%);
+  border-radius: inherit;
+  background: rgba(244, 241, 232, 0.28);
+}
+
+.signal-atlas-console .reference-control-row i b {
+  position: absolute;
+  top: -4px;
+  left: var(--reference-target, 50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 999px;
+  background: #6ee7f9;
+  box-shadow: 0 0 14px rgba(110, 231, 249, 0.52);
+}
+
+.signal-atlas-console .reference-control-row i em {
+  position: absolute;
+  top: 2px;
+  left: var(--reference-nudge, 50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5eead4;
+  box-shadow: 0 0 14px rgba(94, 234, 212, 0.5);
+}
+
+.signal-atlas-console .reference-synth-map {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(244, 241, 232, 0.1);
+}
+
+.signal-atlas-console .reference-synth-map span,
+.signal-atlas-console .reference-synth-map code {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid rgba(244, 241, 232, 0.09);
+  border-radius: 12px;
+  background: rgba(3, 7, 18, 0.24);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 920px) {
+  .signal-atlas-console .reference-listen-row,
+  .signal-atlas-console .reference-control-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -291,3 +291,30 @@ Passed for this iteration. The visual system now follows the pasted Stitch refer
 
 ## Result
 Passed for this iteration. The first viewport is calmer and closer to the supplied studio reference, Sound Lab now exposes teachable modal resonance data instead of hiding it in DSP internals, and continuous controls pause global motion while dragging.
+
+---
+
+# Design QA - Reference Match Trainer v6.9
+
+## Focus
+- Goal: make Sound Lab less like a loose control surface and more like a guided synth practice loop: Current -> Target Reference -> Nudge -> A/B decision.
+- Product upgrade: add `Reference Match 参考目标` inside Target Match with playable Current / Target / Nudge states, small-step macro/layer targets, Serum / Phase Plant / Vital translation, and REAPER A/B notes.
+- Stability constraint: keep the new buttons routed through existing Sound Lab playback and in-place feedback, without full-page flashes or new decorative particle bursts.
+
+## Browser QA
+- Local URL: `http://localhost:5177/#soundlab`.
+- Browser note: Python Playwright was used for local browser verification.
+- Desktop viewport: 1440 x 1000 and 1280 x 900.
+- Reference Match render: passed. `.reference-match-panel` renders with Current / Target / Nudge playback buttons, one apply button, readable dark text, and two-column reference controls.
+- Reference Match interaction: passed. Clicking `Target` updates `.atlas-dock-status small` to the target listening instruction. Clicking `Nudge` apply updates real controls: Material changed `88 -> 86`, Body changed `72 -> 70`.
+- Layout: passed. Desktop horizontal overflow is `0`; mobile viewport `390 x 900` keeps panel width at `314` and overflow at `0`.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "reference match|target match coach exposes playable|playable reference" tests\sound-lab.test.mjs tests\render.test.mjs tests\visual-shell.test.mjs` failed on missing `referenceMatch`, render panel, and app bindings.
+- TDD green: targeted Reference Match tests passed.
+- Syntax: `node --check src\sound-lab-model.js`, `src\render.js`, and `src\app.js`: passed.
+- Full suite: `npm.cmd test`: 212 passed.
+
+## Result
+Passed for this iteration. Sound Lab now has a more professional ear-training loop: users can hear a synthesized target reference, compare a small nudge, then apply only a controlled step toward the target with REAPER documentation guidance.
