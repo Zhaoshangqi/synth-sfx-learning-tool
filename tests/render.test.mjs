@@ -988,6 +988,28 @@ test('renderSoundLabWorkbench shows motion bus realism in the quality card', () 
   assert.match(qualityBlock, /transient shield|tail bloom|wow|瞬态|尾巴/i);
 });
 
+test('renderSoundLabWorkbench explains dynamic detail polish as snap glue and silk', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 84,
+    motion: 58,
+    material: 88,
+    space: 38,
+    variation: 62,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'shape',
+    layerMix: { transient: 92, body: 82, texture: 64, tail: 34 },
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(qualityBlock, 'quality card should render as a distinct panel');
+  assert.match(qualityBlock, /Dynamic Detail|动态细节|细节抛光/);
+  assert.match(qualityBlock, /snap|glue|silk|瞬态|粘合|柔化/i);
+});
+
 test('renderSoundLabWorkbench teaches temporal masking in the quality card', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

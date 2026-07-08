@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-gesture-hits';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-dynamic-detail';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -120,6 +120,32 @@ const createSpaceBuffer = (context, decaySeconds = 0.3) => {
     }
   }
   return buffer;
+};
+
+const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes = []) => {
+  const dynamicDetail = globalFx.masterPolish?.dynamicDetail ?? {};
+  const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
+  const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
+  const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
+  if (transientAir <= 0 && bodyGlue <= 0 && outputSilk <= 0) {
+    input.connect(output);
+    return;
+  }
+
+  const detailShelf = context.createBiquadFilter();
+  const glueCompressor = context.createDynamicsCompressor();
+  detailShelf.type = 'highshelf';
+  detailShelf.frequency.value = clamp(6200 + transientAir * 2200, 4800, 11000);
+  detailShelf.gain.value = clamp(transientAir * 2.8 - outputSilk * 2.2, -3.2, 3.4);
+  glueCompressor.threshold.value = -24 + bodyGlue * 7;
+  glueCompressor.knee.value = 10 + outputSilk * 18;
+  glueCompressor.ratio.value = 1.35 + bodyGlue * 2.6;
+  glueCompressor.attack.value = clamp((dynamicDetail.snapWindowMs ?? 18) / 1000, 0.006, 0.05);
+  glueCompressor.release.value = clamp(0.09 + outputSilk * 0.18, 0.06, 0.32);
+  input.connect(detailShelf);
+  detailShelf.connect(glueCompressor);
+  glueCompressor.connect(output);
+  nodes.push(detailShelf, glueCompressor);
 };
 
 const connectPatchEffects = (context, input, master, patch, nodes) => {
@@ -302,7 +328,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-gesture-hits');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-dynamic-detail');
       this.workletReady = true;
       return true;
     } catch {
@@ -402,6 +428,26 @@ export class LabAudioPlayer {
       }
       if (effect.type === 'reverb' && Tone.Reverb && (effect.amount ?? 0) > 0.03) {
         addNode(new Tone.Reverb({ decay: clamp(effect.decaySeconds ?? 0.8, 0.1, 4), wet: clamp(effect.amount, 0, 0.62) }));
+      }
+      if (effect.type === 'polish') {
+        const dynamicDetail = effect.dynamicDetail ?? patch.globalFx?.masterPolish?.dynamicDetail ?? {};
+        const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
+        const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
+        const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
+        if (Tone.Filter && (transientAir > 0 || outputSilk > 0)) {
+          const detailShelf = new Tone.Filter(clamp(6200 + transientAir * 2200, 4800, 11000), 'highshelf');
+          if (detailShelf.gain) detailShelf.gain.value = clamp(transientAir * 2.8 - outputSilk * 2.2, -3.2, 3.4);
+          addNode(detailShelf);
+        }
+        if (Tone.Compressor && (bodyGlue > 0 || outputSilk > 0)) {
+          addNode(new Tone.Compressor({
+            threshold: -24 + bodyGlue * 7,
+            knee: 10 + outputSilk * 18,
+            ratio: 1.35 + bodyGlue * 2.6,
+            attack: clamp((dynamicDetail.snapWindowMs ?? 18) / 1000, 0.006, 0.05),
+            release: clamp(0.09 + outputSilk * 0.18, 0.06, 0.32),
+          }));
+        }
       }
     }
 
@@ -682,7 +728,7 @@ export class LabAudioPlayer {
     shaper.oversample = '2x';
     outputGain.gain.value = clamp(globalFx.softLimiter?.ceiling ?? 0.9, 0.4, 0.98);
     bus.connect(shaper);
-    shaper.connect(outputGain);
+    connectDynamicDetailStage(this.context, shaper, outputGain, globalFx, nodes);
     outputGain.connect(this.master);
     nodes.push(bus, shaper, outputGain);
 

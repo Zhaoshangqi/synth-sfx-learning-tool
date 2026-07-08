@@ -83,6 +83,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       warm: 0,
       harsh: 0,
       edge: 0,
+      snap: 0,
+      body: 0,
+      silk: 0,
       prev: 0,
     };
   }
@@ -516,10 +519,11 @@ class SoundLabProcessor extends AudioWorkletProcessor {
   softLimiter(sample, state = null) {
     const globalFx = this.patch?.globalFx || {};
     const drive = clamp(globalFx.dynamics?.drive ?? this.patch?.waveshaper?.drive ?? 0.4, 0, 1.4);
+    const outputSilk = clamp(globalFx.masterPolish?.dynamicDetail?.outputSilk ?? 0, 0, 1);
     const ceiling = clamp(globalFx.softLimiter?.ceiling ?? this.patch?.safety?.limiter ?? 0.92, 0.5, 0.98);
-    const amount = 1.2 + drive * 4.2;
+    const amount = clamp(1.2 + drive * 4.2 - outputSilk * 0.42, 0.8, 7);
     const rounded = this.applyAnalogOutputSaturation(sample, drive, state);
-    return Math.tanh(rounded * amount) / Math.tanh(amount) * ceiling;
+    return Math.tanh(rounded * amount) / Math.tanh(amount) * ceiling * (1 - outputSilk * 0.012);
   }
 
   applyMasterPolish(sample, state) {
@@ -535,6 +539,14 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const deHarsh = clamp(comfortBus.deHarsh ?? 0, 0, 1);
     const headroom = clamp(comfortBus.headroom ?? 0.055, 0, 0.22);
     const airTame = clamp(comfortBus.airTame ?? 0, 0, 1);
+    const dynamicDetail = polish.dynamicDetail || {};
+    const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
+    const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
+    const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
+    const snapWindowMs = clamp(dynamicDetail.snapWindowMs ?? 18, 0, 64);
+    const detailSnapWindow = snapWindowMs > 0
+      ? clamp(1 / Math.max(1, sampleRate * snapWindowMs / 1000), 0.00025, 0.08)
+      : 0.08;
 
     state.low = this.onePole(state.low, sample, 0.018);
     const tightened = sample - state.low * lowTighten * 0.24;
@@ -552,11 +564,17 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const harshMotion = harshBand - previousHarsh * 0.18;
     const deHarshAmount = clamp(Math.abs(harshMotion) * deHarsh * 2.4 + airTame * 0.035, 0, 0.2);
     const comforted = warmed - harshBand * deHarshAmount;
+    state.snap = this.onePole(state.snap, Math.abs(state.edge), detailSnapWindow);
+    state.body = this.onePole(state.body, comforted, 0.01 + bodyGlue * 0.022);
+    const gluedInput = comforted + state.body * bodyGlue * 0.072;
     const drive = 1 + glue * 1.7;
-    const glued = Math.tanh(comforted * drive) / Math.tanh(drive);
-    const transientRestore = edge * transientHold * 0.045;
+    const glued = Math.tanh(gluedInput * drive) / Math.tanh(drive);
+    state.silk = this.onePole(state.silk, glued, 0.05 + outputSilk * 0.07);
+    const silked = glued - (glued - state.silk) * outputSilk * 0.085;
+    const snapFocus = clamp(1 - state.snap * 0.18, 0.72, 1.08);
+    const transientRestore = edge * transientHold * 0.045 + edge * transientAir * snapFocus * 0.038;
     const outputGain = bodyGain * (1 - headroom * 0.34);
-    return clamp((glued + transientRestore) * outputGain, -1.2 + headroom, 1.2 - headroom);
+    return clamp((silked + transientRestore) * outputGain, -1.2 + headroom, 1.2 - headroom);
   }
 
   applyTemporalMasking(dryLeft, dryRight, wetLeft, wetRight, t, duration) {

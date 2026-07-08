@@ -450,6 +450,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
   const space = normalize(values.space);
   const variation = normalize(values.variation);
   const transientMix = clamp((layerData.layerMix?.transient ?? SOUND_LAB_LAYER_MIX.transient) / 100, 0, 1);
+  const bodyMix = clamp((layerData.layerMix?.body ?? SOUND_LAB_LAYER_MIX.body) / 100, 0, 1);
   const textureMix = clamp((layerData.layerMix?.texture ?? SOUND_LAB_LAYER_MIX.texture) / 100, 0, 1);
   const tailMix = clamp((layerData.layerMix?.tail ?? SOUND_LAB_LAYER_MIX.tail) / 100, 0, 1);
   const studioBonus = quality.id === 'studio' ? 0.13 : quality.id === 'balanced' ? 0.06 : 0;
@@ -478,6 +479,12 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     tailBloom: clamp(0.035 + space * 0.11 + tailMix * 0.08 + motion * 0.035 + studioBonus * 0.16, 0.02, 0.32),
     wowFlutter: clamp(0.0015 + variation * 0.006 + motion * 0.0035 + studioBonus * 0.018, 0.001, 0.038),
   };
+  const dynamicDetail = {
+    transientAir: Number(clamp(0.045 + transientMix * 0.13 + brightness * 0.11 + textureMix * 0.055 + studioBonus * 0.45, 0.025, 0.36).toFixed(3)),
+    bodyGlue: Number(clamp(0.055 + bodyMix * 0.14 + material * 0.1 + motion * 0.035 + studioBonus * 0.42, 0.025, 0.34).toFixed(3)),
+    outputSilk: Number(clamp(0.06 + brightness * 0.07 + material * 0.08 + (comfortBus.deHarsh ?? 0) * 0.18 + studioBonus * 0.38, 0.035, 0.38).toFixed(3)),
+    snapWindowMs: Math.round(clamp(10 + transientMix * 14 + material * 8 + studioBonus * 42, 8, 42)),
+  };
 
   return {
     glue: clamp(0.12 + material * 0.22 + motion * 0.09 + studioBonus, 0.08, 0.62),
@@ -488,6 +495,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     comfortBus,
     temporalMasking,
     motionBus,
+    dynamicDetail,
   };
 }
 
@@ -554,6 +562,12 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
         tailBloom: 0,
         wowFlutter: 0,
       },
+      dynamicDetail: {
+        transientAir: 0,
+        bodyGlue: 0,
+        outputSilk: 0,
+        snapWindowMs: 0,
+      },
     };
   }
 
@@ -576,7 +590,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18 + (masterPolish.dynamicDetail?.bodyGlue ?? 0) * 0.24, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus, dynamicDetail: masterPolish.dynamicDetail },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -1116,6 +1130,7 @@ function buildSoundQuality(patch) {
   const comfortBus = polish.comfortBus ?? {};
   const motionBus = polish.motionBus ?? {};
   const temporalMasking = polish.temporalMasking ?? {};
+  const dynamicDetail = polish.dynamicDetail ?? {};
   const spatialImage = patch.globalFx?.spatialImage ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
@@ -1146,6 +1161,14 @@ function buildSoundQuality(patch) {
       + (temporalMasking.transientProtect ?? 0) * 160
       + clamp((temporalMasking.attackHoldMs ?? 0) / 74, 0, 1) * 22
       + (temporalMasking.tailDuckDb ?? 0) * 7,
+    0,
+    100,
+  );
+  const dynamicDetailScore = clamp(
+    (dynamicDetail.transientAir ?? 0) * 112
+      + (dynamicDetail.bodyGlue ?? 0) * 132
+      + (dynamicDetail.outputSilk ?? 0) * 118
+      + clamp((dynamicDetail.snapWindowMs ?? 0) / 42, 0, 1) * 18,
     0,
     100,
   );
@@ -1215,6 +1238,13 @@ function buildSoundQuality(patch) {
       value: temporalScore,
       statusZh: '尾巴避让',
       noteZh: `tail duck ${formatQualityNumber(temporalMasking.tailDuckDb ?? 0)}dB / hold ${Math.round(temporalMasking.attackHoldMs ?? 0)}ms / release ${Math.round(temporalMasking.releaseMs ?? 0)}ms`,
+    },
+    {
+      id: 'dynamic-detail',
+      labelZh: 'Dynamic Detail',
+      value: dynamicDetailScore,
+      statusZh: '动态细节',
+      noteZh: `snap ${formatQualityNumber((dynamicDetail.transientAir ?? 0) * 100)}% / glue ${formatQualityNumber((dynamicDetail.bodyGlue ?? 0) * 100)}% / silk ${formatQualityNumber((dynamicDetail.outputSilk ?? 0) * 100)}%`,
     },
     {
       id: 'polish',
