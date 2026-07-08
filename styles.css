@@ -16017,3 +16017,100 @@ body::after {
     filter: none !important;
   }
 }
+
+/* Product stability pass v5.4: contain layout, readable surfaces, precise synth controls */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.visual-logo-wrapper {
+  width: max-content;
+  max-width: min(440px, calc(100vw - 116px));
+}
+
+.visual-logo-wrapper span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signal-field {
+  inset: 7% max(4%, 18px);
+  max-width: calc(100vw - 36px);
+  overflow: clip;
+  contain: paint;
+  transform: translate3d(calc(var(--space-x, 0) * -3px), calc(var(--space-y, 0) * -2px - 8vh), 0);
+}
+
+.shell-menu-open .sidebar,
+.shell-menu-open .sidebar .tabs,
+.shell-menu-open .sidebar .tab,
+.shell-menu-open .sidebar .daily-suggestion-card button {
+  pointer-events: auto;
+}
+
+.notification-button span {
+  background: #b91c2b;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.quality-panel .card-kicker,
+.quality-panel > span {
+  color: #064c5b !important;
+  font-weight: 900;
+}
+
+.signal-atlas-console,
+.sound-lab-workbench,
+.synth-workbench-layout {
+  background-color: #111315 !important;
+  isolation: isolate;
+}
+
+.content .signal-atlas-console.sound-lab-workbench.synth-workbench-layout {
+  background-color: #111315 !important;
+}
+
+.signal-atlas-console :where(.workbench-topbar, .atlas-signal-ribbon, .session-transport-dock, .mission-brief-panel, .atlas-main-console, .atlas-support-grid, .workbench-footer-grid, .sound-lab-export),
+.sound-lab-workbench :where(.workbench-topbar, .atlas-signal-ribbon, .session-transport-dock, .mission-brief-panel, .atlas-main-console, .atlas-support-grid, .workbench-footer-grid, .sound-lab-export) {
+  background-color: rgba(17, 19, 21, 0.72);
+}
+
+.signal-atlas-console :where(.workbench-panel, .side-panel, .route-progress-panel, .waveform-detective-panel, .challenge-panel, .quick-entry-panel, .workbench-module-map, .workbench-usage-panel, .modulation-panel, .workbench-coach-panel, .patch-doctor-panel, .practice-loop-panel, .listening-compass-panel, .parameter-coach-panel, .polish-calibration-panel, .sound-quality-coach-panel, .target-match-coach-panel) {
+  background-color: rgba(32, 35, 38, 0.88) !important;
+}
+
+.signal-atlas-console .macro-knob input,
+.synth-workbench-layout .macro-knob input {
+  left: 10px;
+  right: 10px;
+  width: auto;
+  max-width: calc(100% - 20px);
+}
+
+.signal-atlas-console .vertical-slider input,
+.synth-workbench-layout .vertical-slider input {
+  width: 44px;
+  min-width: 44px;
+}
+
+.signal-atlas-console .vertical-slider input::-webkit-slider-thumb,
+.synth-workbench-layout .vertical-slider input::-webkit-slider-thumb {
+  margin-left: -5px;
+}
+
+.signal-atlas-console .range-shell,
+.synth-workbench-layout .range-shell {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.signal-atlas-console input[type="range"],
+.synth-workbench-layout input[type="range"] {
+  max-width: 100%;
+}

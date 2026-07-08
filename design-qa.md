@@ -61,3 +61,27 @@ Passed for this iteration. Remaining work is taste-level refinement only: the li
 
 ## Result
 Passed for this iteration. The final shell matches the supplied showcase language at the system level: light studio canvas, restrained cyan accent, circular menu, capsule controls, pointer spotlight, smooth entry motion, and dark readable Sound Lab modules.
+
+---
+
+# Design QA - Product Stability Pass v5.4
+
+## Focus
+- Goal: remove the remaining production-polish issues from the current visual shell without changing the app's learning content structure.
+- Target surfaces: global shell, menu hit areas, Sound Lab Signal Atlas, macro knobs, vertical ADSR sliders, quality panel labels, notification badge.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=v54b#soundlab`
+- Desktop viewport: in-app browser 1280 x 720.
+- Real menu click: passed. Burger count was `1`; after clicking, the Sound Lab menu tab was visible and `pointer-events:auto`.
+- Horizontal overflow: passed. `scrollWidth=1265`, `innerWidth=1280`, body `overflow-x:clip`, and no visible element extended beyond the viewport.
+- Sound Lab console background: passed. `.signal-atlas-console` computed `background-color: rgb(17, 19, 21)`, so old high-specificity background shorthands no longer make the dark console read as transparent.
+- Range containment: passed. Visible range problem count was `0`; macro slider inputs no longer extend outside their cards and vertical ADSR sliders have a 44px pointer target.
+- Splash/anti-flash: passed. `.visual-splash` stayed `display:none` after load.
+
+## Automated Checks
+- `node --test tests/visual-shell.test.mjs`: 85 passed.
+- `npm.cmd test`: 193 passed.
+
+## Result
+Passed for this iteration. This pass makes the current UI more robust before the next deeper work on audio realism, analyzer behavior, and beginner learning flow depth.
