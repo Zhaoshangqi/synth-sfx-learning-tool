@@ -29,12 +29,13 @@ class SoundLabProcessor extends AudioWorkletProcessor {
   loadPatch(payload, reset) {
     const previousLayers = this.patch?.layers || [];
     const previousVoiceSignature = previousLayers.map((layer) => layer.unison?.voices ?? 1).join('|');
+    const previousGestureSignature = this.gestureSignature(this.patch);
     this.patch = payload;
     this.seed = Math.max(1, Math.floor(this.patch.seed || 1));
 
     if (reset) {
       this.frame = 0;
-      this.layerStates = (this.patch.layers || []).map((layer) => this.createLayerState(layer));
+      this.layerStates = this.createLayerStateMatrix(this.patch.layers || []);
       this.spaceState = this.createSpaceState();
       this.spatialImageState = this.createSpatialImageState();
       this.polishLeft = this.createPolishState();
@@ -49,8 +50,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
     const layers = this.patch.layers || [];
     const nextVoiceSignature = layers.map((layer) => layer.unison?.voices ?? 1).join('|');
-    if (layers.length !== previousLayers.length || nextVoiceSignature !== previousVoiceSignature) {
-      this.layerStates = layers.map((layer) => this.createLayerState(layer));
+    const nextGestureSignature = this.gestureSignature(this.patch);
+    if (layers.length !== previousLayers.length || nextVoiceSignature !== previousVoiceSignature || nextGestureSignature !== previousGestureSignature) {
+      this.layerStates = this.createLayerStateMatrix(layers);
     }
   }
 
@@ -95,6 +97,41 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   createGlobalSmoothState() {
     return {};
+  }
+
+  performanceGestureHits(patch = this.patch) {
+    const feel = patch?.performanceFeel || {};
+    const pattern = Array.isArray(feel.triggerPattern) && feel.triggerPattern.length
+      ? feel.triggerPattern
+      : [{ id: 'hit-1', delayMs: 0, velocity: patch?.performance?.velocity ?? 72, noteOffset: 0 }];
+    const baseVelocity = clamp(patch?.performance?.velocity ?? pattern[0]?.velocity ?? 72, 1, 127);
+    const stereoGesture = clamp(feel.stereoGesture ?? 0, 0, 1);
+    const pitchDrift = clamp(feel.pitchDriftCents ?? 0, 0, 24);
+    const center = (pattern.length - 1) / 2;
+
+    return pattern.slice(0, 4).map((hit, index) => {
+      const velocity = clamp(hit.velocity ?? baseVelocity, 1, 127);
+      const relativeVelocity = velocity / baseVelocity;
+      const noteOffset = clamp(hit.noteOffset ?? 0, -12, 12);
+      return {
+        id: hit.id ?? `hit-${index + 1}`,
+        delayMs: clamp(hit.delayMs ?? index * 28, 0, 1400),
+        gain: clamp(0.34 + velocity / 127 * 0.72 + relativeVelocity * 0.18, 0.34, 1.28),
+        pitchOffsetCents: clamp(noteOffset * 100 + (index - center) * pitchDrift * 0.34, -1300, 1300),
+        pan: clamp((index - center) * stereoGesture * 0.16, -0.28, 0.28),
+      };
+    });
+  }
+
+  gestureSignature(patch = this.patch) {
+    return this.performanceGestureHits(patch)
+      .map((hit) => `${Math.round(hit.delayMs)}:${hit.gain.toFixed(2)}:${Math.round(hit.pitchOffsetCents)}:${hit.pan.toFixed(2)}`)
+      .join('|');
+  }
+
+  createLayerStateMatrix(layers) {
+    const hits = this.performanceGestureHits();
+    return layers.map((layer) => hits.map(() => this.createLayerState(layer)));
   }
 
   createLayerSmoothState(layer) {
@@ -324,7 +361,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   renderSampleGrain(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
-    const bandHz = clamp(this.smoothLayerValue(state, 'bandHz', layer.bandHz || layer.generator?.bandHz || 4800), 120, 15000);
+    const pitchRatio = state.gesturePitchRatio || 1;
+    const bandHz = clamp(this.smoothLayerValue(state, 'bandHz', (layer.bandHz || layer.generator?.bandHz || 4800) * pitchRatio), 120, 15000);
     const density = clamp(this.smoothLayerValue(state, 'density', layer.density || 18), 1, 120);
     const gain = clamp(this.smoothLayerValue(state, 'gain', layer.gain ?? 0, 'gain'), 0, 2);
     const generatorType = layer.generator?.type || 'spark-grains';
@@ -339,7 +377,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
   renderFmBurst(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
     const osc = layer.oscillator || {};
-    const baseFrequency = clamp(this.smoothLayerValue(state, 'oscillatorFrequency', osc.frequency || 220), 20, 6000);
+    const pitchRatio = state.gesturePitchRatio || 1;
+    const baseFrequency = clamp(this.smoothLayerValue(state, 'oscillatorFrequency', (osc.frequency || 220) * pitchRatio), 20, 6000);
     const frequency = baseFrequency * (1 + clamp(osc.sweep || 0, -2, 2) * t / Math.max(0.05, duration) * 0.18);
     const fmRatio = clamp(this.smoothLayerValue(state, 'fmRatio', osc.fmRatio || 1.7), 0.25, 12);
     const fmDepth = clamp(this.smoothLayerValue(state, 'fmDepth', osc.fmDepth || 0), 0, 2000) / 900;
@@ -355,7 +394,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   renderModalResonator(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
-    const baseFrequency = clamp(this.smoothLayerValue(state, 'baseFrequency', layer.baseFrequency || 180), 20, 2000);
+    const pitchRatio = state.gesturePitchRatio || 1;
+    const baseFrequency = clamp(this.smoothLayerValue(state, 'baseFrequency', (layer.baseFrequency || 180) * pitchRatio), 20, 2000);
     const gain = clamp(this.smoothLayerValue(state, 'gain', layer.gain ?? 0, 'gain'), 0, 2);
     const materialBody = layer.materialBody || {};
     const stereoSmear = clamp(materialBody.stereoSmear ?? layer.stereoSpread ?? 0, 0, 1);
@@ -396,7 +436,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const noise = this.colorNoise(state, noiseColor) * noiseGain;
     const gateRate = clamp(layer.noise?.gateRate || 8, 0.5, 120);
     const gate = this.random() > gateRate / 150 ? 1 : 0.42;
-    const filterFrequency = clamp(this.smoothLayerValue(state, 'filterFrequency', layer.filter?.frequency || 2600), 80, 16000);
+    const pitchRatio = state.gesturePitchRatio || 1;
+    const filterFrequency = clamp(this.smoothLayerValue(state, 'filterFrequency', (layer.filter?.frequency || 2600) * pitchRatio), 80, 16000);
     const cutoff = clamp(filterFrequency * (1 + (layer.filter?.sweep || 0) * t / Math.max(0.05, duration)), 80, 16000);
     const coeff = clamp(cutoff / sampleRate, 0.002, 0.48);
     state.filter = this.onePole(state.filter, noise, coeff);
@@ -409,7 +450,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
   renderCombDelay(layer, state, t, duration) {
     const env = this.envelopeFor(layer, t, duration);
-    const frequency = clamp(this.smoothLayerValue(state, 'sourceFrequency', layer.sourceFrequency || 800), 30, 8000);
+    const pitchRatio = state.gesturePitchRatio || 1;
+    const frequency = clamp(this.smoothLayerValue(state, 'sourceFrequency', (layer.sourceFrequency || 800) * pitchRatio), 30, 8000);
     const gain = clamp(this.smoothLayerValue(state, 'gain', layer.gain ?? 0, 'gain'), 0, 2);
     const oscillator = this.renderUnisonOscillator(layer, state, frequency, 'sawtooth', t);
     const excite = (oscillator.mono * 0.45 + this.colorNoise(state, 'pink') * 0.18) * env;
@@ -438,12 +480,19 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return clamp((layer?.onsetMs ?? 0) / 1000, 0, 0.12);
   }
 
-  renderTimedLayer(layer, state, t, duration) {
-    const onset = this.layerOnsetSeconds(layer);
+  renderTimedLayer(layer, state, t, duration, hit = null) {
+    const hitDelay = clamp((hit?.delayMs ?? 0) / 1000, 0, 1.4);
+    const layerOnset = this.layerOnsetSeconds(layer);
+    const onset = layerOnset + hitDelay;
     if (t < onset) return { mono: 0, side: 0 };
     const localT = t - onset;
-    const localDuration = Math.max(0.05, duration - onset);
-    return this.renderLayer(layer, state, localT, localDuration);
+    const localDuration = Math.max(0.05, duration - layerOnset);
+    state.gesturePitchRatio = Math.pow(2, clamp(hit?.pitchOffsetCents ?? 0, -1300, 1300) / 1200);
+    const rendered = this.renderLayer(layer, state, localT, localDuration);
+    const hitGain = clamp(hit?.gain ?? 1, 0.2, 1.4);
+    return typeof rendered === 'number'
+      ? rendered * hitGain
+      : { mono: rendered.mono * hitGain, side: rendered.side * hitGain };
   }
 
   applyAnalogOutputSaturation(sample, drive, state) {
@@ -670,6 +719,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
 
     const duration = clamp(this.patch.durationSeconds || 1, 0.1, 4);
     const layers = this.patch.layers || [];
+    const gestureHits = this.performanceGestureHits();
+    const totalGestureDelay = Math.max(0, ...gestureHits.map((hit) => hit.delayMs || 0)) / 1000;
+    const totalDuration = clamp(duration + totalGestureDelay, duration, 5.4);
     const widthTarget = clamp(this.patch.globalFx?.space?.width ?? this.patch.space?.width ?? 0.28, 0, 1);
     const spaceMixTarget = clamp(this.patch.globalFx?.space?.mix ?? this.patch.space?.mix ?? 0, 0, 0.62);
     const spacePreDelay = clamp((this.patch.globalFx?.space?.preDelayMs ?? 0) / 1000, 0, 0.18);
@@ -681,7 +733,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const width = clamp(this.smoothGlobalValue('width', widthTarget, 'space'), 0, 1);
       const spaceMix = clamp(this.smoothGlobalValue('spaceMix', spaceMixTarget, 'space'), 0, 0.62);
       const diffusion = clamp(this.smoothGlobalValue('diffusion', diffusionTarget, 'space'), 0.2, 0.95);
-      if (t > duration) {
+      if (t > totalDuration) {
         left[index] = 0;
         right[index] = 0;
         continue;
@@ -692,12 +744,22 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       if (layers.length) {
         for (let layerIndex = 0; layerIndex < layers.length; layerIndex += 1) {
           const layer = layers[layerIndex];
-          const rendered = this.renderTimedLayer(layer, this.layerStates[layerIndex], t, duration);
-          const value = typeof rendered === 'number' ? rendered : rendered.mono;
-          const side = typeof rendered === 'number' ? 0 : rendered.side;
-          const pan = clamp(this.smoothLayerValue(this.layerStates[layerIndex], 'pan', layer.pan || 0), -1, 1);
-          mixedLeft += (value - side) * clamp(1 - pan * 0.58, 0.35, 1.35);
-          mixedRight += (value + side) * clamp(1 + pan * 0.58, 0.35, 1.35);
+          if (!this.layerStates[layerIndex]) {
+            this.layerStates[layerIndex] = gestureHits.map(() => this.createLayerState(layer));
+          }
+          const layerStateSlots = Array.isArray(this.layerStates[layerIndex])
+            ? this.layerStates[layerIndex]
+            : [this.layerStates[layerIndex]];
+          for (let hitIndex = 0; hitIndex < gestureHits.length; hitIndex += 1) {
+            const hit = gestureHits[hitIndex];
+            const hitState = layerStateSlots[hitIndex] ?? layerStateSlots[0];
+            const rendered = this.renderTimedLayer(layer, hitState, t, duration, hit);
+            const value = typeof rendered === 'number' ? rendered : rendered.mono;
+            const side = typeof rendered === 'number' ? 0 : rendered.side;
+            const pan = clamp(this.smoothLayerValue(hitState, 'pan', (layer.pan || 0) + (hit.pan || 0)), -1, 1);
+            mixedLeft += (value - side) * clamp(1 - pan * 0.58, 0.35, 1.35);
+            mixedRight += (value + side) * clamp(1 + pan * 0.58, 0.35, 1.35);
+          }
         }
       } else {
         const value = this.renderLegacy(t, duration);

@@ -393,11 +393,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-ear-chain"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-ear-chain'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-ear-chain'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-ear-chain'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-ear-chain'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-gesture-hits"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-gesture-hits'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-gesture-hits'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-gesture-hits'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-gesture-hits'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -769,9 +769,9 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
-  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260708-ear-chain/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-gesture-hits/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
-  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260708-ear-chain/);
+  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260709-gesture-hits/);
   assert.match(css, /\.sound-lab-workbench/);
   assert.match(css, /\.macro-knob/);
   assert.match(css, /\.spectrum-stage/);
