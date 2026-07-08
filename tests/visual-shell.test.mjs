@@ -1916,6 +1916,26 @@ test('sound lab live analyzer coach routes the next one-change action from the d
   assert.match(css, /\.analyzer-coach-next\[data-live-move="transient"\]/);
 });
 
+test('sound lab coach target buttons highlight the exact parameter after routing', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-analyzer-coach-target/);
+  assert.match(appJs, /function getWorkbenchCoachTargetSelector/);
+  assert.match(appJs, /function focusWorkbenchCoachTarget/);
+  assert.match(appJs, /button\?\.dataset\?\.analyzerCoachTarget/);
+  assert.match(appJs, /button\?\.dataset\?\.analyzerCoachLiveParameter/);
+  assert.match(appJs, /focusWorkbenchCoachTarget\(coachTarget\)/);
+  assert.match(appJs, /data-sound-lab-control="\$\{escapeSelector\(targetId\)\}"/);
+  assert.match(appJs, /data-envelope-control="\$\{escapeSelector\(targetId\)\}"/);
+  assert.match(appJs, /data-sound-lab-layer="\$\{escapeSelector\(targetId\)\}"/);
+  assert.match(css, /\.is-coach-target/);
+  assert.match(css, /\.range-shell\.is-coach-target/);
+  assert.match(css, /\.macro-knob\.is-coach-target/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*\.is-coach-target/);
+});
+
 test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const stabilityIndex = css.indexOf('Product stability pass v5.4');
