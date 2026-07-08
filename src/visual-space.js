@@ -12,6 +12,7 @@ let aetherMagneticLinks = [];
 let aetherOrbitalFields = [];
 let aetherConstellationParticles = [];
 let aetherHeroFlowParticles = [];
+let aetherFlowFilaments = [];
 let cursorWakeParticles = [];
 let transitionBursts = [];
 let aetherPressurePulses = [];
@@ -43,6 +44,8 @@ const AETHER_HERO_FLOW_COUNT = 54;
 const AETHER_HERO_FLOW_RADIUS = 220;
 const AETHER_HERO_FLOW_CONNECTION_RADIUS = 154;
 const AETHER_HERO_FLOW_STRIDE = 2;
+const AETHER_FLOW_FILAMENT_COUNT = 9;
+const AETHER_FLOW_FILAMENT_SEGMENTS = 86;
 const AETHER_WAKE_MAX_PARTICLES = 54;
 const AETHER_WAKE_MIN_DISTANCE = 18;
 const AETHER_WAKE_MIN_MS = 24;
@@ -189,11 +192,45 @@ function createAetherHeroFlowParticle(index, seed = 0) {
   };
 }
 
+function createAetherFlowFilament(index) {
+  const lane = (index + 0.7) / (AETHER_FLOW_FILAMENT_COUNT + 1.4);
+  return {
+    lane,
+    offset: random(-0.055, 0.055),
+    amplitude: random(18, 54),
+    secondaryAmplitude: random(8, 24),
+    frequency: random(1.8, 4.4),
+    speed: random(0.00009, 0.00018) * (index % 2 === 0 ? 1 : -1),
+    phase: random(0, Math.PI * 2),
+    drift: random(-0.000018, 0.000024),
+    z: random(0.34, 0.96),
+    width: random(0.28, 0.8),
+    packet: random(0, 1),
+    packetSpeed: random(0.000032, 0.000068),
+    color: index % 4 === 0 ? '167, 139, 250' : index % 3 === 0 ? '94, 234, 212' : '117, 197, 222',
+  };
+}
+
 function resetAetherHeroFlowNetwork(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? 'aether').length;
   const count = Math.min(AETHER_HERO_FLOW_COUNT, Math.max(width < 760 ? 20 : 34, Math.floor((width * height) / 26000)));
   aetherHeroFlowParticles = Array.from({ length: count }, (_, index) => createAetherHeroFlowParticle(index, seed));
+}
+
+function getAetherFilamentPoint(filament, progress, time) {
+  const easedProgress = progress * progress * (3 - progress * 2);
+  const direction = filament.speed >= 0 ? 1 : -1;
+  const x = direction > 0
+    ? -100 + easedProgress * (width + 200)
+    : width + 100 - easedProgress * (width + 200);
+  const phase = filament.phase + time * filament.speed + progress * filament.frequency * Math.PI * 2;
+  const laneY = height * Math.max(0.08, Math.min(0.92, filament.lane + filament.offset));
+  const y = laneY
+    + Math.sin(phase) * filament.amplitude
+    + Math.sin(phase * 0.47 + filament.phase) * filament.secondaryAmplitude
+    + pointer.y * filament.z * 16;
+  return aetherRepel(x + pointer.x * filament.z * 24, y, filament.z);
 }
 
 function spawnCursorWake(x, y, time = performance.now()) {
@@ -300,6 +337,8 @@ function resize() {
 
   const streamCount = width < 760 ? 3 : AETHER_STREAM_COUNT;
   aetherStreams = Array.from({ length: streamCount }, (_, index) => createAetherStream(index));
+  const filamentCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
+  aetherFlowFilaments = Array.from({ length: filamentCount }, (_, index) => createAetherFlowFilament(index));
   const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
   const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
@@ -850,6 +889,57 @@ function drawAetherHeroFlowNetwork(time) {
   ctx.restore();
 }
 
+function drawAetherLiquidFilaments(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !aetherFlowFilaments.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  aetherFlowFilaments.forEach((filament, filamentIndex) => {
+    filament.phase += filament.drift;
+    filament.packet = (filament.packet + filament.packetSpeed * (18 + filament.z * 12)) % 1;
+
+    let firstPoint = null;
+    let previousPoint = null;
+    ctx.beginPath();
+    for (let segment = 0; segment <= AETHER_FLOW_FILAMENT_SEGMENTS; segment += 1) {
+      const progress = segment / AETHER_FLOW_FILAMENT_SEGMENTS;
+      const point = getAetherFilamentPoint(filament, progress, time + filamentIndex * 40);
+      if (!firstPoint) firstPoint = point;
+      previousPoint = point;
+      if (segment === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+
+    if (!firstPoint || !previousPoint) return;
+    const gradient = ctx.createLinearGradient(firstPoint.x, firstPoint.y, previousPoint.x, previousPoint.y);
+    const shimmer = 0.52 + Math.sin(time * 0.0007 + filament.phase) * 0.22;
+    gradient.addColorStop(0, `rgba(${filament.color}, 0)`);
+    gradient.addColorStop(0.42, `rgba(${filament.color}, ${0.035 + shimmer * 0.034})`);
+    gradient.addColorStop(0.56, `rgba(255, 255, 255, ${0.018 + shimmer * 0.026})`);
+    gradient.addColorStop(1, `rgba(${filament.color}, 0)`);
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = filament.width + filament.z * 0.48;
+    ctx.shadowColor = `rgba(${filament.color}, ${0.05 + shimmer * 0.04})`;
+    ctx.shadowBlur = 5 + filament.z * 8;
+    ctx.stroke();
+
+    const head = getAetherFilamentPoint(filament, filament.packet, time + filamentIndex * 53);
+    const tail = getAetherFilamentPoint(filament, Math.max(0, filament.packet - 0.038), time + filamentIndex * 53);
+    const packetGradient = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    packetGradient.addColorStop(0, `rgba(${filament.color}, 0)`);
+    packetGradient.addColorStop(0.72, `rgba(${filament.color}, ${0.15 + shimmer * 0.12})`);
+    packetGradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+    ctx.beginPath();
+    ctx.strokeStyle = packetGradient;
+    ctx.lineWidth = 0.8 + filament.z * 0.78;
+    ctx.moveTo(tail.x, tail.y);
+    ctx.lineTo(head.x, head.y);
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 function drawSignalWave(time) {
   WAVE_ROWS.forEach((row, rowIndex) => {
     ctx.beginPath();
@@ -1046,6 +1136,7 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawAetherOrbitalCurrents(time);
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
+  if (!isAetherFlowPaused()) drawAetherLiquidFilaments(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);

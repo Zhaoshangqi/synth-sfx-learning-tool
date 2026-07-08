@@ -1182,3 +1182,21 @@ test('renderSoundLabWorkbench renders analyzer coach beside live waveform and sp
   assert.match(html, /Serum|Phase Plant|Vital/);
   assert.match(html, /REAPER|A\/B/);
 });
+
+test('renderSoundLabWorkbench exposes a live analyzer next-move slot', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 74,
+    motion: 42,
+    material: 80,
+    space: 34,
+    variation: 24,
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, analyzerMode: 'live' });
+
+  assert.match(html, /data-analyzer-coach-live-move/);
+  assert.match(html, /data-analyzer-coach-live-title/);
+  assert.match(html, /data-analyzer-coach-live-note/);
+  assert.match(html, /data-analyzer-coach-live-action/);
+  assert.match(html, /data-analyzer-coach-live-parameter/);
+});
