@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-aether-relay';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-laminar-gloss';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -124,28 +124,72 @@ const createSpaceBuffer = (context, decaySeconds = 0.3) => {
 
 const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes = []) => {
   const dynamicDetail = globalFx.masterPolish?.dynamicDetail ?? {};
+  const transientGloss = globalFx.masterPolish?.transientGloss ?? {};
   const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
   const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
   const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
-  if (transientAir <= 0 && bodyGlue <= 0 && outputSilk <= 0) {
+  const crestClamp = clamp(transientGloss.crestClamp ?? 0, 0, 1);
+  const harmonicAir = clamp(transientGloss.harmonicAir ?? 0, 0, 1);
+  const bodyFocus = clamp(transientGloss.bodyFocus ?? 0, 0, 1);
+  const aliasGuard = clamp(transientGloss.aliasGuard ?? 0, 0, 1);
+  const crestWindowMs = clamp(transientGloss.crestWindowMs ?? 10, 0, 40);
+  if (transientAir <= 0 && bodyGlue <= 0 && outputSilk <= 0 && crestClamp <= 0 && harmonicAir <= 0 && bodyFocus <= 0 && aliasGuard <= 0) {
     input.connect(output);
     return;
   }
 
-  const detailShelf = context.createBiquadFilter();
-  const glueCompressor = context.createDynamicsCompressor();
-  detailShelf.type = 'highshelf';
-  detailShelf.frequency.value = clamp(6200 + transientAir * 2200, 4800, 11000);
-  detailShelf.gain.value = clamp(transientAir * 2.8 - outputSilk * 2.2, -3.2, 3.4);
-  glueCompressor.threshold.value = -24 + bodyGlue * 7;
-  glueCompressor.knee.value = 10 + outputSilk * 18;
-  glueCompressor.ratio.value = 1.35 + bodyGlue * 2.6;
-  glueCompressor.attack.value = clamp((dynamicDetail.snapWindowMs ?? 18) / 1000, 0.006, 0.05);
-  glueCompressor.release.value = clamp(0.09 + outputSilk * 0.18, 0.06, 0.32);
-  input.connect(detailShelf);
-  detailShelf.connect(glueCompressor);
-  glueCompressor.connect(output);
-  nodes.push(detailShelf, glueCompressor);
+  let current = input;
+  if (harmonicAir > 0 || aliasGuard > 0) {
+    const glossShelf = context.createBiquadFilter();
+    glossShelf.type = 'highshelf';
+    glossShelf.frequency.value = clamp(6800 + harmonicAir * 2600, 5400, 12000);
+    glossShelf.gain.value = clamp(harmonicAir * 2.4 - aliasGuard * 2.1, -3, 3.2);
+    current.connect(glossShelf);
+    current = glossShelf;
+    nodes.push(glossShelf);
+  }
+  if (bodyFocus > 0) {
+    const bodyPeak = context.createBiquadFilter();
+    bodyPeak.type = 'peaking';
+    bodyPeak.frequency.value = clamp(420 + bodyFocus * 740, 320, 1400);
+    bodyPeak.Q.value = 0.8 + bodyFocus * 1.4;
+    bodyPeak.gain.value = bodyFocus * 1.4;
+    current.connect(bodyPeak);
+    current = bodyPeak;
+    nodes.push(bodyPeak);
+  }
+  if (crestClamp > 0 || aliasGuard > 0) {
+    const crestCompressor = context.createDynamicsCompressor();
+    crestCompressor.threshold.value = -15 - crestClamp * 12;
+    crestCompressor.knee.value = 8 + aliasGuard * 12;
+    crestCompressor.ratio.value = 1.2 + crestClamp * 2.8;
+    crestCompressor.attack.value = clamp(crestWindowMs / 1000, 0.004, 0.03);
+    crestCompressor.release.value = clamp(0.055 + aliasGuard * 0.14, 0.04, 0.24);
+    current.connect(crestCompressor);
+    current = crestCompressor;
+    nodes.push(crestCompressor);
+  }
+  if (transientAir > 0 || outputSilk > 0) {
+    const detailShelf = context.createBiquadFilter();
+    detailShelf.type = 'highshelf';
+    detailShelf.frequency.value = clamp(6200 + transientAir * 2200, 4800, 11000);
+    detailShelf.gain.value = clamp(transientAir * 2.8 - outputSilk * 2.2, -3.2, 3.4);
+    current.connect(detailShelf);
+    current = detailShelf;
+    nodes.push(detailShelf);
+  }
+  if (bodyGlue > 0 || outputSilk > 0) {
+    const glueCompressor = context.createDynamicsCompressor();
+    glueCompressor.threshold.value = -24 + bodyGlue * 7;
+    glueCompressor.knee.value = 10 + outputSilk * 18;
+    glueCompressor.ratio.value = 1.35 + bodyGlue * 2.6;
+    glueCompressor.attack.value = clamp((dynamicDetail.snapWindowMs ?? 18) / 1000, 0.006, 0.05);
+    glueCompressor.release.value = clamp(0.09 + outputSilk * 0.18, 0.06, 0.32);
+    current.connect(glueCompressor);
+    current = glueCompressor;
+    nodes.push(glueCompressor);
+  }
+  current.connect(output);
 };
 
 const connectPatchEffects = (context, input, master, patch, nodes) => {
@@ -328,7 +372,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-dynamic-detail');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-laminar-gloss');
       this.workletReady = true;
       return true;
     } catch {
@@ -431,9 +475,36 @@ export class LabAudioPlayer {
       }
       if (effect.type === 'polish') {
         const dynamicDetail = effect.dynamicDetail ?? patch.globalFx?.masterPolish?.dynamicDetail ?? {};
+        const transientGloss = effect.transientGloss ?? patch.globalFx?.masterPolish?.transientGloss ?? {};
         const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
         const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
         const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
+        const crestClamp = clamp(transientGloss.crestClamp ?? 0, 0, 1);
+        const harmonicAir = clamp(transientGloss.harmonicAir ?? 0, 0, 1);
+        const bodyFocus = clamp(transientGloss.bodyFocus ?? 0, 0, 1);
+        const aliasGuard = clamp(transientGloss.aliasGuard ?? 0, 0, 1);
+        const crestWindowMs = clamp(transientGloss.crestWindowMs ?? 10, 0, 40);
+        if (Tone.Filter && (harmonicAir > 0 || aliasGuard > 0)) {
+          const glossShelf = new Tone.Filter(clamp(6800 + harmonicAir * 2600, 5400, 12000), 'highshelf');
+          if (glossShelf.gain) glossShelf.gain.value = clamp(harmonicAir * 2.4 - aliasGuard * 2.1, -3, 3.2);
+          addNode(glossShelf);
+        }
+        if (Tone.Filter && bodyFocus > 0) {
+          const bodyPeak = new Tone.Filter(clamp(420 + bodyFocus * 740, 320, 1400), 'peaking');
+          if (bodyPeak.Q) bodyPeak.Q.value = 0.8 + bodyFocus * 1.4;
+          if (bodyPeak.gain) bodyPeak.gain.value = bodyFocus * 1.4;
+          addNode(bodyPeak);
+        }
+        if (Tone.Compressor && (crestClamp > 0 || aliasGuard > 0)) {
+          const crestCompressor = new Tone.Compressor({
+            threshold: -15 - crestClamp * 12,
+            knee: 8 + aliasGuard * 12,
+            ratio: 1.2 + crestClamp * 2.8,
+            attack: clamp(crestWindowMs / 1000, 0.004, 0.03),
+            release: clamp(0.055 + aliasGuard * 0.14, 0.04, 0.24),
+          });
+          addNode(crestCompressor);
+        }
         if (Tone.Filter && (transientAir > 0 || outputSilk > 0)) {
           const detailShelf = new Tone.Filter(clamp(6200 + transientAir * 2200, 4800, 11000), 'highshelf');
           if (detailShelf.gain) detailShelf.gain.value = clamp(transientAir * 2.8 - outputSilk * 2.2, -3.2, 3.4);

@@ -726,6 +726,61 @@ test('browser audio engines apply dynamic detail polish in Worklet and Tone fall
   assert.match(audioPlayerJs, /outputSilk/);
 });
 
+test('studio patches expose transient gloss for controlled air and plugin-like crest management', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 86,
+    motion: 52,
+    material: 90,
+    space: 46,
+    variation: 58,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 94, body: 76, texture: 70, tail: 42 },
+  });
+
+  const transientGloss = patch.globalFx.masterPolish.transientGloss;
+  assert.ok(transientGloss, 'studio output should expose a transient gloss stage');
+  assert.ok(transientGloss.crestClamp > 0.08, 'crest clamp should keep the first edge consistent without flattening the sound');
+  assert.ok(transientGloss.harmonicAir > 0.05, 'harmonic air should add controlled sheen after the transient');
+  assert.ok(transientGloss.bodyFocus > 0.05, 'body focus should keep the material body stable after the click');
+  assert.ok(transientGloss.aliasGuard > 0.05, 'alias guard should tame brittle top end from web synthesis');
+  assert.ok(transientGloss.crestWindowMs >= 5 && transientGloss.crestWindowMs <= 28);
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.transientGloss));
+
+  const model = buildSoundLabViewModel(family, patch.macros, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: patch.layerMix,
+  });
+  const gloss = model.soundQuality.find((item) => item.id === 'transient-gloss');
+  assert.ok(gloss, 'quality card should explain transient gloss as a beginner-readable realism metric');
+  assert.match(gloss.labelZh, /Transient|Gloss|瞬态|光泽/);
+  assert.match(gloss.noteZh, /crest|air|alias|body/i);
+  assert.ok(gloss.value >= 30 && gloss.value <= 100);
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.transientGloss, transientGloss);
+});
+
+test('browser audio engines apply transient gloss in Worklet and Tone fallback paths', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /transientGloss/);
+  assert.match(processorJs, /applyTransientGloss/);
+  assert.match(processorJs, /crestClamp/);
+  assert.match(processorJs, /harmonicAir/);
+  assert.match(processorJs, /aliasGuard/);
+  assert.match(audioPlayerJs, /transientGloss/);
+  assert.match(audioPlayerJs, /glossShelf/);
+  assert.match(audioPlayerJs, /crestCompressor/);
+  assert.match(audioPlayerJs, /aliasGuard/);
+});
+
 test('studio patches expose temporal masking so tails do not smear the transient', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
