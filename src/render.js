@@ -3144,12 +3144,25 @@ function renderFxChainEditor(model = {}) {
 function renderXYMacroPanel(model = {}) {
   const xy = model.xyPad ?? { x: 50, y: 50 };
   const morph = model.macroMorph ?? { amount: 0 };
+  const xyReadout = `X ${formatNumber(xy.x)} / Y ${formatNumber(xy.y)}`;
   return `
     <section class="workbench-panel professional-module-panel xy-macro-panel" data-advanced-panel="xy-macro" aria-label="XY Pad and Macro Morph">
       <div class="mini-panel-head"><strong>XY Pad / Macro Morph</strong><span>gestural modulation</span></div>
       <div class="xy-macro-grid">
-        <div class="xy-pad" data-xy-pad style="--xy-x:${formatNumber(xy.x)}%; --xy-y:${formatNumber(xy.y)}%">
+        <div
+          class="xy-pad"
+          data-xy-pad
+          tabindex="0"
+          role="slider"
+          aria-label="XY Pad gesture modulation"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuetext="${escapeHtml(xyReadout)}"
+          data-live-value="${escapeHtml(xyReadout)}"
+          style="--xy-x:${formatNumber(xy.x)}%; --xy-y:${formatNumber(xy.y)}%"
+        >
           <button class="xy-handle" type="button" data-xy-handle aria-label="XY Pad handle"></button>
+          <output data-xy-readout>${escapeHtml(xyReadout)}</output>
           <span>X → ${escapeHtml(xy.xTarget ?? 'filter.cutoff')}</span>
           <span>Y → ${escapeHtml(xy.yTarget ?? 'fx.reverb')}</span>
         </div>
