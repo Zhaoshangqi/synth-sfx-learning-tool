@@ -242,6 +242,34 @@ test('buildSoundLabViewModel exposes a sound quality coach tied to the safest ne
   assert.match(model.soundQualityCoach.primaryFix.feedbackZh, /A\/B|只改一个|验证/);
 });
 
+test('buildSoundLabViewModel exposes a beginner mission brief with routed listen edit verify deliver steps', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 36,
+    material: 84,
+    space: 64,
+    variation: 34,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'source',
+    layerMix: { transient: 86, body: 58, texture: 74, tail: 62 },
+  });
+
+  assert.ok(model.missionBrief, 'view model should expose a mission brief for beginners');
+  assert.match(model.missionBrief.titleZh, /Mission|任务|闭环/);
+  assert.match(model.missionBrief.summaryZh, /听|改|验|交付|A\/B/);
+  assert.equal(model.missionBrief.steps.length, 4);
+  assert.deepEqual(model.missionBrief.steps.map((step) => step.id), ['listen', 'edit', 'verify', 'deliver']);
+  assert.ok(model.missionBrief.steps.every((step) => step.labelZh && step.goalZh && step.proofZh && step.action));
+  assert.ok(model.missionBrief.steps.every((step) => ['focus-source', 'focus-controls', 'focus-practice-loop', 'focus-export'].includes(step.action)));
+  assert.match(model.missionBrief.nextAction.labelZh, /下一步|先做|开始/);
+  assert.match(model.missionBrief.passCriteriaZh, /A\/B|REAPER|只改一个|记录/);
+  assert.equal(model.missionBrief.primaryDiagnosticId, model.patchDoctor.diagnostics[0].id);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {

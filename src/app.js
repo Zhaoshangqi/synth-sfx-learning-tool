@@ -537,6 +537,18 @@ function renderDashboard() {
           </div>
         </div>
       </div>
+      <div class="hero-sound-visual" aria-hidden="true">
+        <div class="hero-creator-word">Sound</div>
+        <div class="hero-sonic-core">
+          <span class="core-ring ring-a"></span>
+          <span class="core-ring ring-b"></span>
+          <span class="core-dot dot-a"></span>
+          <span class="core-dot dot-b"></span>
+          <div class="hero-wave-strip">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
       <aside class="quality-panel" aria-label="质量守门">
         <div class="card-kicker">质量守门</div>
         <h3>每个知识点都要能听、能解释、能复现</h3>

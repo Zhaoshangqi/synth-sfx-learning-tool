@@ -59,6 +59,36 @@ test('stitch visual direction keeps the app as a premium light studio with reada
   assert.match(css, /\.signal-atlas-console \.workbench-topbar p\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
 });
 
+test('stitch showcase production pass adds a pointer reveal audio core and capsule CTAs', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(appJs, /hero-sound-visual/);
+  assert.match(appJs, /hero-sonic-core/);
+  assert.match(appJs, /hero-wave-strip/);
+  assert.match(appJs, /hero-creator-word/);
+  assert.match(css, /Stitch showcase production pass v5\.0/);
+  assert.match(css, /\.hero-sound-visual\s*\{/);
+  assert.match(css, /\.hero-sound-visual::before\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x\) var\(--spot-y\)/);
+  assert.match(css, /\.hero-sonic-core\s*\{[\s\S]*animation:\s*hero-sonic-float/);
+  assert.match(css, /\.hero-wave-strip span\s*\{[\s\S]*animation:\s*hero-wave-scan/);
+  assert.match(css, /\.dashboard-actions \.launchpad-button\s*\{[\s\S]*border-radius:\s*999px/);
+  assert.match(css, /\.sidebar \.tab\[data-priority="primary"\]\s*\{[\s\S]*font-size:\s*32px/);
+  assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*stitch-view-enter/);
+});
+
+test('stitch QA pass keeps the menu above the toolbar and Sound Lab mission readable', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Stitch showcase QA pass v5\.1/);
+  assert.match(css, /\.visual-burger-wrapper\s*\{[\s\S]*z-index:\s*92/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*z-index:\s*88/);
+  assert.match(css, /\.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\s*\{[\s\S]*background:[\s\S]*rgba\(13,\s*15,\s*18,\s*0\.99\)[\s\S]*!important/);
+  assert.match(css, /\.signal-atlas-console \.mission-brief-panel,[\s\S]*\.signal-atlas-console \.atlas-main-console[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(css, /\.signal-atlas-console \.mission-brief-step-grid\s*\{[\s\S]*repeat\(4,\s*minmax\(160px,\s*1fr\)\)/);
+  assert.match(css, /\.signal-atlas-console \.mission-brief-head p,[\s\S]*\.signal-atlas-console \.mission-brief-step small\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.74\)/);
+});
+
 test('dashboard learning path gives beginners a clickable route into real modules', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');

@@ -1484,6 +1484,72 @@ function buildSoundQualityCoach(patch, patchDoctor) {
   };
 }
 
+function buildMissionBrief(family, patch, patchDoctor, workflowStep = 'source') {
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
+  const primaryDiagnostic = patchDoctor?.diagnostics?.[0];
+  const activeIndexByStep = {
+    source: 0,
+    shape: 1,
+    compare: 2,
+    deliver: 3,
+  };
+  const steps = [
+    {
+      id: 'listen',
+      labelZh: '听',
+      titleZh: '先听目标声',
+      goalZh: `先听 ${familyName} 的 dry 主体，判断起音、主体、质感和尾巴是否分清。`,
+      proofZh: '能说出这声音像什么材质，以及哪一段最像目标。',
+      action: 'focus-source',
+      actionLabelZh: '回到声源',
+    },
+    {
+      id: 'edit',
+      labelZh: '改',
+      titleZh: '只改一个听感问题',
+      goalZh: `优先处理「${primaryDiagnostic?.labelZh ?? '最高风险'}」，不要同时乱动多个宏和效果。`,
+      proofZh: '能写下改了哪个参数、为什么改，以及预期会听到什么变化。',
+      action: 'focus-controls',
+      actionLabelZh: '去改参数',
+    },
+    {
+      id: 'verify',
+      labelZh: '验',
+      titleZh: 'A/B 验证方向',
+      goalZh: '切 Raw / Comfort / Studio 或 dry / full，确认不是响度错觉。',
+      proofZh: '能决定保留或撤回，并用一句话说明原因。',
+      action: 'focus-practice-loop',
+      actionLabelZh: '做 A/B',
+    },
+    {
+      id: 'deliver',
+      labelZh: '交付',
+      titleZh: '记录并导出',
+      goalZh: '把 Patch JSON、REAPER Notes、dry / full / tail-only 检查补齐。',
+      proofZh: '能在 REAPER 里复现本轮变化，并交付可回看的版本记录。',
+      action: 'focus-export',
+      actionLabelZh: '看交付',
+    },
+  ];
+  const activeStep = steps[activeIndexByStep[workflowStep] ?? 0] ?? steps[0];
+  const nextStep = workflowStep === 'deliver'
+    ? steps[0]
+    : steps[Math.min(steps.indexOf(activeStep) + 1, steps.length - 1)];
+
+  return {
+    titleZh: 'Mission Brief：听 / 改 / 验 / 交付',
+    summaryZh: `初学者只按这四步走：先听 ${familyName}，再只改一个参数，最后用 A/B 和 REAPER 记录验证。`,
+    activeStepId: activeStep.id,
+    steps,
+    nextAction: {
+      labelZh: `下一步：${nextStep.titleZh}`,
+      action: nextStep.action,
+    },
+    passCriteriaZh: '过关标准：A/B 后能说明保留/撤回理由，并记录“只改一个参数”的 REAPER note。',
+    primaryDiagnosticId: primaryDiagnostic?.id ?? '',
+  };
+}
+
 function buildLayerMixer(patch) {
   const labels = {
     transient: 'Transient 瞬态',
@@ -1704,6 +1770,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     };
   });
   const patchDoctor = buildPatchDoctor(family, patch, macroList);
+  const missionBrief = buildMissionBrief(family, patch, patchDoctor, options.workflowStep ?? options.activeWorkflowStep ?? 'source');
   const presetDnaOptions = getPresetDnaForFamily(family?.id);
   const patchJson = JSON.stringify({
     familyId: patch.familyId,
@@ -1754,6 +1821,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     practiceLoop: buildPracticeLoop(family, patch, macroList),
     listeningCompass: buildListeningCompass(family, patch, macroList, options.workflowStep ?? options.activeWorkflowStep ?? 'source'),
     patchDoctor,
+    missionBrief,
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
     evidence: family.sourceIds,
