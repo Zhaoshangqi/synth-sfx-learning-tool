@@ -1,5 +1,6 @@
 const root = document.documentElement;
 const body = document.body;
+const splash = document.querySelector('.visual-splash');
 const menuButton = document.querySelector('.visual-burger-btn');
 const sidebar = document.querySelector('#site-menu');
 const app = document.querySelector('#app');
@@ -13,6 +14,24 @@ function setMenuOpen(isOpen) {
   menuButton?.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
 }
 
+function settleSplash() {
+  splash?.classList.add('is-done');
+}
+
+function initSplash() {
+  if (!splash) return;
+  if (prefersReducedMotion) {
+    settleSplash();
+    return;
+  }
+
+  splash.addEventListener('animationend', (event) => {
+    if (event.animationName === 'studio-splash-hide') settleSplash();
+  });
+
+  globalThis.setTimeout(settleSplash, 1800);
+}
+
 function initMenu() {
   if (!menuButton || !sidebar) return;
 
@@ -23,6 +42,13 @@ function initMenu() {
   sidebar.querySelectorAll('.tab, button[data-view]').forEach((button) => {
     button.addEventListener('click', () => setMenuOpen(false));
   });
+
+  globalThis.addEventListener('pointerdown', (event) => {
+    if (!body.classList.contains('shell-menu-open')) return;
+    const target = event.target;
+    if (target instanceof Node && (sidebar.contains(target) || menuButton.contains(target))) return;
+    setMenuOpen(false);
+  }, { passive: true });
 
   globalThis.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') setMenuOpen(false);
@@ -35,21 +61,25 @@ function initSpotlight() {
   const pointer = { x: globalThis.innerWidth * 0.62, y: globalThis.innerHeight * 0.34 };
   const smooth = { ...pointer };
 
-  function writeSpotlight() {
+  function tickSpotlight() {
     frame = 0;
     smooth.x += (pointer.x - smooth.x) * 0.12;
     smooth.y += (pointer.y - smooth.y) * 0.12;
     root.style.setProperty('--spot-x', `${smooth.x.toFixed(1)}px`);
     root.style.setProperty('--spot-y', `${smooth.y.toFixed(1)}px`);
+
+    if (Math.abs(pointer.x - smooth.x) > 0.35 || Math.abs(pointer.y - smooth.y) > 0.35) {
+      frame = globalThis.requestAnimationFrame(tickSpotlight);
+    }
   }
 
   globalThis.addEventListener('pointermove', (event) => {
     pointer.x = event.clientX;
     pointer.y = event.clientY;
-    if (!frame) frame = globalThis.requestAnimationFrame(writeSpotlight);
+    if (!frame) frame = globalThis.requestAnimationFrame(tickSpotlight);
   }, { passive: true });
 
-  writeSpotlight();
+  tickSpotlight();
 }
 
 function revealHeadlineWords() {
@@ -82,6 +112,7 @@ function observeRenderedViews() {
   observer.observe(app, { childList: true, subtree: true });
 }
 
+initSplash();
 initMenu();
 initSpotlight();
 revealHeadlineWords();
