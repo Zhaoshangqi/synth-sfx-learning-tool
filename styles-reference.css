@@ -2831,3 +2831,102 @@ body.is-direct-manipulating #particle-canvas {
     transition: none !important;
   }
 }
+
+/* Reference aether flow river v9.17
+   Extends the pasted Aether Flow prompt as slow energy rivers and card-edge
+   currents across the existing native shell, without React/Tailwind deps. */
+
+.dashboard-hero.aether-flow-stage::after,
+.hero-sound-visual.aether-flow-stage::after,
+.synth-transfer-panel::after,
+.target-match-coach-panel::after,
+.mission-brief-panel::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(117, 197, 222, 0.13) 38%, rgba(255, 255, 255, 0.22) 50%, rgba(167, 139, 250, 0.11) 61%, transparent 78%),
+    repeating-linear-gradient(114deg, transparent 0 42px, rgba(117, 197, 222, 0.045) 43px, transparent 46px),
+    radial-gradient(circle at calc(32% + var(--space-x, 0) * 4%) calc(28% + var(--space-y, 0) * 3%), rgba(94, 234, 212, 0.13), transparent 0 12%, transparent 34%);
+  background-size: 280% 100%, 136px 136px, 100% 100%;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  filter: saturate(1.04);
+  transform: translate3d(calc(var(--space-x, 0) * 6px), calc(var(--space-y, 0) * 4px), 0);
+  animation: ref9-aether-river-current 22s ease-in-out infinite alternate;
+}
+
+.sound-lab-workbench :where(
+  .synth-transfer-panel,
+  .target-match-coach-panel,
+  .mission-brief-panel
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.sound-lab-workbench :where(
+  .synth-transfer-panel,
+  .target-match-coach-panel,
+  .mission-brief-panel
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sound-lab-workbench :where(
+  .synth-transfer-panel,
+  .target-match-coach-panel,
+  .mission-brief-panel
+)::after {
+  inset: -16%;
+  opacity: 0.18;
+  background:
+    linear-gradient(112deg, transparent 0 24%, rgba(117, 197, 222, 0.11) 39%, rgba(255, 255, 255, 0.18) 49%, rgba(94, 234, 212, 0.09) 58%, transparent 74%),
+    repeating-linear-gradient(116deg, transparent 0 54px, rgba(117, 197, 222, 0.035) 55px, transparent 58px);
+  background-size: 260% 100%, 150px 150px;
+}
+
+body.is-direct-manipulating .dashboard-hero.aether-flow-stage::after,
+body.is-direct-manipulating .hero-sound-visual.aether-flow-stage::after,
+body.is-direct-manipulating .sound-lab-workbench :where(
+  .synth-transfer-panel,
+  .target-match-coach-panel,
+  .mission-brief-panel
+)::after {
+  animation-name: ref9-aether-river-current;
+  animation-play-state: paused !important;
+  opacity: 0.06 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-aether-river-current {
+  0% {
+    background-position: 0% 50%, 0 0, 35% 40%;
+    transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 150px 84px, 65% 60%;
+    transform: translate3d(calc(var(--space-x, 0) * 10px), calc(var(--space-y, 0) * 7px), 0) scale(1.018);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-hero.aether-flow-stage::after,
+  .hero-sound-visual.aether-flow-stage::after,
+  .sound-lab-workbench :where(
+    .synth-transfer-panel,
+    .target-match-coach-panel,
+    .mission-brief-panel
+  )::after {
+    animation-name: ref9-aether-river-current;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.1 !important;
+  }
+}

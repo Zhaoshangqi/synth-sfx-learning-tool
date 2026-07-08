@@ -15603,6 +15603,176 @@ body,
   animation: none !important;
 }
 
+/* Synth Transfer Plan v5.3: translate diagnosis into Serum / Phase Plant / Vital practice */
+.synth-transfer-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.52fr);
+  gap: 14px;
+  scroll-margin-top: 112px;
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid rgba(110, 231, 249, 0.2);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(9, 13, 20, 0.94), rgba(18, 24, 34, 0.92) 58%, rgba(10, 22, 28, 0.9));
+  color: #f4f7fb;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(244, 247, 251, 0.08);
+  overflow: hidden;
+}
+
+.synth-transfer-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(94, 234, 212, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 22%, rgba(167, 139, 250, 0.14), transparent 28%);
+  opacity: 0.82;
+}
+
+.synth-transfer-head,
+.synth-transfer-one-change,
+.synth-transfer-grid,
+.synth-transfer-proof,
+.synth-transfer-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.synth-transfer-head {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.synth-transfer-head span,
+.synth-transfer-one-change span,
+.synth-transfer-proof span {
+  color: rgba(110, 231, 249, 0.84);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.synth-transfer-head strong,
+.synth-transfer-one-change strong,
+.synth-transfer-step strong {
+  color: #f4f7fb;
+}
+
+.synth-transfer-head strong {
+  font-size: clamp(20px, 1.8vw, 28px);
+  line-height: 1.08;
+}
+
+.synth-transfer-head p,
+.synth-transfer-one-change p,
+.synth-transfer-step p,
+.synth-transfer-step small,
+.synth-transfer-step em,
+.synth-transfer-proof li {
+  margin: 0;
+  color: rgba(244, 247, 251, 0.74);
+  line-height: 1.58;
+}
+
+.synth-transfer-one-change {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(94, 234, 212, 0.18);
+  border-radius: 18px;
+  background: rgba(7, 10, 16, 0.6);
+}
+
+.synth-transfer-one-change code,
+.synth-transfer-proof code {
+  display: block;
+  padding: 9px 10px;
+  border: 1px solid rgba(244, 247, 251, 0.1);
+  border-radius: 12px;
+  color: rgba(244, 247, 251, 0.9);
+  background: rgba(244, 247, 251, 0.055);
+  overflow-wrap: anywhere;
+}
+
+.synth-transfer-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.synth-transfer-step {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(244, 247, 251, 0.1);
+  border-radius: 16px;
+  background: rgba(244, 247, 251, 0.045);
+}
+
+.synth-transfer-step span {
+  color: #5eead4;
+  font-weight: 900;
+}
+
+.synth-transfer-step em {
+  font-style: normal;
+  color: rgba(198, 232, 221, 0.9);
+}
+
+.synth-transfer-proof {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.88fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 18px;
+  background: rgba(7, 10, 16, 0.56);
+}
+
+.synth-transfer-proof ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.synth-transfer-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.synth-transfer-actions button {
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 1px solid rgba(110, 231, 249, 0.24);
+  border-radius: 999px;
+  background: rgba(110, 231, 249, 0.1);
+  color: #f4f7fb;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 160ms ease, background 160ms ease;
+}
+
+.synth-transfer-actions button:hover,
+.synth-transfer-actions button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(94, 234, 212, 0.48);
+  background: rgba(94, 234, 212, 0.15);
+  outline: none;
+}
+
+.content.is-same-view-rendering .synth-transfer-panel,
+.content.is-same-view-rendering .synth-transfer-step {
+  animation: none !important;
+}
+
 @media (max-width: 1180px) {
   .target-match-coach-panel {
     grid-template-columns: minmax(0, 1fr);
@@ -15613,6 +15783,15 @@ body,
   }
 
   .target-match-challenge {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .synth-transfer-panel,
+  .synth-transfer-proof {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .synth-transfer-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -15629,6 +15808,11 @@ body,
 
   .target-match-actions {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .synth-transfer-panel {
+    padding: 14px;
+    border-radius: 18px;
   }
 }
 
