@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-aether-mesh/);
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
+  assert.match(html, /visual-space\.js\?v=20260709-aether-flow12/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
 });
 
 test('direct hash routes skip the opening splash to avoid route flash', () => {
@@ -1859,6 +1859,25 @@ test('sound lab analyzer coach is readable and tied to live analysis UI', () => 
   assert.match(css, /@media \(max-width: 980px\)[\s\S]*\.analyzer-coach-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
+test('sound lab analyzer coach updates from live analyser frames without rerendering', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-analyzer-coach-live/);
+  assert.match(renderJs, /class="analyzer-coach-live-status"/);
+  assert.match(appJs, /function computeAnalyzerCoachFrame/);
+  assert.match(appJs, /function updateAnalyzerCoachRuntimeUi/);
+  assert.match(appJs, /drawSoundLabAnalyserFrame\(frame\)[\s\S]*updateAnalyzerCoachRuntimeUi\(workbench,\s*frame\)/);
+  assert.doesNotMatch(appJs, /updateAnalyzerCoachRuntimeUi[\s\S]{0,200}render\(/);
+  assert.match(appJs, /data-analyzer-coach-band/);
+  assert.match(appJs, /--coach-live-value/);
+  assert.match(appJs, /data-live-status/);
+  assert.match(css, /\.analyzer-coach-live-status\s*\{/);
+  assert.match(css, /\.analyzer-coach-band\s*\{[\s\S]*--coach-live-value:\s*var\(--coach-value,\s*50%\)/);
+  assert.match(css, /\.analyzer-coach-band \.analyzer-coach-meter i\s*\{[\s\S]*width:\s*var\(--coach-live-value/);
+});
+
 test('showcase reference redesign supersedes legacy dark overrides with readable studio styling', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const stabilityIndex = css.indexOf('Product stability pass v5.4');
@@ -1947,8 +1966,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -1968,8 +1987,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-aether-mesh/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-mesh/);
+  assert.match(html, /styles-reference\.css\?v=20260709-aether-flow12/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-aether-flow12/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2027,6 +2046,28 @@ test('aether flow prompt adds a connected constellation mesh without canvas flas
   assert.match(css, /@keyframes ref9-constellation-drift/);
   assert.match(css, /body\.is-direct-manipulating\s+\.audio-space::before[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-constellation-drift/);
+});
+
+test('pasted aether flow hero prompt is adapted into an ambient native flow network', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /aetherHeroFlowParticles/);
+  assert.match(visualSpaceJs, /AETHER_HERO_FLOW_RADIUS/);
+  assert.match(visualSpaceJs, /createAetherHeroFlowParticle/);
+  assert.match(visualSpaceJs, /drawAetherHeroFlowNetwork/);
+  assert.match(visualSpaceJs, /resetAetherHeroFlowNetwork/);
+  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherHeroFlowNetwork\(time\)/);
+  assert.match(visualSpaceJs, /pointerBoost = Math\.max\(0, 1 - pointerDistance \/ AETHER_HERO_FLOW_RADIUS\) \* pointer\.force/);
+  assert.match(visualSpaceJs, /synth:view-transition[\s\S]*resetAetherHeroFlowNetwork/);
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react/);
+
+  assert.match(css, /Reference aether hero native network v9\.12/);
+  assert.match(css, /\.dashboard-hero\.aether-flow-stage::after\s*\{[\s\S]*animation:\s*ref9-aether-hero-flow/);
+  assert.match(css, /\.hero-sound-visual\.aether-flow-stage::before\s*\{[\s\S]*animation:\s*ref9-aether-core-flow/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.aether-flow-stage::after[\s\S]*animation-play-state:\s*paused !important/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-aether-hero-flow/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {

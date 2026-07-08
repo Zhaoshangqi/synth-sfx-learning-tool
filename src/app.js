@@ -403,6 +403,7 @@ let quietRenderFrame = 0;
 let activeRangeInput = null;
 let directManipulationTimer = 0;
 let midiAccess = null;
+let analyzerCoachRuntimeSnapshot = null;
 const pendingRangeInputs = new Set();
 const sameViewScrollLock = { x: 0, y: 0, allowProgrammaticScroll: false };
 
@@ -564,7 +565,7 @@ function renderDashboard() {
 
   return `
     ${header('学习总览', '从英文资料进入中文知识卡片，再落到 Serum、Phase Plant、Vital 和 REAPER 练习。')}
-    <section class="dashboard-hero" aria-label="今日练习控制台">
+    <section class="dashboard-hero aether-flow-stage" aria-label="今日练习控制台">
       <div class="hero-copy">
         <div class="card-kicker">今日练习控制台</div>
         <h3>把“听得懂教程”推进到“能交付音效”</h3>
@@ -620,7 +621,7 @@ function renderDashboard() {
           </div>
         </div>
       </div>
-      <div class="hero-sound-visual" aria-hidden="true">
+      <div class="hero-sound-visual aether-flow-stage" aria-hidden="true">
         <div class="hero-reveal-layer"></div>
         <div class="hero-signal-mesh">
           <span></span><span></span><span></span><span></span>
@@ -2072,6 +2073,117 @@ function drawCanvasSpectrum(canvas, frequency) {
   }
 }
 
+function averageAnalyserRange(values, startRatio, endRatio) {
+  if (!values?.length) return 0;
+  const start = Math.max(0, Math.min(values.length - 1, Math.floor(values.length * startRatio)));
+  const end = Math.max(start + 1, Math.min(values.length, Math.ceil(values.length * endRatio)));
+  let sum = 0;
+  for (let index = start; index < end; index += 1) sum += values[index] ?? 0;
+  return sum / Math.max(1, end - start);
+}
+
+function computeWaveformTransient(timeDomain = []) {
+  if (!timeDomain?.length) return 0;
+  const inspectCount = Math.max(8, Math.floor(timeDomain.length * 0.16));
+  let peak = 0;
+  let movement = 0;
+  let previous = (timeDomain[0] ?? 128) - 128;
+  for (let index = 0; index < inspectCount; index += 1) {
+    const centered = (timeDomain[index] ?? 128) - 128;
+    peak = Math.max(peak, Math.abs(centered));
+    movement += Math.abs(centered - previous);
+    previous = centered;
+  }
+  return clampPercent((peak / 128) * 68 + (movement / inspectCount / 128) * 42);
+}
+
+function smoothAnalyzerCoachValue(previous, next, amount = 0.34) {
+  if (!Number.isFinite(previous)) return clampPercent(next);
+  return clampPercent(previous + (next - previous) * amount);
+}
+
+function computeAnalyzerCoachFrame(frame) {
+  const frequency = frame?.frequency;
+  const timeDomain = frame?.timeDomain;
+  if (!frequency?.length && !timeDomain?.length) return null;
+
+  const level = clampPercent((frame?.level ?? 0) * 100);
+  const raw = {
+    transient: clampPercent(computeWaveformTransient(timeDomain) * 0.72 + level * 0.28),
+    body: clampPercent((averageAnalyserRange(frequency, 0.04, 0.22) / 255) * 100),
+    air: clampPercent((averageAnalyserRange(frequency, 0.44, 0.9) / 255) * 100),
+    tail: clampPercent(level * 0.42 + (averageAnalyserRange(frequency, 0.01, 0.12) / 255) * 42),
+    motion: 0,
+  };
+  const previousRaw = analyzerCoachRuntimeSnapshot?.raw ?? raw;
+  raw.motion = clampPercent(
+    Math.abs(raw.body - previousRaw.body) * 1.1
+      + Math.abs(raw.air - previousRaw.air) * 0.9
+      + Math.abs(raw.transient - previousRaw.transient) * 0.54
+      + level * 0.18,
+  );
+
+  const previousBands = analyzerCoachRuntimeSnapshot?.bands ?? {};
+  const bands = Object.fromEntries(Object.entries(raw).map(([key, value]) => [
+    key,
+    smoothAnalyzerCoachValue(previousBands[key], value),
+  ]));
+  const dominant = Object.entries(bands).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'body';
+  const statusByBand = {
+    transient: '起音最明显：先检查前 80ms 的 click、attack 和 transient 层。',
+    body: '主体最明显：重点听中低频 body 是否支撑材质身份。',
+    air: '高频边缘最明显：注意 4k-10k 是否变薄或刺耳。',
+    tail: '尾巴最明显：检查 reverb / delay / release 是否盖住主体。',
+    motion: '频谱正在移动：确认 LFO / random / FM 运动不是随机失焦。',
+  };
+
+  analyzerCoachRuntimeSnapshot = { raw, bands, dominant };
+  return {
+    bands,
+    dominant,
+    summaryZh: `实时读图：${statusByBand[dominant]} 这些值来自当前 waveform / spectrum，只作为 A/B 方向提示。`,
+  };
+}
+
+function updateAnalyzerCoachRuntimeUi(workbench, frame) {
+  const analysis = computeAnalyzerCoachFrame(frame);
+  if (!analysis) return;
+
+  const status = workbench.querySelector('[data-analyzer-coach-status]');
+  if (status) {
+    const runtimeStatusByBand = {
+      transient: '\u8d77\u97f3\u6700\u660e\u663e\uff1a\u5148\u68c0\u67e5\u524d 80ms \u7684 click\u3001attack \u548c transient \u5c42\u3002',
+      body: '\u4e3b\u4f53\u6700\u660e\u663e\uff1a\u91cd\u70b9\u542c\u4e2d\u4f4e\u9891 body \u662f\u5426\u652f\u6491\u6750\u8d28\u8eab\u4efd\u3002',
+      air: '\u9ad8\u9891\u8fb9\u7f18\u6700\u660e\u663e\uff1a\u6ce8\u610f 4k-10k \u662f\u5426\u53d8\u8584\u6216\u523a\u8033\u3002',
+      tail: '\u5c3e\u5df4\u6700\u660e\u663e\uff1a\u68c0\u67e5 reverb / delay / release \u662f\u5426\u76d6\u4f4f\u4e3b\u4f53\u3002',
+      motion: '\u9891\u8c31\u6b63\u5728\u79fb\u52a8\uff1a\u786e\u8ba4 LFO / random / FM \u8fd0\u52a8\u4e0d\u662f\u968f\u673a\u5931\u7126\u3002',
+    };
+    status.textContent = `\u5b9e\u65f6\u8bfb\u56fe\uff1a${runtimeStatusByBand[analysis.dominant] ?? runtimeStatusByBand.body} \u8fd9\u4e9b\u503c\u6765\u81ea\u5f53\u524d waveform / spectrum\uff0c\u53ea\u4f5c\u4e3a A/B \u65b9\u5411\u63d0\u793a\u3002`;
+  }
+
+  workbench.querySelectorAll('[data-analyzer-coach-live]').forEach((card) => {
+    const bandId = card.dataset.analyzerCoachLive || card.dataset.analyzerCoachBand;
+    const value = analysis.bands[bandId];
+    if (!Number.isFinite(value)) return;
+    const rounded = Math.round(value);
+    const liveState = bandId === analysis.dominant ? 'active' : rounded >= 68 ? 'high' : rounded <= 24 ? 'low' : 'stable';
+    card.style.setProperty('--coach-live-value', `${rounded}%`);
+    card.setAttribute('data-live-status', liveState);
+    const output = card.querySelector('output');
+    if (output) output.textContent = String(rounded);
+    const bandStatus = card.querySelector('[data-analyzer-coach-band-status]');
+    if (bandStatus) {
+      const liveStateText = {
+        active: '\u5f53\u524d\u6700\u7a81\u51fa',
+        high: '\u504f\u9ad8\uff0c\u9002\u5408 A/B',
+        low: '\u504f\u4f4e\uff0c\u5148\u786e\u8ba4\u662f\u5426\u9700\u8981\u8865',
+        stable: '\u7a33\u5b9a',
+      };
+      bandStatus.textContent = liveStateText[liveState] ?? liveStateText.stable;
+    }
+  });
+}
+
 function drawSoundLabAnalyserFrame(frame) {
   if (state.soundLabAnalyzerMode === 'freeze') return;
   const level = Math.max(0, Math.min(1, frame?.level ?? 0));
@@ -2079,6 +2191,7 @@ function drawSoundLabAnalyserFrame(frame) {
   if (!workbench) return;
   drawCanvasWaveform(workbench.querySelector('[data-analyzer-waveform]'), frame?.timeDomain);
   drawCanvasSpectrum(workbench.querySelector('[data-analyzer-spectrum]'), frame?.frequency);
+  updateAnalyzerCoachRuntimeUi(workbench, frame);
   workbench.querySelectorAll('[data-analyzer-meter] i').forEach((bar, index) => {
     const offset = Math.sin(index * 1.3 + level * 5) * 0.16;
     bar.style.setProperty('--meter', `${Math.round(Math.max(0.08, level + offset) * 100)}%`);
