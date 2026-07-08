@@ -51,7 +51,7 @@ import {
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
 import { createLabAudioPlayer } from './audio-player.js';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-flow-ear-triage';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260708-flow-ribbons';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -1857,13 +1857,32 @@ function updateParameterCoach(topic, valueLabel = '') {
   });
 }
 
+function trimFeedbackPart(text = '', maxLength = 34) {
+  const normalized = String(text)
+    .replace(/\s+/g, ' ')
+    .replace(/^先听\s*/, '')
+    .trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 1)}…`;
+}
+
+function updateLiveControlFeedback(topic, valueLabel = '') {
+  if (!topic?.titleZh) return;
+  const listen = trimFeedbackPart(topic.listenZh, 34);
+  const reaper = trimFeedbackPart(topic.reaperZh, 30);
+  state.workbenchActionFeedback = `已调 ${topic.titleZh} ${valueLabel}｜听：${listen}｜REAPER：${reaper}`;
+}
+
 function applyImmediateControlFeedback(input) {
   if (!input?.isConnected) return;
   updateRangeChrome(input);
   const unit = input.dataset.controlUnit ?? '';
   const control = input.closest('.lab-control, .macro-knob, .mod-matrix-row, .macro-morph-card, .performance-control, .layer-control, label');
   control?.setAttribute('data-live-value', `${input.value}${unit}`);
-  updateParameterCoach(coachTopicForInput(input), `${input.value}${unit}`);
+  const topic = coachTopicForInput(input);
+  updateParameterCoach(topic, `${input.value}${unit}`);
+  updateLiveControlFeedback(topic, `${input.value}${unit}`);
+  refreshSoundLabRuntimeUi();
 }
 
 function scheduleRangeChromeUpdate(input) {
