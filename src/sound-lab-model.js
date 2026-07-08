@@ -1654,6 +1654,147 @@ function buildTargetMatchCoach(family, patch, patchDoctor, macroList = []) {
   };
 }
 
+function buildPerceptualSignature(family, patch, patchDoctor, macroList = []) {
+  const values = patch.macros ?? {};
+  const layerMix = patch.layerMix ?? {};
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
+  const acousticCues = patch.globalFx?.acousticCues ?? {};
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const comfortBus = polish.comfortBus ?? {};
+  const spaceFx = patch.globalFx?.space ?? {};
+  const totalGainByEngine = patch.layers.reduce((totals, layer) => {
+    totals[layer.engine] = (totals[layer.engine] ?? 0) + clamp(layer.gain ?? 0, 0, 1.4);
+    return totals;
+  }, {});
+  const modal = totalGainByEngine.modalResonator ?? 0;
+  const fm = totalGainByEngine.fmBurst ?? 0;
+  const comb = totalGainByEngine.combDelay ?? 0;
+  const noise = (totalGainByEngine.sampleGrain ?? 0) + (totalGainByEngine.filteredNoise ?? 0);
+  const transientValue = clamp(
+    (layerMix.transient ?? 50) * 0.7
+      + (patch.dsp?.transient?.click ?? 0) * 36
+      + (acousticCues.bodyLagMs ?? 0) * 2,
+    0,
+    100,
+  );
+  const bodyValue = clamp(
+    (layerMix.body ?? 50) * 0.5
+      + modal * 18
+      + fm * 12
+      + (comfortBus.monoAnchor ?? 0) * 40,
+    0,
+    100,
+  );
+  const materialValue = clamp(
+    (values.material ?? 50) * 0.48
+      + modal * 16
+      + fm * 14
+      + comb * 12
+      + noise * 6,
+    0,
+    100,
+  );
+  const spaceValue = clamp(
+    100
+      - Math.abs((layerMix.tail ?? 50) - 38) * 0.9
+      + (acousticCues.tailPreDelayMs ?? 0) * 1.4
+      - (spaceFx.mix ?? 0) * 22,
+    0,
+    100,
+  );
+  const comfortValue = clamp(
+    (comfortBus.warmth ?? 0) * 26
+      + (comfortBus.deHarsh ?? 0) * 52
+      + (comfortBus.headroom ?? 0) * 360
+      + (comfortBus.tailDuck ?? 0) * 38,
+    0,
+    100,
+  );
+  const proofPoints = [
+    {
+      role: 'transient',
+      labelZh: 'Transient 起音可信度',
+      value: Math.round(transientValue),
+      listenZh: '第一下应该像真实触点，短、清楚、没有被尾巴糊住。',
+      evidenceZh: `transient ${Math.round(layerMix.transient ?? 0)}% / body lag ${formatQualityNumber(acousticCues.bodyLagMs ?? 0)}ms`,
+    },
+    {
+      role: 'body',
+      labelZh: 'Body 主体锚点',
+      value: Math.round(bodyValue),
+      listenZh: '主体要能听出重量或基频，不应只剩亮噪声。',
+      evidenceZh: `modal ${formatQualityNumber(modal)} / FM ${formatQualityNumber(fm)} / mono anchor ${formatQualityNumber((comfortBus.monoAnchor ?? 0) * 100)}%`,
+    },
+    {
+      role: 'material',
+      labelZh: 'Material 材质身份',
+      value: Math.round(materialValue),
+      listenZh: '金属、玻璃或电流感来自非谐波侧频、modal partial 和 comb 关系，不是单纯变亮。',
+      evidenceZh: `FM/modal/comb = ${formatQualityNumber(fm)} / ${formatQualityNumber(modal)} / ${formatQualityNumber(comb)}`,
+    },
+    {
+      role: 'space',
+      labelZh: 'Space 空间可信度',
+      value: Math.round(spaceValue),
+      listenZh: '尾巴应在起音之后出现，帮助尺寸感但不遮挡主体。',
+      evidenceZh: `tail ${Math.round(layerMix.tail ?? 0)}% / predelay ${formatQualityNumber(acousticCues.tailPreDelayMs ?? 0)}ms / wet ${formatQualityNumber((spaceFx.mix ?? 0) * 100)}%`,
+    },
+    {
+      role: 'comfort',
+      labelZh: 'Comfort 听感舒适度',
+      value: Math.round(comfortValue),
+      listenZh: '真实感还取决于不过刺、不过宽、响度匹配后仍有质感。',
+      evidenceZh: `de-harsh ${formatQualityNumber((comfortBus.deHarsh ?? 0) * 100)}% / headroom ${formatQualityNumber((comfortBus.headroom ?? 0) * 100)}%`,
+    },
+  ];
+  const primaryDiagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const macroDelta = Object.entries(primaryDiagnostic.applyAction?.macroDelta ?? {})
+    .find(([, value]) => Number.isFinite(value) && value !== 0);
+  const layerDelta = Object.entries(primaryDiagnostic.applyAction?.layerDelta ?? {})
+    .find(([, value]) => Number.isFinite(value) && value !== 0);
+  const [parameterId, rawDelta, scope] = macroDelta
+    ? [macroDelta[0], macroDelta[1], 'macro']
+    : layerDelta
+      ? [layerDelta[0], layerDelta[1], 'layer']
+      : ['material', (values.material ?? 50) > 74 ? -6 : 6, 'macro'];
+  const layerLabels = {
+    transient: 'Transient 瞬态层',
+    body: 'Body 主体层',
+    texture: 'Texture 质感层',
+    tail: 'Tail 尾音层',
+  };
+  const macro = macroList.find((item) => item.id === parameterId);
+  const current = scope === 'layer'
+    ? Number(layerMix[parameterId] ?? 50)
+    : Number(values[parameterId] ?? macro?.value ?? 50);
+  const delta = Number.isFinite(rawDelta) ? rawDelta : 6;
+  const target = Math.round(clamp(current + delta, 0, 100));
+  const label = scope === 'layer'
+    ? layerLabels[parameterId] ?? parameterId
+    : macro?.labelZh ?? SOUND_LAB_MACRO_DEFS.find((item) => item.id === parameterId)?.labelZh ?? parameterId;
+
+  return {
+    titleZh: 'Perceptual Signature 听感指纹',
+    identityZh: `${familyName} 的真实感来自 FM/modal 非谐波材质、短 transient、受控 tail 和 comfort bus；如果 A/B 后只剩更大声而不是更像材质，就撤回这次修改。`,
+    realismScore: Math.round(proofPoints.reduce((sum, point) => sum + point.value, 0) / proofPoints.length),
+    proofPoints,
+    nextMove: {
+      parameterId,
+      labelZh: label,
+      from: Math.round(current),
+      to: target,
+      action: primaryDiagnostic.action ?? 'focus-controls',
+      reasonZh: primaryDiagnostic.listenZh ?? `只改 ${label}，听材质是否更像目标而不是单纯更亮。`,
+    },
+    synthTranslation: {
+      serum: 'Serum: 用 FM from B / warp 做非谐波边缘，Noise 只补 transient/texture；Macro 只映射一个目标参数。',
+      phasePlant: 'Phase Plant: 把 transient、FM body、modal/comb tail 分 lane；用 audio-rate mod 或 resonator lane 控制材质。',
+      vital: 'Vital: 用 FM/phase/spectral warp 做侧频，Env 控制短 decay，Macro material 控制 resonator/warp 深度。',
+    },
+    reaperCheckZh: `REAPER: 导出 dry / full / tail-only，并记录 A/B ${label} ${Math.round(current)} -> ${target}; 响度匹配后只判断 transient、body、material、space 哪一项更接近目标。`,
+  };
+}
+
 function buildMissionBrief(family, patch, patchDoctor, workflowStep = 'source') {
   const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
   const primaryDiagnostic = patchDoctor?.diagnostics?.[0];
@@ -1993,6 +2134,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     patchDoctor,
     missionBrief,
     targetMatchCoach: buildTargetMatchCoach(family, patch, patchDoctor, macroList),
+    perceptualSignature: buildPerceptualSignature(family, patch, patchDoctor, macroList),
     soundQualityCoach: buildSoundQualityCoach(patch, patchDoctor),
     parameterCoach: buildParameterCoach(patch, macroList),
     evidence: family.sourceIds,

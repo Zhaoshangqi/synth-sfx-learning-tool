@@ -77,6 +77,23 @@ test('stitch showcase production pass adds a pointer reveal audio core and capsu
   assert.match(css, /\.content\.is-view-switching > \*\s*\{[\s\S]*animation:\s*stitch-view-enter/);
 });
 
+test('showcase reference refit uses a single clean stage with reveal layers and no canvas mask repaint loop', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /hero-reveal-layer/);
+  assert.match(appJs, /hero-signal-mesh/);
+  assert.match(appJs, /hero-capsule-cta/);
+  assert.match(css, /Showcase exact reference refit v6\.5/);
+  assert.match(css, /\.dashboard-hero\s*\{[\s\S]*background:[\s\S]*var\(--showcase-canvas\)/);
+  assert.match(css, /\.dashboard-hero::before\s*\{[\s\S]*content:\s*"Sound"/);
+  assert.match(css, /\.hero-reveal-layer\s*\{[\s\S]*mask-image:\s*radial-gradient\(circle at var\(--spot-x\) var\(--spot-y\)/);
+  assert.match(css, /\.hero-capsule-cta::before\s*\{[\s\S]*transition:\s*inset 360ms var\(--showcase-ease\)/);
+  assert.match(css, /\.hero-capsule-cta::after\s*\{[\s\S]*border-radius:\s*50%/);
+  assert.doesNotMatch(shellJs, /toDataURL/, 'spotlight reveal must stay CSS-variable driven rather than repainting a canvas mask every frame');
+});
+
 test('stitch visual refit keeps the supplied showcase motion but removes click flash sources', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');

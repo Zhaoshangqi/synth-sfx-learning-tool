@@ -171,3 +171,34 @@ Passed for this iteration. The Dashboard route now behaves more like a guided le
 
 ## Result
 Passed for this iteration. The Dashboard now reads as a cleaner supplied-reference sonic stage while the menu hit testing and Sound Lab drag behavior stay stable.
+
+---
+
+# Design QA - Showcase Exact Reference + Perceptual Signature v6.5
+
+## Focus
+- Goal: follow the supplied pasted HTML reference more tightly without turning the learning app into a static portfolio page.
+- Visual translation: keep the light gray stage, circular logo/burger, black menu, large background word, pointer reveal layer, signal mesh, and capsule CTA motion.
+- Product upgrade: add a patch-derived `Perceptual Signature 听感指纹` coach so Sound Lab explains why a patch feels realistic and what single parameter to change next.
+- Stability constraint: do not copy the reference page's canvas `toDataURL()` mask loop; spotlight/reveal stays CSS-variable driven to avoid click and range-drag repaint flashes.
+
+## Browser QA
+- Local URL: `http://localhost:5177/?qa=v65#dashboard` and `http://localhost:5177/#soundlab`.
+- Browser note: in-app browser screenshot tools were not exposed; system Chrome via Playwright was used.
+- Desktop viewport: 1440 x 920.
+- Dashboard: passed. The hero has `hero-reveal-layer`, `hero-signal-mesh`, `hero-capsule-cta`, hidden dashboard toolbar, readable Chinese headline, and no console errors.
+- Menu: passed. Burger opens the right menu with `body.shell-menu-open`, `#site-menu` visible, and closes without page flash.
+- Sound Lab signature panel: passed. `.perceptual-signature-panel` renders 5 proof cards, a concrete next move (`Brightness 明暗 80 -> 72`), Serum / Phase Plant / Vital translations, and REAPER dry/full/tail-only guidance.
+- Overflow: passed. After fixing historical wide-grid rules inside `patch-quality-card`, Sound Lab workbench panel overflow count is `0`.
+- Splash: passed. On direct Sound Lab load, `.visual-splash.is-done` resolves to `display:none` before final inspection.
+- Console logs: passed. No browser console errors captured.
+
+## Automated Checks
+- TDD red: `node --test --test-name-pattern "perceptual signature" tests\sound-lab.test.mjs tests\render.test.mjs` failed on missing model/render panel.
+- TDD red: `node --test --test-name-pattern "showcase reference refit" tests\visual-shell.test.mjs` failed on missing reveal layer and capsule CTA structure.
+- TDD green: targeted perceptual signature + showcase tests passed.
+- Syntax: `node --check src\app.js`, `src\render.js`, and `src\sound-lab-model.js`: passed.
+- Full suite: `npm.cmd test`: 200 passed.
+
+## Result
+Passed for this iteration. The app now follows the supplied showcase visual language more cleanly, keeps the anti-flash interaction constraints, and adds a practical Sound Lab realism coach grounded in the current synth patch data.

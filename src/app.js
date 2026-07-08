@@ -544,7 +544,7 @@ function renderDashboard() {
             <small>先从可试听工作台或互动实验开始，再进入解析和挑战。</small>
           </div>
           <div class="dashboard-actions" aria-label="主入口">
-            <button class="primary-button launchpad-button is-primary" type="button" data-dashboard-primary-view="soundlab">
+            <button class="primary-button launchpad-button hero-capsule-cta is-primary" type="button" data-dashboard-primary-view="soundlab">
               <em>01</em>
               <span>打开 Sound Lab</span>
               <small>进入可试听工作台</small>
@@ -568,6 +568,10 @@ function renderDashboard() {
         </div>
       </div>
       <div class="hero-sound-visual" aria-hidden="true">
+        <div class="hero-reveal-layer"></div>
+        <div class="hero-signal-mesh">
+          <span></span><span></span><span></span><span></span>
+        </div>
         <div class="hero-creator-word">Sound</div>
         <div class="hero-sonic-core">
           <span class="core-ring ring-a"></span>

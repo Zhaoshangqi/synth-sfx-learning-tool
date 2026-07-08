@@ -1469,6 +1469,53 @@ function renderWaveformDetectivePanel(model = {}) {
   `;
 }
 
+function renderPerceptualSignaturePanel(model = {}) {
+  const signature = model.perceptualSignature ?? {};
+  const points = signature.proofPoints ?? [];
+  if (!points.length) return '';
+  const move = signature.nextMove ?? {};
+  const synthTranslation = signature.synthTranslation ?? {};
+  const action = move.action ?? 'focus-controls';
+
+  return `
+    <section class="workbench-panel perceptual-signature-panel" aria-label="Perceptual Signature 听感指纹">
+      <div class="mini-panel-head">
+        <strong>${escapeHtml(signature.titleZh ?? 'Perceptual Signature 听感指纹')}</strong>
+        <button type="button" data-workbench-action="${escapeHtml(action)}">下一步只改</button>
+      </div>
+      <div class="signature-score" style="--signature-score:${formatNumber(signature.realismScore ?? 0)}%">
+        <span>真实感</span>
+        <strong>${escapeHtml(signature.realismScore ?? 0)}%</strong>
+        <i aria-hidden="true"></i>
+      </div>
+      <p>${escapeHtml(signature.identityZh ?? '')}</p>
+      <div class="signature-proof-grid">
+        ${points.map((point) => `
+          <article class="signature-proof-card" style="--signature-proof:${formatNumber(point.value ?? 0)}%">
+            <span>${escapeHtml(point.labelZh)}</span>
+            <strong>${escapeHtml(point.value ?? 0)}%</strong>
+            <p>${escapeHtml(point.listenZh)}</p>
+            <small>${escapeHtml(point.evidenceZh)}</small>
+            <i aria-hidden="true"></i>
+          </article>
+        `).join('')}
+      </div>
+      <div class="signature-next-move">
+        <span>下一步只改</span>
+        <strong>${escapeHtml(move.labelZh ?? move.parameterId ?? 'Macro')} ${escapeHtml(move.from ?? '')} -> ${escapeHtml(move.to ?? '')}</strong>
+        <p>${escapeHtml(move.reasonZh ?? '')}</p>
+        <button type="button" data-workbench-action="${escapeHtml(action)}">去调这个参数</button>
+      </div>
+      <div class="signature-synth-map">
+        <article><strong>Serum</strong><p>${escapeHtml(synthTranslation.serum ?? '')}</p></article>
+        <article><strong>Phase Plant</strong><p>${escapeHtml(synthTranslation.phasePlant ?? '')}</p></article>
+        <article><strong>Vital</strong><p>${escapeHtml(synthTranslation.vital ?? '')}</p></article>
+      </div>
+      <small class="signature-reaper">${escapeHtml(signature.reaperCheckZh ?? '')}</small>
+    </section>
+  `;
+}
+
 function renderPracticeLoopPanel(model = {}) {
   const loop = model.practiceLoop ?? {};
   const steps = loop.steps ?? [];
@@ -2793,6 +2840,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
             ${renderWorkbenchOutputMeter(model)}
           </div>
           ${renderWaveformDetectivePanel(model)}
+          ${renderPerceptualSignaturePanel(model)}
           ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
@@ -2882,6 +2930,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
               ${renderWorkbenchOutputMeter(model)}
             </div>
             ${renderWaveformDetectivePanel(model)}
+            ${renderPerceptualSignaturePanel(model)}
           </div>
           <div class="atlas-control-column">
             ${renderWorkbenchEnvelope(model)}

@@ -304,6 +304,40 @@ test('buildSoundLabViewModel exposes a target match coach with one-change guidan
   assert.ok(Number.isFinite(coach.oneChangeChallenge.to));
 });
 
+test('buildSoundLabViewModel exposes a perceptual signature for realistic synth SFX coaching', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 58,
+    material: 88,
+    space: 42,
+    variation: 36,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 82, body: 66, texture: 72, tail: 44 },
+  });
+
+  const signature = model.perceptualSignature;
+  assert.ok(signature, 'view model should explain why this patch feels like a real synth SFX');
+  assert.match(signature.titleZh, /听感指纹|Perceptual/);
+  assert.ok(signature.realismScore >= 0 && signature.realismScore <= 100);
+  assert.match(signature.identityZh, /metal|FM|modal|金属|材质/i);
+  assert.ok(signature.proofPoints.length >= 5);
+  assert.deepEqual(signature.proofPoints.map((point) => point.role), ['transient', 'body', 'material', 'space', 'comfort']);
+  assert.ok(signature.proofPoints.every((point) => point.labelZh && point.listenZh && point.evidenceZh && Number.isFinite(point.value)));
+  assert.ok(signature.nextMove.parameterId, 'next move should point to a concrete parameter');
+  assert.notEqual(signature.nextMove.from, signature.nextMove.to, 'next move should describe a small A/B change');
+  assert.ok(signature.nextMove.reasonZh);
+  assert.ok(signature.nextMove.action);
+  assert.ok(signature.synthTranslation.serum);
+  assert.ok(signature.synthTranslation.phasePlant);
+  assert.ok(signature.synthTranslation.vital);
+  assert.match(signature.reaperCheckZh, /A\/B|dry|full|REAPER/i);
+});
+
 test('buildSoundLabPatch can use preset DNA, quality mode, and layer mixer controls', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
