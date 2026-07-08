@@ -8,6 +8,7 @@ let signalParticles = [];
 let aetherStreams = [];
 let aetherCurrentPackets = [];
 let aetherFlowNodes = [];
+let cursorWakeParticles = [];
 let transitionBursts = [];
 let frameId = 0;
 let spaceParallaxFrame = 0;
@@ -24,6 +25,10 @@ const AETHER_STREAM_SEGMENTS = 72;
 const AETHER_CURRENT_PACKET_COUNT = 28;
 const AETHER_FLOW_NODE_COUNT = 34;
 const AETHER_NODE_CONNECTION_RADIUS = 176;
+const AETHER_WAKE_MAX_PARTICLES = 54;
+const AETHER_WAKE_MIN_DISTANCE = 18;
+const AETHER_WAKE_MIN_MS = 24;
+const cursorWakeAnchor = { x: 0, y: 0, time: 0 };
 
 function isAetherFlowPaused() {
   return Boolean(globalThis.__synthDirectManipulating || document.body?.classList.contains('is-direct-manipulating'));
@@ -85,6 +90,42 @@ function createAetherFlowNode(index) {
   };
 }
 
+function spawnCursorWake(x, y, time = performance.now()) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !width || !height) return;
+  const dx = x - cursorWakeAnchor.x;
+  const dy = y - cursorWakeAnchor.y;
+  const distance = Math.hypot(dx, dy);
+  if (cursorWakeAnchor.time && (distance < AETHER_WAKE_MIN_DISTANCE || time - cursorWakeAnchor.time < AETHER_WAKE_MIN_MS)) return;
+
+  const speedX = cursorWakeAnchor.time ? dx * 0.012 : 0;
+  const speedY = cursorWakeAnchor.time ? dy * 0.012 : 0;
+  const count = width < 760 ? 1 : 2;
+
+  for (let index = 0; index < count; index += 1) {
+    const angle = Math.atan2(dy || random(-1, 1), dx || random(-1, 1)) + random(-0.86, 0.86);
+    const lift = random(0.18, 0.72);
+    cursorWakeParticles.push({
+      x: x + random(-6, 6),
+      y: y + random(-6, 6),
+      vx: -speedX * random(0.16, 0.42) + Math.cos(angle + Math.PI) * lift,
+      vy: -speedY * random(0.16, 0.42) + Math.sin(angle + Math.PI) * lift,
+      age: 0,
+      ttl: random(0.58, 1.05),
+      r: random(0.9, 2.35),
+      phase: random(0, Math.PI * 2),
+      color: index % 2 === 0 ? '117, 197, 222' : '167, 139, 250',
+    });
+  }
+
+  if (cursorWakeParticles.length > AETHER_WAKE_MAX_PARTICLES) {
+    cursorWakeParticles.splice(0, cursorWakeParticles.length - AETHER_WAKE_MAX_PARTICLES);
+  }
+
+  cursorWakeAnchor.x = x;
+  cursorWakeAnchor.y = y;
+  cursorWakeAnchor.time = time;
+}
+
 function getAetherStreamPoint(stream, progress, time, phaseOffset = 0) {
   const x = -90 + progress * (width + 180);
   const phase = stream.phase + time * stream.speed + progress * stream.frequency + pointer.x * 0.45 + phaseOffset;
@@ -139,6 +180,10 @@ function resize() {
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
   const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
   aetherFlowNodes = Array.from({ length: nodeCount }, (_, index) => createAetherFlowNode(index));
+  cursorWakeParticles = [];
+  cursorWakeAnchor.x = pointer.screenX;
+  cursorWakeAnchor.y = pointer.screenY;
+  cursorWakeAnchor.time = 0;
   transitionBursts = [];
 }
 
@@ -296,6 +341,42 @@ function drawAetherCurrentPackets(time) {
     ctx.fill();
   });
   ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+function drawCursorFlowWake(time) {
+  if (prefersReducedMotion || isAetherFlowPaused() || !cursorWakeParticles.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  cursorWakeParticles = cursorWakeParticles.filter((particle) => particle.age < particle.ttl);
+  cursorWakeParticles.forEach((particle) => {
+    particle.age += 0.016;
+    particle.x += particle.vx + pointer.x * 0.04;
+    particle.y += particle.vy + pointer.y * 0.035;
+    particle.vx *= 0.986;
+    particle.vy *= 0.986;
+    const life = Math.max(0, 1 - particle.age / particle.ttl);
+    const pulse = 0.62 + Math.sin(time * 0.004 + particle.phase) * 0.22;
+    const tailX = particle.x - particle.vx * (18 + life * 16);
+    const tailY = particle.y - particle.vy * (18 + life * 16);
+    const gradient = ctx.createLinearGradient(tailX, tailY, particle.x, particle.y);
+    gradient.addColorStop(0, `rgba(${particle.color}, 0)`);
+    gradient.addColorStop(0.58, `rgba(${particle.color}, ${life * 0.09})`);
+    gradient.addColorStop(1, `rgba(255, 255, 255, ${life * 0.13})`);
+
+    ctx.beginPath();
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 0.7 + particle.r * 0.36;
+    ctx.moveTo(tailX, tailY);
+    ctx.lineTo(particle.x, particle.y);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${particle.color}, ${life * (0.12 + pulse * 0.12)})`;
+    ctx.arc(particle.x, particle.y, particle.r * (0.62 + life * 0.52), 0, Math.PI * 2);
+    ctx.fill();
+  });
   ctx.restore();
 }
 
@@ -498,6 +579,7 @@ function updatePointerFromEvent(event) {
   pointer.screenY = event.clientY;
   pointer.tx = (event.clientX / Math.max(1, width) - 0.5) * 2;
   pointer.ty = (event.clientY / Math.max(1, height) - 0.5) * 2;
+  spawnCursorWake(event.clientX, event.clientY, event.timeStamp || performance.now());
   scheduleSpaceParallaxCommit();
 }
 
@@ -514,6 +596,7 @@ function tick(time = 0) {
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherCurrentPackets(time);
+  if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
   particles.forEach((particle) => {
     particle.x += particle.vx * particle.z;

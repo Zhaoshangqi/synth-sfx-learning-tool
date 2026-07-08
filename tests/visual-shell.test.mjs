@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-flow-focus"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-wake"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -310,6 +310,32 @@ test('aether flow prompt adds adaptive node currents and focused flow lanes', ()
   assert.match(appCss, /body\.is-direct-manipulating \.practice-focus-strip::before[\s\S]*animation-play-state:\s*paused/);
 });
 
+test('aether flow prompt adds cursor wake currents without click flashes', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const pkg = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
+
+  assert.match(js, /cursorWakeParticles/);
+  assert.match(js, /AETHER_WAKE_MAX_PARTICLES/);
+  assert.match(js, /AETHER_WAKE_MIN_DISTANCE/);
+  assert.match(js, /function spawnCursorWake/);
+  assert.match(js, /function drawCursorFlowWake/);
+  assert.match(js, /function spawnCursorWake[\s\S]*isAetherFlowPaused/);
+  assert.match(js, /drawAetherCurrentPackets\(time\)[\s\S]*drawCursorFlowWake\(time\)/);
+  assert.doesNotMatch(js, /addEventListener\('pointerdown'[\s\S]{0,220}spawnCursorWake/, 'cursor wake must be pointermove-only so clicks do not flash the viewport');
+  assert.doesNotMatch(pkg, /framer-motion|lucide-react/);
+
+  assert.match(css, /Reference aether cursor wake v9\.5/);
+  assert.match(css, /\.hero-signal-mesh::after/);
+  assert.match(css, /\.dashboard-starter-strip::after/);
+  assert.match(css, /\.waveform-drill-rail::after/);
+  assert.match(css, /\.signal-atlas-console \.waveform-drill-step,[\s\S]*\.sound-lab-workbench \.waveform-drill-step\s*\{[\s\S]*border-radius:\s*14px !important/);
+  assert.match(css, /\.signal-atlas-console \.waveform-drill-step,[\s\S]*\.sound-lab-workbench \.waveform-drill-step\s*\{[\s\S]*overflow:\s*hidden !important/);
+  assert.match(css, /@keyframes ref9-signal-current/);
+  assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-signal-current/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-signal-current/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -323,11 +349,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-focus"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-flow-focus'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-flow-focus'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-focus'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-flow-focus'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-wake"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-wake'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-wake'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-wake'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-wake'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -1519,7 +1545,13 @@ test('sound lab waveform detective is a routed beginner module, not a dead card'
   assert.match(appJs, /scrollSoundLabIntoView\('\.waveform-detective-panel'\)/);
   assert.match(css, /\.waveform-detective-panel\s*\{/);
   assert.match(css, /\.waveform-ingredient-card\s*\{[\s\S]*cursor:\s*default/);
+  assert.match(css, /\.waveform-drill-rail\s*\{/);
+  assert.match(css, /\.waveform-drill-grid\s*\{[\s\S]*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.waveform-drill-step\s*\{[\s\S]*min-height:\s*168px/);
+  assert.match(css, /\.waveform-drill-step:hover,[\s\S]*\.waveform-drill-step:focus-visible\s*\{[\s\S]*transform:\s*translateY\(-2px\)/);
+  assert.match(css, /\.waveform-drill-step :where\(p,\s*small,\s*em\)\s*\{[\s\S]*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
   assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-ingredient-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /@media \(max-width: 880px\)[\s\S]*\.waveform-drill-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
 test('sound lab practice loop has routed actions and readable dark panel styling', () => {

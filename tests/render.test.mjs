@@ -383,6 +383,19 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
   assert.match(html, /Noise/);
   assert.match(html, /data-workbench-action="focus-waveform"/);
   assert.match(html, /先听纯音锚点/);
+  assert.match(html, /waveform-drill-rail/);
+  assert.match(html, /data-waveform-drill-step="anchor"/);
+  assert.match(html, /data-waveform-drill-step="body-solo"/);
+  assert.match(html, /data-waveform-drill-step="edge-sweep"/);
+  assert.match(html, /data-waveform-drill-step="ab-proof"/);
+  assert.match(html, /data-sound-lab-play/);
+  assert.match(html, /data-layer-audition="body"/);
+  assert.match(html, /data-workbench-action="focus-controls"/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /Serum/);
+  assert.match(html, /Phase Plant/);
+  assert.match(html, /Vital/);
+  assert.match(html, /REAPER|A\/B/);
 });
 
 test('renderSoundLabWorkbench exposes a guided A/B practice loop for beginners', () => {

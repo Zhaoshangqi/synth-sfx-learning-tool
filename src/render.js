@@ -1479,6 +1479,20 @@ function renderWaveformDetectivePanel(model = {}) {
   const fingerprint = model.waveformFingerprint ?? {};
   const ingredients = fingerprint.ingredients ?? [];
   const steps = fingerprint.listeningSteps ?? [];
+  const drillSteps = fingerprint.drillSteps ?? [];
+  const renderDrillAttributes = (step) => {
+    const attrs = [`data-waveform-drill-step="${escapeHtml(step.id)}"`];
+    if (step.playAction) {
+      attrs.push('data-sound-lab-play');
+    } else if (step.layerAudition) {
+      attrs.push(`data-layer-audition="${escapeHtml(step.layerAudition)}"`);
+    } else if (step.outputMode) {
+      attrs.push(`data-output-compare="${escapeHtml(step.outputMode)}"`);
+    } else {
+      attrs.push(`data-workbench-action="${escapeHtml(step.action ?? 'focus-waveform')}"`);
+    }
+    return attrs.join(' ');
+  };
   return `
     <section class="workbench-panel waveform-detective-panel" aria-label="波形拆解">
       <div class="mini-panel-head">
@@ -1500,6 +1514,25 @@ function renderWaveformDetectivePanel(model = {}) {
       <ol class="waveform-detective-steps">
         ${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}
       </ol>
+      ${drillSteps.length ? `
+        <div class="waveform-drill-rail" aria-label="波形反推训练">
+          <div class="waveform-drill-head">
+            <strong>Waveform Reverse Drill</strong>
+            <span>听证据 → solo 层 → 只改一个参数 → A/B 写结论</span>
+          </div>
+          <div class="waveform-drill-grid">
+            ${drillSteps.map((step) => `
+              <button class="waveform-drill-step" type="button" ${renderDrillAttributes(step)}>
+                <span>${escapeHtml(step.labelZh ?? '')}</span>
+                <strong>${escapeHtml(step.titleZh ?? '')}</strong>
+                <p>${escapeHtml(step.listenZh ?? '')}</p>
+                <small>${escapeHtml(step.synthZh ?? '')}</small>
+                <em>${escapeHtml(step.proofZh ?? '')}</em>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
     </section>
   `;
 }
