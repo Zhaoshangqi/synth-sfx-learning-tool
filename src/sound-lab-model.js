@@ -599,6 +599,33 @@ function layerEnvelope(role, durationSeconds, material, space) {
   return { attackMs: 12, decayMs: durationSeconds * 840, sustain: 0.12, releaseMs: clamp(180 + space * 520, 120, 780) };
 }
 
+function layerOnsetMs(role, index, motion, space, variation, quality) {
+  const studioFocus = quality.id === 'studio' ? 1 : quality.id === 'balanced' ? 0.55 : 0.2;
+  if (role === 'transient') return clamp(index * 0.35 + variation * 0.85, 0, 3);
+  if (role === 'body') return clamp(2.2 + index * 0.85 + motion * 3.2 + variation * 4.8 + studioFocus * 1.2, 2, 18);
+  if (role === 'texture') return clamp(6 + index * 1.35 + motion * 4.8 + variation * 10 + studioFocus * 2, 5, 34);
+  return clamp(15 + index * 1.8 + space * 22 + variation * 16 + studioFocus * 4, 14, 80);
+}
+
+function buildAcousticCues(layers, values, quality) {
+  const space = normalize(values.space);
+  const motion = normalize(values.motion);
+  const variation = normalize(values.variation);
+  const onsetForRole = (role, fallback) => {
+    const matches = layers.filter((layer) => layer.role === role).map((layer) => layer.onsetMs);
+    return matches.length ? Math.min(...matches) : fallback;
+  };
+  return {
+    transientSnapMs: Number(onsetForRole('transient', 0).toFixed(1)),
+    bodyLagMs: Number(onsetForRole('body', 4).toFixed(1)),
+    textureBloomMs: Number(onsetForRole('texture', 10).toFixed(1)),
+    tailPreDelayMs: Number(onsetForRole('tail', 22).toFixed(1)),
+    layerSpreadMs: Number((Math.max(...layers.map((layer) => layer.onsetMs), 0) - Math.min(...layers.map((layer) => layer.onsetMs), 0)).toFixed(1)),
+    diffusion: Number(clamp(0.34 + space * 0.34 + variation * 0.16 + (quality.id === 'studio' ? 0.1 : 0), 0.28, 0.9).toFixed(2)),
+    microTimingHumanize: Number(clamp(0.18 + motion * 0.24 + variation * 0.34, 0.12, 0.72).toFixed(2)),
+  };
+}
+
 function layerStereoSpread(role, engine, quality, space, variation, index) {
   const tonalBonus = ['fmBurst', 'combDelay'].includes(engine) ? 0.18 : 0.04;
   const roleBonus = role === 'body' ? 0.1 : role === 'texture' ? 0.16 : role === 'tail' ? 0.2 : 0.03;
@@ -633,6 +660,7 @@ function buildLayer(recipe, context, index) {
     role,
     engine: recipe.engine,
     gain: recipe.engine === 'sampleGrain' ? gain * sampleMix : gain,
+    onsetMs: Number(layerOnsetMs(role, index, motion, space, variation, quality).toFixed(1)),
     pan,
     stereoSpread: layerStereoSpread(role, recipe.engine, quality, space, variation, index),
     envelope,
@@ -803,6 +831,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const quality = getQualityMode(layerData.qualityMode);
   const controlSmoothing = buildControlSmoothing(performance, quality);
   const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, quality, layerData), outputMode);
+  const acousticCues = buildAcousticCues(layerData.layers, values, quality);
   const toneGraph = buildToneGraph(family, values, dsp, quality, performance, { ...outputOptions, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
   toneGraph.effects = fxRack;
@@ -835,6 +864,8 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         mix: clamp(dsp.space.mix * quality.fxScale, 0, 0.48),
         decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.1, 2.8),
         width: dsp.space.width,
+        preDelayMs: clamp(acousticCues.tailPreDelayMs, 0, 120),
+        diffusion: acousticCues.diffusion,
       },
       dynamics: {
         drive: clamp(dsp.waveshaper.drive * (0.86 + material * 0.44), 0, 1.1),
@@ -844,6 +875,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
         ceiling: layerData.qualityMode === 'studio' ? 0.94 : 0.92,
         releaseMs: layerData.qualityMode === 'draft' ? 55 : 90,
       },
+      acousticCues,
       controlSmoothing,
       masterPolish,
     },
