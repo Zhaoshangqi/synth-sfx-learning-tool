@@ -747,6 +747,43 @@ test('renderSoundLabWorkbench renders a first-screen Mission Brief with actionab
   assert.match(html, /data-workbench-action="focus-export"/);
 });
 
+test('renderSoundLabWorkbench renders a compact practice focus rail before deep modules', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 92,
+    motion: 34,
+    material: 88,
+    space: 72,
+    variation: 42,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 90, body: 58, texture: 82, tail: 78 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+    activeWorkflowStep: 'shape',
+  });
+  const focusIndex = html.indexOf('practice-focus-strip');
+  const analyzerIndex = html.indexOf('atlas-lab-stage');
+
+  assert.ok(focusIndex > -1, 'practice focus rail should render on the first screen');
+  assert.ok(analyzerIndex > -1, 'main analyzer stage should still render');
+  assert.ok(focusIndex < analyzerIndex, 'practice focus rail should appear before deep analyzer controls');
+  assert.match(html, /Practice Focus|练习焦点|Focus Rail/);
+  assert.match(html, /data-practice-focus-step="listen"/);
+  assert.match(html, /data-practice-focus-step="isolate"/);
+  assert.match(html, /data-practice-focus-step="adjust"/);
+  assert.match(html, /data-practice-focus-step="verify"/);
+  assert.match(html, /data-sound-lab-play/);
+  assert.match(html, /data-layer-audition="/);
+  assert.match(html, /data-doctor-apply="/);
+  assert.match(html, /data-output-compare="comfort"/);
+  assert.match(html, /只改一个|A\/B|REAPER/);
+});
+
 test('renderSoundLabWorkbench renders a target match coach with routed one-change practice', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {

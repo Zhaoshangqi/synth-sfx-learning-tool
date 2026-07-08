@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-aether-mask"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260708-flow-focus"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -120,7 +120,7 @@ test('stitch visual refit keeps the supplied showcase motion but removes click f
   assert.match(shellJs, /requestAnimationFrame\(tickSpotlight\)/);
   assert.match(shellJs, /Close navigation menu/);
   assert.match(shellJs, /Open navigation menu/);
-  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
+  assert.equal(shellJs.includes('\u95B8'), false);
 });
 
 test('stitch QA pass keeps the menu above the toolbar and Sound Lab mission readable', () => {
@@ -187,7 +187,7 @@ test('dashboard practice prescription connects the route to a concrete listen ed
   assert.match(appJs, /class="prescription-step-grid"/);
   assert.match(appJs, /data-dashboard-prescription-action="launch"/);
   assert.match(appJs, /data-dashboard-prescription-action="ab"/);
-  assert.match(appJs, /今日练习处方|一次只改|A\/B|REAPER/);
+  assert.match(appJs, /浠婃棩缁冧範澶勬柟|涓€娆″彧鏀箌A\/B|REAPER/);
   assert.match(appJs, /launchDashboardPathStep\(activePathStep\)/);
   assert.match(css, /\.dashboard-practice-prescription\s*\{/);
   assert.match(css, /\.prescription-step-grid\s*\{/);
@@ -289,6 +289,27 @@ test('aether flow prompt adds packet currents and a drag-safe ambient field', ()
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.audio-space::after/);
 });
 
+test('aether flow prompt adds adaptive node currents and focused flow lanes', () => {
+  const js = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const referenceCss = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+  const appCss = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(js, /aetherFlowNodes/);
+  assert.match(js, /AETHER_FLOW_NODE_COUNT/);
+  assert.match(js, /AETHER_NODE_CONNECTION_RADIUS/);
+  assert.match(js, /createAetherFlowNode/);
+  assert.match(js, /drawAetherNodeCurrents/);
+  assert.match(js, /aetherNodeConnections/);
+  assert.match(js, /isAetherFlowPaused\(\)[\s\S]*drawAetherNodeCurrents/, 'node currents should pause during direct control drags');
+  assert.match(referenceCss, /Reference aether node current v9\.4/);
+  assert.match(referenceCss, /\.signal-field::before/);
+  assert.match(referenceCss, /@keyframes ref9-node-current/);
+  assert.match(referenceCss, /body\.is-direct-manipulating \.signal-field::before[\s\S]*animation-play-state:\s*paused/);
+  assert.match(appCss, /\.practice-focus-strip::before/);
+  assert.match(appCss, /@keyframes practice-focus-current/);
+  assert.match(appCss, /body\.is-direct-manipulating \.practice-focus-strip::before[\s\S]*animation-play-state:\s*paused/);
+});
+
 test('direct hash routes skip the opening splash to avoid route flash', () => {
   const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
 
@@ -302,11 +323,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-aether-mask"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-aether-mask'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-aether-mask'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-aether-mask'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260708-aether-mask'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260708-flow-focus"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260708-flow-focus'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260708-flow-focus'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260708-flow-focus'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260708-flow-focus'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -715,9 +736,9 @@ test('dashboard has product-design control console and learning flow shell', () 
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(appJs, /dashboard-hero/);
-  assert.match(appJs, /今日练习控制台/);
+  assert.match(appJs, /\u4eca\u65e5\u7ec3\u4e60\u63a7\u5236\u53f0/);
   assert.match(appJs, /learning-flow/);
-  assert.match(appJs, /质量守门/);
+  assert.match(appJs, /\u8d28\u91cf\u5b88\u95e8/);
   assert.match(appJs, /data-dashboard-primary-view="soundlab"/);
   assert.match(appJs, /data-dashboard-flow-view="\$\{escapeHtml\(node\.view\)\}"/);
   assert.match(appJs, /dashboardPrimaryView/);
@@ -1102,9 +1123,9 @@ test('dashboard CTA buttons use clear high-contrast clickable states', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(appJs, /进入可试听工作台/);
-  assert.match(appJs, /先练波形 \/ ADSR \/ FM/);
-  assert.match(appJs, /主入口/);
+  assert.match(appJs, /\u8fdb\u5165\u53ef\u8bd5\u542c\u5de5\u4f5c\u53f0/);
+  assert.match(appJs, /\u5148\u7ec3\u6ce2\u5f62 \/ ADSR \/ FM/);
+  assert.match(appJs, /\u4e3b\u5165\u53e3/);
   assert.match(css, /\.primary-button,[\s\S]*\.dashboard-actions \.primary-button,[\s\S]*\.launchpad-button\.is-primary\s*\{[\s\S]*rgba\(110,\s*231,\s*249,\s*0\.96\)/);
   assert.match(css, /\.primary-button,[\s\S]*\.dashboard-actions \.primary-button,[\s\S]*\.launchpad-button\.is-primary\s*\{[\s\S]*color:\s*#061018/);
   assert.match(css, /\.secondary-button,[\s\S]*\.dashboard-actions \.secondary-button,[\s\S]*\.sound-preset-card\s*\{[\s\S]*background:\s*rgba\(18,\s*24,\s*38,\s*0\.58\)/);
@@ -1121,7 +1142,7 @@ test('daily tutorial feed is wired into navigation, app routing, and styles', ()
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(html, /data-view="daily"/);
-  assert.match(html, /每日新教程/);
+  assert.match(html, /\u6bcf\u65e5\u65b0\u6559\u7a0b/);
   assert.match(appJs, /dailyVideoFeed/);
   assert.match(appJs, /renderDailyVideosView/);
   assert.match(appJs, /daily:\s*renderDailyVideosView/);
@@ -1269,8 +1290,8 @@ test('dashboard launchpad makes the first four actions visually obvious and touc
   assert.match(appJs, /dashboard-launchpad/);
   assert.match(appJs, /dashboard-starter-strip/);
   assert.match(appJs, /launchpad-button/);
-  assert.match(appJs, /从这里开始/);
-  assert.match(appJs, /新手今日路径/);
+  assert.match(appJs, /\u4ece\u8fd9\u91cc\u5f00\u59cb/);
+  assert.match(appJs, /\u65b0\u624b\u4eca\u65e5\u8def\u5f84/);
   assert.match(appJs, /data-dashboard-primary-view="soundlab"/);
   assert.match(appJs, /data-dashboard-primary-view="interactive"/);
   assert.match(appJs, /data-dashboard-primary-view="daily"/);
@@ -1292,13 +1313,13 @@ test('sound lab exposes a guided workflow map and real material family switching
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
   assert.match(appJs, /header\('Sound Lab'/);
-  assert.match(appJs, /可试听合成器工作台/);
+  assert.match(appJs, /\u53ef\u8bd5\u542c\u5408\u6210\u5668\u5de5\u4f5c\u53f0/);
   assert.match(renderJs, /workbench-flow-map/);
   assert.match(renderJs, /workflow-context-strip/);
   assert.match(renderJs, /data-workflow-step/);
   assert.match(renderJs, /\['source',\s*'01'/);
   assert.match(renderJs, /data-workbench-family/);
-  assert.match(renderJs, /\['metal-impact',\s*'金属'/);
+  assert.match(renderJs, /\['metal-impact',\s*'\u91d1\u5c5e'/);
   assert.match(renderJs, /material-current-brief/);
   assert.match(renderJs, /material-workflow-hint/);
   assert.match(appJs, /data-workbench-family/);
@@ -1481,7 +1502,7 @@ test('workbench actions are routed through a guarded dispatcher instead of loose
   assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*state\.activeAdvancedModule = 'mod-matrix'/);
   assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*state\.activeWorkbenchModule = 'modulation'/);
   assert.match(appJs, /if \(action === 'analyze-patch'\)\s*\{[\s\S]*scrollSoundLabIntoView\('\.modulation-panel'\)/);
-  assert.match(appJs, /未识别的工作台按钮/);
+  assert.match(appJs, /\u672a\u8bc6\u522b\u7684\u5de5\u4f5c\u53f0\u6309\u94ae/);
 });
 
 test('sound lab waveform detective is a routed beginner module, not a dead card', () => {
@@ -1769,7 +1790,7 @@ test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage
   assert.match(shellJs, /setMenuOpen/);
   assert.match(shellJs, /Close navigation menu/);
   assert.match(shellJs, /Open navigation menu/);
-  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
+  assert.equal(shellJs.includes('\u95B8'), false);
 });
 
 test('reference v9 loads a final clean visual layer after the legacy cascade', () => {
@@ -1800,7 +1821,7 @@ test('headline reveal segments Chinese text without mojibake regexes', () => {
   assert.match(shellJs, /function segmentHeadlineText/);
   assert.match(shellJs, /Intl\.Segmenter/);
   assert.match(shellJs, /Array\.from\(text\)/);
-  assert.doesNotMatch(shellJs, /鈥|閸|妫|绱|漖|潀/);
+  assert.doesNotMatch(shellJs, /閳闁竱濡珅缁眧婕東娼€/);
 });
 
 test('reference v8 applies the supplied showcase aesthetic after all legacy style layers', () => {
@@ -1833,5 +1854,5 @@ test('reference v8 applies the supplied showcase aesthetic after all legacy styl
   assert.match(shellJs, /Open navigation menu/);
   assert.match(shellJs, /segmentHeadlineText\(text\)/);
   assert.match(shellJs, /body\.classList\.contains\('is-direct-manipulating'\)/);
-  assert.doesNotMatch(shellJs, /鍏抽棴|鎵撳紑/);
+  assert.equal(shellJs.includes('\u95B8'), false);
 });
