@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-stitch-dark-v12';
+} from './sound-lab-model.js?v=20260709-learning-synths-v13';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-stitch-dark-v12';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-learning-synths-v13';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-stitch-dark-v12';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-learning-synths-v13';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-stitch-dark-v12';
+} from './render.js?v=20260709-learning-synths-v13';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -1337,22 +1337,11 @@ function renderSoundLabView() {
   const model = getSoundLabModel();
   const focusMode = getSoundLabFocusMode();
   return `
-    ${header('Sound Lab', '可试听合成器工作台：先选材质和目标声音，再用频谱、宏控制、合成器教练和 REAPER 清单完成一次音效交付。')}
-    <section class="sound-lab-shell" data-sound-lab-focus-mode="${escapeHtml(focusMode.id)}">
-      <div class="sound-family-rail" role="list" aria-label="声音族选择">
-        ${soundLabFamilies.map((item, index) => `
-          <button
-            class="material-select-button ${item.id === family.id ? 'is-active' : ''}"
-            type="button"
-            data-sound-family-id="${escapeHtml(item.id)}"
-          >
-            <span>${String(index + 1).padStart(2, '0')}</span>
-            ${escapeHtml(item.titleZh.split('：')[0])}
-          </button>
-        `).join('')}
-      </div>
+    <section class="sound-lab-shell learning-synths-shell" data-sound-lab-focus-mode="${escapeHtml(focusMode.id)}">
       ${renderSoundLabWorkbench(family, model, {
         selectedFamilyId: family.id,
+        familyList: soundLabFamilies,
+        activeWaveform: state.activeWaveform,
         engineMode: state.soundLabEngineMode,
         engineUsed: state.soundLabEngineUsed,
         toneReady: state.soundLabToneReady,
@@ -1374,25 +1363,6 @@ function renderSoundLabView() {
         workbenchActionFeedback: state.workbenchActionFeedback,
         confirmedWorkbenchAction: state.confirmedWorkbenchAction,
       })}
-      <section class="sound-lab-secondary-section" aria-label="次级预设与变化">
-        <div class="module-section-head">
-          <div>
-            <div class="module-priority-badge">Secondary</div>
-            <h3>模式与预设变化库</h3>
-          </div>
-          <p>主流程先听当前声音；需要切换引导/练习/专家模式或 preset 时再展开这里，避免工作台首屏被辅助模块淹没。</p>
-        </div>
-        ${renderSoundLabFocusModeSwitch(focusMode.id)}
-        <div class="grid two sound-lab-preset-grid">
-          ${family.presets.map((preset) => `
-            <button class="card sound-preset-card" type="button" data-sound-lab-preset="${escapeHtml(preset.id)}">
-              <span class="card-kicker">Preset</span>
-              <strong>${escapeHtml(preset.labelZh)}</strong>
-              <small>${Object.entries(preset.values).map(([key, value]) => `${key} ${value}`).join(' / ')}</small>
-            </button>
-          `).join('')}
-        </div>
-      </section>
     </section>
   `;
 }

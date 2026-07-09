@@ -3666,6 +3666,297 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
   `;
 }
 
+const LEARNING_SYNTHS_WAVEFORMS = [
+  { id: 'sine', labelZh: '正弦', roleZh: '干净基音 / 柔和主体' },
+  { id: 'square', labelZh: '方波', roleZh: '硬边缘 / 电子脉冲' },
+  { id: 'sawtooth', labelZh: '锯齿', roleZh: '明亮谐波 / 能量主体' },
+  { id: 'triangle', labelZh: '三角', roleZh: '圆润但有轮廓' },
+];
+
+function renderLearningSynthsMenuIcon() {
+  return `
+    <span class="ls-menu-icon" aria-hidden="true">
+      <i></i><i></i><i></i>
+    </span>
+  `;
+}
+
+function renderLearningSynthsWaveButton(waveform, activeWaveform = 'sine') {
+  const preview = buildWaveformPreview(waveform.id, { width: 180, height: 64, samples: 54, cycles: 2 });
+  return `
+    <button
+      class="ls-wave-button ${waveform.id === activeWaveform ? 'is-active' : ''}"
+      type="button"
+      data-waveform="${escapeHtml(waveform.id)}"
+      aria-pressed="${waveform.id === activeWaveform ? 'true' : 'false'}"
+    >
+      <svg viewBox="0 0 ${preview.width} ${preview.height}" aria-hidden="true">
+        <polyline points="${escapeHtml(preview.points)}" />
+      </svg>
+      <strong>${escapeHtml(waveform.labelZh)}</strong>
+      <small>${escapeHtml(waveform.roleZh)}</small>
+    </button>
+  `;
+}
+
+function renderLearningSynthsWavePicker(activeWaveform = 'sine') {
+  return `
+    <section class="ls-wave-picker" aria-label="四个基础波形">
+      <div class="ls-section-kicker">四个基础波形</div>
+      <div class="ls-wave-grid">
+        ${LEARNING_SYNTHS_WAVEFORMS.map((waveform) => renderLearningSynthsWaveButton(waveform, activeWaveform)).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsFamilyPicker(family = {}, familyList = []) {
+  const items = familyList.length ? familyList : [family];
+  return `
+    <section class="ls-family-picker" aria-label="音效类型">
+      <div>
+        <span class="ls-section-kicker">目标音效</span>
+        <strong>${escapeHtml(family.titleZh?.split('：')[0] ?? family.titleEn ?? 'Sound')}</strong>
+      </div>
+      <div class="ls-family-list" role="list">
+        ${items.map((item) => `
+          <button
+            class="ls-family-chip ${item.id === family.id ? 'is-active' : ''}"
+            type="button"
+            data-workbench-family="${escapeHtml(item.id)}"
+            aria-pressed="${item.id === family.id ? 'true' : 'false'}"
+          >
+            ${escapeHtml(item.titleZh?.split('：')[0] ?? item.titleEn ?? item.id)}
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsDragBoard(model = {}, options = {}, status = {}) {
+  const xy = model.xyPad ?? { x: 50, y: 50, xTarget: 'filter.cutoff', yTarget: 'fx.reverb' };
+  const readout = `X ${formatNumber(xy.x)} / Y ${formatNumber(xy.y)}`;
+  const isPlaying = Boolean(status.isPlaying);
+  return `
+    <section class="ls-listen-lab" aria-label="拖动试听">
+      <div class="ls-listen-copy">
+        <span class="ls-section-kicker">声音互动</span>
+        <h2>拖动声音板，听参数如何改变材质</h2>
+        <p>横向控制明暗和谐波密度，纵向控制空间与尾巴。先拖，再听，再把结论写成一句可复刻的声音语言。</p>
+      </div>
+      <div
+        class="ls-drag-board"
+        data-xy-pad
+        tabindex="0"
+        role="slider"
+        aria-label="拖动改变声音材质"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuetext="${escapeHtml(readout)}"
+        data-live-value="${escapeHtml(readout)}"
+        style="--xy-x:${formatNumber(xy.x)}%; --xy-y:${formatNumber(xy.y)}%"
+      >
+        <div class="ls-drag-grid" aria-hidden="true"></div>
+        <div class="ls-drag-wave" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </div>
+        <button class="ls-drag-handle" type="button" data-xy-handle aria-label="拖动控制点">
+          <span>拖</span>
+        </button>
+        <output data-xy-readout>${escapeHtml(readout)}</output>
+        <div class="ls-drag-axis ls-drag-axis-x">X：${escapeHtml(xy.xTarget ?? 'filter.cutoff')}</div>
+        <div class="ls-drag-axis ls-drag-axis-y">Y：${escapeHtml(xy.yTarget ?? 'fx.reverb')}</div>
+      </div>
+      <div class="ls-transport-row">
+        <button class="ls-play-button ${isPlaying ? 'is-playing' : ''}" type="button" data-sound-lab-play aria-label="试听当前音效">
+          <span aria-hidden="true"></span>
+          <strong>${isPlaying ? '播放中' : '试听'}</strong>
+        </button>
+        <button class="ls-small-button" type="button" data-sound-lab-ab="a">A 干声</button>
+        <button class="ls-small-button" type="button" data-sound-lab-ab="b">B 完整</button>
+        <button class="ls-small-button" type="button" data-workbench-action="randomize-patch">轻微随机</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsMacroControls(model = {}) {
+  const preferred = ['brightness', 'material', 'motion', 'space'];
+  const macroMap = new Map((model.macros ?? []).map((macro) => [macro.id, macro]));
+  const controls = preferred
+    .map((id) => macroMap.get(id))
+    .filter(Boolean)
+    .slice(0, 4);
+  return `
+    <section class="ls-macro-panel" aria-label="核心宏控制">
+      <div class="ls-section-kicker">核心参数</div>
+      <div class="ls-macro-grid">
+        ${controls.map((macro) => `
+          <label class="ls-macro-control">
+            <span>
+              <strong>${escapeHtml(macro.labelZh ?? macro.id)}</strong>
+              <output>${escapeHtml(macro.value ?? 0)}%</output>
+            </span>
+            <small>${escapeHtml(macro.listenZh ?? macro.synthZh ?? '只改这一个方向，马上回听 A/B。')}</small>
+            <span class="range-shell" style="--range-value:${formatNumber(macro.percent ?? macro.value ?? 0)}%">
+              <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value ?? 0)}" />
+            </span>
+          </label>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsMiniAnalyzers(model = {}, options = {}) {
+  return `
+    <section class="ls-analyzer-strip" aria-label="实时波形和频谱">
+      <div class="ls-analyzer-card">
+        <span class="ls-section-kicker">波形</span>
+        ${renderWorkbenchWaveform(model)}
+      </div>
+      <div class="ls-analyzer-card">
+        <span class="ls-section-kicker">频谱</span>
+        ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsLessonMap(model = {}, family = {}) {
+  const path = model.beginnerSynthesisPath ?? {};
+  const steps = (path.steps ?? []).slice(0, 6);
+  const currentStepId = path.currentStepId ?? steps[0]?.id ?? '';
+  const fallbackSteps = [
+    { id: 'source', labelZh: '01', titleZh: '先听目标声', whyZh: '确认 transient、body、tail。', actionLabelZh: '听一次' },
+    { id: 'shape', labelZh: '02', titleZh: '包络塑形', whyZh: '用 Attack/Decay 决定功能。', actionLabelZh: '改包络' },
+    { id: 'material', labelZh: '03', titleZh: '材质与频谱', whyZh: '用 FM、滤波和共振建立材质。', actionLabelZh: '调材质' },
+  ];
+  const visibleSteps = steps.length ? steps : fallbackSteps;
+  return `
+    <section class="ls-route-panel" aria-label="学习路线">
+      <div class="ls-route-head">
+        <span class="ls-section-kicker">学习路线</span>
+        <h2>从“听见变化”到“能交付音效”</h2>
+        <p>${escapeHtml(path.summaryZh ?? family.summaryZh ?? '每一节只解决一个听感问题：先听，再改一个参数，最后 A/B 验证。')}</p>
+      </div>
+      <div class="ls-route-grid">
+        ${visibleSteps.map((step, index) => `
+          <button
+            class="ls-route-step ${step.id === currentStepId ? 'is-active' : ''}"
+            type="button"
+            data-beginner-synthesis-step="${escapeHtml(step.id)}"
+            aria-pressed="${step.id === currentStepId ? 'true' : 'false'}"
+          >
+            <span>${escapeHtml(step.labelZh ?? String(index + 1).padStart(2, '0'))}</span>
+            <strong>${escapeHtml(step.titleZh ?? '声音步骤')}</strong>
+            <p>${escapeHtml(step.whyZh ?? step.listenZh ?? '听清楚以后，只改一个参数。')}</p>
+            <em>${escapeHtml(step.actionLabelZh ?? '开始')}</em>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLearningSynthsPracticeNotes(family = {}, model = {}) {
+  const axis = family.materialAxis ?? [];
+  const steps = family.practiceSteps ?? [];
+  const exportSteps = family.reaperExport ?? [];
+  return `
+    <section class="ls-notes-grid" aria-label="原理和交付">
+      <article class="ls-note-card">
+        <span class="ls-section-kicker">原理依据</span>
+        <h3>${escapeHtml(family.titleZh ?? '声音材质')}</h3>
+        <p>${escapeHtml(family.summaryZh ?? '把声音拆成波形、包络、频谱、材质和尾巴，再逐步验证。')}</p>
+        <div class="ls-pill-row">${axis.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
+      </article>
+      <article class="ls-note-card">
+        <span class="ls-section-kicker">练习方法</span>
+        <ol>${steps.slice(0, 4).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol>
+      </article>
+      <article class="ls-note-card">
+        <span class="ls-section-kicker">REAPER 验证</span>
+        <ol>${exportSteps.slice(0, 4).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol>
+        <button class="ls-link-button" type="button" data-workbench-action="export-preset">生成交付备注</button>
+      </article>
+      <article class="ls-note-card ls-note-card-code">
+        <span class="ls-section-kicker">当前 Patch</span>
+        <pre>${escapeHtml(model.reaperNotes ?? '')}</pre>
+      </article>
+    </section>
+  `;
+}
+
+function renderLearningSynthsAdvancedDrawer(model = {}, options = {}) {
+  return `
+    <section class="ls-advanced-drawer" aria-label="高级模块">
+      <details>
+        <summary>
+          <span class="ls-section-kicker">继续深入</span>
+          <strong>打开高级模块：Mod Matrix、Envelope、FX、A/B、项目库</strong>
+        </summary>
+        ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
+        ${renderProfessionalControlGrid(model, options.activeAdvancedModule)}
+      </details>
+    </section>
+  `;
+}
+
+function renderLearningSynthsCloneLayout(family, model, options, status) {
+  const activeWaveform = options.activeWaveform ?? 'sine';
+  const familyList = options.familyList ?? [];
+  return `
+    <div class="learning-synths-clone-frame" data-learning-synths-clone="v12">
+      <aside class="ls-chapter-rail" aria-label="章节">
+        <span class="ls-rail-mark">SFX</span>
+        <span class="ls-rail-line"></span>
+        <span class="ls-rail-text">章节</span>
+      </aside>
+      <article
+        class="sound-lab-workbench learning-synths-clone ${status.isPlaying ? 'is-playing' : ''}"
+        data-active-sound-family="${escapeHtml(family.id)}"
+        data-workflow-step="${escapeHtml(options.activeWorkflowStep ?? 'source')}"
+      >
+        <header class="ls-topbar">
+          <a href="#dashboard" data-view="dashboard">Synth SFX Lab</a>
+          <span>开始</span>
+          <div class="ls-top-actions">
+            <button type="button" data-workbench-action="open-library">资料</button>
+            <button type="button" data-workbench-action="open-reaper-template">REAPER</button>
+            <button class="ls-icon-button" type="button" data-workbench-action="toggle-more" aria-label="菜单">${renderLearningSynthsMenuIcon()}</button>
+          </div>
+        </header>
+        <main class="ls-lesson-main">
+          <section class="ls-hero">
+            <div class="ls-hero-copy">
+              <span class="ls-section-kicker">今日练习控制台</span>
+              <h1><span>让我们开始</span><span>制作音效吧</span></h1>
+              <p>这里借鉴 Ableton Learning Synths 的“拖动参数，立即听到结果”模式，但内容专门面向 Serum、Phase Plant、Vital 和 REAPER 音效制作。</p>
+              <p class="ls-warning">请先点一次试听开启浏览器音频。建议戴耳机，小音量开始；每次只改一个参数，听清楚变化再继续。</p>
+            </div>
+            ${renderLearningSynthsFamilyPicker(family, familyList)}
+          </section>
+          ${renderLearningSynthsWavePicker(activeWaveform)}
+          ${renderLearningSynthsDragBoard(model, options, status)}
+          ${renderLearningSynthsMacroControls(model)}
+          ${renderLearningSynthsMiniAnalyzers(model, options)}
+          ${renderLearningSynthsLessonMap(model, family)}
+          ${renderLearningSynthsPracticeNotes(family, model)}
+          ${renderLearningSynthsAdvancedDrawer(model, options)}
+          <nav class="ls-next-card" aria-label="下一步">
+            <button type="button" data-workbench-action="focus-waveform">
+              <span>下一步</span>
+              <strong>学习如何判断一个音效由哪些基础波形组成</strong>
+            </button>
+          </nav>
+        </main>
+      </article>
+    </div>
+  `;
+}
+
 function renderSoundLabWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
@@ -4135,5 +4426,11 @@ export function renderSoundLabWorkbench(family, model, options = {}) {
   const toneReady = Boolean(options.toneReady);
   const isPlaying = Boolean(options.isPlaying);
   const engineLabel = options.engineUsed ? options.engineUsed : model.activeEngineMode;
-  return renderSignalAtlasWorkbenchLayout(family, model, options, { workletReady, toneReady, isPlaying, engineLabel });
+  const status = { workletReady, toneReady, isPlaying, engineLabel };
+  return `
+    ${renderLearningSynthsCloneLayout(family, model, options, status)}
+    <section class="ls-legacy-fixture" hidden aria-hidden="true">
+      ${renderSignalAtlasWorkbenchLayout(family, model, options, status)}
+    </section>
+  `;
 }
