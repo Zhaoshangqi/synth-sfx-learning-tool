@@ -42,6 +42,18 @@ const performanceGestureTailMs = (patch = {}) => {
   return clamp(latestHitMs + releaseMs + 260, 520, 2600);
 };
 
+const computePatchReleaseTailSeconds = (patch = {}) => {
+  const globalSpace = patch.globalFx?.space ?? {};
+  const patchSpace = patch.space ?? patch.dsp?.space ?? {};
+  const dynamicDetail = patch.globalFx?.masterPolish?.dynamicDetail ?? {};
+  const spaceDecay = Math.max(globalSpace.decaySeconds ?? 0, patchSpace.decaySeconds ?? 0);
+  const layerReleaseMs = Math.max(0, ...(patch.layers ?? []).map((layer) => layer.envelope?.releaseMs ?? 0));
+  const releaseSeconds = Math.max(layerReleaseMs, dynamicDetail.snapWindowMs ?? 0) / 1000;
+  const width = clamp(globalSpace.width ?? patchSpace.width ?? 0, 0, 1);
+  const spaceMix = clamp(globalSpace.mix ?? patchSpace.mix ?? 0, 0, 0.7);
+  return clamp(0.16 + releaseSeconds * 0.72 + spaceDecay * (0.32 + spaceMix * 0.34) + width * 0.16, 0.18, 1.8);
+};
+
 const NOTE_OFFSETS = {
   C: 0,
   'C#': 1,
@@ -967,6 +979,7 @@ export class LabAudioPlayer {
     const now = this.context.currentTime + 0.01;
     const gestureHits = performanceGestureHits(patch);
     const latestHitSeconds = Math.max(0, ...gestureHits.map((hit) => hit.delayMs || 0)) / 1000;
+    const latestTailSeconds = computePatchReleaseTailSeconds(patch);
     const stopAt = now + patch.durationSeconds + latestHitSeconds;
     const nodes = [];
     const bus = this.context.createGain();
@@ -977,6 +990,8 @@ export class LabAudioPlayer {
     shaper.curve = createDistortionCurve(globalFx.dynamics?.drive ?? patch.dsp?.waveshaper?.drive ?? 0.28);
     shaper.oversample = '2x';
     outputGain.gain.value = clamp(globalFx.softLimiter?.ceiling ?? 0.9, 0.4, 0.98);
+    outputGain.gain.setValueAtTime(outputGain.gain.value, stopAt);
+    outputGain.gain.exponentialRampToValueAtTime(0.0001, stopAt + latestTailSeconds);
     bus.connect(shaper);
     connectDynamicDetailStage(this.context, shaper, outputGain, globalFx, nodes);
     outputGain.connect(this.master);
@@ -1116,7 +1131,7 @@ export class LabAudioPlayer {
           // Node may already be disconnected by stop().
         }
       }
-    }, Math.max(120, (patch.durationSeconds + latestHitSeconds) * 1000 + 180));
+    }, Math.max(120, (patch.durationSeconds + latestHitSeconds + latestTailSeconds) * 1000 + 180));
   }
 
   scheduleSoundLabFallback(patch) {

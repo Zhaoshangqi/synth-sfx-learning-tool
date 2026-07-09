@@ -1108,6 +1108,24 @@ test('native sound lab processor rounds hot synth output with an analog-style ou
   assert.match(processorJs, /this\.softLimiter\(this\.applyMasterPolish\([\s\S]*this\.outputStageRight\)/);
 });
 
+test('sound lab engines keep a natural release tail instead of hard-cutting ambience', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /computeReleaseTailSeconds/);
+  assert.match(processorJs, /computeTailReleaseGain/);
+  assert.match(processorJs, /const releaseTailSeconds = this\.computeReleaseTailSeconds\(\)/);
+  assert.match(processorJs, /if \(t > totalDuration \+ releaseTailSeconds\)/);
+  assert.match(processorJs, /const tailReleaseGain = this\.computeTailReleaseGain\(t, totalDuration, releaseTailSeconds\)/);
+  assert.doesNotMatch(processorJs, /if \(t > totalDuration\)\s*\{\s*left\[index\] = 0;/);
+  assert.match(processorJs, /this\.stereoBusLeft \*= tailReleaseGain/);
+  assert.match(processorJs, /this\.stereoBusRight \*= tailReleaseGain/);
+
+  assert.match(audioPlayerJs, /const latestTailSeconds = computePatchReleaseTailSeconds\(patch\)/);
+  assert.match(audioPlayerJs, /\(patch\.durationSeconds \+ latestHitSeconds \+ latestTailSeconds\) \* 1000/);
+  assert.match(audioPlayerJs, /stopAt \+ latestTailSeconds/);
+});
+
 test('audio player fallback schedules layered sound lab patches when AudioWorklet is unavailable', () => {
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
 
