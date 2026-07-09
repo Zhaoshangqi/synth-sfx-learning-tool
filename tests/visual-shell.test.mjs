@@ -366,7 +366,7 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(js, /AETHER_MAGNETIC_LINK_COUNT/);
   assert.match(js, /createAetherMagneticLink/);
   assert.match(js, /drawAetherMagneticLinks/);
-  assert.match(js, /drawAetherNodeCurrents\(time\)[\s\S]*drawAetherMagneticLinks\(time\)/);
+  assert.match(js, /drawAetherNodeCurrents\(time\)[\s\S]*shouldDrawAetherComplexLayer\('magnetic'\)[\s\S]*drawAetherMagneticLinks\(time\)/);
   assert.match(js, /synth:view-transition[\s\S]*spawnAetherPressurePulse[\s\S]*hue: 'cyan'/);
   assert.doesNotMatch(js, /ctx\.fillStyle\s*=\s*['"]black['"]/, 'Aether flow must not repaint the viewport black like the pasted React demo');
 
@@ -2240,7 +2240,7 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   assert.match(visualSpaceJs, /AETHER_ORBITAL_FIELD_COUNT/);
   assert.match(visualSpaceJs, /createAetherOrbitalField/);
   assert.match(visualSpaceJs, /drawAetherOrbitalCurrents/);
-  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherOrbitalCurrents\(time\)/);
+  assert.match(visualSpaceJs, /shouldDrawAetherComplexLayer\('orbital'\)[\s\S]*drawAetherOrbitalCurrents\(time\)/);
   assert.doesNotMatch(
     visualSpaceJs,
     /addEventListener\('pointerdown'[\s\S]{0,260}drawAetherOrbitalCurrents/,
@@ -2301,7 +2301,7 @@ test('pasted aether flow hero prompt is adapted into an ambient native flow netw
   assert.match(visualSpaceJs, /createAetherHeroFlowParticle/);
   assert.match(visualSpaceJs, /drawAetherHeroFlowNetwork/);
   assert.match(visualSpaceJs, /resetAetherHeroFlowNetwork/);
-  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherHeroFlowNetwork\(time\)/);
+  assert.match(visualSpaceJs, /shouldDrawAetherComplexLayer\('hero'\)[\s\S]*drawAetherHeroFlowNetwork\(time\)/);
   assert.match(visualSpaceJs, /pointerBoost = Math\.max\(0, 1 - pointerDistance \/ AETHER_HERO_FLOW_RADIUS\) \* pointer\.force/);
   assert.match(visualSpaceJs, /synth:view-transition[\s\S]*resetAetherHeroFlowNetwork/);
   assert.doesNotMatch(pkg, /framer-motion|lucide-react/);
@@ -2479,7 +2479,7 @@ test('pasted aether flow prompt adds component relay packets without dragging fl
   assert.match(visualSpaceJs, /drawAetherComponentFlowNetwork\(time\)[\s\S]*drawAetherComponentRelayPackets\(time\)/);
   assert.match(visualSpaceJs, /synth:view-transition[\s\S]*resetAetherRelayPackets/);
   assert.match(visualSpaceJs, /synth:audio-pulse[\s\S]*energizeAetherRelayPackets/);
-  assert.match(visualSpaceJs, /if \(!isAetherFlowPaused\(\)\) drawAetherComponentRelayPackets\(time\)/);
+  assert.match(visualSpaceJs, /shouldDrawAetherComplexLayer\('relay'\)[\s\S]*drawAetherComponentRelayPackets\(time\)/);
   assert.doesNotMatch(visualSpaceJs, /fillStyle\s*=\s*['"]black['"]/);
   assert.doesNotMatch(pkg, /framer-motion|lucide-react|tailwindcss/);
 
@@ -2680,4 +2680,46 @@ test('Sound Lab quality auditions are real playback routes and do not trigger fu
   assert.match(bindBlock, /data-quality-audition/);
   assert.match(bindBlock, /playQualityAudition\(button\.dataset\.qualityAudition/);
   assert.doesNotMatch(bindBlock, /data-quality-audition[\s\S]{0,260}renderSameView\(/);
+});
+
+test('direct Sound Lab routes use a lean aether visual budget for smoother workstation startup', () => {
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+
+  assert.match(visualSpaceJs, /function getInitialRouteId/);
+  assert.match(visualSpaceJs, /function isDirectWorkstationRoute/);
+  assert.match(visualSpaceJs, /function scaleAetherCount/);
+  assert.match(visualSpaceJs, /AETHER_DIRECT_ROUTE_SCALE/);
+  assert.match(visualSpaceJs, /scaleAetherCount\(120,\s*54,\s*Math\.floor\(\(width \* height\) \/ 18000\)\)/);
+  assert.match(visualSpaceJs, /scaleAetherCount\(\s*AETHER_FLOW_FIELD_COUNT/);
+  assert.match(visualSpaceJs, /function shouldDrawAetherComplexLayer/);
+  assert.match(visualSpaceJs, /if \(shouldDrawAetherComplexLayer\('hero'\)\)/);
+  assert.match(visualSpaceJs, /if \(shouldDrawAetherComplexLayer\('relay'\)\)/);
+  assert.match(visualSpaceJs, /if \(shouldDrawAetherComplexLayer\('magnetic'\)\)/);
+  assert.match(visualSpaceJs, /if \(shouldDrawAetherComplexLayer\('orbital'\)\)/);
+  assert.match(shellJs, /body\.classList\.toggle\('is-direct-workstation-route'/);
+  assert.match(shellJs, /addEventListener\('hashchange',\s*markRouteMode/);
+});
+
+test('pages workflow publishes the static site to gh-pages without failing deploy-pages mode', () => {
+  const pagesWorkflow = readFileSync(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
+
+  assert.match(pagesWorkflow, /branches:\s*\["main"\]/);
+  assert.match(pagesWorkflow, /contents:\s*write/);
+  assert.match(pagesWorkflow, /actions\/setup-node@v4/);
+  assert.match(pagesWorkflow, /node-version:\s*"20"/);
+  assert.match(pagesWorkflow, /styles-reference\.css/);
+  assert.match(pagesWorkflow, /git fetch origin gh-pages/);
+  assert.match(pagesWorkflow, /git worktree add _gh_pages/);
+  assert.match(pagesWorkflow, /git push origin HEAD:gh-pages/);
+  assert.doesNotMatch(pagesWorkflow, /actions\/deploy-pages/);
+  assert.doesNotMatch(pagesWorkflow, /pages:\s*write/);
+});
+
+test('daily video sync keeps the reference visual stylesheet in gh-pages publishes', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/daily-video-sync.yml', import.meta.url), 'utf8');
+
+  assert.match(workflow, /Publish static site to gh-pages/);
+  assert.match(workflow, /styles-reference\.css/);
+  assert.match(workflow, /git push origin HEAD:gh-pages/);
 });

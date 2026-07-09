@@ -23,6 +23,21 @@ function shouldSkipSplash() {
   return Boolean(hash && hash !== 'dashboard');
 }
 
+function getInitialRouteId() {
+  const hash = globalThis.location.hash.replace(/^#/, '').trim().toLowerCase();
+  const aliases = new Map([
+    ['sound-lab', 'soundlab'],
+    ['sound_lab', 'soundlab'],
+    ['lab', 'soundlab'],
+  ]);
+  return aliases.get(hash) ?? hash;
+}
+
+function markRouteMode() {
+  const route = getInitialRouteId();
+  body.classList.toggle('is-direct-workstation-route', ['soundlab', 'interactive', 'challenges', 'deep', 'community'].includes(route));
+}
+
 function initSplash() {
   if (!splash) return;
   if (prefersReducedMotion || shouldSkipSplash()) {
@@ -130,7 +145,10 @@ function observeRenderedViews() {
 
 initSplash();
 initMenu();
+markRouteMode();
 initSpotlight();
 revealHeadlineWords();
 observeRenderedViews();
+
+globalThis.addEventListener('hashchange', markRouteMode, { passive: true });
 markShellReady();

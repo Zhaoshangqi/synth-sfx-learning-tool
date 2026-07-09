@@ -45,6 +45,34 @@ let aetherFocusLensEnergy = 0;
 const prefersReducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const random = (min, max) => min + Math.random() * (max - min);
+function getInitialRouteId() {
+  const hash = globalThis.location?.hash?.replace(/^#/, '').trim().toLowerCase() ?? '';
+  const aliases = new Map([
+    ['sound-lab', 'soundlab'],
+    ['sound_lab', 'soundlab'],
+    ['lab', 'soundlab'],
+  ]);
+  return aliases.get(hash) ?? hash;
+}
+
+function isDirectWorkstationRoute() {
+  return ['soundlab', 'interactive', 'challenges', 'deep', 'community'].includes(getInitialRouteId());
+}
+
+const AETHER_DIRECT_ROUTE_SCALE = isDirectWorkstationRoute() ? 0.48 : 1;
+
+function scaleAetherCount(max, min, raw) {
+  const scaledMax = Math.max(1, Math.round(max * AETHER_DIRECT_ROUTE_SCALE));
+  const scaledMin = Math.max(1, Math.round(min * AETHER_DIRECT_ROUTE_SCALE));
+  const scaledRaw = Math.max(1, Math.floor(raw * AETHER_DIRECT_ROUTE_SCALE));
+  return Math.min(scaledMax, Math.max(scaledMin, scaledRaw));
+}
+
+function shouldDrawAetherComplexLayer(layer) {
+  if (!isDirectWorkstationRoute()) return true;
+  return !['hero', 'relay', 'magnetic', 'orbital'].includes(layer);
+}
+
 const WAVE_ROWS = [0.28, 0.52, 0.76];
 const AETHER_MOUSE_RADIUS = 210;
 const AETHER_POINTER_EASE = 0.075;
@@ -581,9 +609,10 @@ function createAetherFocusLensParticle(index, seed = 0) {
 function resetAetherFlowField(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'flow-field').length;
-  const count = Math.min(
+  const count = scaleAetherCount(
     AETHER_FLOW_FIELD_COUNT,
-    Math.max(width < 760 ? 26 : 44, Math.floor((width * height) / 23000)),
+    width < 760 ? 26 : 44,
+    Math.floor((width * height) / 23000),
   );
   aetherFlowFieldParticles = Array.from({ length: count }, (_, index) => createAetherFlowFieldParticle(index, seed));
   aetherFlowFieldEnergy = Math.min(1, aetherFlowFieldEnergy + 0.18);
@@ -608,7 +637,8 @@ function energizeAetherFlowField(detail = {}) {
 function resetAetherSilkCurrents(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'silk-current').length;
-  const count = width < 760 ? Math.max(3, AETHER_SILK_CURRENT_COUNT - 2) : AETHER_SILK_CURRENT_COUNT;
+  const baseCount = width < 760 ? Math.max(3, AETHER_SILK_CURRENT_COUNT - 2) : AETHER_SILK_CURRENT_COUNT;
+  const count = scaleAetherCount(AETHER_SILK_CURRENT_COUNT, baseCount, baseCount);
   aetherSilkCurrents = Array.from({ length: count }, (_, index) => createAetherSilkCurrent(index, seed));
   aetherSilkCurrentEnergy = Math.min(1, aetherSilkCurrentEnergy + 0.16);
 }
@@ -632,9 +662,10 @@ function energizeAetherSilkCurrents(detail = {}) {
 function resetAetherFocusLens(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'focus-lens').length;
-  const count = Math.min(
+  const count = scaleAetherCount(
     AETHER_FOCUS_LENS_COUNT,
-    Math.max(width < 760 ? 16 : 28, Math.floor((width * height) / 36000)),
+    width < 760 ? 16 : 28,
+    Math.floor((width * height) / 36000),
   );
   aetherFocusLensParticles = Array.from({ length: count }, (_, index) => createAetherFocusLensParticle(index, seed));
   aetherFocusLensEnergy = Math.min(1, aetherFocusLensEnergy + 0.18);
@@ -659,14 +690,14 @@ function energizeAetherFocusLens(detail = {}) {
 function resetAetherHeroFlowNetwork(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? 'aether').length;
-  const count = Math.min(AETHER_HERO_FLOW_COUNT, Math.max(width < 760 ? 20 : 34, Math.floor((width * height) / 26000)));
+  const count = scaleAetherCount(AETHER_HERO_FLOW_COUNT, width < 760 ? 20 : 34, Math.floor((width * height) / 26000));
   aetherHeroFlowParticles = Array.from({ length: count }, (_, index) => createAetherHeroFlowParticle(index, seed));
 }
 
 function resetAetherAdaptiveMesh(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'mesh').length;
-  const count = Math.min(AETHER_ADAPTIVE_MESH_COUNT, Math.max(width < 760 ? 24 : 42, Math.floor((width * height) / 24000)));
+  const count = scaleAetherCount(AETHER_ADAPTIVE_MESH_COUNT, width < 760 ? 24 : 42, Math.floor((width * height) / 24000));
   aetherAdaptiveMeshParticles = Array.from({ length: count }, (_, index) => createAetherAdaptiveMeshParticle(index, seed));
 }
 
@@ -674,9 +705,10 @@ function resetAetherComponentFlowNetwork(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'component-flow').length;
   aetherComponentFlowTargets = collectAetherComponentFlowTargets();
-  const count = Math.min(
+  const count = scaleAetherCount(
     AETHER_COMPONENT_FLOW_COUNT,
-    Math.max(width < 760 ? 20 : 36, Math.floor((width * height) / 25000)),
+    width < 760 ? 20 : 36,
+    Math.floor((width * height) / 25000),
   );
   aetherComponentFlowParticles = Array.from(
     { length: count },
@@ -690,9 +722,10 @@ function resetAetherRelayPackets(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'relay').length;
   aetherComponentRelayLinks = collectAetherComponentRelayLinks(aetherComponentFlowTargets);
-  const packetCount = Math.min(
+  const packetCount = scaleAetherCount(
     AETHER_RELAY_PACKET_COUNT,
-    Math.max(width < 760 ? 6 : 10, Math.floor((width * height) / 78000)),
+    width < 760 ? 6 : 10,
+    Math.floor((width * height) / 78000),
   );
   aetherRelayPackets = Array.from(
     { length: packetCount },
@@ -708,7 +741,8 @@ function resetAetherRelayPackets(detail = {}) {
 function resetAetherFlowRivers(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'river').length;
-  const count = width < 760 ? 2 : AETHER_FLOW_RIVER_COUNT;
+  const baseCount = width < 760 ? 2 : AETHER_FLOW_RIVER_COUNT;
+  const count = scaleAetherCount(AETHER_FLOW_RIVER_COUNT, baseCount, baseCount);
   aetherFlowRivers = Array.from({ length: count }, (_, index) => createAetherFlowRiver(index, seed));
 }
 
@@ -731,7 +765,7 @@ function rethreadAetherFlowRivers(detail = {}) {
 function resetAetherViscousCurrents(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'viscous').length;
-  const count = Math.min(AETHER_VISCOUS_CURRENT_COUNT, Math.max(width < 760 ? 3 : 5, Math.floor((width * height) / 180000)));
+  const count = scaleAetherCount(AETHER_VISCOUS_CURRENT_COUNT, width < 760 ? 3 : 5, Math.floor((width * height) / 180000));
   aetherViscousCurrents = Array.from({ length: count }, (_, index) => createAetherViscousCurrent(index, seed));
   aetherViscousCurrentEnergy = Math.min(1, aetherViscousCurrentEnergy + 0.18);
 }
@@ -739,9 +773,10 @@ function resetAetherViscousCurrents(detail = {}) {
 function resetAetherLaminarCurrents(detail = {}) {
   if (!width || !height) return;
   const seed = String(detail?.to ?? detail?.from ?? detail?.source ?? 'laminar').length;
-  const count = Math.min(
+  const count = scaleAetherCount(
     AETHER_LAMINAR_CURRENT_COUNT,
-    Math.max(width < 760 ? 3 : 4, Math.floor((width * height) / 210000)),
+    width < 760 ? 3 : 4,
+    Math.floor((width * height) / 210000),
   );
   aetherLaminarCurrents = Array.from({ length: count }, (_, index) => createAetherLaminarCurrent(index, seed));
   aetherLaminarCurrentEnergy = Math.min(1, aetherLaminarCurrentEnergy + 0.14);
@@ -1165,7 +1200,7 @@ function resize() {
   canvas.style.height = `${height}px`;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  const count = Math.min(120, Math.max(54, Math.floor((width * height) / 18000)));
+  const count = scaleAetherCount(120, 54, Math.floor((width * height) / 18000));
   particles = Array.from({ length: count }, (_, index) => ({
     x: random(0, width),
     y: random(0, height),
@@ -1177,7 +1212,7 @@ function resize() {
     hue: index % 5 === 0 ? 'violet' : 'cyan',
   }));
 
-  const signalCount = Math.min(46, Math.max(18, Math.floor(width / 34)));
+  const signalCount = scaleAetherCount(46, 18, Math.floor(width / 34));
   signalParticles = Array.from({ length: signalCount }, (_, index) => ({
     row: index % WAVE_ROWS.length,
     progress: random(0, 1),
@@ -1188,9 +1223,11 @@ function resize() {
     hue: index % 4 === 0 ? 'violet' : index % 5 === 0 ? 'green' : 'cyan',
   }));
 
-  const streamCount = width < 760 ? 3 : AETHER_STREAM_COUNT;
+  const streamBaseCount = width < 760 ? 3 : AETHER_STREAM_COUNT;
+  const streamCount = scaleAetherCount(AETHER_STREAM_COUNT, streamBaseCount, streamBaseCount);
   aetherStreams = Array.from({ length: streamCount }, (_, index) => createAetherStream(index));
-  const filamentCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
+  const filamentBaseCount = width < 760 ? 4 : AETHER_FLOW_FILAMENT_COUNT;
+  const filamentCount = scaleAetherCount(AETHER_FLOW_FILAMENT_COUNT, filamentBaseCount, filamentBaseCount);
   aetherFlowFilaments = Array.from({ length: filamentCount }, (_, index) => createAetherFlowFilament(index));
   resetAetherFlowRivers();
   resetAetherViscousCurrents();
@@ -1199,15 +1236,19 @@ function resize() {
   resetAetherSilkCurrents();
   resetAetherFocusLens();
   refreshAetherSurfaceThreads();
-  const packetCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
+  const packetBaseCount = width < 760 ? 14 : AETHER_CURRENT_PACKET_COUNT;
+  const packetCount = scaleAetherCount(AETHER_CURRENT_PACKET_COUNT, packetBaseCount, packetBaseCount);
   aetherCurrentPackets = Array.from({ length: packetCount }, (_, index) => createAetherCurrentPacket(index));
-  const nodeCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
+  const nodeBaseCount = width < 760 ? 18 : AETHER_FLOW_NODE_COUNT;
+  const nodeCount = scaleAetherCount(AETHER_FLOW_NODE_COUNT, nodeBaseCount, nodeBaseCount);
   aetherFlowNodes = Array.from({ length: nodeCount }, (_, index) => createAetherFlowNode(index));
-  const magneticLinkCount = width < 760 ? 6 : AETHER_MAGNETIC_LINK_COUNT;
+  const magneticBaseCount = width < 760 ? 6 : AETHER_MAGNETIC_LINK_COUNT;
+  const magneticLinkCount = scaleAetherCount(AETHER_MAGNETIC_LINK_COUNT, magneticBaseCount, magneticBaseCount);
   aetherMagneticLinks = Array.from({ length: magneticLinkCount }, (_, index) => createAetherMagneticLink(index));
-  const orbitalFieldCount = width < 760 ? 3 : AETHER_ORBITAL_FIELD_COUNT;
+  const orbitalBaseCount = width < 760 ? 3 : AETHER_ORBITAL_FIELD_COUNT;
+  const orbitalFieldCount = scaleAetherCount(AETHER_ORBITAL_FIELD_COUNT, orbitalBaseCount, orbitalBaseCount);
   aetherOrbitalFields = Array.from({ length: orbitalFieldCount }, (_, index) => createAetherOrbitalField(index));
-  const constellationCount = Math.min(AETHER_CONSTELLATION_COUNT, Math.max(width < 760 ? 24 : 44, Math.floor((width * height) / 23000)));
+  const constellationCount = scaleAetherCount(AETHER_CONSTELLATION_COUNT, width < 760 ? 24 : 44, Math.floor((width * height) / 23000));
   aetherConstellationParticles = Array.from({ length: constellationCount }, (_, index) => createAetherConstellationParticle(index));
   resetAetherHeroFlowNetwork();
   resetAetherAdaptiveMesh();
@@ -2874,7 +2915,9 @@ function tick(time = 0) {
   drawRippleField(time);
   drawAetherPressureField(time);
   if (!isAetherFlowPaused()) drawAetherAudioRipples(time);
-  if (!isAetherFlowPaused()) drawAetherOrbitalCurrents(time);
+  if (!isAetherFlowPaused()) {
+    if (shouldDrawAetherComplexLayer('orbital')) drawAetherOrbitalCurrents(time);
+  }
   drawSignalWave(time);
   if (!isAetherFlowPaused()) drawAetherStreamRibbons(time);
   if (!isAetherFlowPaused()) drawAetherLiquidFilaments(time);
@@ -2889,11 +2932,17 @@ function tick(time = 0) {
   if (!isAetherFlowPaused()) drawCursorFlowWake(time);
   if (!isAetherFlowPaused()) drawAetherConstellationMesh(time);
   if (!isAetherFlowPaused()) drawAetherAdaptiveMesh(time);
-  if (!isAetherFlowPaused()) drawAetherHeroFlowNetwork(time);
+  if (!isAetherFlowPaused()) {
+    if (shouldDrawAetherComplexLayer('hero')) drawAetherHeroFlowNetwork(time);
+  }
   if (!isAetherFlowPaused()) drawAetherComponentFlowNetwork(time);
-  if (!isAetherFlowPaused()) drawAetherComponentRelayPackets(time);
+  if (!isAetherFlowPaused()) {
+    if (shouldDrawAetherComplexLayer('relay')) drawAetherComponentRelayPackets(time);
+  }
   if (!isAetherFlowPaused()) drawAetherNodeCurrents(time);
-  if (!isAetherFlowPaused()) drawAetherMagneticLinks(time);
+  if (!isAetherFlowPaused()) {
+    if (shouldDrawAetherComplexLayer('magnetic')) drawAetherMagneticLinks(time);
+  }
   particles.forEach((particle) => {
     particle.x += particle.vx * particle.z;
     particle.y += particle.vy * particle.z;
