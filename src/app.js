@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-analog-gesture';
+} from './sound-lab-model.js?v=20260709-quality-audition';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-analog-gesture';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-quality-audition';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-analog-gesture';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-quality-audition';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-analog-gesture';
+} from './render.js?v=20260709-quality-audition';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -1187,6 +1187,44 @@ function buildLayerAuditionOverrides(modeId = 'full') {
     ...audition.playOptions,
     layerMix: audition.layerMix,
   };
+}
+
+function getQualityAuditionItem(itemId = '') {
+  const model = getSoundLabModel();
+  return model.qualityAudition?.items?.find((item) => item.id === itemId)
+    ?? model.qualityAudition?.items?.[0]
+    ?? null;
+}
+
+function buildQualityAuditionOverrides(itemId = '') {
+  const audition = getQualityAuditionItem(itemId);
+  if (!audition) {
+    return {
+      engineMode: 'hq',
+      qualityMode: 'studio',
+      outputMode: 'studio',
+    };
+  }
+
+  return {
+    engineMode: 'hq',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    ...(audition.playOptions ?? {}),
+    qualityBypass: audition.bypass ?? audition.playOptions?.qualityBypass ?? [audition.id],
+  };
+}
+
+function playQualityAudition(itemId = '') {
+  const audition = getQualityAuditionItem(itemId);
+  if (!audition) return;
+
+  state.activeQualityAuditionId = audition.id;
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = 'material';
+  state.activeWorkbenchModuleMapId = 'compare';
+  state.workbenchActionFeedback = `${audition.labelZh} A/B：先听完整 Studio，再旁路这一层，重点听差异是否真实可控。`;
+  playSoundLabPatch({}, buildQualityAuditionOverrides(audition.id));
 }
 
 function getProceduralSourceAudition(sourceId = '') {
@@ -2459,6 +2497,9 @@ function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
   });
   document.querySelectorAll('[data-layer-audition]').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.layerAudition === state.soundLabAuditionMode);
+  });
+  document.querySelectorAll('[data-quality-audition]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.qualityAudition === state.activeQualityAuditionId);
   });
   document.querySelectorAll('[data-procedural-source-play]').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.proceduralSourcePlay === state.activeProceduralSourceId);
@@ -4033,6 +4074,10 @@ function bindSoundLabControls() {
 
   document.querySelectorAll('[data-performance-feel-play]').forEach((button) => {
     button.addEventListener('click', () => playPerformanceFeelGesture(button.dataset.performanceFeelPlay));
+  });
+
+  document.querySelectorAll('[data-quality-audition]').forEach((button) => {
+    button.addEventListener('click', () => playQualityAudition(button.dataset.qualityAudition));
   });
 
   document.querySelectorAll('[data-performance-feel-apply]').forEach((button) => {

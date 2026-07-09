@@ -1488,3 +1488,60 @@ test('buildSoundLabViewModel exposes a translation monitor for real-world playba
     assert.ok(check.fixZh.length > 8);
   }
 });
+test('buildSoundLabPatch can bypass individual quality modules for audible A/B checks', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const macros = {
+    brightness: 84,
+    motion: 68,
+    material: 90,
+    space: 58,
+    variation: 62,
+  };
+  const fullPatch = buildSoundLabPatch(family, macros, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    performance: { note: 'D3', velocity: 105, glide: 36, hold: false, octave: 0 },
+  });
+  const analogBypass = buildSoundLabPatch(family, macros, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    qualityBypass: ['analog-gesture'],
+    performance: { note: 'D3', velocity: 105, glide: 36, hold: false, octave: 0 },
+  });
+  const temporalBypass = buildSoundLabPatch(family, macros, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    qualityBypass: ['temporal-mask'],
+    performance: { note: 'D3', velocity: 105, glide: 36, hold: false, octave: 0 },
+  });
+
+  assert.ok(fullPatch.globalFx.masterPolish.analogGesture.amount > 0.1);
+  assert.equal(analogBypass.globalFx.masterPolish.analogGesture.amount, 0);
+  assert.equal(analogBypass.globalFx.masterPolish.analogGesture.triggerDetuneCents, 0);
+  assert.ok(analogBypass.globalFx.masterPolish.analogGesture.hitOffsets.every((hit) => (
+    hit.detuneCents === 0
+      && hit.filterRatio === 1
+      && hit.fmRatioOffset === 0
+      && hit.phaseOffset === 0
+      && hit.panOffset === 0
+  )));
+  assert.ok(fullPatch.globalFx.masterPolish.temporalMasking.wetDuck > 0);
+  assert.equal(temporalBypass.globalFx.masterPolish.temporalMasking.wetDuck, 0);
+  assert.equal(temporalBypass.globalFx.masterPolish.temporalMasking.tailDuckDb, 0);
+  assert.equal(temporalBypass.qualityAuditionBypass[0], 'temporal-mask');
+});
+
+test('buildSoundLabViewModel exposes beginner-readable quality audition routes', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+  });
+
+  assert.ok(model.qualityAudition);
+  assert.match(model.qualityAudition.practiceZh, /A\/B|bypass|REAPER|listen/i);
+  assert.ok(model.qualityAudition.items.length >= 5);
+  assert.ok(model.qualityAudition.items.some((item) => item.id === 'analog-gesture' && item.bypass.includes('analog-gesture')));
+  assert.ok(model.qualityAudition.items.some((item) => item.id === 'temporal-mask' && item.bypass.includes('temporal-mask')));
+  assert.ok(model.qualityAudition.items.every((item) => item.actionLabelZh && item.listenZh && item.playOptions?.qualityBypass?.length));
+});

@@ -594,6 +594,159 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
   };
 }
 
+const QUALITY_AUDITION_COPY = {
+  'analog-gesture': {
+    actionLabelZh: '听漂移',
+    listenZh: '先听 Studio full，再旁路每次触发的 pitch/filter/FM 微漂移；差异应该是更活或更死板，而不是换成另一个声音。',
+    bypass: ['analog-gesture'],
+  },
+  'temporal-mask': {
+    actionLabelZh: '听尾避让',
+    listenZh: '旁路尾音避让后，重点听 tail 是否盖住 transient；这对应 REAPER 里的 dry/full/tail-only A/B。',
+    bypass: ['temporal-mask'],
+  },
+  'dynamic-detail': {
+    actionLabelZh: '听动态',
+    listenZh: '旁路动态细节后，听 snap、body glue 和 output silk 是否少了层次，避免把更大声误判成更好。',
+    bypass: ['dynamic-detail'],
+  },
+  'transient-gloss': {
+    actionLabelZh: '听光泽',
+    listenZh: '旁路瞬态光泽后，听前 80ms 的 crest、air、body focus 是否更钝或更粗糙。',
+    bypass: ['transient-gloss'],
+  },
+  'spatial-image': {
+    actionLabelZh: '听空间',
+    listenZh: '旁路早期反射和距离线索后，听声音是否从前后空间退回到扁平中心。',
+    bypass: ['spatial-image'],
+  },
+  'motion-bus': {
+    actionLabelZh: '听微动',
+    listenZh: '旁路微动态后，连续触发应该更机械；如果差异过大，说明 motion 或 variation 太深。',
+    bypass: ['motion-bus'],
+  },
+  comfort: {
+    actionLabelZh: '听舒适',
+    listenZh: '旁路 de-harsh、headroom 和宽度整理，检查声音是否刺、挤或被响度错觉欺骗。',
+    bypass: ['comfort'],
+  },
+  polish: {
+    actionLabelZh: '听抛光',
+    listenZh: '旁路最终 glue、low tighten 和 air guard，听交付质感是否来自真实处理，而不是单纯更响。',
+    bypass: ['polish'],
+  },
+};
+
+function normalizeQualityBypass(bypass = []) {
+  return [...new Set((Array.isArray(bypass) ? bypass : [bypass])
+    .map((id) => String(id ?? '').trim())
+    .filter((id) => id in QUALITY_AUDITION_COPY))];
+}
+
+function neutralAnalogGesture(analogGesture = {}, performanceFeel = {}) {
+  const sourceOffsets = analogGesture.hitOffsets?.length
+    ? analogGesture.hitOffsets
+    : (performanceFeel.triggerPattern ?? [{ id: 'hit-1' }]);
+
+  return {
+    ...analogGesture,
+    amount: 0,
+    triggerDetuneCents: 0,
+    filterJitter: 0,
+    fmJitter: 0,
+    phaseJitter: 0,
+    stereoScatter: 0,
+    hitOffsets: sourceOffsets.map((hit, index) => ({
+      id: hit.id ?? `hit-${index + 1}`,
+      detuneCents: 0,
+      filterRatio: 1,
+      fmRatioOffset: 0,
+      phaseOffset: 0,
+      panOffset: 0,
+    })),
+  };
+}
+
+function applyQualityBypassToMasterPolish(masterPolish, bypassIds = [], performanceFeel = {}) {
+  const bypass = new Set(normalizeQualityBypass(bypassIds));
+  if (!bypass.size) return masterPolish;
+
+  const next = { ...masterPolish };
+  if (bypass.has('polish')) {
+    next.glue = 0;
+    next.lowTighten = 0;
+    next.airGuard = 0;
+    next.transientHold = 0;
+    next.bodyGain = 0.96;
+  }
+  if (bypass.has('comfort')) {
+    next.comfortBus = {
+      warmth: 0,
+      deHarsh: 0,
+      headroom: 0.035,
+      airTame: 0,
+      loudnessMatch: 1,
+      monoAnchor: 0,
+      widthTrim: 0,
+      tailDuck: 0,
+    };
+  }
+  if (bypass.has('temporal-mask')) {
+    next.temporalMasking = {
+      attackHoldMs: 0,
+      releaseMs: 0,
+      wetDuck: 0,
+      tailDuckDb: 0,
+      transientProtect: 0,
+      sideDuck: 0,
+    };
+  }
+  if (bypass.has('motion-bus')) {
+    next.motionBus = {
+      microDynamics: 0,
+      transientShield: 0,
+      tailBloom: 0,
+      wowFlutter: 0,
+    };
+  }
+  if (bypass.has('dynamic-detail')) {
+    next.dynamicDetail = {
+      transientAir: 0,
+      bodyGlue: 0,
+      outputSilk: 0,
+      snapWindowMs: 0,
+    };
+  }
+  if (bypass.has('transient-gloss')) {
+    next.transientGloss = {
+      crestClamp: 0,
+      harmonicAir: 0,
+      bodyFocus: 0,
+      aliasGuard: 0,
+      crestWindowMs: 0,
+    };
+  }
+  if (bypass.has('analog-gesture')) {
+    next.analogGesture = neutralAnalogGesture(next.analogGesture, performanceFeel);
+  }
+
+  return next;
+}
+
+function applyQualityBypassToSpatialImage(spatialImage, bypassIds = []) {
+  if (!normalizeQualityBypass(bypassIds).includes('spatial-image')) return spatialImage;
+  return {
+    ...spatialImage,
+    earlyReflectionMs: 0,
+    earlyReflectionGain: 0,
+    distanceDamping: 0,
+    bodyAnchor: 0,
+    frontBack: 0,
+    widthFocus: 0,
+    sourceFocus: 0,
+  };
+}
+
 function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(values, dsp, quality)) {
   const brightness = normalize(values.brightness);
   const motion = normalize(values.motion);
@@ -1047,6 +1200,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const base = FAMILY_BASES[familyId] ?? FAMILY_BASES['metal-impact'];
   const outputMode = normalizeOutputMode(options.outputMode);
   const outputOptions = outputMode === 'studio' ? { ...options, qualityMode: 'studio' } : options;
+  const qualityBypass = normalizeQualityBypass(outputOptions.qualityBypass);
   const presetDna = getPresetDnaById(outputOptions.presetId, family?.id) ?? getPresetDnaForFamily(family?.id)[0] ?? presetDnaLibrary[0];
   const { seed, durationSeconds, dsp: baseDsp } = buildLegacyDsp(family, base, values);
   const engineMode = getEngineMode(outputOptions.engineMode);
@@ -1060,9 +1214,17 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const resolvedQuality = getQualityMode(layerData.qualityMode);
   const controlSmoothing = buildControlSmoothing(performance, resolvedQuality);
   const analogGesture = buildAnalogGesture(values, performanceFeel, resolvedQuality);
-  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, resolvedQuality, { ...layerData, analogGesture }), outputMode);
+  const polishedMaster = applyQualityBypassToMasterPolish(
+    buildMasterPolish(values, dsp, resolvedQuality, { ...layerData, analogGesture }),
+    qualityBypass,
+    performanceFeel,
+  );
+  const masterPolish = applyOutputModeToMasterPolish(polishedMaster, outputMode);
   const acousticCues = buildAcousticCues(layerData.layers, values, resolvedQuality);
-  const spatialImage = buildSpatialImage(values, dsp, resolvedQuality, layerData, acousticCues, masterPolish);
+  const spatialImage = applyQualityBypassToSpatialImage(
+    buildSpatialImage(values, dsp, resolvedQuality, layerData, acousticCues, masterPolish),
+    qualityBypass,
+  );
   const toneGraph = buildToneGraph(family, values, dsp, resolvedQuality, performance, { ...outputOptions, masterPolish });
   const fxRack = orderFxRack(toneGraph.effects, outputOptions.fxOrder);
   toneGraph.effects = fxRack;
@@ -1077,6 +1239,7 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
     workletName: family?.workletName ?? 'modal-metal',
     engineMode,
     outputMode,
+    qualityAuditionBypass: qualityBypass,
     durationSeconds,
     macros: values,
     performance,
@@ -1350,6 +1513,41 @@ function buildSoundQuality(patch) {
       noteZh: 'glue + guard',
     },
   ];
+}
+
+function buildQualityAudition(patch, soundQuality = buildSoundQuality(patch)) {
+  const baseOptions = {
+    engineMode: patch.engineMode === 'hq' ? 'hq' : patch.engineMode,
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    performance: patch.performance,
+    layerMix: patch.layerMix,
+  };
+  const items = soundQuality
+    .filter((item) => item.id in QUALITY_AUDITION_COPY)
+    .map((item) => {
+      const copy = QUALITY_AUDITION_COPY[item.id];
+      return {
+        id: item.id,
+        labelZh: item.labelZh,
+        value: item.value,
+        statusZh: item.statusZh,
+        noteZh: item.noteZh,
+        actionLabelZh: copy.actionLabelZh,
+        listenZh: copy.listenZh,
+        bypass: copy.bypass,
+        playOptions: {
+          ...baseOptions,
+          qualityBypass: copy.bypass,
+        },
+      };
+    });
+
+  return {
+    titleZh: 'Quality Module A/B / 音质模块旁路试听',
+    practiceZh: '点击任一质量模块先听 Studio full，再临时 bypass 这一层；在 REAPER 里用同响度 A/B 记录差异，避免把“更大声”误判成“更高级”。',
+    items,
+  };
 }
 
 function buildPolishCalibration(patch) {
@@ -3630,12 +3828,15 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     `Layers: ${Object.entries(patch.layerMix).map(([role, value]) => `${role}=${value}`).join(', ')}`,
     `Export: ${family.reaperExport.join(' / ')}`,
   ].join('\n');
+  const soundQuality = buildSoundQuality(patch);
+  const qualityAudition = buildQualityAudition(patch, soundQuality);
 
   return {
     patch,
     macros: macroList,
     meters: buildMeters(patch),
-    soundQuality: buildSoundQuality(patch),
+    soundQuality,
+    qualityAudition,
     polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint,
     waveformEarDecisionTree,
