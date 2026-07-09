@@ -1,18 +1,39 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-first-screen-flow';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-analog-gesture';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const hitAnalogOffset = (patch = {}, index = 0) => {
+  const polish = patch.globalFx?.masterPolish ?? {};
+  const analogGesture = polish.enabled === false ? null : polish.analogGesture;
+  const offset = analogGesture?.hitOffsets?.[index] ?? {};
+  return {
+    detuneCents: clamp(offset.detuneCents ?? 0, -12, 12),
+    filterRatio: clamp(offset.filterRatio ?? 1, 0.82, 1.18),
+    fmRatioOffset: clamp(offset.fmRatioOffset ?? 0, -0.2, 0.2),
+    phaseOffset: clamp((offset.phaseOffset ?? 0) * (analogGesture?.phaseJitter ?? 0), 0, 0.48),
+    panOffset: clamp(offset.panOffset ?? 0, -0.16, 0.16),
+  };
+};
 
 const performanceGestureHits = (patch = {}) => {
   const pattern = Array.isArray(patch.performanceFeel?.triggerPattern) && patch.performanceFeel.triggerPattern.length
     ? patch.performanceFeel.triggerPattern
     : [{ id: 'hit-1', delayMs: 0, velocity: patch.performance?.velocity ?? 72, noteOffset: 0 }];
-  return pattern.slice(0, 4).map((hit, index) => ({
-    id: hit.id ?? `hit-${index + 1}`,
-    delayMs: clamp(hit.delayMs ?? index * 28, 0, 1400),
-    velocity: clamp(hit.velocity ?? patch.performance?.velocity ?? 72, 1, 127),
-    noteOffset: clamp(hit.noteOffset ?? 0, -12, 12),
-  }));
+  return pattern.slice(0, 4).map((hit, index) => {
+    const analog = hitAnalogOffset(patch, index);
+    return {
+      id: hit.id ?? `hit-${index + 1}`,
+      delayMs: clamp(hit.delayMs ?? index * 28, 0, 1400),
+      velocity: clamp(hit.velocity ?? patch.performance?.velocity ?? 72, 1, 127),
+      noteOffset: clamp(hit.noteOffset ?? 0, -12, 12),
+      detuneCents: analog.detuneCents,
+      filterRatio: analog.filterRatio,
+      fmRatioOffset: analog.fmRatioOffset,
+      phaseOffset: analog.phaseOffset,
+      panOffset: analog.panOffset,
+    };
+  });
 };
 
 const performanceGestureTailMs = (patch = {}) => {
@@ -177,6 +198,36 @@ const createSpaceBuffer = (context, decaySeconds = 0.3) => {
     }
   }
   return buffer;
+};
+
+const layerWithAnalogGesture = (layer = {}, hit = {}) => {
+  const pitchRatio = Math.pow(2, clamp((hit.noteOffset ?? 0) * 100 + (hit.detuneCents ?? 0), -1300, 1300) / 1200);
+  const filterRatio = clamp(hit.filterRatio ?? 1, 0.82, 1.18);
+  const fmRatioOffset = clamp(hit.fmRatioOffset ?? 0, -0.2, 0.2);
+  const velocityGain = clamp(0.58 + (hit.velocity ?? 72) / 127 * 0.56, 0.42, 1.18);
+  const oscillator = layer.oscillator
+    ? {
+      ...layer.oscillator,
+      frequency: clamp((layer.oscillator.frequency ?? 220) * pitchRatio, 20, 8000),
+      fmRatio: clamp((layer.oscillator.fmRatio ?? 1.7) * (1 + fmRatioOffset), 0.25, 12),
+    }
+    : layer.oscillator;
+  const filter = layer.filter
+    ? {
+      ...layer.filter,
+      frequency: clamp((layer.filter.frequency ?? 2600) * pitchRatio * filterRatio, 80, 16000),
+    }
+    : layer.filter;
+  return {
+    ...layer,
+    gain: clamp((layer.gain ?? 0.3) * velocityGain, 0, 1.8),
+    pan: clamp((layer.pan ?? 0) + (hit.panOffset ?? 0), -0.75, 0.75),
+    baseFrequency: Number.isFinite(layer.baseFrequency) ? clamp(layer.baseFrequency * pitchRatio * filterRatio, 20, 4000) : layer.baseFrequency,
+    sourceFrequency: Number.isFinite(layer.sourceFrequency) ? clamp(layer.sourceFrequency * pitchRatio * filterRatio, 30, 10000) : layer.sourceFrequency,
+    bandHz: Number.isFinite(layer.bandHz) ? clamp(layer.bandHz * pitchRatio * filterRatio, 90, 16000) : layer.bandHz,
+    oscillator,
+    filter,
+  };
 };
 
 const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes = []) => {
@@ -429,7 +480,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-first-screen-flow');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-analog-gesture');
       this.workletReady = true;
       return true;
     } catch {
@@ -665,6 +716,11 @@ export class LabAudioPlayer {
       const hitTime = now + hit.delayMs / 1000;
       const hitDuration = clamp(duration * (0.58 + hit.velocity / 127 * 0.22), 0.05, duration);
       const hitVelocity = clamp(hit.velocity / 127, 0.08, 1);
+      try {
+        instrument.detune?.setValueAtTime?.(hit.detuneCents ?? 0, hitTime);
+      } catch {
+        // Not every Tone instrument exposes detune; trigger variation still uses velocity and note.
+      }
       if (patch.familyId === 'air-whoosh' || patch.familyId === 'electric-crackle') {
         instrument.triggerAttackRelease(hitDuration, hitTime, hitVelocity);
       } else {
@@ -845,7 +901,9 @@ export class LabAudioPlayer {
     if (!this.context || !this.master || !patch?.layers?.length || !this.playing) return;
 
     const now = this.context.currentTime + 0.01;
-    const stopAt = now + patch.durationSeconds;
+    const gestureHits = performanceGestureHits(patch);
+    const latestHitSeconds = Math.max(0, ...gestureHits.map((hit) => hit.delayMs || 0)) / 1000;
+    const stopAt = now + patch.durationSeconds + latestHitSeconds;
     const nodes = [];
     const bus = this.context.createGain();
     const shaper = this.context.createWaveShaper();
@@ -860,110 +918,114 @@ export class LabAudioPlayer {
     outputGain.connect(this.master);
     nodes.push(bus, shaper, outputGain);
 
-    for (const layer of patch.layers) {
-      const layerStartTime = now + clamp((layer.onsetMs ?? 0) / 1000, 0, 0.12);
-      const layerDuration = Math.max(0.05, patch.durationSeconds - (layerStartTime - now));
-      const layerStopAt = layerStartTime + layerDuration;
+    for (const hit of gestureHits) {
+      const hitStartTime = now + clamp((hit.delayMs ?? 0) / 1000, 0, 1.4);
+      for (const sourceLayer of patch.layers) {
+        const layer = layerWithAnalogGesture(sourceLayer, hit);
+        const layerStartTime = hitStartTime + clamp((layer.onsetMs ?? 0) / 1000, 0, 0.12);
+        const layerDuration = Math.max(0.05, patch.durationSeconds - (layerStartTime - hitStartTime));
+        const layerStopAt = layerStartTime + layerDuration;
 
-      if (layer.engine === 'modalResonator') {
-        for (const resonator of layer.resonators ?? []) {
-          const oscillator = this.context.createOscillator();
-          const amp = this.context.createGain();
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(clamp((layer.baseFrequency ?? 180) * resonator.ratio, 30, 16000), layerStartTime);
-          this.rampLayerGain(amp.gain, layerStartTime, { ...layer, gain: layer.gain * resonator.gain }, layerDuration);
-          oscillator.connect(amp);
-          amp.connect(bus);
-          oscillator.start(layerStartTime);
-          oscillator.stop(layerStopAt + 0.08);
-          nodes.push(oscillator, amp);
+        if (layer.engine === 'modalResonator') {
+          for (const resonator of layer.resonators ?? []) {
+            const oscillator = this.context.createOscillator();
+            const amp = this.context.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(clamp((layer.baseFrequency ?? 180) * resonator.ratio, 30, 16000), layerStartTime);
+            this.rampLayerGain(amp.gain, layerStartTime, { ...layer, gain: layer.gain * resonator.gain }, layerDuration);
+            oscillator.connect(amp);
+            amp.connect(bus);
+            oscillator.start(layerStartTime);
+            oscillator.stop(layerStopAt + 0.08);
+            nodes.push(oscillator, amp);
+          }
+          continue;
         }
-        continue;
-      }
 
-      if (layer.engine === 'fmBurst') {
-        const carrier = this.context.createOscillator();
-        const modulator = this.context.createOscillator();
-        const modGain = this.context.createGain();
+        if (layer.engine === 'fmBurst') {
+          const carrier = this.context.createOscillator();
+          const modulator = this.context.createOscillator();
+          const modGain = this.context.createGain();
+          const amp = this.context.createGain();
+          const osc = layer.oscillator ?? {};
+          const frequency = clamp(osc.frequency ?? 220, 30, 6000);
+          carrier.type = osc.shape === 'square' || osc.shape === 'sawtooth' ? osc.shape : 'sine';
+          carrier.frequency.setValueAtTime(frequency, layerStartTime);
+          carrier.frequency.linearRampToValueAtTime(clamp(frequency * (1 + Math.abs(osc.sweep ?? 0) * 0.24), 30, 8000), layerStartTime + layerDuration * 0.7);
+          modulator.frequency.value = frequency * clamp(osc.fmRatio ?? 1.7, 0.25, 10);
+          modGain.gain.value = clamp(osc.fmDepth ?? 0, 0, 1200);
+          this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
+          modulator.connect(modGain);
+          modGain.connect(carrier.frequency);
+          carrier.connect(amp);
+          amp.connect(bus);
+          modulator.start(layerStartTime);
+          carrier.start(layerStartTime);
+          modulator.stop(layerStopAt + 0.08);
+          carrier.stop(layerStopAt + 0.08);
+          nodes.push(carrier, modulator, modGain, amp);
+          continue;
+        }
+
+        if (layer.engine === 'combDelay') {
+          const source = this.context.createOscillator();
+          const delay = this.context.createDelay(0.08);
+          const feedback = this.context.createGain();
+          const amp = this.context.createGain();
+          source.type = 'sawtooth';
+          source.frequency.value = clamp(layer.sourceFrequency ?? 900, 40, 6000);
+          delay.delayTime.value = clamp((layer.delayMs ?? 8) / 1000, 0.001, 0.06);
+          feedback.gain.value = clamp(layer.feedback ?? 0.35, 0, 0.82);
+          this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
+          source.connect(delay);
+          delay.connect(feedback);
+          feedback.connect(delay);
+          delay.connect(amp);
+          source.connect(amp);
+          amp.connect(bus);
+          source.start(layerStartTime);
+          source.stop(layerStopAt + 0.08);
+          nodes.push(source, delay, feedback, amp);
+          continue;
+        }
+
+        const noise = this.context.createBufferSource();
+        const filter = this.context.createBiquadFilter();
         const amp = this.context.createGain();
-        const osc = layer.oscillator ?? {};
-        const frequency = clamp(osc.frequency ?? 220, 30, 6000);
-        carrier.type = osc.shape === 'square' || osc.shape === 'sawtooth' ? osc.shape : 'sine';
-        carrier.frequency.setValueAtTime(frequency, layerStartTime);
-        carrier.frequency.linearRampToValueAtTime(clamp(frequency * (1 + Math.abs(osc.sweep ?? 0) * 0.24), 30, 8000), layerStartTime + layerDuration * 0.7);
-        modulator.frequency.value = frequency * clamp(osc.fmRatio ?? 1.7, 0.25, 10);
-        modGain.gain.value = clamp(osc.fmDepth ?? 0, 0, 1200);
+        const filterData = layer.filter ?? {};
+        const generator = layer.generator ?? {};
+        noise.buffer = layer.engine === 'sampleGrain'
+          ? createProceduralLayerBuffer(this.context, layer, layerDuration + 0.12)
+          : createNoiseBuffer(this.context, layerDuration + 0.12);
+        filter.type = generator.type === 'filtered-noise'
+          ? 'lowpass'
+          : generator.type === 'impulse-noise' || generator.type === 'banded-burst' || generator.type === 'gated-noise'
+            ? 'bandpass'
+            : filterData.type === 'lowpass'
+              ? 'lowpass'
+              : filterData.type === 'highpass'
+                ? 'highpass'
+                : 'bandpass';
+        filter.frequency.setValueAtTime(clamp(layer.bandHz ?? generator.bandHz ?? filterData.frequency ?? 3200, 120, 16000), layerStartTime);
+        filter.Q.value = clamp(
+          generator.type === 'banded-burst' ? 5.8
+            : generator.type === 'impulse-noise' ? 3.4
+              : generator.type === 'gated-noise' ? 2.2
+                : filterData.q ?? 1.2,
+          0.2,
+          16,
+        );
+        if (filterData.sweep) {
+          filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), layerStartTime + layerDuration * 0.75);
+        }
         this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
-        modulator.connect(modGain);
-        modGain.connect(carrier.frequency);
-        carrier.connect(amp);
+        noise.connect(filter);
+        filter.connect(amp);
         amp.connect(bus);
-        modulator.start(layerStartTime);
-        carrier.start(layerStartTime);
-        modulator.stop(layerStopAt + 0.08);
-        carrier.stop(layerStopAt + 0.08);
-        nodes.push(carrier, modulator, modGain, amp);
-        continue;
+        noise.start(layerStartTime);
+        noise.stop(layerStopAt + 0.08);
+        nodes.push(noise, filter, amp);
       }
-
-      if (layer.engine === 'combDelay') {
-        const source = this.context.createOscillator();
-        const delay = this.context.createDelay(0.08);
-        const feedback = this.context.createGain();
-        const amp = this.context.createGain();
-        source.type = 'sawtooth';
-        source.frequency.value = clamp(layer.sourceFrequency ?? 900, 40, 6000);
-        delay.delayTime.value = clamp((layer.delayMs ?? 8) / 1000, 0.001, 0.06);
-        feedback.gain.value = clamp(layer.feedback ?? 0.35, 0, 0.82);
-        this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
-        source.connect(delay);
-        delay.connect(feedback);
-        feedback.connect(delay);
-        delay.connect(amp);
-        source.connect(amp);
-        amp.connect(bus);
-        source.start(layerStartTime);
-        source.stop(layerStopAt + 0.08);
-        nodes.push(source, delay, feedback, amp);
-        continue;
-      }
-
-      const noise = this.context.createBufferSource();
-      const filter = this.context.createBiquadFilter();
-      const amp = this.context.createGain();
-      const filterData = layer.filter ?? {};
-      const generator = layer.generator ?? {};
-      noise.buffer = layer.engine === 'sampleGrain'
-        ? createProceduralLayerBuffer(this.context, layer, layerDuration + 0.12)
-        : createNoiseBuffer(this.context, layerDuration + 0.12);
-      filter.type = generator.type === 'filtered-noise'
-        ? 'lowpass'
-        : generator.type === 'impulse-noise' || generator.type === 'banded-burst' || generator.type === 'gated-noise'
-          ? 'bandpass'
-          : filterData.type === 'lowpass'
-            ? 'lowpass'
-            : filterData.type === 'highpass'
-              ? 'highpass'
-              : 'bandpass';
-      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? generator.bandHz ?? filterData.frequency ?? 3200, 120, 16000), layerStartTime);
-      filter.Q.value = clamp(
-        generator.type === 'banded-burst' ? 5.8
-          : generator.type === 'impulse-noise' ? 3.4
-            : generator.type === 'gated-noise' ? 2.2
-              : filterData.q ?? 1.2,
-        0.2,
-        16,
-      );
-      if (filterData.sweep) {
-        filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), layerStartTime + layerDuration * 0.75);
-      }
-      this.rampLayerGain(amp.gain, layerStartTime, layer, layerDuration);
-      noise.connect(filter);
-      filter.connect(amp);
-      amp.connect(bus);
-      noise.start(layerStartTime);
-      noise.stop(layerStopAt + 0.08);
-      nodes.push(noise, filter, amp);
     }
 
     if (globalFx.space?.mix > 0) {
@@ -990,7 +1052,7 @@ export class LabAudioPlayer {
           // Node may already be disconnected by stop().
         }
       }
-    }, Math.max(120, patch.durationSeconds * 1000 + 180));
+    }, Math.max(120, (patch.durationSeconds + latestHitSeconds) * 1000 + 180));
   }
 
   scheduleSoundLabFallback(patch) {
