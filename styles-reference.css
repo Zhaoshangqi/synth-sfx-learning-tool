@@ -3646,3 +3646,221 @@ body.is-direct-manipulating .sound-lab-workbench .fx-chain-panel::before {
     transition: none !important;
   }
 }
+
+/* Reference procedural source map v9.29
+   A readable source-to-synth bridge for procedural sample layers. */
+
+.procedural-source-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+  padding: clamp(18px, 2.6vw, 28px);
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: var(--ref9-radius);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(244, 241, 232, 0.58)),
+    rgba(244, 241, 232, 0.72);
+  color: var(--ref9-ink);
+  box-shadow: 0 18px 54px rgba(17, 17, 17, 0.075);
+}
+
+.procedural-source-panel::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 0 22%, rgba(117, 197, 222, 0.14) 38%, rgba(255, 255, 255, 0.2) 49%, rgba(94, 234, 212, 0.08) 58%, transparent 76%),
+    repeating-linear-gradient(116deg, transparent 0 54px, rgba(17, 17, 17, 0.03) 55px, transparent 58px);
+  background-size: 280% 100%, 152px 152px;
+  opacity: 0.12;
+  mix-blend-mode: multiply;
+  transform: translate3d(calc(var(--space-x, 0) * 4px), calc(var(--space-y, 0) * 3px), 0);
+  animation: ref9-procedural-source-flow 28s ease-in-out infinite alternate;
+}
+
+.procedural-source-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.procedural-source-head {
+  display: grid;
+  gap: 6px;
+  max-width: 860px;
+}
+
+.procedural-source-head span,
+.procedural-source-proof strong {
+  color: var(--ref9-cyan-deep);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.procedural-source-head strong {
+  color: var(--ref9-ink);
+  font-size: clamp(1.08rem, 1.8vw, 1.45rem);
+  line-height: 1.18;
+}
+
+.procedural-source-head p {
+  margin: 0;
+  color: var(--ref9-ink-soft);
+  font-size: 0.94rem;
+  line-height: 1.68;
+}
+
+.procedural-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.procedural-source-card {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-height: 230px;
+  padding: 16px;
+  border: 1px solid rgba(17, 17, 17, 0.11);
+  border-radius: var(--ref9-radius-sm);
+  background:
+    radial-gradient(circle at 18% 16%, rgba(117, 197, 222, 0.2), transparent 0 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(244, 241, 232, 0.42));
+  color: var(--ref9-ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+  transition:
+    transform 180ms var(--ref9-ease),
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.procedural-source-card:hover,
+.procedural-source-card:focus-visible,
+.procedural-source-card.is-active {
+  border-color: rgba(53, 138, 160, 0.38);
+  background:
+    radial-gradient(circle at 18% 16%, rgba(117, 197, 222, 0.28), transparent 0 38%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(244, 241, 232, 0.58));
+  box-shadow: 0 16px 38px rgba(17, 17, 17, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  transform: translateY(-2px);
+}
+
+.procedural-source-card:active {
+  transform: translateY(0) scale(0.992);
+  transition-duration: 80ms;
+}
+
+.procedural-source-card span {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(117, 197, 222, 0.18);
+  color: #155e70;
+  font-size: 0.74rem;
+  font-weight: 760;
+}
+
+.procedural-source-card strong {
+  color: var(--ref9-ink);
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.procedural-source-card em {
+  color: rgba(17, 17, 17, 0.62);
+  font-style: normal;
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+
+.procedural-source-card ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.procedural-source-card li {
+  position: relative;
+  padding-left: 13px;
+  color: var(--ref9-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.42;
+}
+
+.procedural-source-card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ref9-cyan-deep);
+}
+
+.procedural-source-card p,
+.procedural-source-card small {
+  margin: 0;
+  color: var(--ref9-ink-soft);
+  font-size: 0.84rem;
+  line-height: 1.54;
+}
+
+.procedural-source-card small {
+  color: rgba(17, 17, 17, 0.54);
+}
+
+.procedural-source-proof {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px 15px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.procedural-source-proof span {
+  color: var(--ref9-ink-soft);
+  line-height: 1.56;
+}
+
+body.is-direct-manipulating .procedural-source-panel::before {
+  animation-play-state: paused !important;
+  opacity: 0.045 !important;
+  transition: none !important;
+}
+
+@keyframes ref9-procedural-source-flow {
+  0% {
+    background-position: 0% 50%, 0 0;
+    transform: translate3d(calc(var(--space-x, 0) * 3px), calc(var(--space-y, 0) * 2px), 0) scale(1);
+  }
+  100% {
+    background-position: 100% 50%, 152px 82px;
+    transform: translate3d(calc(var(--space-x, 0) * 8px), calc(var(--space-y, 0) * 6px), 0) scale(1.014);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .procedural-source-panel::before {
+    animation-name: ref9-procedural-source-flow;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-play-state: paused !important;
+    opacity: 0.06 !important;
+    transition: none !important;
+  }
+}

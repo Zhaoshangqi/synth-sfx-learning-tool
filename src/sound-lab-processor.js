@@ -283,6 +283,56 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return white;
   }
 
+  proceduralSampleShape(generatorType, state, t, duration, bandHz, density, layer = {}) {
+    const progress = clamp(t / Math.max(0.01, duration), 0, 1);
+    const generator = layer.generator || {};
+    const decay = clamp(generator.decay ?? 1, 0.18, 3.2);
+    const jitter = clamp(layer.jitter ?? 0.2, 0, 1);
+    const phase = t * Math.PI * 2;
+
+    if (generatorType === 'impulse-noise') {
+      const click = this.colorNoise(state, 'bright') * Math.exp(-t * 150);
+      const pin = Math.sin(phase * bandHz) * Math.exp(-t * 92) * 0.26;
+      return Math.tanh((click * 1.4 + pin) * 1.18);
+    }
+
+    if (generatorType === 'banded-burst') {
+      const burstEnv = Math.exp(-t * (24 + decay * 18));
+      const lowerBand = Math.sin(phase * bandHz) * 0.36;
+      const upperBand = Math.sin(phase * bandHz * 2.17 + 0.41) * 0.22;
+      const grit = this.colorNoise(state, 'bright') * (0.54 + jitter * 0.22);
+      const ringGate = Math.sin(phase * density * 0.5) > -0.18 ? 1 : 0.42;
+      return Math.tanh((grit + lowerBand + upperBand) * burstEnv * ringGate * 1.35);
+    }
+
+    if (generatorType === 'gated-noise') {
+      const crackleGate = Math.sin(phase * density * 1.8 + this.seed * 0.0003) > (0.1 + jitter * 0.34) ? 1 : 0.18;
+      const spark = this.colorNoise(state, 'bright') * crackleGate;
+      const body = this.colorNoise(state, 'pink') * 0.28;
+      return Math.tanh((spark + body) * (1 - progress * 0.26) * 1.28);
+    }
+
+    if (generatorType === 'filtered-noise') {
+      const air = this.colorNoise(state, 'brown') * 0.72 + this.colorNoise(state, 'pink') * 0.18;
+      state.filter3 = this.onePole(state.filter3, air, clamp((bandHz * (0.4 + progress * 0.35)) / sampleRate, 0.002, 0.22));
+      return state.filter3 * (1 - progress * 0.18);
+    }
+
+    if (generatorType === 'shimmer-tail') {
+      const tailEnv = Math.exp(-progress * (1.2 / decay));
+      const shimmer = Math.sin(phase * bandHz * 0.5) * 0.28
+        + Math.sin(phase * bandHz * 1.49 + 0.73) * 0.18
+        + Math.sin(phase * bandHz * 2.01 + 1.91) * 0.1;
+      const dust = this.colorNoise(state, 'pink') * 0.12 * (1 - progress);
+      return (shimmer + dust) * tailEnv;
+    }
+
+    const gate = Math.sin(phase * density + (this.seed % 13)) > (0.18 + jitter * 0.52) ? 1 : 0;
+    const noise = this.colorNoise(state, 'pink') * gate;
+    const tone = Math.sin(phase * bandHz) * 0.35 + Math.sin(phase * bandHz * 1.91) * 0.18;
+    return noise * 0.72 + tone;
+  }
+
   dcBlock(state, sample) {
     const output = sample - state.x + state.y * 0.995;
     state.x = sample;
@@ -373,11 +423,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const density = clamp(this.smoothLayerValue(state, 'density', layer.density || 18), 1, 120);
     const gain = clamp(this.smoothLayerValue(state, 'gain', layer.gain ?? 0, 'gain'), 0, 2);
     const generatorType = layer.generator?.type || 'spark-grains';
-    const gate = Math.sin(t * Math.PI * 2 * density + (this.seed % 13)) > (0.18 + clamp(layer.jitter || 0.2, 0, 1) * 0.52) ? 1 : 0;
-    const color = generatorType.includes('air') ? 'brown' : generatorType.includes('metal') || generatorType.includes('electric') ? 'bright' : 'pink';
-    const noise = this.colorNoise(state, color) * gate;
-    const tone = Math.sin(t * Math.PI * 2 * bandHz) * 0.35 + Math.sin(t * Math.PI * 2 * bandHz * 1.91) * 0.18;
-    const shaped = generatorType.includes('shimmer') ? tone * 0.72 + noise * 0.22 : noise * 0.72 + tone;
+    const shaped = this.proceduralSampleShape(generatorType, state, t, duration, bandHz, density, layer);
     return this.dcBlock(state.dc, shaped * env * gain);
   }
 

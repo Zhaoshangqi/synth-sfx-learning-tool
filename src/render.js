@@ -2478,6 +2478,46 @@ function renderLayerAuditionStrip(model = {}, activeMode = model.layerAudition?.
   `;
 }
 
+function renderProceduralSourceMapPanel(model = {}) {
+  const sourceMap = model.proceduralSourceMap ?? {};
+  const items = sourceMap.items ?? [];
+  if (!items.length) return '';
+
+  return `
+    <section class="procedural-source-panel" aria-label="Procedural Source Map 程序化声源地图" data-flow-surface>
+      <div class="procedural-source-head">
+        <span>Procedural Source Map</span>
+        <strong>${escapeHtml(sourceMap.titleZh ?? '程序化声源地图')}</strong>
+        <p>${escapeHtml(sourceMap.beginnerZh ?? '把每一层程序化声源拆成可试听、可复刻、可在 REAPER 验证的路径。')}</p>
+      </div>
+      <div class="procedural-source-grid">
+        ${items.map((item, index) => `
+          <button
+            class="procedural-source-card"
+            type="button"
+            data-layer-audition="${escapeHtml(item.layerAudition)}"
+            data-procedural-source="${escapeHtml(item.id ?? `${item.role}-${index}`)}"
+            aria-label="${escapeHtml(`${item.roleZh ?? item.role ?? 'layer'} ${item.labelZh ?? ''}`)}"
+          >
+            <span>${escapeHtml(item.roleZh ?? item.role ?? `Layer ${index + 1}`)}</span>
+            <strong>${escapeHtml(item.labelZh ?? item.sampleAssetId ?? '')}</strong>
+            <em>${escapeHtml(item.generatorLabelZh ?? item.generatorType ?? '')}</em>
+            <ul>
+              ${item.generatorShape.map((shape) => `<li>${escapeHtml(shape)}</li>`).join('')}
+            </ul>
+            <p>${escapeHtml(item.listenZh ?? '')}</p>
+            <small>${escapeHtml(item.synthZh ?? '')}</small>
+          </button>
+        `).join('')}
+      </div>
+      <div class="procedural-source-proof">
+        <strong>REAPER 验证</strong>
+        <span>${escapeHtml(sourceMap.reaperProofZh ?? '')}</span>
+      </div>
+    </section>
+  `;
+}
+
 function renderParameterCoachPanel(model = {}) {
   const coach = model.parameterCoach ?? {};
   const focus = coach.focus ?? {};
@@ -3507,6 +3547,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
           ${renderWaveformDetectivePanel(model, options)}
           ${renderPerceptualSignaturePanel(model)}
           ${renderMaterialResonancePanel(model)}
+          ${renderProceduralSourceMapPanel(model)}
           ${renderWorkbenchZoneTitle('02', '参数塑形', '从模块标签进入 ADSR、滤波、调制、效果和材质；每次只解决一个听感问题。')}
           ${renderWorkbenchModuleTabs(activeWorkbenchModule)}
           ${renderAdvancedModuleDock(model, options.activeAdvancedModule)}
@@ -3604,6 +3645,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
             ${renderWaveformDetectivePanel(model, options)}
             ${renderPerceptualSignaturePanel(model)}
             ${renderMaterialResonancePanel(model)}
+            ${renderProceduralSourceMapPanel(model)}
           </div>
           <div class="atlas-control-column">
             ${renderWorkbenchEnvelope(model)}
