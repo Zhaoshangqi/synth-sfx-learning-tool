@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-procedural-flow';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-source-audition';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -429,7 +429,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-procedural-flow');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-source-audition');
       this.workletReady = true;
       return true;
     } catch {

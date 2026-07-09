@@ -2497,6 +2497,7 @@ function renderProceduralSourceMapPanel(model = {}) {
             type="button"
             data-layer-audition="${escapeHtml(item.layerAudition)}"
             data-procedural-source="${escapeHtml(item.id ?? `${item.role}-${index}`)}"
+            data-procedural-source-play="${escapeHtml(item.id ?? `${item.role}-${index}`)}"
             aria-label="${escapeHtml(`${item.roleZh ?? item.role ?? 'layer'} ${item.labelZh ?? ''}`)}"
           >
             <span>${escapeHtml(item.roleZh ?? item.role ?? `Layer ${index + 1}`)}</span>
