@@ -2139,6 +2139,27 @@ test('sound lab spectral balance monitor follows live analyser frames without re
   assert.match(css, /\.spectral-balance-band\[data-spectral-live-status="active"\]/);
 });
 
+test('sound lab waveform fingerprint follows live analyser frames without rerendering', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-waveform-fingerprint-live/);
+  assert.match(renderJs, /data-waveform-fingerprint-status/);
+  assert.match(renderJs, /data-waveform-ingredient-live/);
+  assert.match(renderJs, /data-waveform-ingredient-status/);
+  assert.match(appJs, /function computeWaveformFingerprintLiveFrame/);
+  assert.match(appJs, /function updateWaveformFingerprintRuntimeUi/);
+  assert.match(appJs, /drawSoundLabAnalyserFrame\(frame\)[\s\S]*updateSpectralBalanceRuntimeUi\(workbench,\s*frame\)[\s\S]*updateWaveformFingerprintRuntimeUi\(workbench,\s*frame\)/);
+  assert.doesNotMatch(appJs, /updateWaveformFingerprintRuntimeUi[\s\S]{0,260}render\(/);
+  assert.match(appJs, /data-waveform-ingredient-live/);
+  assert.match(appJs, /--ingredient-live/);
+  assert.match(appJs, /data-waveform-live-status/);
+  assert.match(css, /\.waveform-ingredient-card\s*\{[\s\S]*--ingredient-live:\s*var\(--ingredient,\s*50%\)/);
+  assert.match(css, /\.waveform-ingredient-card i\s*\{[\s\S]*width:\s*var\(--ingredient-live/);
+  assert.match(css, /\.waveform-ingredient-card\[data-waveform-live-status="active"\]/);
+});
+
 test('sound lab live analyzer summaries keep readable Chinese fallback text', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = appJs.indexOf('function computeAnalyzerCoachFrame');

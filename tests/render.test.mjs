@@ -410,6 +410,35 @@ test('renderSoundLabWorkbench teaches beginners how to infer basic waveform ingr
   assert.match(html, /下一步/);
 });
 
+test('renderSoundLabWorkbench exposes live waveform fingerprint hooks for beginner ear training', () => {
+  const family = soundLabFamilies[0];
+  const model = buildSoundLabViewModel(family, {
+    brightness: 74,
+    motion: 28,
+    material: 66,
+    space: 22,
+    variation: 48,
+  }, {
+    qualityMode: 'studio',
+    layerMix: { transient: 72, body: 78, texture: 34, tail: 18 },
+  });
+  const html = renderSoundLabWorkbench(family, model, {
+    selectedFamilyId: family.id,
+  });
+
+  assert.match(html, /data-waveform-fingerprint-live/);
+  assert.match(html, /data-waveform-fingerprint-status/);
+  assert.match(html, /waveform-fingerprint-live-status/);
+  assert.match(html, /data-waveform-ingredient-live="sine"/);
+  assert.match(html, /data-waveform-ingredient-live="square"/);
+  assert.match(html, /data-waveform-ingredient-live="saw"/);
+  assert.match(html, /data-waveform-ingredient-live="triangle"/);
+  assert.match(html, /data-waveform-ingredient-live="noise"/);
+  assert.match(html, /data-waveform-ingredient-status/);
+  assert.match(html, /--ingredient-live:/);
+  assert.match(html, /等待实时信号/);
+});
+
 test('renderSoundLabWorkbench renders a waveform ear decision tree with routed clue actions', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact') ?? soundLabFamilies[0];
   const model = buildSoundLabViewModel(family, {
