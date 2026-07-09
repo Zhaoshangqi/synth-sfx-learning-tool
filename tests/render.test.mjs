@@ -1318,3 +1318,25 @@ test('renderSoundLabWorkbench renders a translation monitor with real audition r
   assert.match(html, /data-workbench-action="focus-controls"/);
   assert.match(html, /REAPER|A\/B|mono/i);
 });
+test('renderSoundLabWorkbench turns sound quality meters into playable A/B auditions', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 84,
+    motion: 62,
+    material: 90,
+    space: 48,
+    variation: 58,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id, engineMode: 'hq' });
+
+  assert.match(html, /data-quality-audition="analog-gesture"/);
+  assert.match(html, /data-quality-audition="temporal-mask"/);
+  assert.match(html, /data-quality-audition="dynamic-detail"/);
+  assert.match(html, /data-quality-audition="transient-gloss"/);
+  assert.match(html, /data-quality-audition="spatial-image"/);
+  assert.match(html, /quality-audition-button/);
+  assert.match(html, /听差异|A\/B/);
+});

@@ -3037,7 +3037,8 @@ function renderWorkbenchQuality(model = {}) {
       statusZh: (item.amount ?? 0) > 0.66 ? '优秀' : '良好',
       noteZh: item.type ?? 'FX',
     }))
-  ).slice(0, 10);
+  ).slice(0, 12);
+  const qualityAuditionById = new Map((model.qualityAudition?.items ?? []).map((item) => [item.id, item]));
   const calibration = model.polishCalibration ?? {};
   const calibrationSteps = calibration.steps ?? [];
   const calibrationMeters = calibration.meters ?? [];
@@ -3045,14 +3046,18 @@ function renderWorkbenchQuality(model = {}) {
     <section class="workbench-panel patch-quality-card" aria-label="合成器真实感">
       <div class="mini-panel-head"><strong>合成器真实感</strong><button type="button" data-workbench-action="analyze-patch">分析补丁</button></div>
       <div class="quality-knob-row">
-        ${qualityItems.map((item) => `
+        ${qualityItems.map((item) => {
+          const audition = qualityAuditionById.get(item.id);
+          return `
           <div class="mini-quality-knob" style="--knob-value:${formatNumber(item.value ?? 0)}%">
             <span></span>
             <strong>${escapeHtml(item.labelZh)}</strong>
             <small>${escapeHtml(item.statusZh ?? item.noteZh ?? 'ready')}</small>
             <em>${escapeHtml(item.noteZh ?? '')}</em>
+            ${audition ? `<button class="quality-audition-button" type="button" data-quality-audition="${escapeHtml(audition.id)}" title="${escapeHtml(audition.listenZh ?? '')}">${escapeHtml(audition.actionLabelZh ?? '听差异')}</button>` : ''}
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
       ${calibrationSteps.length ? `
         <div class="polish-calibration-panel" aria-label="Perceptual Calibration 音质校准">

@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-analog-gesture';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-quality-audition';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -480,7 +480,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-analog-gesture');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-quality-audition');
       this.workletReady = true;
       return true;
     } catch {
