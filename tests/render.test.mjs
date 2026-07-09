@@ -1125,6 +1125,32 @@ test('renderSoundLabWorkbench teaches spatial image and early reflections in the
   assert.match(qualityBlock, /tail-only|predelay|early reflection|空间|距离/i);
 });
 
+test('renderSoundLabWorkbench renders spectral balance as a playable A/B monitor', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 52,
+    material: 92,
+    space: 42,
+    variation: 66,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'compare',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.ok(qualityBlock, 'quality card should render as a distinct panel');
+  assert.match(qualityBlock, /spectral-balance-monitor/);
+  assert.match(qualityBlock, /Spectral Balance|频谱平衡|棰戣氨/);
+  assert.match(qualityBlock, /Body|Low-Mid|Air|主体|高频/i);
+  assert.match(qualityBlock, /data-quality-audition="spectral-balance"/);
+  assert.match(qualityBlock, /bypass|旁路|A\/B/i);
+  assert.match(qualityBlock, /REAPER|LUFS/);
+});
+
 test('renderSoundLabWorkbench renders Ear Triage as a real listening workflow', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
