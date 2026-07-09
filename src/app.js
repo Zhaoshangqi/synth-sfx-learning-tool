@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-source-audition';
+} from './sound-lab-model.js?v=20260709-route-readability';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-source-audition';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-route-readability';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-source-audition';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-route-readability';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-source-audition';
+} from './render.js?v=20260709-route-readability';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -133,6 +133,12 @@ const VIEW_IDS = new Set([
   'recipes',
   'practice',
   'integrations',
+]);
+
+const VIEW_HASH_ALIASES = new Map([
+  ['sound-lab', 'soundlab'],
+  ['sound_lab', 'soundlab'],
+  ['lab', 'soundlab'],
 ]);
 
 const DASHBOARD_LEARNING_PATH = [
@@ -306,9 +312,14 @@ function getSoundLabFocusMode(modeId = state?.soundLabFocusMode) {
   return SOUND_LAB_FOCUS_MODES.find((mode) => mode.id === modeId) ?? SOUND_LAB_FOCUS_MODES[0];
 }
 
+function resolveViewHash(rawHash = '') {
+  const normalizedHash = VIEW_HASH_ALIASES.get(rawHash) ?? rawHash;
+  return VIEW_IDS.has(normalizedHash) ? normalizedHash : 'dashboard';
+}
+
 function getViewFromHash() {
   const rawHash = decodeURIComponent(globalThis.location?.hash?.replace(/^#/, '') ?? '').trim();
-  return VIEW_IDS.has(rawHash) ? rawHash : 'dashboard';
+  return resolveViewHash(rawHash);
 }
 
 const state = {
