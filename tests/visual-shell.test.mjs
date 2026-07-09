@@ -11,7 +11,7 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
@@ -376,8 +376,8 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-source-audition/);
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
+  assert.match(html, /visual-space\.js\?v=20260709-route-readability/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
 });
 
 test('pasted Aether Flow prompt becomes a soft component-aware flow network', () => {
@@ -419,11 +419,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-source-audition"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-source-audition'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-source-audition'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-source-audition'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260709-source-audition'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-route-readability"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-route-readability'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-route-readability'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-route-readability'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-route-readability'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -758,6 +758,19 @@ test('view routing supports direct hash links for module QA and sharing', () => 
   assert.match(appJs, /VIEW_IDS\.has\(nextView\)/);
 });
 
+test('view routing accepts human-readable Sound Lab hash aliases', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const VIEW_HASH_ALIASES = new Map\(/);
+  assert.match(appJs, /\['sound-lab',\s*'soundlab'\]/);
+  assert.match(appJs, /\['sound_lab',\s*'soundlab'\]/);
+  assert.match(appJs, /\['lab',\s*'soundlab'\]/);
+  assert.match(appJs, /function resolveViewHash/);
+  assert.match(appJs, /return VIEW_IDS\.has\(normalizedHash\) \? normalizedHash : 'dashboard'/);
+  assert.match(appJs, /view:\s*getViewFromHash\(\)/);
+  assert.match(appJs, /switchView\(getViewFromHash\(\),\s*\{\s*updateHash:\s*false\s*\}\)/);
+});
+
 test('view switching keeps content below the sticky toolbar', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
@@ -795,9 +808,9 @@ test('v2 shell exposes the Sound Lab workbench and AudioWorklet path', () => {
   assert.match(appJs, /data-sound-lab-play/);
   assert.match(appJs, /data-sound-lab-control/);
   assert.match(audioPlayerJs, /AudioWorklet/);
-  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-source-audition/);
+  assert.match(audioPlayerJs, /sound-lab-model\.js\?v=20260709-route-readability/);
   assert.match(audioPlayerJs, /sound-lab-processor\.js/);
-  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260709-source-audition/);
+  assert.match(audioPlayerJs, /sound-lab-processor\.js\?v=20260709-route-readability/);
   assert.match(css, /\.sound-lab-workbench/);
   assert.match(css, /\.macro-knob/);
   assert.match(css, /\.spectrum-stage/);
@@ -2182,8 +2195,8 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -2203,8 +2216,8 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2357,8 +2370,8 @@ test('pasted aether flow prompt adds an adaptive particle mesh without React dep
   assert.match(css, /#particle-canvas\s*\{[\s\S]*will-change:\s*opacity,\s*filter/);
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability"/);
 });
 
 test('pasted aether flow prompt adds slow energy rivers and card-edge currents', () => {
@@ -2433,8 +2446,8 @@ test('pasted aether flow prompt adds a viscous stream lattice without React depe
   assert.match(css, /@keyframes ref9-viscous-edge-current/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-viscous-edge-current/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-viscous-edge-current/);
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability"/);
 });
 
 test('pasted aether flow prompt adds component relay packets without dragging flashes', () => {
@@ -2514,8 +2527,8 @@ test('aether flow prompt adds a native flow-field particle layer without viewpor
   assert.match(css, /\.content\.is-view-switching::after\s*\{[\s\S]*animation:\s*ref9-route-current/);
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability"/);
 });
 
 test('pasted aether flow prompt adds silk current ribbons without React dependencies', () => {
@@ -2542,8 +2555,8 @@ test('pasted aether flow prompt adds silk current ribbons without React dependen
   assert.match(css, /\.signal-atlas-console \.atlas-command-dock::before,[\s\S]*\.dashboard-hero\.aether-flow-stage \.hero-status-strip::before/);
   assert.match(css, /body\.is-direct-manipulating \.audio-space\.is-flow-field-ready::before[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-silk-current-drift/);
-  assert.match(html, /styles-reference\.css\?v=20260709-source-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-source-audition"/);
+  assert.match(html, /styles-reference\.css\?v=20260709-route-readability/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-route-readability"/);
 });
 
 test('pasted aether flow prompt adds a focus lens field without React dependencies', () => {
@@ -2589,6 +2602,17 @@ test('sound lab renders procedural source map with playable layer routes', () =>
   assert.match(css, /\.procedural-source-grid/);
   assert.match(css, /\.procedural-source-card/);
   assert.match(css, /\.procedural-source-card:active/);
+});
+
+test('procedural source map stays readable inside the dark Sound Lab workbench', () => {
+  const css = readFileSync(new URL('../styles-reference.css', import.meta.url), 'utf8');
+
+  assert.match(css, /Sound Lab procedural source readability patch/);
+  assert.match(css, /\.sound-lab-workbench \.procedural-source-panel\s*\{[\s\S]*background:[\s\S]*rgba\(8,\s*10,\s*18,\s*0\.84\)/);
+  assert.match(css, /\.sound-lab-workbench \.procedural-source-head strong\s*\{[\s\S]*color:\s*var\(--ref9-paper/);
+  assert.match(css, /\.sound-lab-workbench \.procedural-source-card\s*\{[\s\S]*background:[\s\S]*rgba\(12,\s*18,\s*30,\s*0\.88\)/);
+  assert.match(css, /\.sound-lab-workbench \.procedural-source-card :where\(strong,\s*span,\s*em,\s*li,\s*p,\s*small\)\s*\{[\s\S]*color:\s*var\(--ref9-paper/);
+  assert.match(css, /\.sound-lab-workbench \.procedural-source-proof\s*\{[\s\S]*background:\s*rgba\(12,\s*18,\s*30,\s*0\.72\)/);
 });
 
 test('headline reveal segments Chinese text without mojibake regexes', () => {
