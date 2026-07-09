@@ -869,6 +869,29 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return mixed * clamp(this.patch.safety?.outputGain || 0.6, 0.1, 0.95);
   }
 
+  computeReleaseTailSeconds() {
+    const globalSpace = this.patch?.globalFx?.space || {};
+    const legacySpace = this.patch?.space || this.patch?.dsp?.space || {};
+    const polish = this.patch?.globalFx?.masterPolish || {};
+    const dynamicDetail = polish.dynamicDetail || {};
+    const spaceDecay = Math.max(globalSpace.decaySeconds ?? 0, legacySpace.decaySeconds ?? 0);
+    const releaseMs = Math.max(
+      0,
+      ...(this.patch?.layers || []).map((layer) => layer.envelope?.releaseMs ?? 0),
+      dynamicDetail.snapWindowMs ?? 0,
+    ) / 1000;
+    const width = clamp(globalSpace.width ?? legacySpace.width ?? 0, 0, 1);
+    const spaceMix = clamp(globalSpace.mix ?? legacySpace.mix ?? 0, 0, 0.7);
+    return clamp(0.16 + releaseMs * 0.72 + spaceDecay * (0.32 + spaceMix * 0.34) + width * 0.16, 0.18, 1.8);
+  }
+
+  computeTailReleaseGain(t, totalDuration, releaseTailSeconds) {
+    if (t <= totalDuration) return 1;
+    if (releaseTailSeconds <= 0) return 0;
+    const progress = clamp((t - totalDuration) / releaseTailSeconds, 0, 1);
+    return Math.cos(progress * Math.PI * 0.5) ** 2;
+  }
+
   process(_, outputs) {
     const output = outputs[0];
     const left = output[0];
@@ -884,6 +907,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const gestureHits = this.performanceGestureHits();
     const totalGestureDelay = Math.max(0, ...gestureHits.map((hit) => hit.delayMs || 0)) / 1000;
     const totalDuration = clamp(duration + totalGestureDelay, duration, 5.4);
+    const releaseTailSeconds = this.computeReleaseTailSeconds();
     const widthTarget = clamp(this.patch.globalFx?.space?.width ?? this.patch.space?.width ?? 0.28, 0, 1);
     const spaceMixTarget = clamp(this.patch.globalFx?.space?.mix ?? this.patch.space?.mix ?? 0, 0, 0.62);
     const spacePreDelay = clamp((this.patch.globalFx?.space?.preDelayMs ?? 0) / 1000, 0, 0.18);
@@ -895,11 +919,12 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const width = clamp(this.smoothGlobalValue('width', widthTarget, 'space'), 0, 1);
       const spaceMix = clamp(this.smoothGlobalValue('spaceMix', spaceMixTarget, 'space'), 0, 0.62);
       const diffusion = clamp(this.smoothGlobalValue('diffusion', diffusionTarget, 'space'), 0.2, 0.95);
-      if (t > totalDuration) {
+      if (t > totalDuration + releaseTailSeconds) {
         left[index] = 0;
         right[index] = 0;
         continue;
       }
+      const tailReleaseGain = this.computeTailReleaseGain(t, totalDuration, releaseTailSeconds);
 
       let mixedLeft = 0;
       let mixedRight = 0;
@@ -941,6 +966,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       const masked = this.applyTemporalMasking(dryLeft, dryRight, wetLeft, wetRight, t, duration);
       const spatial = this.applySpatialImage(masked.left * (1 - tailMotion), masked.right * (1 + tailMotion), t, duration);
       this.applyStereoComfortBus(spatial.left, spatial.right, t, duration);
+      this.stereoBusLeft *= tailReleaseGain;
+      this.stereoBusRight *= tailReleaseGain;
       left[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcLeft, this.stereoBusLeft), this.polishLeft), this.outputStageLeft);
       right[index] = this.softLimiter(this.applyMasterPolish(this.dcBlock(this.outputDcRight, this.stereoBusRight), this.polishRight), this.outputStageRight);
     }
