@@ -768,6 +768,47 @@ test('studio patches expose dynamic detail polish for snap glue and silky output
   assert.deepEqual(message.payload.globalFx.masterPolish.dynamicDetail, dynamicDetail);
 });
 
+test('studio patches expose spectral balance for warmer less brittle web synthesis', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 88,
+    motion: 48,
+    material: 92,
+    space: 36,
+    variation: 58,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 92, body: 78, texture: 72, tail: 34 },
+  });
+
+  const spectralBalance = patch.globalFx.masterPolish.spectralBalance;
+  assert.ok(spectralBalance, 'studio output should expose a spectral balance stage');
+  assert.ok(spectralBalance.lowBody > 0.04, 'low body should keep metal and impact patches from feeling thin');
+  assert.ok(spectralBalance.lowMidGlue > 0.04, 'low-mid glue should bind modal body to transient');
+  assert.ok(spectralBalance.highTame > 0.08, 'high tame should reduce brittle web-synth top end');
+  assert.ok(spectralBalance.tiltCompensation > 0.03, 'tilt compensation should keep bright patches comfortable');
+  assert.ok(spectralBalance.bodyShelfHz >= 120 && spectralBalance.bodyShelfHz <= 520);
+  assert.ok(spectralBalance.airShelfHz >= 5200 && spectralBalance.airShelfHz <= 12000);
+  assert.ok(patch.fxRack.some((effect) => effect.id === 'polish' && effect.spectralBalance));
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.spectralBalance, spectralBalance);
+
+  const model = buildSoundLabViewModel(family, patch.macros, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: patch.layerMix,
+  });
+  const qualityCard = model.soundQuality.find((item) => item.id === 'spectral-balance');
+  assert.ok(qualityCard, 'quality panel should explain spectral balance as a beginner-readable realism metric');
+  assert.match(qualityCard.labelZh, /Spectral|Balance|频谱|平衡/);
+  assert.match(qualityCard.noteZh, /body|air|tilt|tame/i);
+  assert.ok(model.qualityAudition.items.some((item) => item.id === 'spectral-balance' && item.bypass.includes('spectral-balance')));
+});
+
 test('browser audio engines apply dynamic detail polish in Worklet and Tone fallback paths', () => {
   const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
@@ -783,6 +824,22 @@ test('browser audio engines apply dynamic detail polish in Worklet and Tone fall
   assert.match(audioPlayerJs, /transientAir/);
   assert.match(audioPlayerJs, /bodyGlue/);
   assert.match(audioPlayerJs, /outputSilk/);
+});
+
+test('browser audio engines apply spectral balance in Worklet and Tone fallback paths', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /spectralBalance/);
+  assert.match(processorJs, /applySpectralBalance/);
+  assert.match(processorJs, /lowBody/);
+  assert.match(processorJs, /lowMidGlue/);
+  assert.match(processorJs, /highTame/);
+  assert.match(processorJs, /tiltCompensation/);
+  assert.match(audioPlayerJs, /connectSpectralBalanceStage/);
+  assert.match(audioPlayerJs, /spectralBalance/);
+  assert.match(audioPlayerJs, /bodyShelf/);
+  assert.match(audioPlayerJs, /airShelf/);
 });
 
 test('studio patches expose transient gloss for controlled air and plugin-like crest management', () => {

@@ -492,6 +492,14 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     aliasGuard: Number(clamp(0.052 + brightness * 0.12 + material * 0.05 + variation * 0.045 + studioBonus * 0.22, 0.03, 0.34).toFixed(3)),
     crestWindowMs: Math.round(clamp(6 + transientMix * 9 + material * 4 + studioBonus * 34, 5, 28)),
   };
+  const spectralBalance = {
+    lowBody: Number(clamp(0.035 + bodyMix * 0.1 + material * 0.06 + (1 - brightness) * 0.03 + studioBonus * 0.22, 0.02, 0.3).toFixed(3)),
+    lowMidGlue: Number(clamp(0.032 + bodyMix * 0.08 + material * 0.05 + transientMix * 0.035 + studioBonus * 0.18, 0.018, 0.26).toFixed(3)),
+    highTame: Number(clamp(0.06 + brightness * 0.2 + textureMix * 0.12 + material * 0.05 + studioBonus * 0.2, 0.04, 0.52).toFixed(3)),
+    tiltCompensation: Number(clamp(0.038 + brightness * 0.12 + textureMix * 0.06 + studioBonus * 0.16, 0.02, 0.32).toFixed(3)),
+    bodyShelfHz: Math.round(clamp(140 + material * 210 + bodyMix * 110 - space * 38, 120, 520)),
+    airShelfHz: Math.round(clamp(6200 + brightness * 2600 + textureMix * 900 - material * 260, 5200, 12000)),
+  };
 
   return {
     glue: clamp(0.12 + material * 0.22 + motion * 0.09 + studioBonus, 0.08, 0.62),
@@ -504,6 +512,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     motionBus,
     dynamicDetail,
     transientGloss,
+    spectralBalance,
     analogGesture: layerData.analogGesture,
   };
 }
@@ -584,6 +593,14 @@ function applyOutputModeToMasterPolish(masterPolish, outputMode) {
         aliasGuard: 0,
         crestWindowMs: 0,
       },
+      spectralBalance: {
+        lowBody: 0,
+        lowMidGlue: 0,
+        highTame: 0,
+        tiltCompensation: 0,
+        bodyShelfHz: masterPolish.spectralBalance?.bodyShelfHz ?? 220,
+        airShelfHz: masterPolish.spectralBalance?.airShelfHz ?? 7200,
+      },
     };
   }
 
@@ -614,6 +631,11 @@ const QUALITY_AUDITION_COPY = {
     actionLabelZh: '听光泽',
     listenZh: '旁路瞬态光泽后，听前 80ms 的 crest、air、body focus 是否更钝或更粗糙。',
     bypass: ['transient-gloss'],
+  },
+  'spectral-balance': {
+    actionLabelZh: '听频谱',
+    listenZh: '旁路频谱平衡后，听主体是否变薄、高频是否更刺，以及金属/冲击是否少了温度。',
+    bypass: ['spectral-balance'],
   },
   'spatial-image': {
     actionLabelZh: '听空间',
@@ -726,6 +748,16 @@ function applyQualityBypassToMasterPolish(masterPolish, bypassIds = [], performa
       crestWindowMs: 0,
     };
   }
+  if (bypass.has('spectral-balance')) {
+    next.spectralBalance = {
+      lowBody: 0,
+      lowMidGlue: 0,
+      highTame: 0,
+      tiltCompensation: 0,
+      bodyShelfHz: next.spectralBalance?.bodyShelfHz ?? 220,
+      airShelfHz: next.spectralBalance?.airShelfHz ?? 7200,
+    };
+  }
   if (bypass.has('analog-gesture')) {
     next.analogGesture = neutralAnalogGesture(next.analogGesture, performanceFeel);
   }
@@ -759,7 +791,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18 + (masterPolish.dynamicDetail?.bodyGlue ?? 0) * 0.24 + (masterPolish.transientGloss?.crestClamp ?? 0) * 0.2 + (masterPolish.transientGloss?.harmonicAir ?? 0) * 0.18 + (masterPolish.analogGesture?.amount ?? 0) * 0.16, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus, dynamicDetail: masterPolish.dynamicDetail, transientGloss: masterPolish.transientGloss, analogGesture: masterPolish.analogGesture },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18 + (masterPolish.dynamicDetail?.bodyGlue ?? 0) * 0.24 + (masterPolish.transientGloss?.crestClamp ?? 0) * 0.2 + (masterPolish.transientGloss?.harmonicAir ?? 0) * 0.18 + (masterPolish.spectralBalance?.highTame ?? 0) * 0.18 + (masterPolish.spectralBalance?.lowBody ?? 0) * 0.16 + (masterPolish.analogGesture?.amount ?? 0) * 0.16, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus, dynamicDetail: masterPolish.dynamicDetail, transientGloss: masterPolish.transientGloss, spectralBalance: masterPolish.spectralBalance, analogGesture: masterPolish.analogGesture },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -1357,6 +1389,7 @@ function buildSoundQuality(patch) {
   const temporalMasking = polish.temporalMasking ?? {};
   const dynamicDetail = polish.dynamicDetail ?? {};
   const transientGloss = polish.transientGloss ?? {};
+  const spectralBalance = polish.spectralBalance ?? {};
   const analogGesture = polish.analogGesture ?? {};
   const spatialImage = patch.globalFx?.spatialImage ?? {};
   const polishScore = clamp(
@@ -1405,6 +1438,14 @@ function buildSoundQuality(patch) {
       + (transientGloss.bodyFocus ?? 0) * 125
       + (transientGloss.aliasGuard ?? 0) * 118
       + clamp((transientGloss.crestWindowMs ?? 0) / 28, 0, 1) * 12,
+    0,
+    100,
+  );
+  const spectralBalanceScore = clamp(
+    (spectralBalance.lowBody ?? 0) * 140
+      + (spectralBalance.lowMidGlue ?? 0) * 126
+      + (spectralBalance.highTame ?? 0) * 128
+      + (spectralBalance.tiltCompensation ?? 0) * 104,
     0,
     100,
   );
@@ -1504,6 +1545,13 @@ function buildSoundQuality(patch) {
       value: transientGlossScore,
       statusZh: '瞬态光泽',
       noteZh: `crest ${formatQualityNumber((transientGloss.crestClamp ?? 0) * 100)}% / air ${formatQualityNumber((transientGloss.harmonicAir ?? 0) * 100)}% / alias ${formatQualityNumber((transientGloss.aliasGuard ?? 0) * 100)}% / body ${formatQualityNumber((transientGloss.bodyFocus ?? 0) * 100)}%`,
+    },
+    {
+      id: 'spectral-balance',
+      labelZh: 'Spectral Balance',
+      value: spectralBalanceScore,
+      statusZh: '频谱平衡',
+      noteZh: `body ${formatQualityNumber((spectralBalance.lowBody ?? 0) * 100)}% / air tame ${formatQualityNumber((spectralBalance.highTame ?? 0) * 100)}% / tilt ${formatQualityNumber((spectralBalance.tiltCompensation ?? 0) * 100)}%`,
     },
     {
       id: 'polish',
