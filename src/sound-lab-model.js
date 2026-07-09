@@ -3186,6 +3186,141 @@ function buildPracticeFocus(family, patch, patchDoctor, practiceLoop, earTriage,
   };
 }
 
+function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = 'source') {
+  const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
+  const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
+  const outputMode = patch.outputMode === 'raw' ? 'comfort' : patch.outputMode ?? 'comfort';
+  const macroLabel = diagnostic.applyAction?.labelZh ?? '试调一次';
+  const steps = [
+    {
+      id: 'target',
+      labelZh: '01',
+      titleZh: '定目标与材质',
+      whyZh: '先知道要做的是什么材质和动作长度，否则后面所有参数都会变成盲调。',
+      listenZh: `先听 ${familyName} 的完整 patch：判断它更像 hit、ping、crackle、whoosh 还是 charge。`,
+      actionLabelZh: '选目标',
+      workbenchAction: 'focus-source',
+      synthActions: {
+        serum: 'Serum: 先选 Basic Shapes 或相近 wavetable，不开复杂 FX。',
+        phasePlant: 'Phase Plant: 先建 transient / body / texture / tail 四个 lane。',
+        vital: 'Vital: 先用 Osc + Noise 搭出干声主体，暂时关大混响。',
+      },
+      reaperProofZh: 'REAPER: 新建 dry 参考 item，命名 family_target_dry_v001。',
+    },
+    {
+      id: 'waveform',
+      labelZh: '02',
+      titleZh: '判断基础波形',
+      whyZh: '基础波形不是死背名字，而是用 pitch、亮边、空心感和噪声判断声源角色。',
+      listenZh: '先听 body-only：能哼出中心音就找 sine/triangle/FM；亮边密就找 saw/comb；空气颗粒就找 noise。',
+      actionLabelZh: 'Solo body',
+      workbenchAction: 'focus-waveform',
+      layerAudition: 'body',
+      synthActions: {
+        serum: 'Serum: Solo Osc A/B 与 Noise，先确认主体是不是 oscillator。',
+        phasePlant: 'Phase Plant: Mute noise/tail lane，只听 generator 或 modal body。',
+        vital: 'Vital: 关 Noise 和 FX，只听 Osc/warp/FM 是否仍像目标。',
+      },
+      reaperProofZh: 'REAPER: 导出 body-only，对照 full 写一句“主体来自什么波形或调制”。',
+    },
+    {
+      id: 'envelope',
+      labelZh: '03',
+      titleZh: '塑造时间形状',
+      whyZh: 'Attack、Decay、Sustain、Release 决定它是 click、pluck、hit、tail 还是持续声。',
+      listenZh: '只改 Attack 或 Decay 一项：前沿变钝、主体变短或尾巴变长时，先听动作是否更贴画面。',
+      actionLabelZh: '调 ADSR',
+      workbenchAction: 'focus-controls',
+      synthActions: {
+        serum: 'Serum: Amp Env 先定 attack/decay，再少量给 filter env。',
+        phasePlant: 'Phase Plant: 每个 lane 单独 envelope，transient 短，tail 长。',
+        vital: 'Vital: Env 1 控 amp，Env 2 小幅控 filter/FM amount。',
+      },
+      reaperProofZh: 'REAPER: A/B attack 或 decay 两版，记录哪一版更贴动作长度。',
+    },
+    {
+      id: 'material',
+      labelZh: '04',
+      titleZh: '增加材质与共振',
+      whyZh: '金属、玻璃、机械感通常来自非整数 FM、modal peak、comb 或短共振，而不是单纯变亮。',
+      listenZh: diagnostic.listenZh ?? '只改一个材质参数，听它是否更像目标材质，而不是更刺耳。',
+      actionLabelZh: macroLabel,
+      workbenchAction: diagnostic.action ?? 'focus-material-resonance',
+      applyDiagnosticId: diagnostic.id ?? '',
+      synthActions: {
+        serum: 'Serum: 用 FM from B、warp、comb/filter resonance 做非谐波边缘。',
+        phasePlant: 'Phase Plant: 加 FM lane、resonator lane 或 comb filter，先低 mix。',
+        vital: 'Vital: 用 FM/phase/spectral warp 产生 sidebands，再用 filter 收住尖峰。',
+      },
+      reaperProofZh: diagnostic.reaperCheckZh ?? 'REAPER: full vs material-change A/B，响度匹配后判断保留或撤回。',
+    },
+    {
+      id: 'motion',
+      labelZh: '05',
+      titleZh: '加入可控运动',
+      whyZh: '好的合成器音效不是静态截图，LFO、Envelope、Velocity 和 Macro 要让材质有方向。',
+      listenZh: '听变化是否像同一个物体在动；如果每次都像不同音色，说明 variation 或调制深度过大。',
+      actionLabelZh: '看调制',
+      workbenchAction: 'focus-coach',
+      synthActions: {
+        serum: 'Serum: LFO 小幅推 wavetable/filter/FM；Chaos 只做微变化。',
+        phasePlant: 'Phase Plant: Random/LFO 控 lane gain、filter 或 resonator amount。',
+        vital: 'Vital: LFO/Random 推 filter、spectral warp 或 pan，深度先小后大。',
+      },
+      reaperProofZh: 'REAPER: 连续渲染 3 次，确认变体有生命感但仍是同一 patch。',
+    },
+    {
+      id: 'space',
+      labelZh: '06',
+      titleZh: '空间与音质抛光',
+      whyZh: '空间负责距离和退场，不能盖住 transient；音质判断必须先响度匹配。',
+      listenZh: `切 Raw / Comfort / ${outputMode}，听 de-harsh、headroom、tail duck 是否让声音更稳而不是更大。`,
+      actionLabelZh: '听 Comfort',
+      outputMode,
+      synthActions: {
+        serum: 'Serum: reverb/delay mix 先低，保留 dry transient。',
+        phasePlant: 'Phase Plant: FX lane 后段做 room/tail，不要让全声道进大湿混响。',
+        vital: 'Vital: 控 reverb width/predelay，用 release 接尾巴，不让空间抢主体。',
+      },
+      reaperProofZh: 'REAPER: 导出 dry / full / tail-only，响度匹配后判断空间是否服务动作。',
+    },
+    {
+      id: 'export',
+      labelZh: '07',
+      titleZh: '交付与复盘',
+      whyZh: '能复现、能命名、能 A/B 解释，才算真正学会，而不是偶然捏出一次。',
+      listenZh: '最后再听 full：确认起音、主体、材质、运动和尾巴都各司其职。',
+      actionLabelZh: '导出检查',
+      workbenchAction: 'focus-export',
+      synthActions: {
+        serum: 'Serum: 保存 preset，并在宏名里写明 tone/motion/material/space。',
+        phasePlant: 'Phase Plant: 保存 patch，保留 lane 命名和 macro route。',
+        vital: 'Vital: 保存 preset，并导出一份带备注的版本。',
+      },
+      reaperProofZh: 'REAPER: 写清 patch、macro、A/B 结果，导出 dry / full / tail-only 三版。',
+    },
+  ];
+  const currentByWorkflow = {
+    source: 'target',
+    shape: 'envelope',
+    compare: 'space',
+    deliver: 'export',
+  };
+  const currentStepId = currentByWorkflow[workflowStep] ?? 'target';
+  const currentIndex = Math.max(0, steps.findIndex((step) => step.id === currentStepId));
+  const nextStep = steps[Math.min(steps.length - 1, currentIndex + 1)] ?? steps[0];
+
+  return {
+    id: 'beginner-synthesis-path',
+    titleZh: 'Synthesis Path：从零到交付路线',
+    summaryZh: `按这条线把 ${familyName} 从听感目标推进到 Serum / Phase Plant / Vital 可复刻的 patch，最后用 REAPER A/B 证明。`,
+    currentStepId,
+    nextStep,
+    steps,
+    reaperTemplateZh: `REAPER A/B ${familyName}: dry / full / tail-only; 只改一个参数=____; 听感变化=____; 保留/撤回=____。`,
+  };
+}
+
 function buildEarTrainingChain(
   family,
   patch,
@@ -3847,6 +3982,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     earTriage,
     missionBrief,
     practiceFocus,
+    beginnerSynthesisPath: buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep),
     earTrainingChain,
     targetMatchCoach,
     synthTransferPlan: buildSynthTransferPlan(family, patch, patchDoctor, targetMatchCoach, macroList),
