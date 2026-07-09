@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-procedural-flow';
+} from './sound-lab-model.js?v=20260709-source-audition';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-procedural-flow';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-source-audition';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-procedural-flow';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-source-audition';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-procedural-flow';
+} from './render.js?v=20260709-source-audition';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -350,6 +350,7 @@ const state = {
   soundLabMacroMorph: 0,
   soundLabAbSlot: 'a',
   soundLabAuditionMode: 'full',
+  activeProceduralSourceId: '',
   soundLabWorkflowStep: 'source',
   activeWaveformDrillStep: 'anchor',
   completedWaveformDrillSteps: [],
@@ -1177,12 +1178,34 @@ function buildLayerAuditionOverrides(modeId = 'full') {
   };
 }
 
+function getProceduralSourceAudition(sourceId = '') {
+  const model = getSoundLabModel();
+  return model.proceduralSourceMap?.items?.find((source) => source.id === sourceId)
+    ?? model.proceduralSourceMap?.items?.[0]
+    ?? null;
+}
+
+function playProceduralSourceAudition(sourceId = '') {
+  const source = getProceduralSourceAudition(sourceId);
+  if (!source) return;
+
+  state.activeProceduralSourceId = source.id;
+  state.soundLabAuditionMode = source.layerAudition ?? 'texture';
+  state.soundLabWorkflowStep = 'compare';
+  state.activeAtlasNode = 'material';
+  state.activeWorkbenchModuleMapId = 'compare';
+  state.activeAdvancedModule = 'advanced';
+  state.workbenchActionFeedback = `程序化声源试听：${source.labelZh}。${source.listenZh} 合成器复刻：${source.synthZh} REAPER：${source.reaperZh}`;
+  playSoundLabPatch({}, source.playOptions ?? buildLayerAuditionOverrides(source.layerAudition ?? 'texture'));
+}
+
 function playLayerAudition(modeId = 'full') {
   const model = getSoundLabModel();
   const audition = model.layerAudition?.modes?.find((mode) => mode.id === modeId)
     ?? model.layerAudition?.modes?.[0];
   if (!audition) return;
 
+  state.activeProceduralSourceId = '';
   state.soundLabAuditionMode = audition.id;
   state.soundLabWorkflowStep = 'compare';
   state.activeAtlasNode = audition.id === 'full' ? 'source' : 'material';
@@ -2425,6 +2448,9 @@ function refreshSoundLabRuntimeUi(model = getSoundLabModel()) {
   });
   document.querySelectorAll('[data-layer-audition]').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.layerAudition === state.soundLabAuditionMode);
+  });
+  document.querySelectorAll('[data-procedural-source-play]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.proceduralSourcePlay === state.activeProceduralSourceId);
   });
   const outputHint = model.outputCompare?.practiceZh ?? '';
   document.querySelectorAll('.output-compare-hint').forEach((hint) => {
@@ -4031,7 +4057,13 @@ function bindSoundLabControls() {
     });
   });
 
-  document.querySelectorAll('[data-layer-audition]').forEach((button) => {
+  document.querySelectorAll('[data-procedural-source-play]').forEach((button) => {
+    button.addEventListener('click', () => {
+      playProceduralSourceAudition(button.dataset.proceduralSourcePlay);
+    });
+  });
+
+  document.querySelectorAll('[data-layer-audition]:not([data-procedural-source-play])').forEach((button) => {
     button.addEventListener('click', () => {
       playLayerAudition(button.dataset.layerAudition);
     });
