@@ -3502,6 +3502,7 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
   if (!steps.length) return '';
   const currentStepId = path.currentStepId ?? steps[0]?.id;
   const nextStepId = path.nextStep?.id ?? '';
+  const focusCard = path.focusCard ?? null;
   const renderStepAttributes = (step) => {
     const attrs = [`data-beginner-synthesis-step="${escapeHtml(step.id)}"`];
     if (step.applyDiagnosticId) {
@@ -3514,6 +3515,54 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
       attrs.push(`data-workbench-action="${escapeHtml(step.workbenchAction ?? 'focus-controls')}"`);
     }
     return attrs.join(' ');
+  };
+  const renderFocusActionAttributes = (action) => {
+    const attrs = [`data-beginner-focus-action="${escapeHtml(action.id ?? '')}"`];
+    if (action.type === 'play') {
+      attrs.push('data-sound-lab-play');
+    } else if (action.type === 'doctor') {
+      attrs.push(`data-doctor-apply="${escapeHtml(action.doctorId ?? '')}"`);
+    } else if (action.type === 'layer') {
+      attrs.push(`data-layer-audition="${escapeHtml(action.layerAudition ?? 'full')}"`);
+    } else if (action.type === 'output') {
+      attrs.push(`data-output-compare="${escapeHtml(action.outputMode ?? 'comfort')}"`);
+    } else {
+      attrs.push(`data-workbench-action="${escapeHtml(action.workbenchAction ?? 'focus-controls')}"`);
+    }
+    return attrs.join(' ');
+  };
+  const renderFocusCard = () => {
+    if (!focusCard) return '';
+    return `
+      <div class="beginner-synthesis-focus" data-beginner-focus="${escapeHtml(focusCard.stepId ?? currentStepId)}">
+        <div class="beginner-focus-copy">
+          <span>Current Step</span>
+          <strong>${escapeHtml(focusCard.titleZh ?? '现在先听当前步骤')}</strong>
+          <p>${escapeHtml(focusCard.listenQuestionZh ?? '')}</p>
+        </div>
+        <div class="beginner-focus-prompts">
+          <article>
+            <span>只改一个</span>
+            <p>${escapeHtml(focusCard.oneChangeRuleZh ?? '')}</p>
+          </article>
+          <article>
+            <span>验收标准</span>
+            <p>${escapeHtml(focusCard.proofQuestionZh ?? '')}</p>
+          </article>
+        </div>
+        <div class="beginner-focus-actions">
+          ${(focusCard.actions ?? []).map((action) => `
+            <button type="button" ${renderFocusActionAttributes(action)}>
+              <strong>${escapeHtml(action.labelZh ?? '执行')}</strong>
+              <small>${escapeHtml(action.noteZh ?? '')}</small>
+            </button>
+          `).join('')}
+        </div>
+        <ul class="beginner-focus-guardrails">
+          ${(focusCard.guardrails ?? []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+        </ul>
+      </div>
+    `;
   };
 
   return `
@@ -3530,6 +3579,7 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
           <small>${escapeHtml(path.nextStep?.actionLabelZh ?? '只改一个参数')}</small>
         </aside>
       </div>
+      ${renderFocusCard()}
       <div class="beginner-synthesis-grid">
         ${steps.map((step) => {
           const className = [

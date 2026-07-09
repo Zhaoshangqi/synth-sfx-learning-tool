@@ -455,6 +455,31 @@ test('buildSoundLabViewModel exposes a beginner synthesis path from target to RE
   assert.match(path.reaperTemplateZh, /dry|full|tail-only|A\/B|只改一个/i);
 });
 
+test('buildSoundLabViewModel exposes a current beginner focus card with real actions', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, undefined, {
+    workflowStep: 'shape',
+    outputMode: 'comfort',
+  });
+
+  const path = model.beginnerSynthesisPath;
+  assert.ok(path.focusCard, 'beginner path should expose a compact current-step focus card');
+  assert.equal(path.focusCard.stepId, 'envelope');
+  assert.match(path.focusCard.titleZh, /现在|当前|塑造时间/);
+  assert.match(path.focusCard.listenQuestionZh, /听|Attack|Decay|起音|尾巴/);
+  assert.match(path.focusCard.oneChangeRuleZh, /只改一个|参数|Attack|Decay/);
+  assert.match(path.focusCard.proofQuestionZh, /A\/B|REAPER|保留|撤回|响度匹配/);
+  assert.ok(Array.isArray(path.focusCard.guardrails));
+  assert.ok(path.focusCard.guardrails.some((item) => /只改一个|one-change/i.test(item)));
+  assert.ok(path.focusCard.guardrails.some((item) => /响度|loudness|A\/B/i.test(item)));
+  assert.deepEqual(path.focusCard.actions.map((action) => action.id), ['listen', 'locate', 'verify']);
+  assert.equal(path.focusCard.actions[0].type, 'play');
+  assert.equal(path.focusCard.actions[1].type, 'workbench');
+  assert.equal(path.focusCard.actions[1].workbenchAction, 'focus-controls');
+  assert.equal(path.focusCard.actions[2].type, 'workbench');
+  assert.equal(path.focusCard.actions[2].workbenchAction, 'focus-practice-loop');
+});
+
 test('buildSoundLabViewModel exposes a target match coach with one-change guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {
