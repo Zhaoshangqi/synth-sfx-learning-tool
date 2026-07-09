@@ -422,6 +422,7 @@ let directManipulationTimer = 0;
 let midiAccess = null;
 let analyzerCoachRuntimeSnapshot = null;
 let spectralBalanceRuntimeSnapshot = null;
+let waveformFingerprintRuntimeSnapshot = null;
 const pendingRangeInputs = new Set();
 const sameViewScrollLock = { x: 0, y: 0, allowProgrammaticScroll: false };
 
@@ -2488,6 +2489,82 @@ function updateSpectralBalanceRuntimeUi(workbench, frame) {
   });
 }
 
+function computeWaveformFingerprintLiveFrame(frame) {
+  const frequency = frame?.frequency;
+  const timeDomain = frame?.timeDomain;
+  if (!frequency?.length && !timeDomain?.length) return null;
+
+  const level = clampPercent((frame?.level ?? 0) * 100);
+  const transient = computeWaveformTransient(timeDomain);
+  const lowFundamental = clampPercent((averageAnalyserRange(frequency, 0.02, 0.09) / 255) * 100);
+  const lowBody = clampPercent((averageAnalyserRange(frequency, 0.09, 0.22) / 255) * 100);
+  const midHarmonics = clampPercent((averageAnalyserRange(frequency, 0.22, 0.46) / 255) * 100);
+  const highHarmonics = clampPercent((averageAnalyserRange(frequency, 0.46, 0.78) / 255) * 100);
+  const airNoise = clampPercent((averageAnalyserRange(frequency, 0.78, 0.98) / 255) * 100);
+  const harmonicDensity = clampPercent(midHarmonics * 0.48 + highHarmonics * 0.52);
+
+  const raw = {
+    sine: clampPercent(lowFundamental * 0.42 + lowBody * 0.32 + (100 - harmonicDensity) * 0.18 + (100 - transient) * 0.08),
+    triangle: clampPercent(lowFundamental * 0.22 + lowBody * 0.34 + midHarmonics * 0.24 + (100 - highHarmonics) * 0.2),
+    square: clampPercent(lowBody * 0.24 + midHarmonics * 0.34 + Math.max(0, midHarmonics - lowFundamental * 0.3) * 0.18 + transient * 0.12 + (100 - airNoise) * 0.08),
+    saw: clampPercent(midHarmonics * 0.28 + highHarmonics * 0.38 + airNoise * 0.16 + lowBody * 0.12 + level * 0.06),
+    noise: clampPercent(airNoise * 0.34 + highHarmonics * 0.22 + transient * 0.22 + level * 0.1 + Math.max(0, highHarmonics - lowFundamental) * 0.12),
+  };
+  const previousBands = waveformFingerprintRuntimeSnapshot?.bands ?? {};
+  const bands = Object.fromEntries(Object.entries(raw).map(([key, value]) => [
+    key,
+    smoothAnalyzerCoachValue(previousBands[key], value, 0.3),
+  ]));
+  const dominant = Object.entries(bands).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'sine';
+  const summaryByDominant = {
+    sine: '实时波形指纹：稳定基频最明显，先怀疑 sine / FM carrier / modal 主体；去掉噪声和空间再验证。',
+    triangle: '实时波形指纹：主体柔和但比纯 sine 更厚，先听 triangle / sine 区域是否支撑 body。',
+    square: '实时波形指纹：中频硬边和脉冲感明显，先对照 square / pulse 或硬同步边缘。',
+    saw: '实时波形指纹：谐波密度和亮边明显，先对照 saw / comb / resonant filter 的贡献。',
+    noise: '实时波形指纹：空气、砂砾或瞬态占比明显，先 solo texture / transient，不要误判成基础音高。',
+  };
+
+  waveformFingerprintRuntimeSnapshot = { raw, bands, dominant };
+  return {
+    bands,
+    dominant,
+    summaryZh: summaryByDominant[dominant] ?? summaryByDominant.sine,
+  };
+}
+
+function updateWaveformFingerprintRuntimeUi(workbench, frame) {
+  const analysis = computeWaveformFingerprintLiveFrame(frame);
+  if (!analysis) return;
+
+  const panel = workbench.querySelector('.waveform-detective-panel[data-waveform-fingerprint-live]');
+  if (panel) panel.setAttribute('data-waveform-live-status', analysis.dominant);
+
+  const status = workbench.querySelector('[data-waveform-fingerprint-status]');
+  if (status) status.textContent = analysis.summaryZh;
+
+  workbench.querySelectorAll('.waveform-ingredient-card[data-waveform-ingredient-live]').forEach((card) => {
+    const ingredientId = card.dataset.waveformIngredientLive;
+    const value = analysis.bands[ingredientId];
+    if (!Number.isFinite(value)) return;
+    const rounded = Math.round(clampPercent(value));
+    const liveState = ingredientId === analysis.dominant ? 'active' : rounded >= 70 ? 'high' : rounded <= 22 ? 'low' : 'stable';
+    card.style.setProperty('--ingredient-live', `${rounded}%`);
+    card.setAttribute('data-waveform-live-status', liveState);
+    const output = card.querySelector('output');
+    if (output) output.textContent = String(rounded);
+    const ingredientStatus = card.querySelector('[data-waveform-ingredient-status]');
+    if (ingredientStatus) {
+      const labels = {
+        active: '当前最像它，先做 solo 验证',
+        high: '偏高，适合 A/B 对照',
+        low: '偏低，不要优先怀疑',
+        stable: '中等，作为辅助证据',
+      };
+      ingredientStatus.textContent = labels[liveState] ?? labels.stable;
+    }
+  });
+}
+
 function drawSoundLabAnalyserFrame(frame) {
   if (state.soundLabAnalyzerMode === 'freeze') return;
   const level = Math.max(0, Math.min(1, frame?.level ?? 0));
@@ -2497,6 +2574,7 @@ function drawSoundLabAnalyserFrame(frame) {
   drawCanvasSpectrum(workbench.querySelector('[data-analyzer-spectrum]'), frame?.frequency);
   updateAnalyzerCoachRuntimeUi(workbench, frame);
   updateSpectralBalanceRuntimeUi(workbench, frame);
+  updateWaveformFingerprintRuntimeUi(workbench, frame);
   workbench.querySelectorAll('[data-analyzer-meter] i').forEach((bar, index) => {
     const offset = Math.sin(index * 1.3 + level * 5) * 0.16;
     bar.style.setProperty('--meter', `${Math.round(Math.max(0.08, level + offset) * 100)}%`);
