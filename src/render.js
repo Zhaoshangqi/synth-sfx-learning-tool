@@ -3496,6 +3496,81 @@ function renderAtlasCommandDock(model = {}, options = {}) {
   `;
 }
 
+function renderBeginnerSynthesisPathPanel(model = {}) {
+  const path = model.beginnerSynthesisPath ?? {};
+  const steps = path.steps ?? [];
+  if (!steps.length) return '';
+  const currentStepId = path.currentStepId ?? steps[0]?.id;
+  const nextStepId = path.nextStep?.id ?? '';
+  const renderStepAttributes = (step) => {
+    const attrs = [`data-beginner-synthesis-step="${escapeHtml(step.id)}"`];
+    if (step.applyDiagnosticId) {
+      attrs.push(`data-doctor-apply="${escapeHtml(step.applyDiagnosticId)}"`);
+    } else if (step.layerAudition) {
+      attrs.push(`data-layer-audition="${escapeHtml(step.layerAudition)}"`);
+    } else if (step.outputMode) {
+      attrs.push(`data-output-compare="${escapeHtml(step.outputMode)}"`);
+    } else {
+      attrs.push(`data-workbench-action="${escapeHtml(step.workbenchAction ?? 'focus-controls')}"`);
+    }
+    return attrs.join(' ');
+  };
+
+  return `
+    <section class="beginner-synthesis-path-panel" aria-label="从零到交付路线" data-flow-surface>
+      <div class="beginner-synthesis-head">
+        <div>
+          <span>Beginner Director</span>
+          <strong>${escapeHtml(path.titleZh ?? 'Synthesis Path')}</strong>
+          <p>${escapeHtml(path.summaryZh ?? '按顺序听、改、验证和交付。')}</p>
+        </div>
+        <aside>
+          <span>下一步</span>
+          <strong>${escapeHtml(path.nextStep?.titleZh ?? '继续 A/B')}</strong>
+          <small>${escapeHtml(path.nextStep?.actionLabelZh ?? '只改一个参数')}</small>
+        </aside>
+      </div>
+      <div class="beginner-synthesis-grid">
+        ${steps.map((step) => {
+          const className = [
+            'beginner-synthesis-step',
+            step.id === currentStepId ? 'is-current' : '',
+            step.id === nextStepId ? 'is-next' : '',
+          ].filter(Boolean).join(' ');
+          return `
+            <button class="${className}" type="button" ${renderStepAttributes(step)} aria-pressed="${step.id === currentStepId ? 'true' : 'false'}">
+              <span>${escapeHtml(step.labelZh)}</span>
+              <strong>${escapeHtml(step.titleZh)}</strong>
+              <p>${escapeHtml(step.whyZh)}</p>
+              <small>${escapeHtml(step.listenZh)}</small>
+              <em>${escapeHtml(step.actionLabelZh)}</em>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      <div class="beginner-synthesis-detail">
+        <article>
+          <strong>Serum</strong>
+          <p>${escapeHtml(steps.find((step) => step.id === currentStepId)?.synthActions?.serum ?? steps[0]?.synthActions?.serum ?? '')}</p>
+        </article>
+        <article>
+          <strong>Phase Plant</strong>
+          <p>${escapeHtml(steps.find((step) => step.id === currentStepId)?.synthActions?.phasePlant ?? steps[0]?.synthActions?.phasePlant ?? '')}</p>
+        </article>
+        <article>
+          <strong>Vital</strong>
+          <p>${escapeHtml(steps.find((step) => step.id === currentStepId)?.synthActions?.vital ?? steps[0]?.synthActions?.vital ?? '')}</p>
+        </article>
+        <article class="beginner-synthesis-reaper">
+          <strong>REAPER Proof</strong>
+          <p>${escapeHtml(steps.find((step) => step.id === currentStepId)?.reaperProofZh ?? path.reaperTemplateZh ?? '')}</p>
+          <code>${escapeHtml(path.reaperTemplateZh ?? '')}</code>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
 function renderSoundLabWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
@@ -3529,6 +3604,7 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchCommandCenter(family, model, { ...options, isPlaying })}
+      ${renderBeginnerSynthesisPathPanel(model)}
       ${renderPracticeFocusStrip(model)}
       ${renderEarTrainingChainPanel(model)}
       ${renderMissionBriefPanel(model)}
@@ -3628,6 +3704,7 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
+      ${renderBeginnerSynthesisPathPanel(model)}
       ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
       ${renderPracticeFocusStrip(model)}
       ${renderEarTrainingChainPanel(model)}

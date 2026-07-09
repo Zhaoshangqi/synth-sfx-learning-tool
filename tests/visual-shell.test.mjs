@@ -1964,6 +1964,36 @@ test('sound lab first screen keeps the decorative atlas orb out of layout flow',
   assert.match(css, /\.signal-atlas-console > \.atlas-main-console\s*\{[\s\S]*order:\s*9/);
 });
 
+test('sound lab beginner synthesis path is a routed first-screen learning director', () => {
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /function buildBeginnerSynthesisPath/);
+  assert.match(modelJs, /beginnerSynthesisPath:\s*buildBeginnerSynthesisPath/);
+  assert.match(renderJs, /function renderBeginnerSynthesisPathPanel/);
+  assert.match(renderJs, /beginner-synthesis-path-panel/);
+  assert.match(renderJs, /data-beginner-synthesis-step/);
+  assert.match(renderJs, /data-workbench-action/);
+  assert.match(renderJs, /data-layer-audition/);
+  assert.match(renderJs, /data-output-compare/);
+  assert.match(renderJs, /data-doctor-apply/);
+  assert.match(renderJs, /Serum/);
+  assert.match(renderJs, /Phase Plant/);
+  assert.match(renderJs, /Vital/);
+  assert.match(renderJs, /renderWorkbenchFlowMap\(family, options\.activeWorkflowStep, options\.activeAtlasNode\)[\s\S]*renderBeginnerSynthesisPathPanel\(model\)[\s\S]*renderPracticeFocusStrip\(model\)/);
+  assert.match(appJs, /\[data-workbench-action\]/);
+  assert.match(appJs, /\[data-layer-audition\]/);
+  assert.match(appJs, /\[data-output-compare\]/);
+  assert.match(appJs, /\[data-doctor-apply\]/);
+  assert.match(css, /Beginner synthesis path v10/);
+  assert.match(css, /\.beginner-synthesis-path-panel\s*\{/);
+  assert.match(css, /\.beginner-synthesis-grid\s*\{/);
+  assert.match(css, /\.beginner-synthesis-step\.is-current\s*\{/);
+  assert.match(css, /@media \(max-width:\s*980px\)[\s\S]*\.beginner-synthesis-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
 test('target match coach is routed, readable, and visually integrated with Signal Atlas', () => {
   const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');

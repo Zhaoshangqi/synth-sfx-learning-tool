@@ -421,6 +421,40 @@ test('buildSoundLabViewModel exposes a first-screen practice focus rail for begi
   assert.match(focus.reaperNoteTemplate, /A\/B|REAPER|保留|撤回/);
 });
 
+test('buildSoundLabViewModel exposes a beginner synthesis path from target to REAPER delivery', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 42,
+    material: 86,
+    space: 58,
+    variation: 34,
+  }, {
+    presetId: 'vital-metal-modal-hit',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+    workflowStep: 'shape',
+    layerMix: { transient: 86, body: 62, texture: 76, tail: 52 },
+  });
+
+  const path = model.beginnerSynthesisPath;
+  assert.ok(path, 'view model should expose a beginner synthesis path');
+  assert.match(path.titleZh, /从零|路线|Synthesis Path|交付/);
+  assert.match(path.summaryZh, /Serum|Phase Plant|Vital|REAPER/);
+  assert.equal(path.currentStepId, 'envelope');
+  assert.equal(path.steps.length, 7);
+  assert.deepEqual(path.steps.map((step) => step.id), ['target', 'waveform', 'envelope', 'material', 'motion', 'space', 'export']);
+  assert.ok(path.steps.every((step) => step.labelZh && step.titleZh && step.whyZh && step.listenZh));
+  assert.ok(path.steps.every((step) => step.actionLabelZh && step.reaperProofZh && step.synthActions));
+  assert.ok(path.steps.every((step) => step.synthActions.serum && step.synthActions.phasePlant && step.synthActions.vital));
+  assert.ok(path.steps.some((step) => step.workbenchAction === 'focus-waveform'));
+  assert.ok(path.steps.some((step) => step.layerAudition === 'body'));
+  assert.ok(path.steps.some((step) => step.outputMode === 'comfort' || step.outputMode === 'studio'));
+  assert.ok(path.steps.some((step) => step.applyDiagnosticId === model.patchDoctor.diagnostics[0].id));
+  assert.equal(path.nextStep.id, 'material');
+  assert.match(path.reaperTemplateZh, /dry|full|tail-only|A\/B|只改一个/i);
+});
+
 test('buildSoundLabViewModel exposes a target match coach with one-change guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {
