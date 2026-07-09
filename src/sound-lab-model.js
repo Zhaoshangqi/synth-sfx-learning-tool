@@ -3257,6 +3257,102 @@ function soloLayerMix(role, baseMix = {}) {
   return Object.fromEntries(roles.map((item) => [item, item === role ? 100 : 0]));
 }
 
+function buildProceduralSourceMap(patch) {
+  const roleLabels = {
+    transient: 'Transient 瞬态',
+    body: 'Body 主体',
+    texture: 'Texture 质感',
+    tail: 'Tail 尾音',
+  };
+  const generatorHints = {
+    'impulse-noise': {
+      labelZh: '硬点击 / Impulse',
+      shape: ['短白噪声', '高频针尖', '快速衰减'],
+      listenZh: '听第一下是否清楚但不扎耳；它负责动作边界，不负责主体重量。',
+      synthZh: 'Serum/Vital 用 Noise one-shot + very short amp envelope；Phase Plant 用 Noise lane + transient envelope。',
+      reaperZh: 'REAPER 放大前 30ms，确认 click 对齐 body，A/B 时不要只因为更大声就保留。',
+    },
+    'banded-burst': {
+      labelZh: '金属尖峰 / Banded Burst',
+      shape: ['带通噪声', '双峰金属环', '短 ring gate'],
+      listenZh: '听 3k-8k 是否有金属边缘；如果只剩刺耳高频，就降低 brightness 或 texture。',
+      synthZh: 'Serum/Vital 用 band-pass noise + FM/warp 小峰；Phase Plant 用 Noise + Resonator/Filter lane。',
+      reaperZh: 'REAPER 看 spectrum 是否出现窄峰；导出 transient-only 与 full 做响度匹配 A/B。',
+    },
+    'gated-noise': {
+      labelZh: '电流颗粒 / Gated Noise',
+      shape: ['随机门控', '亮噪声火花', '轻软削波'],
+      listenZh: '听颗粒是不是像电流在跳，而不是连续嘶声；节奏太密会糊成白噪。',
+      synthZh: 'Serum/Vital 用 random LFO 控 noise level/filter；Phase Plant 用 Random modulator 控 texture lane。',
+      reaperZh: 'REAPER 导出 texture-only，检查颗粒密度是否服务画面速度，而不是铺满全程。',
+    },
+    'filtered-noise': {
+      labelZh: '空气床 / Filtered Noise',
+      shape: ['低通噪声', '缓慢扫频', '柔尾包络'],
+      listenZh: '听空气是否只补运动和距离，不应该盖住 transient/body。',
+      synthZh: 'Serum/Vital 用 Noise + low-pass sweep；Phase Plant 用 Noise lane 加 envelope follower 或 LFO sweep。',
+      reaperZh: 'REAPER 做 high-pass/low-pass 各听一次，确认空气层没有无用低频。',
+    },
+    'shimmer-tail': {
+      labelZh: '微尾音 / Shimmer Tail',
+      shape: ['弱音调尾巴', '高频尘粒', '慢衰减'],
+      listenZh: '听尾音是否自然退场；它应该让声音有空间余韵，而不是生成第二个主声音。',
+      synthZh: 'Serum/Vital 用短 reverb/delay send + filtered noise tail；Phase Plant 放到 FX lane 或单独 tail lane。',
+      reaperZh: 'REAPER 导出 tail-only，与 full 对比 tail 是否遮挡 transient。',
+    },
+  };
+  const baseOptions = {
+    engineMode: patch.engineMode,
+    qualityMode: patch.qualityMode,
+    outputMode: patch.outputMode,
+  };
+  const seen = new Set();
+  const items = patch.layers
+    .filter((layer) => layer.engine === 'sampleGrain' && layer.sampleAssetId)
+    .map((layer) => {
+      const generatorType = layer.generator?.type ?? 'spark-grains';
+      const key = `${layer.role}:${layer.sampleAssetId}:${generatorType}`;
+      if (seen.has(key)) return null;
+      seen.add(key);
+      const asset = SOUND_LAB_SAMPLE_ASSETS.find((item) => item.id === layer.sampleAssetId);
+      const hint = generatorHints[generatorType] ?? {
+        labelZh: '颗粒声源 / Spark Grains',
+        shape: ['颗粒门控', '粉噪细节', '短包络'],
+        listenZh: '听颗粒是否贴着主体，不要让 texture 单独抢戏。',
+        synthZh: '三款合成器都可以用 Noise + short envelope + filter resonance 复刻。',
+        reaperZh: 'REAPER solo texture 后再回 full，确认它只是细节层。',
+      };
+      const role = layer.role ?? 'texture';
+      return {
+        id: `${role}-${generatorType}-${layer.sampleAssetId}`,
+        sampleAssetId: layer.sampleAssetId,
+        labelZh: asset?.labelZh ?? hint.labelZh,
+        role,
+        roleZh: roleLabels[role] ?? role,
+        generatorType,
+        generatorLabelZh: hint.labelZh,
+        generatorShape: hint.shape,
+        listenZh: hint.listenZh,
+        synthZh: hint.synthZh,
+        reaperZh: hint.reaperZh,
+        layerAudition: ['transient', 'body', 'texture', 'tail'].includes(role) ? role : 'texture',
+        playOptions: {
+          ...baseOptions,
+          outputMode: role === 'transient' ? 'raw' : role === 'tail' ? 'studio' : patch.outputMode,
+          layerMix: soloLayerMix(role, patch.layerMix ?? {}),
+        },
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    titleZh: 'Procedural Source Map / 程序化声源地图',
+    beginnerZh: '把当前 patch 里的 transient、texture、tail 程序化声源拆开听：先听每一层像什么，再回到 full 判断是否真实。',
+    reaperProofZh: 'REAPER: 导出 transient-only / texture-only / tail-only stem，再和 full 响度匹配 A/B，记录哪一层改变了材质。',
+    items,
+  };
+}
+
 function buildLayerAuditionModes(patch, activeMode = 'full') {
   const baseMix = patch.layerMix ?? {};
   const baseOptions = {
@@ -3518,6 +3614,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     abCompare: buildAbCompare(patch, options.abSlot ?? 'a'),
     outputCompare: buildOutputCompare(patch),
     layerAudition: buildLayerAuditionModes(patch, options.auditionMode ?? options.activeLayerAudition ?? 'full'),
+    proceduralSourceMap: buildProceduralSourceMap(patch),
     library: buildWorkbenchLibraryState({
       patch,
       favoriteIds: options.favoriteIds ?? [],

@@ -1302,6 +1302,76 @@ test('browser audio engines honor layer onset and space pre-delay cues', () => {
   assert.match(audioPlayerJs, /globalFx\.space\.preDelayMs/);
 });
 
+test('procedural sample sweeteners render distinct material generators in both browser engines', () => {
+  const metal = buildSoundLabPatch(getSoundLabFamily(soundLabFamilies, 'metal-impact'), SOUND_LAB_MACROS, {
+    presetId: 'serum-metal-fm-hit',
+    qualityMode: 'studio',
+  });
+  const electric = buildSoundLabPatch(getSoundLabFamily(soundLabFamilies, 'electric-crackle'), SOUND_LAB_MACROS, {
+    presetId: 'vital-electric-crackle',
+    qualityMode: 'studio',
+  });
+  const air = buildSoundLabPatch(getSoundLabFamily(soundLabFamilies, 'air-whoosh'), SOUND_LAB_MACROS, {
+    presetId: 'serum-air-whoosh-noise',
+    qualityMode: 'studio',
+  });
+  const energy = buildSoundLabPatch(getSoundLabFamily(soundLabFamilies, 'energy-charge'), SOUND_LAB_MACROS, {
+    presetId: 'vital-energy-charge-rise',
+    qualityMode: 'studio',
+  });
+  const generatorTypes = new Set([
+    ...metal.layers,
+    ...electric.layers,
+    ...air.layers,
+    ...energy.layers,
+  ].filter((layer) => layer.engine === 'sampleGrain').map((layer) => layer.generator?.type));
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.ok(generatorTypes.has('banded-burst'), 'metal snap should not collapse to generic noise');
+  assert.ok(generatorTypes.has('gated-noise'), 'electric grain should not collapse to generic noise');
+  assert.ok(generatorTypes.has('filtered-noise'), 'air bed should not collapse to generic noise');
+  assert.ok(generatorTypes.has('shimmer-tail'), 'studio tail sweetener should not collapse to generic noise');
+  assert.match(processorJs, /proceduralSampleShape/);
+  assert.match(processorJs, /generatorType === 'impulse-noise'/);
+  assert.match(processorJs, /generatorType === 'banded-burst'/);
+  assert.match(processorJs, /generatorType === 'gated-noise'/);
+  assert.match(processorJs, /generatorType === 'filtered-noise'/);
+  assert.match(processorJs, /generatorType === 'shimmer-tail'/);
+  assert.match(audioPlayerJs, /createProceduralLayerBuffer/);
+  assert.match(audioPlayerJs, /generator\.type === 'impulse-noise'/);
+  assert.match(audioPlayerJs, /generator\.type === 'banded-burst'/);
+  assert.match(audioPlayerJs, /generator\.type === 'gated-noise'/);
+  assert.match(audioPlayerJs, /generator\.type === 'filtered-noise'/);
+  assert.match(audioPlayerJs, /generator\.type === 'shimmer-tail'/);
+});
+
+test('buildSoundLabViewModel explains procedural sample sources as a playable source map', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'electric-crackle');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 82,
+    motion: 70,
+    material: 86,
+    space: 40,
+    variation: 62,
+  }, {
+    presetId: 'vital-electric-crackle',
+    qualityMode: 'studio',
+    outputMode: 'comfort',
+  });
+  const sourceMap = model.proceduralSourceMap;
+
+  assert.ok(sourceMap, 'view model should explain procedural sample sweeteners');
+  assert.match(sourceMap.titleZh, /程序化|声源|Source/i);
+  assert.match(sourceMap.beginnerZh, /transient|texture|tail|层|听/i);
+  assert.ok(sourceMap.items.length >= 2, 'electric patch should expose at least transient and texture procedural sources');
+  assert.ok(sourceMap.items.some((item) => item.generatorType === 'gated-noise' && item.role === 'transient'));
+  assert.ok(sourceMap.items.every((item) => item.sampleAssetId && item.generatorType && item.listenZh && item.synthZh && item.reaperZh));
+  assert.ok(sourceMap.items.every((item) => item.layerAudition || item.playOptions), 'each source should be playable or routable');
+  assert.ok(sourceMap.items.every((item) => item.generatorShape && item.generatorShape.length >= 3));
+  assert.match(sourceMap.reaperProofZh, /REAPER|stem|A\/B|texture|tail/i);
+});
+
 test('browser audio engine keeps performance gesture tail before auto stop', () => {
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
 

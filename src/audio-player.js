@@ -1,5 +1,5 @@
 import { buildLabAudioPatch } from './audio-model.js';
-import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-flow-lens';
+import { buildWorkletMessage } from './sound-lab-model.js?v=20260709-procedural-flow';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -95,6 +95,63 @@ const createNoiseBuffer = (context, durationSeconds) => {
   for (let index = 0; index < length; index += 1) {
     data[index] = Math.random() * 2 - 1;
   }
+  return buffer;
+};
+
+const createProceduralLayerBuffer = (context, layer = {}, durationSeconds = 0.2) => {
+  const length = Math.max(1, Math.floor(context.sampleRate * durationSeconds));
+  const buffer = context.createBuffer(1, length, context.sampleRate);
+  const data = buffer.getChannelData(0);
+  const generator = layer.generator ?? {};
+  const bandHz = clamp(layer.bandHz ?? generator.bandHz ?? 4200, 90, 16000);
+  const density = clamp(layer.density ?? 18, 1, 120);
+  const decay = clamp(generator.decay ?? 1, 0.18, 3.2);
+  let pink = 0;
+  let brown = 0;
+  let low = 0;
+
+  for (let index = 0; index < length; index += 1) {
+    const t = index / context.sampleRate;
+    const progress = index / Math.max(1, length - 1);
+    const white = Math.random() * 2 - 1;
+    pink += (white - pink) * 0.08;
+    brown = clamp(brown + white * 0.018, -1, 1);
+    const phase = Math.PI * 2 * t;
+    let sample;
+
+    if (generator.type === 'impulse-noise') {
+      const click = (white - pink * 0.72) * Math.exp(-t * 150);
+      const pin = Math.sin(phase * bandHz) * Math.exp(-t * 92) * 0.26;
+      sample = Math.tanh((click * 1.4 + pin) * 1.18);
+    } else if (generator.type === 'banded-burst') {
+      const burstEnv = Math.exp(-t * (24 + decay * 18));
+      const lowerBand = Math.sin(phase * bandHz) * 0.36;
+      const upperBand = Math.sin(phase * bandHz * 2.17 + 0.41) * 0.22;
+      const ringGate = Math.sin(phase * density * 0.5) > -0.18 ? 1 : 0.42;
+      sample = Math.tanh(((white - pink * 0.72) * 0.68 + lowerBand + upperBand) * burstEnv * ringGate * 1.35);
+    } else if (generator.type === 'gated-noise') {
+      const crackleGate = Math.sin(phase * density * 1.8 + index * 0.013) > 0.18 ? 1 : 0.18;
+      sample = Math.tanh(((white - pink * 0.72) * crackleGate + pink * 0.5) * (1 - progress * 0.26) * 1.28);
+    } else if (generator.type === 'filtered-noise') {
+      const air = brown * 1.3 + pink * 0.35;
+      low += (air - low) * clamp((bandHz * (0.4 + progress * 0.35)) / context.sampleRate, 0.002, 0.22);
+      sample = low * (1 - progress * 0.18);
+    } else if (generator.type === 'shimmer-tail') {
+      const tailEnv = Math.exp(-progress * (1.2 / decay));
+      sample = (
+        Math.sin(phase * bandHz * 0.5) * 0.28
+        + Math.sin(phase * bandHz * 1.49 + 0.73) * 0.18
+        + Math.sin(phase * bandHz * 2.01 + 1.91) * 0.1
+        + pink * 0.18 * (1 - progress)
+      ) * tailEnv;
+    } else {
+      const gate = Math.sin(phase * density) > 0.12 ? 1 : 0;
+      sample = pink * 1.7 * gate + Math.sin(phase * bandHz) * 0.26 + Math.sin(phase * bandHz * 1.91) * 0.14;
+    }
+
+    data[index] = clamp(sample, -1, 1);
+  }
+
   return buffer;
 };
 
@@ -372,7 +429,7 @@ export class LabAudioPlayer {
     if (!this.context?.audioWorklet || !globalThis.AudioWorkletNode) return false;
 
     try {
-      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-flow-lens');
+      await this.context.audioWorklet.addModule('./src/sound-lab-processor.js?v=20260709-procedural-flow');
       this.workletReady = true;
       return true;
     } catch {
@@ -875,10 +932,28 @@ export class LabAudioPlayer {
       const filter = this.context.createBiquadFilter();
       const amp = this.context.createGain();
       const filterData = layer.filter ?? {};
-      noise.buffer = createNoiseBuffer(this.context, layerDuration + 0.12);
-      filter.type = filterData.type === 'lowpass' ? 'lowpass' : filterData.type === 'highpass' ? 'highpass' : 'bandpass';
-      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? filterData.frequency ?? 3200, 120, 16000), layerStartTime);
-      filter.Q.value = clamp(filterData.q ?? 1.2, 0.2, 16);
+      const generator = layer.generator ?? {};
+      noise.buffer = layer.engine === 'sampleGrain'
+        ? createProceduralLayerBuffer(this.context, layer, layerDuration + 0.12)
+        : createNoiseBuffer(this.context, layerDuration + 0.12);
+      filter.type = generator.type === 'filtered-noise'
+        ? 'lowpass'
+        : generator.type === 'impulse-noise' || generator.type === 'banded-burst' || generator.type === 'gated-noise'
+          ? 'bandpass'
+          : filterData.type === 'lowpass'
+            ? 'lowpass'
+            : filterData.type === 'highpass'
+              ? 'highpass'
+              : 'bandpass';
+      filter.frequency.setValueAtTime(clamp(layer.bandHz ?? generator.bandHz ?? filterData.frequency ?? 3200, 120, 16000), layerStartTime);
+      filter.Q.value = clamp(
+        generator.type === 'banded-burst' ? 5.8
+          : generator.type === 'impulse-noise' ? 3.4
+            : generator.type === 'gated-noise' ? 2.2
+              : filterData.q ?? 1.2,
+        0.2,
+        16,
+      );
       if (filterData.sweep) {
         filter.frequency.linearRampToValueAtTime(clamp((filterData.frequency ?? 3200) * (1 + filterData.sweep), 120, 16000), layerStartTime + layerDuration * 0.75);
       }
