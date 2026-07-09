@@ -3896,6 +3896,70 @@ body.is-direct-manipulating .sound-lab-workbench .fx-chain-panel::before {
   color: var(--ref9-paper-soft) !important;
 }
 
+/* Sound Lab first-screen hierarchy repair */
+.signal-atlas-console > .atlas-orb {
+  position: absolute !important;
+  top: 38px !important;
+  right: clamp(28px, 8vw, 140px) !important;
+  width: clamp(220px, 26vw, 340px) !important;
+  height: clamp(220px, 26vw, 340px) !important;
+  grid-column: auto !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+.signal-atlas-console > .atlas-topbar {
+  order: 1;
+}
+
+.signal-atlas-console > .mission-brief-panel {
+  order: 2;
+}
+
+.signal-atlas-console > .session-transport-dock {
+  order: 3;
+}
+
+.signal-atlas-console > .atlas-signal-ribbon {
+  order: 4;
+}
+
+.signal-atlas-console > .practice-focus-strip {
+  order: 5;
+}
+
+.signal-atlas-console > .ear-chain-panel {
+  order: 6;
+}
+
+.signal-atlas-console > .target-match-coach-panel {
+  order: 7;
+}
+
+.signal-atlas-console > .synth-transfer-panel {
+  order: 8;
+}
+
+.signal-atlas-console > .atlas-main-console {
+  order: 9;
+}
+
+.signal-atlas-console > .atlas-right-rail {
+  order: 10;
+}
+
+.signal-atlas-console > .atlas-support-grid {
+  order: 11;
+}
+
+.signal-atlas-console > .atlas-roadmap-strip {
+  order: 12;
+}
+
+.signal-atlas-console > .sound-lab-export {
+  order: 13;
+}
+
 body.is-direct-manipulating .procedural-source-panel::before {
   animation-play-state: paused !important;
   opacity: 0.045 !important;
