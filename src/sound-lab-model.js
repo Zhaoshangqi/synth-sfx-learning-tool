@@ -3186,6 +3186,44 @@ function buildPracticeFocus(family, patch, patchDoctor, practiceLoop, earTriage,
   };
 }
 
+function buildBeginnerFocusCard(currentStep, nextStep, outputMode = 'comfort') {
+  const step = currentStep ?? {};
+  const routeAction = step.applyDiagnosticId
+    ? { type: 'doctor', doctorId: step.applyDiagnosticId }
+    : step.layerAudition
+      ? { type: 'layer', layerAudition: step.layerAudition }
+      : step.outputMode
+        ? { type: 'output', outputMode: step.outputMode }
+        : { type: 'workbench', workbenchAction: step.workbenchAction ?? 'focus-controls' };
+  const verifyAction = step.outputMode
+    ? { type: 'output', outputMode: step.outputMode }
+    : { type: 'workbench', workbenchAction: 'focus-practice-loop' };
+
+  return {
+    id: 'beginner-current-focus',
+    stepId: step.id ?? 'target',
+    nextStepId: nextStep?.id ?? '',
+    titleZh: `现在：${step.titleZh ?? '听当前步骤'}`,
+    listenQuestionZh: step.id === 'envelope'
+      ? '先听 Attack 是否太硬或太钝，再听 Decay / Release 是否让主体和尾巴贴住动作。'
+      : step.listenZh ?? '先听当前 patch 的 dry 与 full，只判断这一段是否更接近目标。',
+    oneChangeRuleZh: step.id === 'envelope'
+      ? '只改一个参数：Attack、Decay、Sustain、Release 里先选最明显的一项；不要同时改宏、材质和空间。'
+      : `只改一个参数：${step.actionLabelZh ?? '当前动作'}。如果听不出它改变了哪一段，就撤回。`,
+    proofQuestionZh: 'A/B 响度匹配后写 REAPER 结论：这次变化保留还是撤回，理由必须能对应到 transient / body / texture / tail。',
+    guardrails: [
+      'One-change：每次只改一个参数或一层，避免“听起来变了但不知道为什么”。',
+      'Loudness-match：A/B 前先匹配响度，避免把更大声误判成更好听。',
+      'Dry first：先听 dry/core，再加空间和抛光，防止 reverb 掩盖真实问题。',
+    ],
+    actions: [
+      { id: 'listen', type: 'play', labelZh: '试听当前', noteZh: '听完整 patch' },
+      { id: 'locate', labelZh: step.actionLabelZh ?? '定位模块', noteZh: '跳到该调制区', ...routeAction },
+      { id: 'verify', labelZh: 'A/B 验收', noteZh: `切到 ${step.outputMode ?? outputMode} 或练习闭环`, ...verifyAction },
+    ],
+  };
+}
+
 function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = 'source') {
   const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
   const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
@@ -3308,6 +3346,7 @@ function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = '
   };
   const currentStepId = currentByWorkflow[workflowStep] ?? 'target';
   const currentIndex = Math.max(0, steps.findIndex((step) => step.id === currentStepId));
+  const currentStep = steps[currentIndex] ?? steps[0];
   const nextStep = steps[Math.min(steps.length - 1, currentIndex + 1)] ?? steps[0];
 
   return {
@@ -3315,8 +3354,10 @@ function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = '
     titleZh: 'Synthesis Path：从零到交付路线',
     summaryZh: `按这条线把 ${familyName} 从听感目标推进到 Serum / Phase Plant / Vital 可复刻的 patch，最后用 REAPER A/B 证明。`,
     currentStepId,
+    currentStep,
     nextStep,
     steps,
+    focusCard: buildBeginnerFocusCard(currentStep, nextStep, outputMode),
     reaperTemplateZh: `REAPER A/B ${familyName}: dry / full / tail-only; 只改一个参数=____; 听感变化=____; 保留/撤回=____。`,
   };
 }

@@ -1994,6 +1994,32 @@ test('sound lab beginner synthesis path is a routed first-screen learning direct
   assert.match(css, /@media \(max-width:\s*980px\)[\s\S]*\.beginner-synthesis-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
+test('sound lab beginner synthesis path has a compact current-step focus card', () => {
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /function buildBeginnerFocusCard/);
+  assert.match(modelJs, /focusCard:\s*buildBeginnerFocusCard/);
+  assert.match(modelJs, /listenQuestionZh/);
+  assert.match(modelJs, /oneChangeRuleZh/);
+  assert.match(modelJs, /proofQuestionZh/);
+  assert.match(renderJs, /beginner-synthesis-focus/);
+  assert.match(renderJs, /data-beginner-focus-action/);
+  assert.match(renderJs, /data-sound-lab-play/);
+  assert.match(renderJs, /data-workbench-action/);
+  assert.match(renderJs, /data-output-compare/);
+  assert.match(appJs, /\[data-workbench-action\]/);
+  assert.match(appJs, /\[data-output-compare\]/);
+  assert.match(appJs, /\[data-sound-lab-play\]/);
+  assert.match(css, /Beginner synthesis focus card v10\.2/);
+  assert.match(css, /\.beginner-synthesis-focus\s*\{/);
+  assert.match(css, /\.beginner-focus-actions\s*\{/);
+  assert.match(css, /\.beginner-focus-actions button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
+  assert.match(css, /body\.is-direct-manipulating\s+\.beginner-synthesis-focus[\s\S]*transition:\s*none !important/);
+});
+
 test('target match coach is routed, readable, and visually integrated with Signal Atlas', () => {
   const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
