@@ -504,6 +504,7 @@ function buildMasterPolish(values, dsp, quality, layerData = {}) {
     motionBus,
     dynamicDetail,
     transientGloss,
+    analogGesture: layerData.analogGesture,
   };
 }
 
@@ -605,7 +606,7 @@ function buildFxRack(values, dsp, quality, masterPolish = buildMasterPolish(valu
     { id: 'chorus', type: 'chorus', labelZh: 'Micro Width', amount: clamp(space * 0.35 + variation * 0.2, 0, 0.72) },
     { id: 'delay', type: 'delay', labelZh: 'Tempo Echo', amount: clamp(motion * 0.2 + space * 0.24, 0, 0.5) },
     { id: 'reverb', type: 'reverb', labelZh: 'Room / Tail', amount: clamp(dsp.space.mix * quality.fxScale + space * 0.16, 0, 0.62), decaySeconds: clamp(dsp.space.decaySeconds * quality.fxScale, 0.12, 3.2) },
-    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18 + (masterPolish.dynamicDetail?.bodyGlue ?? 0) * 0.24 + (masterPolish.transientGloss?.crestClamp ?? 0) * 0.2 + (masterPolish.transientGloss?.harmonicAir ?? 0) * 0.18, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus, dynamicDetail: masterPolish.dynamicDetail, transientGloss: masterPolish.transientGloss },
+    { id: 'polish', type: 'polish', labelZh: 'Master Polish', amount: clamp(masterPolish.glue + masterPolish.airGuard * 0.34 + (masterPolish.comfortBus?.deHarsh ?? 0) * 0.16 + (masterPolish.motionBus?.microDynamics ?? 0) * 0.8 + (masterPolish.temporalMasking?.wetDuck ?? 0) * 0.18 + (masterPolish.dynamicDetail?.bodyGlue ?? 0) * 0.24 + (masterPolish.transientGloss?.crestClamp ?? 0) * 0.2 + (masterPolish.transientGloss?.harmonicAir ?? 0) * 0.18 + (masterPolish.analogGesture?.amount ?? 0) * 0.16, 0, 1), glue: masterPolish.glue, lowTighten: masterPolish.lowTighten, airGuard: masterPolish.airGuard, comfortBus: masterPolish.comfortBus, temporalMasking: masterPolish.temporalMasking, motionBus: masterPolish.motionBus, dynamicDetail: masterPolish.dynamicDetail, transientGloss: masterPolish.transientGloss, analogGesture: masterPolish.analogGesture },
     { id: 'limiter', type: 'limiter', labelZh: 'Soft Limiter', amount: quality.id === 'studio' ? 0.94 : 0.9, ceiling: quality.id === 'studio' ? 0.94 : 0.9 },
   ];
 }
@@ -702,6 +703,51 @@ function buildPerformanceFeel(family, values, performance, quality) {
       { id: 'pitchDrift', labelZh: '微音高漂移', value: pitchDriftCents, unit: 'ct', noteZh: '只做几 cents 的活感，不让音高跑掉。' },
       { id: 'spaceResponse', labelZh: '空间响应', value: Math.round(stereoGesture * 100), unit: '%', noteZh: '重触时宽度和尾音略微打开。' },
     ],
+  };
+}
+
+function buildAnalogGesture(values, performanceFeel, quality) {
+  const brightness = normalize(values.brightness);
+  const motion = normalize(values.motion);
+  const material = normalize(values.material);
+  const variation = normalize(values.variation);
+  const studioBonus = quality.id === 'studio' ? 0.12 : quality.id === 'balanced' ? 0.05 : 0.018;
+  const triggerPattern = performanceFeel?.triggerPattern?.length
+    ? performanceFeel.triggerPattern
+    : [{ id: 'hit-1', delayMs: 0, velocity: 72, noteOffset: 0 }];
+  const baseVelocity = clamp(triggerPattern[0]?.velocity ?? 72, 1, 127);
+  const amount = Number(clamp(0.07 + variation * 0.22 + motion * 0.075 + material * 0.042 + studioBonus, 0.055, 0.48).toFixed(3));
+  const triggerDetuneCents = Number(clamp(0.55 + variation * 4.9 + motion * 1.35 + studioBonus * 6.2, 0.35, 9).toFixed(2));
+  const filterJitter = Number(clamp(0.012 + variation * 0.046 + motion * 0.028 + brightness * 0.012 + studioBonus * 0.06, 0.006, 0.12).toFixed(4));
+  const fmJitter = Number(clamp(0.012 + material * 0.06 + variation * 0.044 + motion * 0.018 + studioBonus * 0.09, 0.006, 0.18).toFixed(4));
+  const phaseJitter = Number(clamp(0.018 + variation * 0.18 + motion * 0.072 + studioBonus * 0.36, 0.01, 0.42).toFixed(4));
+  const stereoScatter = Number(clamp(0.018 + variation * 0.05 + motion * 0.026 + studioBonus * 0.08, 0.008, 0.11).toFixed(4));
+  const center = (triggerPattern.length - 1) / 2;
+
+  return {
+    amount,
+    triggerDetuneCents,
+    filterJitter,
+    fmJitter,
+    phaseJitter,
+    stereoScatter,
+    seedBase: Math.round((brightness * 31 + motion * 47 + material * 59 + variation * 83 + studioBonus * 997) * 1000),
+    hitOffsets: triggerPattern.map((hit, index) => {
+      const velocityNorm = clamp(hit.velocity ?? baseVelocity, 1, 127) / baseVelocity - 1;
+      const bipolar = index - center;
+      const shapeA = Math.sin((index + 1) * 1.618 + material * 2.1 + variation * 1.7);
+      const shapeB = Math.cos((index + 1) * 2.414 + motion * 1.9 + brightness);
+      return {
+        id: hit.id ?? `hit-${index + 1}`,
+        detuneCents: Number(clamp(bipolar * triggerDetuneCents * 0.34 + shapeA * triggerDetuneCents * 0.22 + (hit.noteOffset ?? 0) * 7, -12, 12).toFixed(3)),
+        filterRatio: Number(clamp(1 + shapeA * filterJitter + velocityNorm * 0.026, 0.84, 1.16).toFixed(4)),
+        fmRatioOffset: Number(clamp(shapeB * fmJitter + velocityNorm * 0.022, -0.18, 0.18).toFixed(4)),
+        phaseOffset: Number(clamp(((index + 1) * 0.271 + shapeA * 0.08 + variation * 0.18) % 1, 0, 1).toFixed(4)),
+        panOffset: Number(clamp(bipolar * stereoScatter * 0.5 + shapeB * stereoScatter * 0.32, -0.16, 0.16).toFixed(4)),
+      };
+    }),
+    beginnerZh: '每次触发都微调一点点 pitch、filter、FM 和 phase，像合成器里的 Random/Velocity 调制；幅度很小，只增加真实感，不把 Patch 变成另一个声音。',
+    synthZh: 'Serum / Vital 可用 Chaos/Random 映射到 fine pitch、filter cutoff、FM amount；Phase Plant 用 Random/Velocity 调 generator 与 FX lane，深度控制在小范围。',
   };
 }
 
@@ -1013,7 +1059,8 @@ export function buildSoundLabPatch(family, macros = SOUND_LAB_MACROS, options = 
   const layerData = buildLayers({ family, base, dsp, durationSeconds, values, options: outputOptions, presetDna, performanceFeel });
   const resolvedQuality = getQualityMode(layerData.qualityMode);
   const controlSmoothing = buildControlSmoothing(performance, resolvedQuality);
-  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, resolvedQuality, layerData), outputMode);
+  const analogGesture = buildAnalogGesture(values, performanceFeel, resolvedQuality);
+  const masterPolish = applyOutputModeToMasterPolish(buildMasterPolish(values, dsp, resolvedQuality, { ...layerData, analogGesture }), outputMode);
   const acousticCues = buildAcousticCues(layerData.layers, values, resolvedQuality);
   const spatialImage = buildSpatialImage(values, dsp, resolvedQuality, layerData, acousticCues, masterPolish);
   const toneGraph = buildToneGraph(family, values, dsp, resolvedQuality, performance, { ...outputOptions, masterPolish });
@@ -1147,6 +1194,7 @@ function buildSoundQuality(patch) {
   const temporalMasking = polish.temporalMasking ?? {};
   const dynamicDetail = polish.dynamicDetail ?? {};
   const transientGloss = polish.transientGloss ?? {};
+  const analogGesture = polish.analogGesture ?? {};
   const spatialImage = patch.globalFx?.spatialImage ?? {};
   const polishScore = clamp(
     (polish.glue ?? 0) * 42
@@ -1206,6 +1254,15 @@ function buildSoundQuality(patch) {
     0,
     100,
   );
+  const analogGestureScore = clamp(
+    (analogGesture.amount ?? 0) * 128
+      + (analogGesture.triggerDetuneCents ?? 0) * 3.8
+      + (analogGesture.filterJitter ?? 0) * 280
+      + (analogGesture.fmJitter ?? 0) * 210
+      + (analogGesture.phaseJitter ?? 0) * 70,
+    0,
+    100,
+  );
 
   return [
     {
@@ -1256,6 +1313,13 @@ function buildSoundQuality(patch) {
       value: motionScore,
       statusZh: '微动态呼吸',
       noteZh: `transient shield ${formatQualityNumber((motionBus.transientShield ?? 0) * 100)}% / tail bloom ${formatQualityNumber((motionBus.tailBloom ?? 0) * 100)}% / wow ${formatQualityNumber((motionBus.wowFlutter ?? 0) * 100)}%`,
+    },
+    {
+      id: 'analog-gesture',
+      labelZh: 'Analog Gesture Drift',
+      value: analogGestureScore,
+      statusZh: '每次触发微漂移',
+      noteZh: `random velocity maps phase/filter/FM: ${formatQualityNumber(analogGesture.triggerDetuneCents ?? 0)}ct / filter ${formatQualityNumber((analogGesture.filterJitter ?? 0) * 100)}% / FM ${formatQualityNumber((analogGesture.fmJitter ?? 0) * 100)}%`,
     },
     {
       id: 'temporal-mask',

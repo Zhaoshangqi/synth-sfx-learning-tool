@@ -781,6 +781,64 @@ test('browser audio engines apply transient gloss in Worklet and Tone fallback p
   assert.match(audioPlayerJs, /aliasGuard/);
 });
 
+test('studio patches expose analog gesture drift for repeated synth hits', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const patch = buildSoundLabPatch(family, {
+    brightness: 78,
+    motion: 74,
+    material: 86,
+    space: 46,
+    variation: 82,
+  }, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: { transient: 88, body: 82, texture: 72, tail: 48 },
+  });
+
+  const analogGesture = patch.globalFx.masterPolish.analogGesture;
+  assert.ok(analogGesture, 'studio output should expose per-trigger analog gesture drift');
+  assert.ok(analogGesture.amount > 0.12 && analogGesture.amount < 0.5, 'analog drift should be audible but subtle');
+  assert.ok(analogGesture.triggerDetuneCents > 0.8 && analogGesture.triggerDetuneCents <= 9);
+  assert.ok(analogGesture.filterJitter > 0.01 && analogGesture.filterJitter <= 0.12);
+  assert.ok(analogGesture.fmJitter > 0.01 && analogGesture.fmJitter <= 0.18);
+  assert.ok(analogGesture.phaseJitter > 0.01 && analogGesture.phaseJitter <= 0.42);
+  assert.equal(analogGesture.hitOffsets.length, patch.performanceFeel.triggerPattern.length);
+  assert.ok(new Set(analogGesture.hitOffsets.map((hit) => hit.filterRatio.toFixed(4))).size > 1);
+  assert.ok(new Set(analogGesture.hitOffsets.map((hit) => hit.fmRatioOffset.toFixed(4))).size > 1);
+
+  const model = buildSoundLabViewModel(family, patch.macros, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    layerMix: patch.layerMix,
+  });
+  const analogCard = model.soundQuality.find((item) => item.id === 'analog-gesture');
+  assert.ok(analogCard, 'quality card should teach per-trigger analog drift as a realism metric');
+  assert.match(analogCard.labelZh, /Analog|Gesture|Drift/i);
+  assert.match(analogCard.noteZh, /random|velocity|phase|filter|FM/i);
+  assert.ok(analogCard.value >= 25 && analogCard.value <= 100);
+
+  const message = buildWorkletMessage(patch);
+  assert.deepEqual(message.payload.globalFx.masterPolish.analogGesture, analogGesture);
+});
+
+test('browser audio engines apply analog gesture drift in Worklet and fallback paths', () => {
+  const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
+  const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');
+
+  assert.match(processorJs, /analogGesture/);
+  assert.match(processorJs, /applyAnalogGestureToHit/);
+  assert.match(processorJs, /filterJitter/);
+  assert.match(processorJs, /fmRatioOffset/);
+  assert.match(processorJs, /phaseJitter/);
+  assert.match(processorJs, /gestureFilterRatio/);
+  assert.match(audioPlayerJs, /analogGesture/);
+  assert.match(audioPlayerJs, /hitAnalogOffset/);
+  assert.match(audioPlayerJs, /filterRatio/);
+  assert.match(audioPlayerJs, /fmRatioOffset/);
+});
+
 test('studio patches expose temporal masking so tails do not smear the transient', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const patch = buildSoundLabPatch(family, {
