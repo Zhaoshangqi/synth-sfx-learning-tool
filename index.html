@@ -5,8 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>合成器音效学习工具</title>
     <link rel="icon" href="data:," />
+    <script>
+      (() => {
+        const route = location.hash.replace(/^#/, '').trim().toLowerCase();
+        const aliases = new Map([
+          ['sound-lab', 'soundlab'],
+          ['sound_lab', 'soundlab'],
+          ['lab', 'soundlab'],
+        ]);
+        const normalized = aliases.get(route) || route;
+        if (normalized === 'soundlab') {
+          document.documentElement.classList.add('ls-boot-route');
+        }
+      })();
+    </script>
+    <style>
+      html.ls-boot-route,
+      html.ls-boot-route body {
+        background: #ffffff !important;
+        color: #00004c !important;
+      }
+
+      html.ls-boot-route .visual-splash,
+      html.ls-boot-route .audio-space,
+      html.ls-boot-route .visual-spotlight,
+      html.ls-boot-route .visual-logo-wrapper,
+      html.ls-boot-route .visual-burger-wrapper,
+      html.ls-boot-route .sidebar,
+      html.ls-boot-route .toolbar {
+        display: none !important;
+      }
+
+      html.ls-boot-route .workspace,
+      html.ls-boot-route .content {
+        width: 100% !important;
+        min-height: 100dvh !important;
+        background: #ffffff !important;
+      }
+    </style>
     <link rel="stylesheet" href="./styles-reference.css?v=20260709-quality-audition" />
-    <link rel="stylesheet" href="./styles.css?v=20260709-stitch-dark-v12" />
+    <link rel="stylesheet" href="./styles.css?v=20260709-learning-synths-v13" />
     <link rel="prefetch" href="./vendor/tone/Tone.js" as="script" />
   </head>
   <body>
@@ -124,10 +162,15 @@
       </section>
       <section id="app" class="content" aria-live="polite"></section>
     </main>
-    <script type="module" src="./src/visual-space.js?v=20260709-quality-audition"></script>
+    <script type="application/json" data-deferred-module src="./src/visual-space.js?v=20260709-quality-audition"></script>
+    <script type="module" src="./src/app.js?v=20260709-learning-synths-v13"></script>
     <script type="module" src="./src/interaction-effects.js"></script>
-    <script type="module" src="./src/app.js?v=20260709-stitch-dark-v12"></script>
     <script type="module" src="./src/shell-visuals.js"></script>
+    <script type="module">
+      if (!document.documentElement.classList.contains('ls-boot-route')) {
+        import('./src/visual-space.js?v=20260709-quality-audition');
+      }
+    </script>
   </body>
 </html>
 

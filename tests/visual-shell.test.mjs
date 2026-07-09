@@ -66,7 +66,7 @@ test('stitch dark pro audio redesign replaces the light showcase shell with cons
   assert.match(html, /class="audio-space"/);
   assert.match(html, /class="sidebar"/);
   assert.match(html, /class="toolbar"/);
-  assert.ok(html.indexOf('styles-reference.css') < html.indexOf('styles.css?v=20260709-stitch-dark-v12'));
+  assert.ok(html.indexOf('styles-reference.css') < html.indexOf('styles.css?v=20260709-learning-synths-v13'));
   assert.doesNotMatch(html, /cdn\.tailwindcss\.com/);
   assert.doesNotMatch(html, /three\.min\.js/);
   assert.match(css, /Stitch dark pro audio redesign v11/);
@@ -502,11 +502,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-stitch-dark-v12"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-stitch-dark-v12'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-stitch-dark-v12'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-stitch-dark-v12'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260709-stitch-dark-v12'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-learning-synths-v13"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-learning-synths-v13'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-learning-synths-v13'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-learning-synths-v13'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-learning-synths-v13'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -1566,7 +1566,7 @@ test('professional information architecture separates primary and secondary modu
   assert.match(appJs, /research-hub-shell/);
   assert.match(appJs, /research-command-panel/);
   assert.match(appJs, /source-result-toolbar/);
-  assert.match(appJs, /sound-lab-secondary-section/);
+  assert.match(appJs, /sound-lab-shell learning-synths-shell/);
   assert.match(appJs, /practice-reference-card/);
   assert.doesNotMatch(appJs, /style="margin-top:16px"/);
 
@@ -1576,8 +1576,9 @@ test('professional information architecture separates primary and secondary modu
   assert.match(css, /\.module-directory-card/);
   assert.match(css, /\.research-hub-shell/);
   assert.match(css, /\.source-result-toolbar/);
-  assert.match(css, /\.sound-lab-secondary-section/);
-  assert.match(css, /\.module-priority-badge/);
+  assert.match(css, /\.learning-synths-clone-frame/);
+  assert.match(css, /\.ls-route-panel/);
+  assert.match(css, /\.ls-advanced-drawer/);
 });
 
 test('dashboard launchpad makes the first four actions visually obvious and touchable', () => {
@@ -1604,31 +1605,29 @@ test('dashboard launchpad makes the first four actions visually obvious and touc
   assert.match(css, /\.launchpad-button\.is-secondary\s*\{[\s\S]*color:\s*#213442/);
 });
 
-test('sound lab exposes a guided workflow map and real material family switching', () => {
+test('sound lab exposes a Learning Synths style route map and real material family switching', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
-  assert.match(appJs, /header\('Sound Lab'/);
-  assert.match(appJs, /\u53ef\u8bd5\u542c\u5408\u6210\u5668\u5de5\u4f5c\u53f0/);
-  assert.match(renderJs, /workbench-flow-map/);
-  assert.match(renderJs, /workflow-context-strip/);
+  assert.match(appJs, /sound-lab-shell learning-synths-shell/);
+  assert.match(appJs, /familyList:\s*soundLabFamilies/);
+  assert.match(renderJs, /function renderLearningSynthsFamilyPicker/);
+  assert.match(renderJs, /function renderLearningSynthsLessonMap/);
+  assert.match(renderJs, /function renderLearningSynthsDragBoard/);
   assert.match(renderJs, /data-workflow-step/);
-  assert.match(renderJs, /\['source',\s*'01'/);
   assert.match(renderJs, /data-workbench-family/);
-  assert.match(renderJs, /\['metal-impact',\s*'\u91d1\u5c5e'/);
-  assert.match(renderJs, /material-current-brief/);
-  assert.match(renderJs, /material-workflow-hint/);
-  assert.match(appJs, /data-workbench-family/);
+  assert.match(renderJs, /ls-family-picker/);
+  assert.match(renderJs, /ls-route-panel/);
+  assert.match(renderJs, /ls-drag-board/);
   assert.match(appJs, /selectSoundLabFamily/);
   assert.match(appJs, /const focusMode = getSoundLabFocusMode\(\)/);
   assert.match(appJs, /function selectSoundLabFamily[\s\S]*state\.activeWorkbenchModule = focusMode\.workbenchModule/);
   assert.match(appJs, /activeAdvancedModule:\s*'advanced'/);
-  assert.match(css, /\.control-bottom-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(250px,\s*0\.44fr\)/);
-  assert.match(css, /\.material-selector-grid\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
-  assert.match(css, /\.material-token-row\s*\{[\s\S]*repeat\(auto-fit,\s*minmax\(74px,\s*1fr\)\)/);
-  assert.match(css, /\.workflow-context-strip\s*\{[\s\S]*grid-column:\s*1\s*\/\s*-1/);
-  assert.match(css, /\.material-workflow-hint\s*\{[\s\S]*background:\s*linear-gradient/);
+  assert.match(css, /\.ls-family-picker\s*\{[\s\S]*border:\s*3px solid var\(--ls-navy\)/);
+  assert.match(css, /\.ls-route-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.ls-drag-board\s*\{[\s\S]*touch-action:\s*none/);
+  assert.match(css, /\.ls-drag-handle\s*\{[\s\S]*left:\s*var\(--xy-x,\s*50%\)/);
 });
 
 test('sound lab keeps the primary workbench before secondary preset browsing', () => {
@@ -2404,7 +2403,7 @@ test('reference v9 stays below the final dark pro audio cascade', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const finalUrl = new URL('../styles-reference.css', import.meta.url);
 
-  assert.match(html, /href="\.\/styles-reference\.css(?:\?v=[^"]+)?"[\s\S]*href="\.\/styles\.css\?v=20260709-stitch-dark-v12"/);
+  assert.match(html, /href="\.\/styles-reference\.css(?:\?v=[^"]+)?"[\s\S]*href="\.\/styles\.css\?v=20260709-learning-synths-v13"/);
   assert.ok(existsSync(finalUrl), 'reference layer should remain available but load before the final app stylesheet');
 
   const css = readFileSync(finalUrl, 'utf8');
@@ -2940,4 +2939,54 @@ test('daily video sync keeps the reference visual stylesheet in gh-pages publish
   assert.match(workflow, /Publish static site to gh-pages/);
   assert.match(workflow, /styles-reference\.css/);
   assert.match(workflow, /git push origin HEAD:gh-pages/);
+});
+
+test('Sound Lab now mounts a Learning Synths style lesson shell as the visible workbench', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const soundLabViewBlock = appJs.match(/function renderSoundLabView\([\s\S]*?\r?\n}\r?\n\r?\nfunction renderMicroView/)?.[0] ?? '';
+
+  assert.match(renderJs, /function renderLearningSynthsCloneLayout/);
+  assert.match(renderJs, /data-learning-synths-clone="v12"/);
+  assert.match(renderJs, /class="ls-chapter-rail"/);
+  assert.match(renderJs, /class="ls-drag-board"/);
+  assert.match(renderJs, /data-xy-pad/);
+  assert.match(renderJs, /data-sound-lab-play/);
+  assert.match(renderJs, /LEARNING_SYNTHS_WAVEFORMS/);
+  assert.match(renderJs, /ls-legacy-fixture/);
+  assert.match(soundLabViewBlock, /sound-lab-shell learning-synths-shell/);
+  assert.match(soundLabViewBlock, /familyList:\s*soundLabFamilies/);
+  assert.match(soundLabViewBlock, /activeWaveform:\s*state\.activeWaveform/);
+  assert.doesNotMatch(soundLabViewBlock, /view-header/);
+  assert.doesNotMatch(soundLabViewBlock, /sound-family-rail/);
+});
+
+test('Learning Synths clone CSS replaces the dark workstation with Ableton-like navy, pink, and white layout', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const v12Index = css.indexOf('Learning Synths clone reset v13');
+  const darkIndex = css.indexOf('Stitch dark pro audio redesign v11.11');
+
+  assert.ok(v12Index > darkIndex, 'Learning Synths clone reset must win the final cascade');
+  assert.match(css, /--ls-page:\s*#ffffff/);
+  assert.match(css, /--ls-navy:\s*#00004c/);
+  assert.match(css, /--ls-pink:\s*#ff6577/);
+  assert.match(css, /body\.is-direct-workstation-route:has\(\.learning-synths-clone\) \.sidebar/);
+  assert.match(css, /body\.is-direct-workstation-route:has\(\.learning-synths-clone\) \.toolbar/);
+  assert.match(css, /\.learning-synths-clone-frame\s*\{[\s\S]*grid-template-columns:\s*88px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ls-hero h1\s*\{[\s\S]*font-size:\s*clamp\(64px,\s*9vw,\s*132px\)/);
+  assert.match(css, /\.ls-drag-board\s*\{[\s\S]*border:\s*5px solid var\(--ls-navy\)/);
+  assert.match(css, /\.ls-drag-handle\s*\{[\s\S]*background:\s*var\(--ls-pink\) !important/);
+  assert.match(css, /body\.is-direct-manipulating \.learning-synths-clone/);
+  assert.match(css, /\.ls-legacy-fixture\s*\{[\s\S]*display:\s*none !important/);
+});
+
+test('Sound Lab boot route hides legacy chrome before the app finishes rendering', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /document\.documentElement\.classList\.add\('ls-boot-route'\)/);
+  assert.match(html, /html\.ls-boot-route \.sidebar/);
+  assert.match(html, /html\.ls-boot-route \.toolbar/);
+  assert.match(css, /:root\.ls-boot-route \.visual-splash/);
+  assert.match(css, /:root\.ls-boot-route \.workspace/);
 });
