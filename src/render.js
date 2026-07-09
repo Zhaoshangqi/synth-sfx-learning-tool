@@ -3033,21 +3033,23 @@ function renderSpectralBalanceMonitor(model = {}) {
   if (!bands.length) return '';
 
   return `
-    <div class="spectral-balance-monitor" aria-label="Spectral Balance 频谱平衡听诊">
+    <div class="spectral-balance-monitor" data-spectral-balance-live data-spectral-live-status="idle" aria-label="Spectral Balance 频谱平衡听诊">
       <div class="spectral-balance-head">
         <span>Spectral Balance</span>
         <strong>${escapeHtml(monitor.titleZh ?? 'Spectral Balance / 频谱平衡听诊')}</strong>
         <p>${escapeHtml(monitor.summaryZh ?? '')}</p>
+        <small class="spectral-balance-live-status" data-spectral-balance-status>等待实时信号，播放后会用 waveform / spectrum 更新 body、low-mid 和 air tame。</small>
         <button class="quality-audition-button spectral-balance-ab-button" type="button" data-quality-audition="${escapeHtml(monitor.auditionId ?? 'spectral-balance')}" title="A/B bypass spectral-balance">A/B bypass</button>
       </div>
       <div class="spectral-balance-band-grid">
         ${bands.map((band) => `
-          <article class="spectral-balance-band" data-spectral-band="${escapeHtml(band.id)}" style="--spectral-value:${formatNumber(band.value ?? 0)}%">
+          <article class="spectral-balance-band" data-spectral-band="${escapeHtml(band.id)}" data-spectral-balance-live="${escapeHtml(band.id)}" data-spectral-live-status="idle" style="--spectral-value:${formatNumber(band.value ?? 0)}%; --spectral-live-value:${formatNumber(band.value ?? 0)}%">
             <div>
               <strong>${escapeHtml(band.labelZh ?? band.id)}</strong>
               <output>${escapeHtml(String(Math.round(band.value ?? 0)))}</output>
             </div>
             <i aria-hidden="true"><b></b></i>
+            <small data-spectral-band-status>等待实时信号</small>
             <small>${escapeHtml(band.detailZh ?? '')}</small>
             <p>${escapeHtml(band.listenZh ?? '')}</p>
           </article>

@@ -2119,6 +2119,26 @@ test('sound lab analyzer coach updates from live analyser frames without rerende
   assert.match(css, /\.analyzer-coach-band \.analyzer-coach-meter i\s*\{[\s\S]*width:\s*var\(--coach-live-value/);
 });
 
+test('sound lab spectral balance monitor follows live analyser frames without rerendering', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(renderJs, /data-spectral-balance-live/);
+  assert.match(renderJs, /data-spectral-balance-status/);
+  assert.match(renderJs, /data-spectral-band-status/);
+  assert.match(appJs, /function computeSpectralBalanceLiveFrame/);
+  assert.match(appJs, /function updateSpectralBalanceRuntimeUi/);
+  assert.match(appJs, /drawSoundLabAnalyserFrame\(frame\)[\s\S]*updateAnalyzerCoachRuntimeUi\(workbench,\s*frame\)[\s\S]*updateSpectralBalanceRuntimeUi\(workbench,\s*frame\)/);
+  assert.doesNotMatch(appJs, /updateSpectralBalanceRuntimeUi[\s\S]{0,240}render\(/);
+  assert.match(appJs, /data-spectral-balance-live/);
+  assert.match(appJs, /--spectral-live-value/);
+  assert.match(appJs, /data-spectral-live-status/);
+  assert.match(css, /\.spectral-balance-band\s*\{[\s\S]*--spectral-live-value:\s*var\(--spectral-value,\s*50%\)/);
+  assert.match(css, /\.spectral-balance-band i b\s*\{[\s\S]*width:\s*var\(--spectral-live-value/);
+  assert.match(css, /\.spectral-balance-band\[data-spectral-live-status="active"\]/);
+});
+
 test('sound lab live analyzer summaries keep readable Chinese fallback text', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const start = appJs.indexOf('function computeAnalyzerCoachFrame');

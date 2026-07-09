@@ -421,6 +421,7 @@ let activeFxDropPosition = 'before';
 let directManipulationTimer = 0;
 let midiAccess = null;
 let analyzerCoachRuntimeSnapshot = null;
+let spectralBalanceRuntimeSnapshot = null;
 const pendingRangeInputs = new Set();
 const sameViewScrollLock = { x: 0, y: 0, allowProgrammaticScroll: false };
 
@@ -2405,6 +2406,88 @@ function updateAnalyzerCoachRuntimeUi(workbench, frame) {
   });
 }
 
+function computeSpectralBalanceLiveFrame(frame) {
+  const frequency = frame?.frequency;
+  if (!frequency?.length) return null;
+
+  const level = clampPercent((frame?.level ?? 0) * 100);
+  const lowBody = clampPercent(
+    (averageAnalyserRange(frequency, 0.035, 0.18) / 255) * 82
+      + (averageAnalyserRange(frequency, 0.18, 0.28) / 255) * 18
+      + level * 0.12,
+  );
+  const lowMidGlue = clampPercent(
+    (averageAnalyserRange(frequency, 0.12, 0.36) / 255) * 74
+      + Math.min(lowBody, 82) * 0.18
+      + level * 0.08,
+  );
+  const airEnergy = clampPercent(
+    (averageAnalyserRange(frequency, 0.44, 0.82) / 255) * 72
+      + (averageAnalyserRange(frequency, 0.82, 0.96) / 255) * 28,
+  );
+  const harshRisk = clampPercent(
+    airEnergy * 0.84
+      + Math.max(0, airEnergy - lowBody * 0.56) * 0.52
+      + Math.max(0, airEnergy - lowMidGlue * 0.48) * 0.24,
+  );
+  const raw = {
+    body: lowBody,
+    'low-mid-glue': lowMidGlue,
+    'air-tame': harshRisk,
+  };
+  const previousBands = spectralBalanceRuntimeSnapshot?.bands ?? {};
+  const bands = Object.fromEntries(Object.entries(raw).map(([key, value]) => [
+    key,
+    smoothAnalyzerCoachValue(previousBands[key], value, 0.28),
+  ]));
+  const dominant = Object.entries(bands).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'body';
+  const summaryByDominant = {
+    body: '实时频谱：body 最明显，先确认主体是否厚而不闷，再做 A/B bypass。',
+    'low-mid-glue': '实时频谱：low-mid glue 最明显，重点听 transient 和主体是否像同一个物体。',
+    'air-tame': '实时频谱：air / harsh 区域最明显，重点听 5k-12k 是否清晰但不刺。',
+  };
+
+  spectralBalanceRuntimeSnapshot = { raw, bands, dominant };
+  return {
+    bands,
+    dominant,
+    summaryZh: summaryByDominant[dominant] ?? summaryByDominant.body,
+  };
+}
+
+function updateSpectralBalanceRuntimeUi(workbench, frame) {
+  const analysis = computeSpectralBalanceLiveFrame(frame);
+  if (!analysis) return;
+
+  const monitor = workbench.querySelector('.spectral-balance-monitor[data-spectral-balance-live]');
+  if (monitor) monitor.setAttribute('data-spectral-live-status', analysis.dominant);
+
+  const status = workbench.querySelector('[data-spectral-balance-status]');
+  if (status) status.textContent = analysis.summaryZh;
+
+  workbench.querySelectorAll('.spectral-balance-band[data-spectral-balance-live]').forEach((band) => {
+    const bandId = band.dataset.spectralBalanceLive || band.dataset.spectralBand;
+    const value = analysis.bands[bandId];
+    if (!Number.isFinite(value)) return;
+    const rounded = Math.round(clampPercent(value));
+    const liveState = bandId === analysis.dominant ? 'active' : rounded >= 72 ? 'high' : rounded <= 22 ? 'low' : 'stable';
+    band.style.setProperty('--spectral-live-value', `${rounded}%`);
+    band.setAttribute('data-spectral-live-status', liveState);
+    const output = band.querySelector('output');
+    if (output) output.textContent = String(rounded);
+    const bandStatus = band.querySelector('[data-spectral-band-status]');
+    if (bandStatus) {
+      const labels = {
+        active: '当前最突出，适合做 A/B',
+        high: '偏高，注意是否遮挡',
+        low: '偏低，确认是否缺主体',
+        stable: '稳定',
+      };
+      bandStatus.textContent = labels[liveState] ?? labels.stable;
+    }
+  });
+}
+
 function drawSoundLabAnalyserFrame(frame) {
   if (state.soundLabAnalyzerMode === 'freeze') return;
   const level = Math.max(0, Math.min(1, frame?.level ?? 0));
@@ -2413,6 +2496,7 @@ function drawSoundLabAnalyserFrame(frame) {
   drawCanvasWaveform(workbench.querySelector('[data-analyzer-waveform]'), frame?.timeDomain);
   drawCanvasSpectrum(workbench.querySelector('[data-analyzer-spectrum]'), frame?.frequency);
   updateAnalyzerCoachRuntimeUi(workbench, frame);
+  updateSpectralBalanceRuntimeUi(workbench, frame);
   workbench.querySelectorAll('[data-analyzer-meter] i').forEach((bar, index) => {
     const offset = Math.sin(index * 1.3 + level * 5) * 0.16;
     bar.style.setProperty('--meter', `${Math.round(Math.max(0.08, level + offset) * 100)}%`);
