@@ -809,6 +809,34 @@ test('studio patches expose spectral balance for warmer less brittle web synthes
   assert.ok(model.qualityAudition.items.some((item) => item.id === 'spectral-balance' && item.bypass.includes('spectral-balance')));
 });
 
+test('view model exposes a spectral balance monitor with routed A/B listening guidance', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, {
+    brightness: 88,
+    motion: 52,
+    material: 92,
+    space: 42,
+    variation: 66,
+  }, {
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'compare',
+  });
+
+  const monitor = model.spectralBalanceMonitor;
+  assert.ok(monitor, 'view model should expose a dedicated spectral balance monitor');
+  assert.match(monitor.titleZh, /Spectral Balance|频谱平衡|棰戣氨/);
+  assert.match(monitor.summaryZh, /薄|刺|主体|高频|A\/B|thin|brittle|body|air/i);
+  assert.equal(monitor.auditionId, 'spectral-balance');
+  assert.equal(monitor.bypassId, 'spectral-balance');
+  assert.ok(monitor.bands.length >= 3, 'monitor should split body, low-mid glue, and air tame');
+  assert.ok(monitor.bands.every((band) => band.id && band.labelZh && band.listenZh));
+  assert.ok(monitor.bands.every((band) => Number.isFinite(band.value) && band.value >= 0 && band.value <= 100));
+  assert.ok(monitor.steps.some((step) => /Studio/.test(step) && /bypass|旁路|A\/B/i.test(step)));
+  assert.ok(monitor.steps.some((step) => /Serum|Phase Plant|Vital/.test(step)));
+  assert.ok(monitor.reaperChecklist.some((step) => /LUFS|响度|REAPER/i.test(step)));
+});
+
 test('browser audio engines apply dynamic detail polish in Worklet and Tone fallback paths', () => {
   const processorJs = readFileSync(new URL('../src/sound-lab-processor.js', import.meta.url), 'utf8');
   const audioPlayerJs = readFileSync(new URL('../src/audio-player.js', import.meta.url), 'utf8');

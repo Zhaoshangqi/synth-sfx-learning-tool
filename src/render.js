@@ -3027,6 +3027,46 @@ function renderTranslationMonitorPanel(model = {}) {
   `;
 }
 
+function renderSpectralBalanceMonitor(model = {}) {
+  const monitor = model.spectralBalanceMonitor ?? {};
+  const bands = monitor.bands ?? [];
+  if (!bands.length) return '';
+
+  return `
+    <div class="spectral-balance-monitor" aria-label="Spectral Balance 频谱平衡听诊">
+      <div class="spectral-balance-head">
+        <span>Spectral Balance</span>
+        <strong>${escapeHtml(monitor.titleZh ?? 'Spectral Balance / 频谱平衡听诊')}</strong>
+        <p>${escapeHtml(monitor.summaryZh ?? '')}</p>
+        <button class="quality-audition-button spectral-balance-ab-button" type="button" data-quality-audition="${escapeHtml(monitor.auditionId ?? 'spectral-balance')}" title="A/B bypass spectral-balance">A/B bypass</button>
+      </div>
+      <div class="spectral-balance-band-grid">
+        ${bands.map((band) => `
+          <article class="spectral-balance-band" data-spectral-band="${escapeHtml(band.id)}" style="--spectral-value:${formatNumber(band.value ?? 0)}%">
+            <div>
+              <strong>${escapeHtml(band.labelZh ?? band.id)}</strong>
+              <output>${escapeHtml(String(Math.round(band.value ?? 0)))}</output>
+            </div>
+            <i aria-hidden="true"><b></b></i>
+            <small>${escapeHtml(band.detailZh ?? '')}</small>
+            <p>${escapeHtml(band.listenZh ?? '')}</p>
+          </article>
+        `).join('')}
+      </div>
+      <div class="spectral-balance-proof">
+        <div>
+          <strong>Practice / A/B</strong>
+          ${(monitor.steps ?? []).map((step) => `<span>${escapeHtml(step)}</span>`).join('')}
+        </div>
+        <div>
+          <strong>REAPER / LUFS</strong>
+          ${(monitor.reaperChecklist ?? []).map((step) => `<span>${escapeHtml(step)}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderWorkbenchQuality(model = {}) {
   const qualityItems = (model.soundQuality?.length
     ? model.soundQuality
@@ -3059,6 +3099,7 @@ function renderWorkbenchQuality(model = {}) {
         `;
         }).join('')}
       </div>
+      ${renderSpectralBalanceMonitor(model)}
       ${calibrationSteps.length ? `
         <div class="polish-calibration-panel" aria-label="Perceptual Calibration 音质校准">
           <div class="calibration-panel-head">

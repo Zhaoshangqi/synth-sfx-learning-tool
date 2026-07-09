@@ -1598,6 +1598,64 @@ function buildQualityAudition(patch, soundQuality = buildSoundQuality(patch)) {
   };
 }
 
+function buildSpectralBalanceMonitor(patch) {
+  const spectralBalance = patch.globalFx?.masterPolish?.spectralBalance ?? {};
+  const percent = (value, scale = 1) => Math.round(clamp((value ?? 0) * scale, 0, 1) * 100);
+  const lowBody = clamp(spectralBalance.lowBody ?? 0, 0, 1);
+  const lowMidGlue = clamp(spectralBalance.lowMidGlue ?? 0, 0, 1);
+  const highTame = clamp(spectralBalance.highTame ?? 0, 0, 1);
+  const tiltCompensation = clamp(spectralBalance.tiltCompensation ?? 0, 0, 1);
+  const bodyShelfHz = Math.round(spectralBalance.bodyShelfHz ?? 220);
+  const airShelfHz = Math.round(spectralBalance.airShelfHz ?? 7600);
+
+  return {
+    id: 'spectral-balance-monitor',
+    titleZh: 'Spectral Balance / 频谱平衡听诊',
+    summaryZh: '把网页合成器最容易出现的“薄、刺、没主体”拆成 body、low-mid glue 和 air tame 三段；用 A/B bypass 证明它是在提升质感，不只是变大声。',
+    auditionId: 'spectral-balance',
+    bypassId: 'spectral-balance',
+    bands: [
+      {
+        id: 'body',
+        labelZh: 'Body 主体',
+        value: percent(lowBody, 3.2),
+        detailZh: `${bodyShelfHz}Hz low shelf`,
+        listenZh: '听金属或冲击是否有可抓住的重量；旁路后如果只剩亮边，说明 body 需要保留。',
+      },
+      {
+        id: 'low-mid-glue',
+        labelZh: 'Low-Mid Glue 粘合',
+        value: percent(lowMidGlue, 3.4),
+        detailZh: `${Math.round(bodyShelfHz * 2.4)}Hz bell`,
+        listenZh: '听 transient、modal body 和材质层是否像一个物体，而不是三层素材叠在一起。',
+      },
+      {
+        id: 'air-tame',
+        labelZh: 'Air Tame 高频驯服',
+        value: percent(highTame + tiltCompensation, 1.8),
+        detailZh: `${airShelfHz}Hz shelf`,
+        listenZh: '听 5k-12k 是否从刺耳变成清晰；旁路后如果更亮但更薄，就不是更高级。',
+      },
+    ],
+    steps: [
+      '1. 播放 Studio full 后点击 A/B bypass spectral-balance，先记住主体厚度、金属边缘和高频空气感。',
+      '2. 只听 body 是否变薄、air 是否变刺，不比较音量大小。',
+      '3. 在 Serum / Phase Plant / Vital 中用 low shelf、low-mid bell、high shelf 或 tilt EQ 复刻同一条平衡逻辑。',
+    ],
+    reaperChecklist: [
+      'REAPER：full 与 bypass 版都匹配到 -14 LUFS 附近再比较。',
+      '频谱：确认 120-500Hz 有 body，5k-12k 不出现过窄尖峰。',
+      '备注：写下“旁路后薄/刺/主体少了多少”，再决定是否保留。',
+    ],
+    readout: {
+      body: `${formatQualityNumber(lowBody * 100)}%`,
+      lowMid: `${formatQualityNumber(lowMidGlue * 100)}%`,
+      airTame: `${formatQualityNumber(highTame * 100)}%`,
+      tilt: `${formatQualityNumber(tiltCompensation * 100)}%`,
+    },
+  };
+}
+
 function buildPolishCalibration(patch) {
   const polish = patch.globalFx?.masterPolish ?? {};
   const comfortBus = polish.comfortBus ?? {};
@@ -4061,6 +4119,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     meters: buildMeters(patch),
     soundQuality,
     qualityAudition,
+    spectralBalanceMonitor: buildSpectralBalanceMonitor(patch),
     polishCalibration: buildPolishCalibration(patch),
     waveformFingerprint,
     waveformEarDecisionTree,
