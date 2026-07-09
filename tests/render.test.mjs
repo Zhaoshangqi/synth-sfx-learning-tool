@@ -1151,6 +1151,24 @@ test('renderSoundLabWorkbench renders spectral balance as a playable A/B monitor
   assert.match(qualityBlock, /REAPER|LUFS/);
 });
 
+test('renderSoundLabWorkbench exposes live spectral balance hooks for the analyser', () => {
+  const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    engineMode: 'worklet',
+    qualityMode: 'studio',
+    outputMode: 'studio',
+    workflowStep: 'compare',
+  });
+  const html = renderSoundLabWorkbench(family, model, { selectedFamilyId: family.id });
+  const qualityBlock = html.match(/<section class="workbench-panel patch-quality-card"[\s\S]*?<\/section>/)?.[0] ?? '';
+
+  assert.match(qualityBlock, /data-spectral-balance-status/);
+  assert.match(qualityBlock, /data-spectral-balance-live/);
+  assert.match(qualityBlock, /data-spectral-band-status/);
+  assert.match(qualityBlock, /--spectral-live-value/);
+  assert.match(qualityBlock, /等待实时信号|live signal|实时/i);
+});
+
 test('renderSoundLabWorkbench renders Ear Triage as a real listening workflow', () => {
   const family = soundLabFamilies.find((item) => item.id === 'metal-impact');
   const model = buildSoundLabViewModel(family, {
