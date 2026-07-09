@@ -24777,6 +24777,7 @@ body.is-direct-manipulating .fx-chain-slot.is-dragging {
 
 .content .sound-lab-workbench .spectral-balance-band,
 .synth-workbench-layout .spectral-balance-band {
+  --spectral-live-value: var(--spectral-value, 50%);
   display: grid;
   gap: 7px;
   min-width: 0;
@@ -24795,6 +24796,28 @@ body.is-direct-manipulating .fx-chain-slot.is-dragging {
   border-color: rgba(110, 231, 249, 0.34);
   background: rgba(14, 22, 38, 0.84);
   transform: translateY(-1px);
+}
+
+.content .sound-lab-workbench .spectral-balance-band[data-spectral-live-status="active"],
+.synth-workbench-layout .spectral-balance-band[data-spectral-live-status="active"] {
+  border-color: rgba(110, 231, 249, 0.52);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(110, 231, 249, 0.16), transparent 38%),
+    rgba(14, 22, 38, 0.9);
+  box-shadow: inset 0 1px 0 rgba(244, 247, 251, 0.1), 0 10px 24px rgba(3, 7, 18, 0.18);
+}
+
+.content .sound-lab-workbench .spectral-balance-band[data-spectral-live-status="high"],
+.synth-workbench-layout .spectral-balance-band[data-spectral-live-status="high"] {
+  border-color: rgba(167, 139, 250, 0.32);
+}
+
+.content .sound-lab-workbench .spectral-balance-live-status,
+.synth-workbench-layout .spectral-balance-live-status {
+  grid-column: 1 / -1;
+  color: rgba(244, 247, 251, 0.66) !important;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .content .sound-lab-workbench .spectral-balance-band div,
@@ -24830,11 +24853,12 @@ body.is-direct-manipulating .fx-chain-slot.is-dragging {
 .content .sound-lab-workbench .spectral-balance-band i b,
 .synth-workbench-layout .spectral-balance-band i b {
   display: block;
-  width: var(--spectral-value);
+  width: var(--spectral-live-value);
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, rgba(94, 234, 212, 0.92), rgba(124, 140, 255, 0.78));
   box-shadow: 0 0 16px rgba(94, 234, 212, 0.24);
+  transition: width 120ms linear;
 }
 
 .content .sound-lab-workbench .spectral-balance-band small,
