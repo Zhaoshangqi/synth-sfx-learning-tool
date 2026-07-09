@@ -3330,7 +3330,7 @@ function buildBeginnerFocusCard(currentStep, nextStep, outputMode = 'comfort') {
   };
 }
 
-function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = 'source') {
+function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = 'source', activeBeginnerStepId = '') {
   const familyName = family?.titleZh?.split('：')[0] ?? family?.titleZh ?? '目标音效';
   const diagnostic = patchDoctor?.diagnostics?.[0] ?? {};
   const outputMode = patch.outputMode === 'raw' ? 'comfort' : patch.outputMode ?? 'comfort';
@@ -3450,7 +3450,10 @@ function buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep = '
     compare: 'space',
     deliver: 'export',
   };
-  const currentStepId = currentByWorkflow[workflowStep] ?? 'target';
+  const requestedStepId = String(activeBeginnerStepId ?? '').trim();
+  const currentStepId = steps.some((step) => step.id === requestedStepId)
+    ? requestedStepId
+    : currentByWorkflow[workflowStep] ?? 'target';
   const currentIndex = Math.max(0, steps.findIndex((step) => step.id === currentStepId));
   const currentStep = steps[currentIndex] ?? steps[0];
   const nextStep = steps[Math.min(steps.length - 1, currentIndex + 1)] ?? steps[0];
@@ -4130,7 +4133,7 @@ export function buildSoundLabViewModel(family, macros = SOUND_LAB_MACROS, option
     earTriage,
     missionBrief,
     practiceFocus,
-    beginnerSynthesisPath: buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep),
+    beginnerSynthesisPath: buildBeginnerSynthesisPath(family, patch, patchDoctor, workflowStep, options.activeBeginnerStepId),
     earTrainingChain,
     targetMatchCoach,
     synthTransferPlan: buildSynthTransferPlan(family, patch, patchDoctor, targetMatchCoach, macroList),

@@ -314,8 +314,15 @@ test('renderSoundLabWorkbench matches the premium synth workstation reference mo
   assert.match(html, /data-workbench-action="focus-controls"/);
   assert.match(html, /data-workbench-action="focus-coach"/);
   assert.match(html, /workbench-zone-title/);
-  assert.match(html, /01 监听与频谱/);
-  assert.match(html, /02 参数塑形/);
+  assert.match(html, /stitch-workbench-board/);
+  assert.match(html, /Learning Step/);
+  assert.match(html, /Synth Engine/);
+  assert.match(html, /Material Substrate/);
+  assert.match(html, /Physical Properties/);
+  assert.match(html, /Resonance Topology/);
+  assert.match(html, /Texture Morph Matrix/);
+  assert.match(html, /02 Advanced Panel/);
+  assert.match(html, /高级编辑区保留 Mod Matrix、FX Chain、A\/B、项目库、MIDI 和导出命名/);
   assert.match(html, /03 合成器调制教练/);
 
   const phasePlantHtml = renderSoundLabWorkbench(family, model, {

@@ -3611,7 +3611,7 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
   };
 
   return `
-    <section class="beginner-synthesis-path-panel" aria-label="从零到交付路线" data-flow-surface>
+    <section class="beginner-synthesis-path-panel" aria-label="从零到交付路线" data-flow-surface data-active-beginner-step="${escapeHtml(currentStepId)}">
       <div class="beginner-synthesis-head">
         <div>
           <span>Beginner Director</span>
@@ -3638,7 +3638,7 @@ function renderBeginnerSynthesisPathPanel(model = {}) {
               <strong>${escapeHtml(step.titleZh)}</strong>
               <p>${escapeHtml(step.whyZh)}</p>
               <small>${escapeHtml(step.listenZh)}</small>
-              <em>${escapeHtml(step.actionLabelZh)}</em>
+              <em data-beginner-step-role="${escapeHtml(step.outputMode ? 'output' : step.layerAudition ? 'layer' : step.applyDiagnosticId ? 'diagnostic' : 'route')}">${escapeHtml(step.actionLabelZh)}</em>
             </button>
           `;
         }).join('')}
@@ -3764,6 +3764,268 @@ function renderSoundLabWorkbenchLayout(family, model, options, status) {
   `;
 }
 
+function renderStitchLearningStepPanel(model = {}, family = {}) {
+  const path = model.beginnerSynthesisPath ?? {};
+  const steps = path.steps ?? [];
+  const currentStepId = path.currentStepId ?? steps[0]?.id ?? '';
+  const currentStep = steps.find((step) => step.id === currentStepId) ?? steps[0] ?? {};
+  const focusCard = path.focusCard ?? {};
+  const objectives = steps.slice(0, 4);
+  return `
+    <aside class="stitch-panel stitch-learning-step-panel" aria-label="Learning Step">
+      <div class="stitch-panel-heading">
+        <span>Learning Step</span>
+        <strong>${escapeHtml(currentStep.titleZh ?? family.titleZh ?? 'Sound Lab')}</strong>
+        <p>${escapeHtml(focusCard.listenQuestionZh ?? path.summaryZh ?? '先听，再改一个参数，最后 A/B 验证。')}</p>
+      </div>
+      <div class="stitch-current-module">
+        <span>CURRENT MODULE</span>
+        <strong>${escapeHtml(family.titleZh?.split('：')[0] ?? model.patch?.nameZh ?? 'Synth SFX Lab')}</strong>
+        <small>${escapeHtml(model.patch?.nameZh ?? 'Serum / Phase Plant / Vital')}</small>
+      </div>
+      <div class="stitch-objective-list" aria-label="Objectives">
+        <span class="stitch-caps-label">OBJECTIVES</span>
+        ${objectives.map((step, index) => `
+          <button
+            class="stitch-objective ${step.id === currentStepId ? 'is-active' : ''}"
+            type="button"
+            data-beginner-synthesis-step="${escapeHtml(step.id)}"
+            aria-pressed="${step.id === currentStepId ? 'true' : 'false'}"
+          >
+            <span>${String(index + 1).padStart(2, '0')}</span>
+            <div>
+              <strong>${escapeHtml(step.labelZh ?? step.titleZh)}</strong>
+              <small>${escapeHtml(step.actionLabelZh ?? step.listenZh ?? '')}</small>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+      <div class="stitch-learning-actions">
+        <button class="stitch-primary-action" type="button" data-sound-lab-play>
+          <span aria-hidden="true"></span>
+          <strong>试听当前 Patch</strong>
+          <small>先听 dry 主体，再调制。</small>
+        </button>
+        <button type="button" data-workbench-action="focus-controls">进入参数塑形</button>
+      </div>
+    </aside>
+  `;
+}
+
+function renderStitchReferencePanel(family = {}, model = {}) {
+  const drawer = model.sourceDrawer ?? {};
+  const steps = (family.practiceSteps ?? []).slice(0, 4);
+  const exportItems = (family.reaperExport ?? []).slice(0, 5);
+  return `
+    <aside class="stitch-panel stitch-reference-panel" aria-label="Reference and export inspector">
+      <div class="stitch-panel-heading">
+        <span>Source References</span>
+        <strong>${escapeHtml(drawer.sourceName ?? 'Tutorial / Preset Evidence')}</strong>
+        <p>${escapeHtml(drawer.titleZh ?? family.summaryZh ?? '把外部教程提炼为中文步骤和可验证参数。')}</p>
+      </div>
+      <div class="stitch-source-card">
+        <span class="stitch-youtube-dot" aria-hidden="true"></span>
+        <div>
+          <strong>${escapeHtml(drawer.titleEn ?? drawer.titleZh ?? family.titleEn ?? 'Reference clip')}</strong>
+          <small>${escapeHtml(drawer.timeline ?? '04:12')} · ${escapeHtml(drawer.extractionZh ?? family.summaryZh ?? '')}</small>
+        </div>
+      </div>
+      <div class="stitch-step-checklist">
+        <span class="stitch-caps-label">Learning Steps</span>
+        ${steps.map((step, index) => `<p><b>${index + 1}</b>${escapeHtml(step)}</p>`).join('')}
+      </div>
+      <div class="stitch-export-checklist">
+        <span class="stitch-caps-label">Patch Export</span>
+        ${exportItems.map((item, index) => `<label><input type="checkbox" ${index < 3 ? 'checked' : ''} />${escapeHtml(item)}</label>`).join('')}
+      </div>
+      <button class="stitch-secondary-action" type="button" data-workbench-action="open-reaper-template">打开 REAPER 模板</button>
+    </aside>
+  `;
+}
+
+function renderStitchSynthEnginePanel(model = {}, options = {}, status = {}) {
+  const macros = (model.macros ?? []).slice(0, 6);
+  return `
+    <section class="stitch-panel stitch-synth-engine-panel" aria-label="Synth Engine">
+      <div class="stitch-engine-head">
+        <div>
+          <span>Synth Engine</span>
+          <strong>${escapeHtml(model.patch?.nameZh ?? 'Sound Lab Patch')}</strong>
+          <p>Tone.js ${status.toneReady ? 'ready' : 'fallback'} · AudioWorklet ${status.workletReady ? 'ready' : 'fallback'} · ${escapeHtml(status.engineLabel ?? model.activeEngineMode ?? 'Web Audio')}</p>
+        </div>
+        <div class="stitch-engine-actions">
+          <button type="button" data-workbench-action="save-patch">Save Patch</button>
+          <button type="button" data-workbench-action="export-preset">Export Preset</button>
+        </div>
+      </div>
+      <div class="stitch-engine-display">
+        <div class="stitch-display-status">
+          <span>OSC 1 / FILTER 1</span>
+          <strong>ANALYZE</strong>
+        </div>
+        <div class="stitch-display-grid" aria-hidden="true"></div>
+        <div class="stitch-display-wave" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="stitch-display-analyzers">
+          ${renderWorkbenchWaveform(model)}
+          ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+          ${renderWorkbenchOutputMeter(model)}
+        </div>
+      </div>
+      <div class="stitch-engine-controls">
+        <section class="stitch-control-module">
+          <div class="stitch-module-title"><span>OSCILLATORS</span><small>基础波形 / Tune</small></div>
+          <div class="stitch-mini-knob-grid">
+            ${macros.slice(0, 2).map((macro, index) => `
+              <label class="stitch-mini-knob" style="--knob-value:${formatNumber(macro.percent ?? macro.value ?? 0)}%">
+                <span class="stitch-knob-face" aria-hidden="true"><i></i></span>
+                <strong>${index === 0 ? 'PITCH' : 'WAVE'}</strong>
+                <small>${escapeHtml(macro.labelZh ?? macro.id)}</small>
+                <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value ?? 0)}" />
+              </label>
+            `).join('')}
+          </div>
+        </section>
+        <section class="stitch-control-module stitch-envelope-compact">
+          <div class="stitch-module-title"><span>ENV 1 (AMP)</span><small>TARGET</small></div>
+          ${renderWorkbenchEnvelope(model)}
+        </section>
+        <section class="stitch-control-module">
+          <div class="stitch-module-title"><span>FILTER</span><small>LP24 / BP</small></div>
+          <div class="stitch-mini-knob-grid">
+            ${macros.slice(2, 4).map((macro, index) => `
+              <label class="stitch-mini-knob" style="--knob-value:${formatNumber(macro.percent ?? macro.value ?? 0)}%">
+                <span class="stitch-knob-face" aria-hidden="true"><i></i></span>
+                <strong>${index === 0 ? 'CUTOFF' : 'RES'}</strong>
+                <small>${escapeHtml(macro.labelZh ?? macro.id)}</small>
+                <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value ?? 0)}" />
+              </label>
+            `).join('')}
+          </div>
+        </section>
+      </div>
+      <div class="stitch-engine-bottom">
+        ${renderXYMacroPanel(model)}
+        ${renderFxChainEditor(model)}
+      </div>
+    </section>
+  `;
+}
+
+function renderStitchMaterialSubstratePanel(family = {}) {
+  const materials = [
+    ['metal-impact', 'METAL', '金属', 'hardware'],
+    ['glass-ping', 'GLASS', '玻璃', 'broken'],
+    ['electric-crackle', 'ELEC', '电流', 'bolt'],
+    ['servo-tick', 'MECH', '机械', 'gear'],
+    ['air-whoosh', 'AIR', '空气', 'air'],
+    ['energy-charge', 'MAGIC', '能量', 'spark'],
+  ];
+  return `
+    <section class="stitch-panel material-substrate-panel" aria-label="Material Substrate">
+      <div class="stitch-module-title">
+        <span>Material Substrate</span>
+        <small>先决定材质，再决定效果链</small>
+      </div>
+      <div class="stitch-material-grid">
+        ${materials.map(([familyId, code, label, icon]) => `
+          <button
+            class="stitch-material-button ${family.id === familyId ? 'is-active' : ''}"
+            type="button"
+            data-workbench-family="${escapeHtml(familyId)}"
+            aria-pressed="${family.id === familyId ? 'true' : 'false'}"
+          >
+            <i data-material-icon="${escapeHtml(icon)}" aria-hidden="true"></i>
+            <strong>${escapeHtml(code)}</strong>
+            <small>${escapeHtml(label)}</small>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderStitchPhysicalPropertiesPanel(model = {}) {
+  const macros = model.macros ?? [];
+  const fallback = [
+    { id: 'material', labelZh: 'Hardness', value: 72, percent: 72 },
+    { id: 'brightness', labelZh: 'Density', value: 48, percent: 48 },
+    { id: 'space', labelZh: 'Damping', value: 18, percent: 18 },
+  ];
+  const properties = (macros.length ? macros.slice(0, 4) : fallback).map((macro, index) => ({
+    ...macro,
+    labelZh: ['Hardness', 'Density', 'Damping', 'Motion'][index] ?? macro.labelZh,
+  }));
+  return `
+    <section class="stitch-panel physical-properties-panel" aria-label="Physical Properties">
+      <div class="stitch-module-title">
+        <span>Physical Properties</span>
+        <small>真实感来自硬度、密度、阻尼和运动</small>
+      </div>
+      <div class="stitch-property-stack">
+        ${properties.map((macro) => `
+          <label class="stitch-property-row" style="--range-value:${formatNumber(macro.percent ?? macro.value ?? 0)}%">
+            <span>${escapeHtml(macro.labelZh)}</span>
+            <input type="range" data-sound-lab-control="${escapeHtml(macro.id)}" min="0" max="100" step="1" value="${escapeHtml(macro.value ?? 0)}" />
+            <strong>${escapeHtml(macro.value ?? 0)}%</strong>
+          </label>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderStitchResonanceTopologyPanel(model = {}, options = {}) {
+  return `
+    <section class="stitch-panel resonance-topology-panel" aria-label="Resonance Topology">
+      <div class="stitch-module-title">
+        <span>Resonance Topology</span>
+        <small>实时波形 / 频谱 / 输出电平</small>
+      </div>
+      <div class="stitch-topology-viewport">
+        <div class="stitch-topology-grid" aria-hidden="true"></div>
+        <div class="stitch-topology-orb" aria-hidden="true"></div>
+        <div class="stitch-topology-analyzer">
+          ${renderWorkbenchWaveform(model)}
+          ${renderWorkbenchSpectrum(model, options.analyzerMode)}
+          ${renderAnalyzerCoachPanel(model)}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderStitchTextureMorphPanel(model = {}) {
+  return `
+    <section class="stitch-panel texture-morph-panel" aria-label="Texture Morph Matrix">
+      <div class="stitch-module-title">
+        <span>Texture Morph Matrix</span>
+        <small>XY 手势映射 Tone / Motion / Space</small>
+      </div>
+      ${renderXYMacroPanel(model)}
+    </section>
+  `;
+}
+
+function renderStitchWorkbenchBoard(family, model, options, status) {
+  return `
+    <section class="stitch-workbench-board" aria-label="Sound Lab Workbench">
+      ${renderStitchLearningStepPanel(model, family)}
+      ${renderStitchSynthEnginePanel(model, options, status)}
+      ${renderStitchReferencePanel(family, model)}
+      <div class="stitch-material-column">
+        ${renderStitchMaterialSubstratePanel(family)}
+        ${renderStitchPhysicalPropertiesPanel(model)}
+      </div>
+      <div class="stitch-visual-column">
+        ${renderStitchResonanceTopologyPanel(model, options)}
+        ${renderStitchTextureMorphPanel(model)}
+      </div>
+    </section>
+  `;
+}
+
 function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
   const { workletReady, toneReady, isPlaying, engineLabel } = status;
   const activeWorkbenchModule = options.activeWorkbenchModule ?? 'envelope';
@@ -3799,36 +4061,31 @@ function renderSignalAtlasWorkbenchLayout(family, model, options, status) {
         </div>
       </header>
       ${renderWorkbenchFlowMap(family, options.activeWorkflowStep, options.activeAtlasNode)}
-      ${renderBeginnerSynthesisPathPanel(model)}
-      ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
-      ${renderPracticeFocusStrip(model)}
-      ${renderEarTrainingChainPanel(model)}
-      ${renderMissionBriefPanel(model)}
-      ${renderTargetMatchCoachPanel(model)}
-      ${renderSynthTransferPlanPanel(model)}
+      ${renderStitchWorkbenchBoard(family, model, options, { workletReady, toneReady, isPlaying, engineLabel })}
+      <section class="stitch-secondary-strip" aria-label="Secondary learning and listening tools">
+        ${renderSessionTransportDock(family, model, { ...options, isPlaying })}
+        ${renderPracticeFocusStrip(model)}
+        ${renderEarTrainingChainPanel(model)}
+      </section>
       <main class="atlas-main-console">
-        ${renderWorkbenchZoneTitle('01', '监听与频谱', '先看波形、频谱和输出电平，确认声音是否真的在变化。')}
-        <section class="atlas-lab-stage" aria-label="Signal Atlas main lab">
+        ${renderWorkbenchZoneTitle('02', 'Advanced Panel', '主工作台完成试听后，再打开高级面板做 Mod Matrix、FX Chain、A/B、项目库和 MIDI。')}
+        <section class="atlas-lab-stage stitch-advanced-stage" aria-label="Advanced Sound Lab controls">
           <div class="atlas-visual-deck">
             <div class="synth-tab-row atlas-synth-tabs">
               ${renderWorkbenchSynthTabs(activeWorkbenchSynth)}
               <button class="compare-tab" type="button" data-workbench-action="compare-view">对照视图</button>
             </div>
-            <div class="analyzer-row atlas-analyzer-row">
-              ${renderWorkbenchWaveform(model)}
-              ${renderWorkbenchSpectrum(model, options.analyzerMode)}
-              ${renderAnalyzerCoachPanel(model)}
-              ${renderWorkbenchOutputMeter(model)}
-            </div>
+            ${renderMissionBriefPanel(model)}
+            ${renderTargetMatchCoachPanel(model)}
+            ${renderSynthTransferPlanPanel(model)}
             ${renderWaveformDetectivePanel(model, options)}
             ${renderPerceptualSignaturePanel(model)}
             ${renderMaterialResonancePanel(model)}
             ${renderProceduralSourceMapPanel(model)}
           </div>
           <div class="atlas-control-column">
-            ${renderWorkbenchEnvelope(model)}
             ${renderWorkbenchMacroPanel(model)}
-            ${renderXYMacroPanel(model)}
+            ${renderWorkbenchModulation(model)}
             ${renderParameterCoachPanel(model)}
           </div>
         </section>
