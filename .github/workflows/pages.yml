@@ -1,4 +1,4 @@
-name: Deploy static site to GitHub Pages
+name: Publish static site to gh-pages
 
 on:
   push:
@@ -6,44 +6,60 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: gh-pages-publish
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Prepare static artifact
+      - name: Verify static app
+        run: npm test
+
+      - name: Publish branch artifact
         shell: bash
         run: |
-          mkdir -p _site
-          cp index.html styles.css package.json README.md _site/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages || true
+          rm -rf _gh_pages
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add _gh_pages origin/gh-pages
+          else
+            git worktree add --detach _gh_pages
+            cd _gh_pages
+            git checkout --orphan gh-pages
+            cd ..
+          fi
+
+          find _gh_pages -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+          cp index.html styles.css styles-reference.css package.json README.md _gh_pages/
           for dir in src tests docs vendor data; do
             if [ -d "$dir" ]; then
-              cp -r "$dir" _site/
+              cp -r "$dir" _gh_pages/
             fi
           done
-          touch _site/.nojekyll
+          touch _gh_pages/.nojekyll
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          cd _gh_pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No gh-pages changes."
+          else
+            git commit -m "Deploy static site"
+            git push origin HEAD:gh-pages
+          fi

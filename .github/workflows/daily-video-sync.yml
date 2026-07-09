@@ -71,7 +71,7 @@ jobs:
           fi
 
           find _gh_pages -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
-          cp index.html styles.css package.json README.md _gh_pages/
+          cp index.html styles.css styles-reference.css package.json README.md _gh_pages/
           for dir in src tests docs vendor data; do
             if [ -d "$dir" ]; then
               cp -r "$dir" _gh_pages/
