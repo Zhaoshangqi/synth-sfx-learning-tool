@@ -47,11 +47,11 @@ import {
   SOUND_LAB_PERFORMANCE_DEFAULTS,
   buildSoundLabViewModel,
   getSoundLabFamily,
-} from './sound-lab-model.js?v=20260709-quality-audition';
+} from './sound-lab-model.js?v=20260709-stitch-dark-v12';
 import { getPresetDnaById, getPresetDnaForFamily } from './preset-library.js';
-import { createLabAudioPlayer } from './audio-player.js?v=20260709-quality-audition';
+import { createLabAudioPlayer } from './audio-player.js?v=20260709-stitch-dark-v12';
 import { collectTags, filterItems, normalizeText } from './search.js';
-import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-quality-audition';
+import { buildDashboardStats, buildPracticePrescription, getNextLesson, groupByStage } from './view-model.js?v=20260709-stitch-dark-v12';
 import {
   renderKnowledgeCard,
   renderLearningUnitCard,
@@ -68,7 +68,7 @@ import {
   renderTechniqueTipCard,
   renderCommunityTechniqueLab,
   renderDeepDiveModuleCard,
-} from './render.js?v=20260709-quality-audition';
+} from './render.js?v=20260709-stitch-dark-v12';
 
 const STORAGE_KEY = 'synthSfxLearningTool:userSources';
 const SOUND_LAB_LIBRARY_KEY = 'synthSfxLearningTool:soundLabLibrary';
@@ -363,6 +363,7 @@ const state = {
   soundLabAuditionMode: 'full',
   activeProceduralSourceId: '',
   soundLabWorkflowStep: 'source',
+  activeBeginnerSynthesisStepId: '',
   activeWaveformDrillStep: 'anchor',
   completedWaveformDrillSteps: [],
   activeAtlasNode: 'source',
@@ -1079,6 +1080,7 @@ function selectSoundLabFamily(familyId, shouldRender = true) {
   state.soundLabAbSlot = 'a';
   state.soundLabAuditionMode = 'full';
   state.soundLabWorkflowStep = focusMode.workflowStep;
+  state.activeBeginnerSynthesisStepId = '';
   state.activeWaveformDrillStep = 'anchor';
   state.completedWaveformDrillSteps = [];
   state.activeAtlasNode = focusMode.atlasNode;
@@ -1094,6 +1096,7 @@ function applySoundLabFocusMode(modeId, { shouldRender = true } = {}) {
   const mode = getSoundLabFocusMode(modeId);
   state.soundLabFocusMode = mode.id;
   state.soundLabWorkflowStep = mode.workflowStep;
+  state.activeBeginnerSynthesisStepId = '';
   state.activeAtlasNode = mode.atlasNode;
   state.activeWorkbenchModuleMapId = mode.moduleMapId;
   state.activeWorkbenchModule = mode.workbenchModule;
@@ -1125,6 +1128,7 @@ function getSoundLabOptions(optionOverrides = {}) {
     gitSync: state.soundLabGitSync,
     midiMappings: state.soundLabMidiMappings,
     activeWorkflowStep: state.soundLabWorkflowStep,
+    activeBeginnerStepId: state.activeBeginnerSynthesisStepId,
     activeWaveformDrillStep: state.activeWaveformDrillStep,
     completedWaveformDrillSteps: state.completedWaveformDrillSteps,
     activeAtlasNode: state.activeAtlasNode,
@@ -1347,7 +1351,6 @@ function renderSoundLabView() {
           </button>
         `).join('')}
       </div>
-      ${renderSoundLabFocusModeSwitch(focusMode.id)}
       ${renderSoundLabWorkbench(family, model, {
         selectedFamilyId: family.id,
         engineMode: state.soundLabEngineMode,
@@ -1375,10 +1378,11 @@ function renderSoundLabView() {
         <div class="module-section-head">
           <div>
             <div class="module-priority-badge">Secondary</div>
-            <h3>预设变化库</h3>
+            <h3>模式与预设变化库</h3>
           </div>
-          <p>主流程先听当前声音；需要变化时再从这里切换 preset，避免工作台首屏被辅助模块淹没。</p>
+          <p>主流程先听当前声音；需要切换引导/练习/专家模式或 preset 时再展开这里，避免工作台首屏被辅助模块淹没。</p>
         </div>
+        ${renderSoundLabFocusModeSwitch(focusMode.id)}
         <div class="grid two sound-lab-preset-grid">
           ${family.presets.map((preset) => `
             <button class="card sound-preset-card" type="button" data-sound-lab-preset="${escapeHtml(preset.id)}">
@@ -2772,6 +2776,7 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
     'batch-export': 'compare',
   };
   state.activeAdvancedModule = moduleId;
+  state.activeBeginnerSynthesisStepId = '';
   state.soundLabWorkflowStep = workflowByModule[moduleId] ?? state.soundLabWorkflowStep;
   state.activeWorkbenchModuleMapId = moduleMapByAdvancedModule[moduleId] ?? state.activeWorkbenchModuleMapId;
   state.activeAtlasNode = {
@@ -2795,6 +2800,7 @@ function selectAdvancedModule(moduleId, shouldRender = true) {
 }
 
 function handleWorkbenchStep(step, atlasNode = '') {
+  state.activeBeginnerSynthesisStepId = '';
   const targetByAtlasNode = {
     source: {
       step: 'source',
@@ -2890,6 +2896,7 @@ function handleWorkbenchStep(step, atlasNode = '') {
 }
 
 function handleWorkbenchModuleJump(moduleId) {
+  state.activeBeginnerSynthesisStepId = '';
   const targetByModule = {
     source: {
       step: 'source',
@@ -2946,6 +2953,7 @@ function handleWorkbenchModuleJump(moduleId) {
 }
 
 function handleSessionJump(target) {
+  state.activeBeginnerSynthesisStepId = '';
   const route = {
     playback: {
       step: 'compare',
@@ -2982,6 +2990,89 @@ function handleSessionJump(target) {
   state.activeAdvancedModule = route.advancedModule;
   state.activeWorkbenchModuleMapId = route.moduleMap;
   state.workbenchActionFeedback = route.feedback;
+  renderSameView();
+  scrollSoundLabIntoView(route.selector);
+}
+
+function routeForBeginnerSynthesisStep(step = {}) {
+  const routes = {
+    target: {
+      workflowStep: 'source',
+      atlasNode: 'source',
+      workbenchModule: 'generator',
+      advancedModule: 'advanced',
+      moduleMapId: 'source',
+      selector: '.sound-family-rail, .analyzer-row',
+    },
+    waveform: {
+      workflowStep: 'source',
+      atlasNode: 'source',
+      workbenchModule: 'generator',
+      advancedModule: 'advanced',
+      moduleMapId: 'source',
+      selector: '.waveform-detective-panel',
+    },
+    envelope: {
+      workflowStep: 'shape',
+      atlasNode: 'envelope',
+      workbenchModule: 'envelope',
+      advancedModule: 'envelope-editor',
+      moduleMapId: 'envelope',
+      selector: '.envelope-panel',
+    },
+    material: {
+      workflowStep: 'shape',
+      atlasNode: 'material',
+      workbenchModule: 'effects',
+      advancedModule: 'mod-matrix',
+      moduleMapId: 'mod-matrix',
+      selector: '.material-resonance-panel',
+    },
+    motion: {
+      workflowStep: 'shape',
+      atlasNode: 'modulation',
+      workbenchModule: 'modulation',
+      advancedModule: 'mod-matrix',
+      moduleMapId: 'coach',
+      selector: '.workbench-coach-panel',
+    },
+    space: {
+      workflowStep: 'compare',
+      atlasNode: 'material',
+      workbenchModule: 'macro',
+      advancedModule: 'ab-compare',
+      moduleMapId: 'compare',
+      selector: '.output-compare-panel, .playback-card',
+    },
+    export: {
+      workflowStep: 'deliver',
+      atlasNode: 'export',
+      workbenchModule: 'effects',
+      advancedModule: 'batch-export',
+      moduleMapId: 'compare',
+      selector: '.sound-lab-export',
+    },
+  };
+  return routes[step.id] ?? routes.target;
+}
+
+function applyBeginnerSynthesisStep(stepId, button = null) {
+  const path = getSoundLabModel().beginnerSynthesisPath;
+  const step = path?.steps?.find((item) => item.id === stepId);
+  if (!step) return;
+  const route = routeForBeginnerSynthesisStep(step);
+
+  state.activeBeginnerSynthesisStepId = step.id;
+  state.soundLabWorkflowStep = route.workflowStep;
+  state.activeAtlasNode = route.atlasNode;
+  state.activeWorkbenchModule = route.workbenchModule;
+  state.activeAdvancedModule = route.advancedModule;
+  state.activeWorkbenchModuleMapId = route.moduleMapId;
+  if (step.layerAudition) state.soundLabAuditionMode = step.layerAudition;
+  if (step.outputMode) state.soundLabOutputMode = step.outputMode;
+  state.workbenchActionFeedback = `路线 ${step.labelZh}：${step.titleZh}。${step.listenZh}`;
+  syncSoundLabPatchSoon();
+  button?.classList.add('is-confirmed');
   renderSameView();
   scrollSoundLabIntoView(route.selector);
 }
@@ -3281,6 +3372,7 @@ function bindDynamicForms() {
 
 function applyDashboardPathStep(step) {
   state.activeDashboardPathStep = step.id;
+  state.activeBeginnerSynthesisStepId = '';
 
   if (step.labId && interactiveLabs.some((lab) => lab.id === step.labId)) {
     state.activeLabId = step.labId;
@@ -3991,6 +4083,14 @@ function bindSoundLabControls() {
   document.querySelectorAll('button[data-sound-lab-focus-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       applySoundLabFocusMode(button.dataset.soundLabFocusMode);
+    });
+  });
+
+  document.querySelectorAll('[data-beginner-synthesis-step]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      applyBeginnerSynthesisStep(button.dataset.beginnerSynthesisStep, button);
     });
   });
 

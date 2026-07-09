@@ -480,6 +480,23 @@ test('buildSoundLabViewModel exposes a current beginner focus card with real act
   assert.equal(path.focusCard.actions[2].workbenchAction, 'focus-practice-loop');
 });
 
+test('buildSoundLabViewModel lets the UI pin a beginner synthesis step independent of workflow', () => {
+  const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
+  const model = buildSoundLabViewModel(family, SOUND_LAB_MACROS, {
+    workflowStep: 'source',
+    outputMode: 'comfort',
+    activeBeginnerStepId: 'space',
+  });
+
+  const path = model.beginnerSynthesisPath;
+  assert.equal(path.currentStepId, 'space');
+  assert.equal(path.currentStep.id, 'space');
+  assert.equal(path.nextStep.id, 'export');
+  assert.equal(path.focusCard.stepId, 'space');
+  assert.match(path.focusCard.titleZh, /空间|抛光|音质/);
+  assert.ok(path.steps.some((step) => step.id === 'space' && step.outputMode === 'comfort'));
+});
+
 test('buildSoundLabViewModel exposes a target match coach with one-change guidance', () => {
   const family = getSoundLabFamily(soundLabFamilies, 'metal-impact');
   const model = buildSoundLabViewModel(family, {

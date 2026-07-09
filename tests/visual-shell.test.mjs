@@ -59,6 +59,89 @@ test('stitch visual direction keeps the app as a premium light studio with reada
   assert.match(css, /\.signal-atlas-console \.workbench-topbar p\s*\{[\s\S]*color:\s*rgba\(244,\s*241,\s*232,\s*0\.72\)/);
 });
 
+test('stitch dark pro audio redesign replaces the light showcase shell with console-grade tokens', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(html, /class="audio-space"/);
+  assert.match(html, /class="sidebar"/);
+  assert.match(html, /class="toolbar"/);
+  assert.ok(html.indexOf('styles-reference.css') < html.indexOf('styles.css?v=20260709-stitch-dark-v12'));
+  assert.doesNotMatch(html, /cdn\.tailwindcss\.com/);
+  assert.doesNotMatch(html, /three\.min\.js/);
+  assert.match(css, /Stitch dark pro audio redesign v11/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.1 cascade guard/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.2 shell reset/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.3 grid placement guard/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.4 control chrome reset/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.5 compact workstation fit/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.6 first-screen scan fit/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.7 full-width console order/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.8 implicit-column purge/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.9 page length discipline/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.10 first-screen density/);
+  assert.match(css, /Stitch dark pro audio redesign v11\.11 viewport fill/);
+  assert.match(css, /--lab-bg:\s*#111319/);
+  assert.match(css, /--lab-surface-lowest:\s*#0c0e14/);
+  assert.match(css, /--lab-surface:\s*#1d1f26/);
+  assert.match(css, /--lab-primary:\s*#8aebff/);
+  assert.match(css, /--lab-primary-hot:\s*#2fd9f4/);
+  assert.match(css, /--lab-outline-variant:\s*#3c494c/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*background:[\s\S]*var\(--lab-surface-lowest\)/);
+  assert.match(css, /\.toolbar\s*\{[\s\S]*backdrop-filter:\s*blur\(18px\)/);
+  assert.match(css, /\.content\s*\{[\s\S]*background:[\s\S]*var\(--lab-bg\)/);
+  assert.match(css, /\.audio-space::before\s*\{[\s\S]*radial-gradient/);
+  assert.match(css, /html,[\s\S]*body\s*\{[\s\S]*background-color:\s*var\(--lab-bg\)\s*!important/);
+  assert.match(css, /\.stitch-workbench-board\s*:where\(h1, h2, h3, h4, h5, strong, b, output\)/);
+  assert.match(css, /body\.is-direct-workstation-route \.sidebar,[\s\S]*body\.visual-shell-ready \.sidebar/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*grid-column:\s*1\s*!important[\s\S]*grid-row:\s*1\s*!important/);
+  assert.match(css, /\.workspace\s*\{[\s\S]*grid-column:\s*2\s*!important[\s\S]*grid-row:\s*1\s*!important/);
+  assert.match(css, /body\.is-direct-workstation-route \.workspace,[\s\S]*padding-top:\s*0\s*!important/);
+  assert.match(css, /\.sound-family-rail\s*\{[\s\S]*background:\s*rgba\(12,\s*14,\s*20,\s*0\.74\)\s*!important/);
+  assert.match(css, /\.sound-lab-mode-switcher \.mode-switch-card,[\s\S]*\.sound-lab-mode-switcher \.mode-switch-copy/);
+  assert.match(css, /\.stitch-engine-display\s*\{[\s\S]*height:\s*260px\s*!important/);
+  assert.match(css, /\.stitch-display-analyzers \.workbench-panel,[\s\S]*height:\s*100%\s*!important/);
+  assert.match(css, /\.stitch-engine-controls\s*\{[\s\S]*height:\s*190px\s*!important/);
+  assert.match(css, /\.stitch-engine-bottom\s*\{[\s\S]*height:\s*178px\s*!important/);
+  assert.match(css, /@media \(max-width:\s*1120px\)[\s\S]*\.stitch-workbench-board/);
+  assert.match(css, /\.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*!important/);
+  assert.match(css, /\.signal-atlas-console > \.workbench-topbar\s*\{[\s\S]*order:\s*1\s*!important/);
+  assert.match(css, /\.signal-atlas-console > \.stitch-workbench-board\s*\{[\s\S]*order:\s*3\s*!important/);
+  assert.match(css, /\.stitch-workbench-board\s*\{[\s\S]*minmax\(176px,\s*0\.62fr\)[\s\S]*minmax\(420px,\s*1\.55fr\)[\s\S]*minmax\(210px,\s*0\.72fr\)/);
+  assert.match(css, /\.stitch-material-column,[\s\S]*\.stitch-visual-column\s*\{[\s\S]*max-height:\s*560px\s*!important[\s\S]*overflow:\s*auto\s*!important/);
+  assert.match(css, /\.signal-atlas-console\.sound-lab-workbench\.synth-workbench-layout > :not\(\.atlas-orb\)\s*\{[\s\S]*grid-column:\s*1 \/ span 1\s*!important/);
+  assert.match(css, /\.signal-atlas-console > \.workbench-right-rail,[\s\S]*\.signal-atlas-console > \.atlas-right-rail\s*\{[\s\S]*order:\s*6\s*!important/);
+  assert.match(css, /\.content \.sound-lab-shell\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*!important[\s\S]*overflow:\s*hidden\s*!important/);
+  assert.match(css, /\.stitch-secondary-strip > \*\s*\{[\s\S]*max-height:\s*420px\s*!important[\s\S]*overflow:\s*auto\s*!important/);
+  assert.match(css, /\.signal-atlas-console > \.atlas-main-console\s*\{[\s\S]*max-height:\s*980px\s*!important[\s\S]*overflow:\s*auto\s*!important/);
+  assert.match(css, /\.content \.view-header p\s*\{[\s\S]*-webkit-line-clamp:\s*1/);
+  assert.match(css, /\.sound-family-rail \.material-select-button\s*\{[\s\S]*min-height:\s*50px\s*!important/);
+  assert.match(css, /\.signal-atlas-console \.workbench-topbar\s*\{[\s\S]*min-height:\s*72px\s*!important/);
+  assert.match(css, /\.signal-atlas-console > \.atlas-signal-ribbon,[\s\S]*\.signal-atlas-console > \.workbench-flow-map\s*\{[\s\S]*max-height:\s*112px\s*!important/);
+  assert.match(css, /body\.is-direct-workstation-route \.content,[\s\S]*body\.visual-shell-ready \.content\s*\{[\s\S]*height:\s*calc\(100dvh - 100px\)\s*!important/);
+});
+
+test('sound lab workbench follows the supplied Stitch module architecture with real controls', () => {
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  for (const label of ['Learning Step', 'Synth Engine', 'Material Substrate', 'Physical Properties', 'Resonance Topology', 'Texture Morph Matrix']) {
+    assert.match(renderJs, new RegExp(label));
+  }
+  for (const className of ['stitch-workbench-board', 'stitch-learning-step-panel', 'stitch-synth-engine-panel', 'material-substrate-panel', 'physical-properties-panel', 'resonance-topology-panel', 'texture-morph-panel', 'stitch-reference-panel']) {
+    assert.match(renderJs, new RegExp(className));
+    assert.match(css, new RegExp(`\\.${className}`));
+  }
+  assert.match(renderJs, /data-beginner-synthesis-step/);
+  assert.match(renderJs, /data-workbench-family/);
+  assert.match(renderJs, /data-sound-lab-control/);
+  assert.match(renderJs, /data-xy-pad/);
+  assert.match(renderJs, /data-fx-chain-list/);
+  assert.match(appJs, /bindSoundLabControls/);
+  assert.match(appJs, /data-sound-lab-play/);
+});
+
 test('stitch showcase production pass adds a pointer reveal audio core and capsule CTAs', () => {
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
@@ -419,11 +502,11 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-quality-audition"/);
-  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-quality-audition'/);
-  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-quality-audition'/);
-  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-quality-audition'/);
-  assert.match(appJs, /from '\.\/render\.js\?v=20260709-quality-audition'/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-stitch-dark-v12"/);
+  assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-stitch-dark-v12'/);
+  assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-stitch-dark-v12'/);
+  assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-stitch-dark-v12'/);
+  assert.match(appJs, /from '\.\/render\.js\?v=20260709-stitch-dark-v12'/);
 });
 
 test('range controls use smooth drag state and animation-frame chrome updates', () => {
@@ -2000,7 +2083,9 @@ test('sound lab beginner synthesis path is a routed first-screen learning direct
   assert.match(renderJs, /Serum/);
   assert.match(renderJs, /Phase Plant/);
   assert.match(renderJs, /Vital/);
-  assert.match(renderJs, /renderWorkbenchFlowMap\(family, options\.activeWorkflowStep, options\.activeAtlasNode\)[\s\S]*renderBeginnerSynthesisPathPanel\(model\)[\s\S]*renderPracticeFocusStrip\(model\)/);
+  assert.match(renderJs, /renderWorkbenchFlowMap\(family, options\.activeWorkflowStep, options\.activeAtlasNode\)[\s\S]*renderStitchWorkbenchBoard\(family, model, options/);
+  assert.match(renderJs, /renderStitchLearningStepPanel\(model, family\)/);
+  assert.match(renderJs, /renderSessionTransportDock\(family, model, \{ \.\.\.options, isPlaying \}\)[\s\S]*renderPracticeFocusStrip\(model\)/);
   assert.match(appJs, /\[data-workbench-action\]/);
   assert.match(appJs, /\[data-layer-audition\]/);
   assert.match(appJs, /\[data-output-compare\]/);
@@ -2036,6 +2121,24 @@ test('sound lab beginner synthesis path has a compact current-step focus card', 
   assert.match(css, /\.beginner-focus-actions\s*\{/);
   assert.match(css, /\.beginner-focus-actions button:active\s*\{[\s\S]*transform:\s*translateY\(1px\)/);
   assert.match(css, /body\.is-direct-manipulating\s+\.beginner-synthesis-focus[\s\S]*transition:\s*none !important/);
+});
+
+test('sound lab beginner synthesis steps are real route controls rather than passive cards', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const modelJs = readFileSync(new URL('../src/sound-lab-model.js', import.meta.url), 'utf8');
+  const renderJs = readFileSync(new URL('../src/render.js', import.meta.url), 'utf8');
+
+  assert.match(modelJs, /activeBeginnerStepId/);
+  assert.match(appJs, /activeBeginnerSynthesisStepId/);
+  assert.match(appJs, /function applyBeginnerSynthesisStep/);
+  assert.match(appJs, /data-beginner-synthesis-step/);
+  assert.match(appJs, /state\.activeBeginnerSynthesisStepId = step\.id/);
+  assert.match(appJs, /state\.soundLabAuditionMode = step\.layerAudition/);
+  assert.match(appJs, /state\.soundLabOutputMode = step\.outputMode/);
+  assert.match(appJs, /event\.stopImmediatePropagation\(\)/);
+  assert.match(appJs, /activeBeginnerStepId: state\.activeBeginnerSynthesisStepId/);
+  assert.match(renderJs, /data-active-beginner-step/);
+  assert.match(renderJs, /data-beginner-step-role/);
 });
 
 test('target match coach is routed, readable, and visually integrated with Signal Atlas', () => {
@@ -2297,12 +2400,12 @@ test('showcase v6.4 turns the dashboard into a clean reference-style sonic stage
   assert.equal(shellJs.includes('\u95B8'), false);
 });
 
-test('reference v9 loads a final clean visual layer after the legacy cascade', () => {
+test('reference v9 stays below the final dark pro audio cascade', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const finalUrl = new URL('../styles-reference.css', import.meta.url);
 
-  assert.match(html, /href="\.\/styles\.css(?:\?v=[^"]+)?"[\s\S]*href="\.\/styles-reference\.css(?:\?v=[^"]+)?"/);
-  assert.ok(existsSync(finalUrl), 'final reference layer should be a separate stylesheet loaded after legacy styles.css');
+  assert.match(html, /href="\.\/styles-reference\.css(?:\?v=[^"]+)?"[\s\S]*href="\.\/styles\.css\?v=20260709-stitch-dark-v12"/);
+  assert.ok(existsSync(finalUrl), 'reference layer should remain available but load before the final app stylesheet');
 
   const css = readFileSync(finalUrl, 'utf8');
   assert.match(css, /Reference visual system v9\.0 final layer/);
