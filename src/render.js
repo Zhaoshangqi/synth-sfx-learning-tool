@@ -1627,18 +1627,20 @@ function renderWaveformDetectivePanel(model = {}, options = {}) {
     return attrs.join(' ');
   };
   return `
-    <section class="workbench-panel waveform-detective-panel" aria-label="波形拆解">
+    <section class="workbench-panel waveform-detective-panel" data-waveform-fingerprint-live data-waveform-live-status="idle" aria-label="波形拆解">
       <div class="mini-panel-head">
         <strong>波形拆解</strong>
+        <small class="waveform-fingerprint-live-status" data-waveform-fingerprint-status>等待实时信号，播放后会用 waveform / spectrum 推断基础波形倾向。</small>
         <button type="button" data-workbench-action="focus-waveform">听感判断</button>
       </div>
       <p>${escapeHtml(fingerprint.beginnerSummaryZh ?? '从基础波形和噪声层判断当前音效的来源。')}</p>
       <div class="waveform-ingredient-grid">
         ${ingredients.map((item) => `
-          <article class="waveform-ingredient-card" style="--ingredient:${formatNumber(item.value ?? 0)}%">
+          <article class="waveform-ingredient-card" data-waveform-ingredient-live="${escapeHtml(item.id)}" data-waveform-live-status="idle" style="--ingredient:${formatNumber(item.value ?? 0)}%; --ingredient-live:${formatNumber(item.value ?? 0)}%">
             <span>${escapeHtml(item.label)}</span>
-            <strong>${escapeHtml(item.value ?? 0)}%</strong>
+            <strong><output>${escapeHtml(item.value ?? 0)}</output>%</strong>
             <i aria-hidden="true"></i>
+            <b data-waveform-ingredient-status>等待实时信号</b>
             <small>${escapeHtml(item.listenZh)}</small>
             <em>${escapeHtml(item.synthCheckZh)}</em>
           </article>
