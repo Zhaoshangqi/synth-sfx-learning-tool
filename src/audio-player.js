@@ -233,6 +233,7 @@ const layerWithAnalogGesture = (layer = {}, hit = {}) => {
 const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes = []) => {
   const dynamicDetail = globalFx.masterPolish?.dynamicDetail ?? {};
   const transientGloss = globalFx.masterPolish?.transientGloss ?? {};
+  const spectralBalance = globalFx.masterPolish?.spectralBalance ?? {};
   const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
   const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
   const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
@@ -241,12 +242,17 @@ const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes 
   const bodyFocus = clamp(transientGloss.bodyFocus ?? 0, 0, 1);
   const aliasGuard = clamp(transientGloss.aliasGuard ?? 0, 0, 1);
   const crestWindowMs = clamp(transientGloss.crestWindowMs ?? 10, 0, 40);
-  if (transientAir <= 0 && bodyGlue <= 0 && outputSilk <= 0 && crestClamp <= 0 && harmonicAir <= 0 && bodyFocus <= 0 && aliasGuard <= 0) {
+  const lowBody = clamp(spectralBalance.lowBody ?? 0, 0, 1);
+  const lowMidGlue = clamp(spectralBalance.lowMidGlue ?? 0, 0, 1);
+  const highTame = clamp(spectralBalance.highTame ?? 0, 0, 1);
+  const tiltCompensation = clamp(spectralBalance.tiltCompensation ?? 0, 0, 1);
+  if (transientAir <= 0 && bodyGlue <= 0 && outputSilk <= 0 && crestClamp <= 0 && harmonicAir <= 0 && bodyFocus <= 0 && aliasGuard <= 0 && lowBody <= 0 && lowMidGlue <= 0 && highTame <= 0 && tiltCompensation <= 0) {
     input.connect(output);
     return;
   }
 
   let current = input;
+  current = connectSpectralBalanceStage(context, current, spectralBalance, nodes);
   if (harmonicAir > 0 || aliasGuard > 0) {
     const glossShelf = context.createBiquadFilter();
     glossShelf.type = 'highshelf';
@@ -298,6 +304,43 @@ const connectDynamicDetailStage = (context, input, output, globalFx = {}, nodes 
     nodes.push(glueCompressor);
   }
   current.connect(output);
+};
+
+const connectSpectralBalanceStage = (context, input, spectralBalance = {}, nodes = []) => {
+  const lowBody = clamp(spectralBalance.lowBody ?? 0, 0, 1);
+  const lowMidGlue = clamp(spectralBalance.lowMidGlue ?? 0, 0, 1);
+  const highTame = clamp(spectralBalance.highTame ?? 0, 0, 1);
+  const tiltCompensation = clamp(spectralBalance.tiltCompensation ?? 0, 0, 1);
+  let current = input;
+  if (lowBody > 0) {
+    const bodyShelf = context.createBiquadFilter();
+    bodyShelf.type = 'lowshelf';
+    bodyShelf.frequency.value = clamp(spectralBalance.bodyShelfHz ?? 220, 90, 620);
+    bodyShelf.gain.value = clamp(lowBody * 3.2, 0, 3.6);
+    current.connect(bodyShelf);
+    current = bodyShelf;
+    nodes.push(bodyShelf);
+  }
+  if (lowMidGlue > 0) {
+    const lowMidPeak = context.createBiquadFilter();
+    lowMidPeak.type = 'peaking';
+    lowMidPeak.frequency.value = clamp((spectralBalance.bodyShelfHz ?? 220) * 2.4, 240, 1300);
+    lowMidPeak.Q.value = 0.72 + lowMidGlue * 1.1;
+    lowMidPeak.gain.value = clamp(lowMidGlue * 2.1, 0, 2.6);
+    current.connect(lowMidPeak);
+    current = lowMidPeak;
+    nodes.push(lowMidPeak);
+  }
+  if (highTame > 0 || tiltCompensation > 0) {
+    const airShelf = context.createBiquadFilter();
+    airShelf.type = 'highshelf';
+    airShelf.frequency.value = clamp(spectralBalance.airShelfHz ?? 7200, 4200, 14000);
+    airShelf.gain.value = -clamp(highTame * 3 + tiltCompensation * 2.4, 0, 4.6);
+    current.connect(airShelf);
+    current = airShelf;
+    nodes.push(airShelf);
+  }
+  return current;
 };
 
 const connectPatchEffects = (context, input, master, patch, nodes) => {
@@ -584,6 +627,7 @@ export class LabAudioPlayer {
       if (effect.type === 'polish') {
         const dynamicDetail = effect.dynamicDetail ?? patch.globalFx?.masterPolish?.dynamicDetail ?? {};
         const transientGloss = effect.transientGloss ?? patch.globalFx?.masterPolish?.transientGloss ?? {};
+        const spectralBalance = effect.spectralBalance ?? patch.globalFx?.masterPolish?.spectralBalance ?? {};
         const transientAir = clamp(dynamicDetail.transientAir ?? 0, 0, 1);
         const bodyGlue = clamp(dynamicDetail.bodyGlue ?? 0, 0, 1);
         const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
@@ -592,6 +636,26 @@ export class LabAudioPlayer {
         const bodyFocus = clamp(transientGloss.bodyFocus ?? 0, 0, 1);
         const aliasGuard = clamp(transientGloss.aliasGuard ?? 0, 0, 1);
         const crestWindowMs = clamp(transientGloss.crestWindowMs ?? 10, 0, 40);
+        const lowBody = clamp(spectralBalance.lowBody ?? 0, 0, 1);
+        const lowMidGlue = clamp(spectralBalance.lowMidGlue ?? 0, 0, 1);
+        const highTame = clamp(spectralBalance.highTame ?? 0, 0, 1);
+        const tiltCompensation = clamp(spectralBalance.tiltCompensation ?? 0, 0, 1);
+        if (Tone.Filter && lowBody > 0) {
+          const bodyShelf = new Tone.Filter(clamp(spectralBalance.bodyShelfHz ?? 220, 90, 620), 'lowshelf');
+          if (bodyShelf.gain) bodyShelf.gain.value = clamp(lowBody * 3.2, 0, 3.6);
+          addNode(bodyShelf);
+        }
+        if (Tone.Filter && lowMidGlue > 0) {
+          const lowMidPeak = new Tone.Filter(clamp((spectralBalance.bodyShelfHz ?? 220) * 2.4, 240, 1300), 'peaking');
+          if (lowMidPeak.Q) lowMidPeak.Q.value = 0.72 + lowMidGlue * 1.1;
+          if (lowMidPeak.gain) lowMidPeak.gain.value = clamp(lowMidGlue * 2.1, 0, 2.6);
+          addNode(lowMidPeak);
+        }
+        if (Tone.Filter && (highTame > 0 || tiltCompensation > 0)) {
+          const airShelf = new Tone.Filter(clamp(spectralBalance.airShelfHz ?? 7200, 4200, 14000), 'highshelf');
+          if (airShelf.gain) airShelf.gain.value = -clamp(highTame * 3 + tiltCompensation * 2.4, 0, 4.6);
+          addNode(airShelf);
+        }
         if (Tone.Filter && (harmonicAir > 0 || aliasGuard > 0)) {
           const glossShelf = new Tone.Filter(clamp(6800 + harmonicAir * 2600, 5400, 12000), 'highshelf');
           if (glossShelf.gain) glossShelf.gain.value = clamp(harmonicAir * 2.4 - aliasGuard * 2.1, -3, 3.2);

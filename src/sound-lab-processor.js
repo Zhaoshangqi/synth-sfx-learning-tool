@@ -90,6 +90,9 @@ class SoundLabProcessor extends AudioWorkletProcessor {
       gloss: 0,
       bodyFocus: 0,
       alias: 0,
+      spectralBody: 0,
+      spectralLowMid: 0,
+      spectralAir: 0,
       prev: 0,
     };
   }
@@ -637,6 +640,32 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     return clamp(focused * (1 - aliasGuard * Math.abs(air) * 0.12), -1.18, 1.18);
   }
 
+  applySpectralBalance(sample, state, spectralBalance = {}) {
+    const lowBody = clamp(spectralBalance.lowBody ?? 0, 0, 1);
+    const lowMidGlue = clamp(spectralBalance.lowMidGlue ?? 0, 0, 1);
+    const highTame = clamp(spectralBalance.highTame ?? 0, 0, 1);
+    const tiltCompensation = clamp(spectralBalance.tiltCompensation ?? 0, 0, 1);
+    if (lowBody <= 0 && lowMidGlue <= 0 && highTame <= 0 && tiltCompensation <= 0) return sample;
+
+    const bodyHz = clamp(spectralBalance.bodyShelfHz ?? 220, 90, 620);
+    const airHz = clamp(spectralBalance.airShelfHz ?? 7200, 4200, 14000);
+    const bodyCoeff = clamp(bodyHz / sampleRate, 0.0015, 0.045);
+    const lowMidCoeff = clamp((bodyHz * 2.8) / sampleRate, 0.004, 0.11);
+    const airCoeff = clamp(airHz / sampleRate, 0.04, 0.34);
+
+    state.spectralBody = this.onePole(state.spectralBody, sample, bodyCoeff);
+    state.spectralLowMid = this.onePole(state.spectralLowMid, sample, lowMidCoeff);
+    state.spectralAir = this.onePole(state.spectralAir, sample, airCoeff);
+
+    const bodyBand = state.spectralBody;
+    const lowMidBand = state.spectralLowMid - state.spectralBody;
+    const airBand = sample - state.spectralAir;
+    const bodyLift = bodyBand * lowBody * 0.14 + lowMidBand * lowMidGlue * 0.12;
+    const airTamed = airBand * (highTame * 0.16 + tiltCompensation * 0.11);
+    const softenedAir = Math.tanh(airBand * (1.8 + highTame * 2.2)) * tiltCompensation * 0.018;
+    return clamp(sample + bodyLift - airTamed + softenedAir, -1.18, 1.18);
+  }
+
   applyMasterPolish(sample, state) {
     const polish = this.patch?.globalFx?.masterPolish || {};
     if (polish.enabled === false) return clamp(sample * clamp(polish.bodyGain ?? 0.96, 0.72, 1.04), -1.2, 1.2);
@@ -656,6 +685,7 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const outputSilk = clamp(dynamicDetail.outputSilk ?? 0, 0, 1);
     const snapWindowMs = clamp(dynamicDetail.snapWindowMs ?? 18, 0, 64);
     const transientGloss = polish.transientGloss || {};
+    const spectralBalance = polish.spectralBalance || {};
     const detailSnapWindow = snapWindowMs > 0
       ? clamp(1 / Math.max(1, sampleRate * snapWindowMs / 1000), 0.00025, 0.08)
       : 0.08;
@@ -676,7 +706,8 @@ class SoundLabProcessor extends AudioWorkletProcessor {
     const harshMotion = harshBand - previousHarsh * 0.18;
     const deHarshAmount = clamp(Math.abs(harshMotion) * deHarsh * 2.4 + airTame * 0.035, 0, 0.2);
     const comforted = warmed - harshBand * deHarshAmount;
-    const glossed = this.applyTransientGloss(comforted, edge, state, transientGloss);
+    const balanced = this.applySpectralBalance(comforted, state, spectralBalance);
+    const glossed = this.applyTransientGloss(balanced, edge, state, transientGloss);
     state.snap = this.onePole(state.snap, Math.abs(state.edge), detailSnapWindow);
     state.body = this.onePole(state.body, glossed, 0.01 + bodyGlue * 0.022);
     const gluedInput = glossed + state.body * bodyGlue * 0.072;
