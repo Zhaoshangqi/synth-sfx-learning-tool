@@ -3908,7 +3908,7 @@ function renderLearningSynthsCloneLayout(family, model, options, status) {
   const activeWaveform = options.activeWaveform ?? 'sine';
   const familyList = options.familyList ?? [];
   return `
-    <div class="learning-synths-clone-frame" data-learning-synths-clone="v12">
+    <div class="learning-synths-clone-frame" data-learning-synths-clone="v14">
       <aside class="ls-chapter-rail" aria-label="章节">
         <span class="ls-rail-mark">SFX</span>
         <span class="ls-rail-line"></span>
@@ -3929,22 +3929,55 @@ function renderLearningSynthsCloneLayout(family, model, options, status) {
           </div>
         </header>
         <main class="ls-lesson-main">
-          <section class="ls-hero">
+          <section class="ls-mission-bar" aria-label="当前练习">
             <div class="ls-hero-copy">
-              <span class="ls-section-kicker">今日练习控制台</span>
-              <h1><span>让我们开始</span><span>制作音效吧</span></h1>
-              <p>这里借鉴 Ableton Learning Synths 的“拖动参数，立即听到结果”模式，但内容专门面向 Serum、Phase Plant、Vital 和 REAPER 音效制作。</p>
-              <p class="ls-warning">请先点一次试听开启浏览器音频。建议戴耳机，小音量开始；每次只改一个参数，听清楚变化再继续。</p>
+              <span class="ls-section-kicker">01 / 今日实验</span>
+              <h1><span>先听，再塑形。</span><span>把声音做出来。</span></h1>
+              <p>一次只解决一个听感问题：选择声源、拖动材质、做 A/B，然后把结果落到 Serum、Phase Plant、Vital 或 REAPER。</p>
             </div>
             ${renderLearningSynthsFamilyPicker(family, familyList)}
           </section>
-          ${renderLearningSynthsWavePicker(activeWaveform)}
-          ${renderLearningSynthsDragBoard(model, options, status)}
-          ${renderLearningSynthsMacroControls(model)}
-          ${renderLearningSynthsMiniAnalyzers(model, options)}
-          ${renderLearningSynthsLessonMap(model, family)}
-          ${renderLearningSynthsPracticeNotes(family, model)}
-          ${renderLearningSynthsAdvancedDrawer(model, options)}
+          <section class="ls-workbench-heading" aria-label="操作步骤">
+            <div>
+              <span class="ls-section-kicker">工作台</span>
+              <strong>从声源到材质</strong>
+            </div>
+            <p>点击试听以启用音频。先挑一个基础波形，再拖动声音板；所有控制都会实时影响当前 Patch。</p>
+          </section>
+          <section class="ls-live-lab-grid" aria-label="实时声音实验台">
+            <div class="ls-primary-station">
+              <div class="ls-station-heading">
+                <span>01</span>
+                <div><strong>声源与材质</strong><small>选择波形，拖动到你想听到的位置。</small></div>
+              </div>
+              ${renderLearningSynthsWavePicker(activeWaveform)}
+              ${renderLearningSynthsDragBoard(model, options, status)}
+            </div>
+            <aside class="ls-control-stack" aria-label="监听与分析">
+              <div class="ls-station-heading">
+                <span>02</span>
+                <div><strong>监听与控制</strong><small>用四个宏做大方向，再通过波形和频谱判断。</small></div>
+              </div>
+              ${renderLearningSynthsMacroControls(model)}
+              ${renderLearningSynthsMiniAnalyzers(model, options)}
+              <p class="ls-control-hint">建议顺序：先听干声，再打开完整版本。每次只调整一个控制，再回听差异。</p>
+            </aside>
+          </section>
+          <section class="ls-learning-deck" aria-label="学习路线和交付">
+            <div class="ls-deck-heading">
+              <div><span class="ls-section-kicker">03 / 路线</span><strong>把这次试听推进到可复刻的 Patch</strong></div>
+              <p>前六步是主路径；原理、导出和高级调制留在下一层，不再干扰第一次上手。</p>
+            </div>
+            ${renderLearningSynthsLessonMap(model, family)}
+          </section>
+          <section class="ls-secondary-workspace" aria-label="原理和高级工具">
+            <div class="ls-secondary-heading">
+              <span class="ls-section-kicker">04 / 验证与深化</span>
+              <strong>理解为什么，然后完成交付。</strong>
+            </div>
+            ${renderLearningSynthsPracticeNotes(family, model)}
+            ${renderLearningSynthsAdvancedDrawer(model, options)}
+          </section>
           <nav class="ls-next-card" aria-label="下一步">
             <button type="button" data-workbench-action="focus-waveform">
               <span>下一步</span>
