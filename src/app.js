@@ -145,6 +145,63 @@ const DIRECT_WORKSTATION_VIEWS = new Set([
   'soundlab',
 ]);
 
+const LEARNING_ROUTE_META = new Map([
+  ['dashboard', { index: '01', label: '起点', title: '从目标声音开始', mission: '先选一个目标声音，再进入一条可执行的学习路径。' }],
+  ['sources', { index: '02', label: '资料', title: '建立可靠的声音资料库', mission: '把教程、文章和可复刻参数整理成能回看的证据。' }],
+  ['daily', { index: '03', label: '每日', title: '每天补一条可练习的技巧', mission: '先抓住一个方法，再把它推入自己的声音实验。' }],
+  ['cards', { index: '04', label: '知识', title: '把概念变成耳朵能判断的线索', mission: '用短卡片理解合成器中的信号、时间和材质。' }],
+  ['interactive', { index: '05', label: '实验', title: '拖动参数，听见变化', mission: '每次只改一个参数，并用听感验证它的作用。' }],
+  ['micro', { index: '06', label: '微课', title: '把复杂技巧拆成十分钟练习', mission: '循序完成小任务，而不是在参数海里迷路。' }],
+  ['challenges', { index: '07', label: '挑战', title: '用听辨和复刻检验自己', mission: '先做判断，再把答案变成一个可交付版本。' }],
+  ['techniques', { index: '08', label: '技巧', title: '收集能直接上手的声音方法', mission: '阅读方法之后，立刻在 Serum、Phase Plant、Vital 或 REAPER 里验证。' }],
+  ['community', { index: '09', label: '博主', title: '把公开视频拆成自己的步骤', mission: '保留出处，提炼参数路径，再落回真实合成器操作。' }],
+  ['deep', { index: '10', label: '解析', title: '从原理解释为什么听起来像', mission: '把频谱、调制和材质的关系转成可验证的推理。' }],
+  ['roadmap', { index: '11', label: '路线', title: '从零基础走到可交付音效', mission: '沿着一条清晰主线推进，不被次级模块打断。' }],
+  ['diagrams', { index: '12', label: '原理', title: '看懂声音信号怎么流动', mission: '用图示连接振荡器、包络、调制、滤波和效果。' }],
+  ['recipes', { index: '13', label: '配方', title: '从配方进入可复刻的 Patch', mission: '先复刻一个可靠起点，再做属于自己的变化。' }],
+  ['practice', { index: '14', label: '交付', title: '把练习带回 REAPER', mission: '记录参数、渲染版本、匹配响度，然后完成验收。' }],
+  ['integrations', { index: '15', label: '连接', title: '把网页练习连接到真实制作流程', mission: '用 MIDI、参数记录和浏览器音频能力扩展你的练习方式。' }],
+]);
+
+function wrapLearningRoute(viewId, content) {
+  const meta = LEARNING_ROUTE_META.get(viewId);
+  if (!meta) return content;
+  const activeClass = (target) => target === viewId ? ' is-active' : '';
+
+  return `
+    <section class="learning-route-shell" data-learning-route="${escapeHtml(viewId)}">
+      <aside class="learning-route-rail" aria-label="课程章节">
+        <a href="#dashboard" class="learning-route-mark" aria-label="返回学习总览">SFX</a>
+        <span class="learning-route-rail-line"></span>
+        <span class="learning-route-rail-index">${escapeHtml(meta.index)}</span>
+        <span class="learning-route-rail-label">${escapeHtml(meta.label)}</span>
+      </aside>
+      <article class="learning-route-stage">
+        <header class="learning-route-topbar">
+          <a href="#dashboard" class="learning-route-brand">Synth SFX Lab</a>
+          <span>课程</span>
+          <nav class="learning-route-links" aria-label="课程快捷入口">
+            <a class="${activeClass('roadmap')}" href="#roadmap">学习路线</a>
+            <a class="${activeClass('sources')}" href="#sources">资料</a>
+            <a class="${activeClass('soundlab')}" href="#soundlab">Sound Lab</a>
+          </nav>
+        </header>
+        <main class="learning-route-main">
+          <header class="learning-route-intro">
+            <div>
+              <span class="learning-route-kicker">${escapeHtml(meta.index)} / ${escapeHtml(meta.label)}</span>
+              <h1>${escapeHtml(meta.title)}</h1>
+              <p>${escapeHtml(meta.mission)}</p>
+            </div>
+            <a class="learning-route-lab-link" href="#soundlab">进入实验台</a>
+          </header>
+          <div class="learning-route-content">${content}</div>
+        </main>
+      </article>
+    </section>
+  `;
+}
+
 const DASHBOARD_LEARNING_PATH = [
   {
     id: 'listen-source',
@@ -410,6 +467,7 @@ function syncShellRouteMode(viewId = state.view) {
   const body = document.body;
   if (!body) return;
   body.classList.toggle('is-direct-workstation-route', DIRECT_WORKSTATION_VIEWS.has(viewId));
+  body.classList.toggle('is-learning-course-route', viewId !== 'soundlab');
   document.documentElement.classList.toggle('ls-boot-route', viewId === 'soundlab');
 }
 
@@ -1767,7 +1825,8 @@ function render(options = {}) {
     practice: renderPracticeView,
     integrations: renderIntegrationsView,
   };
-  app.innerHTML = views[state.view]();
+  const rendered = views[state.view]();
+  app.innerHTML = state.view === 'soundlab' ? rendered : wrapLearningRoute(state.view, rendered);
   bindDynamicForms();
   if (quiet) releaseSameViewRender();
 }
