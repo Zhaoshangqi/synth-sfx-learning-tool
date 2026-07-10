@@ -502,7 +502,7 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260710-route-shell-v17"/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260710-course-surface-v18"/);
   assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-learning-synths-v13'/);
   assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-learning-synths-v13'/);
   assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-learning-synths-v13'/);
@@ -3029,4 +3029,34 @@ test('Sound Lab boot route hides legacy chrome before the app finishes rendering
   assert.match(html, /html\.ls-boot-route \.toolbar/);
   assert.match(css, /:root\.ls-boot-route \.visual-splash/);
   assert.match(css, /:root\.ls-boot-route \.workspace/);
+});
+
+test('all non-lab routes render in the shared learning course shell', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const LEARNING_ROUTE_META = new Map\(/);
+  assert.match(appJs, /function wrapLearningRoute\(/);
+  assert.match(appJs, /class="learning-route-shell/);
+  assert.match(appJs, /state\.view === 'soundlab' \? rendered : wrapLearningRoute\(state\.view, rendered\)/);
+});
+
+test('course surface metadata covers every non-lab route and preserves interactive contracts', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  for (const route of ['dashboard', 'sources', 'daily', 'cards', 'interactive', 'micro', 'challenges', 'techniques', 'community', 'deep', 'roadmap', 'diagrams', 'recipes', 'practice', 'integrations']) {
+    assert.match(appJs, new RegExp(`\\['${route}', \\{`));
+  }
+  assert.match(appJs, /data-daily-filter/);
+  assert.match(appJs, /data-lab-id/);
+  assert.match(appJs, /data-integration-action/);
+});
+
+test('course surface styles use the Learning Synths visual language across ordinary routes', () => {
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+
+  assert.match(css, /\.learning-route-shell\s*\{[\s\S]*--ls-page/);
+  assert.match(css, /\.learning-route-content\s*\{/);
+  assert.match(css, /body\.is-learning-course-route \.sidebar/);
+  assert.match(css, /\.learning-route-rail/);
+  assert.match(css, /\.learning-route-topbar/);
 });
