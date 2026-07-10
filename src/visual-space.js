@@ -56,7 +56,7 @@ function getInitialRouteId() {
 }
 
 function isDirectWorkstationRoute() {
-  return ['soundlab', 'interactive', 'challenges', 'deep', 'community'].includes(getInitialRouteId());
+  return getInitialRouteId() === 'soundlab';
 }
 
 const AETHER_DIRECT_ROUTE_SCALE = isDirectWorkstationRoute() ? 0.48 : 1;

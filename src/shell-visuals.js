@@ -35,7 +35,7 @@ function getInitialRouteId() {
 
 function markRouteMode() {
   const route = getInitialRouteId();
-  body.classList.toggle('is-direct-workstation-route', ['soundlab', 'interactive', 'challenges', 'deep', 'community'].includes(route));
+  body.classList.toggle('is-direct-workstation-route', route === 'soundlab');
 }
 
 function initSplash() {

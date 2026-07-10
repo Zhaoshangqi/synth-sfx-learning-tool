@@ -11,12 +11,12 @@ test('document shell includes premium audio-space background layers', () => {
   assert.doesNotMatch(html, /rel="preload"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="prefetch"\s+href="\.\/vendor\/tone\/Tone\.js"/);
   assert.match(html, /rel="icon"/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17"/);
   assert.match(html, /src="\.\/src\/interaction-effects\.js"/);
   assert.match(html, /class="visual-splash"/);
   assert.match(html, /class="visual-burger-btn"/);
   assert.match(html, /class="visual-spotlight"/);
-  assert.match(html, /src="\.\/src\/shell-visuals\.js"/);
+  assert.match(html, /src="\.\/src\/shell-visuals\.js\?v=20260710-route-shell-v17"/);
 });
 
 test('studio reference shell ports the supplied splash menu CTA and spotlight motion language', () => {
@@ -459,7 +459,7 @@ test('aether flow prompt adds magnetic particle flow lanes and transition-safe e
   assert.match(css, /@keyframes ref9-magnetic-edge/);
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-magnetic-edge/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-route-current/);
-  assert.match(html, /visual-space\.js\?v=20260709-quality-audition/);
+  assert.match(html, /visual-space\.js\?v=20260710-route-shell-v17/);
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
 });
 
@@ -502,7 +502,7 @@ test('module entry points carry cache-busting versions for static Pages delivery
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
-  assert.match(html, /src="\.\/src\/app\.js\?v=20260709-learning-synths-v13"/);
+  assert.match(html, /src="\.\/src\/app\.js\?v=20260710-route-shell-v17"/);
   assert.match(appJs, /from '\.\/sound-lab-model\.js\?v=20260709-learning-synths-v13'/);
   assert.match(appJs, /from '\.\/audio-player\.js\?v=20260709-learning-synths-v13'/);
   assert.match(appJs, /from '\.\/view-model\.js\?v=20260709-learning-synths-v13'/);
@@ -839,6 +839,14 @@ test('view routing supports direct hash links for module QA and sharing', () => 
   assert.match(appJs, /globalThis\.addEventListener\('hashchange'/);
   assert.match(appJs, /history\.replaceState\(null,\s*'',\s*`\$\{globalThis\.location\.pathname\}\$\{globalThis\.location\.search\}\$\{nextHash\}`\)/);
   assert.match(appJs, /VIEW_IDS\.has\(nextView\)/);
+});
+
+test('roadmap is an exposed learning route rather than a hidden direct URL', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+
+  assert.match(html, /data-view="roadmap"[\s\S]*nav-label">学习路线/);
+  assert.match(appJs, /\{ view: 'roadmap',[\s\S]*title: '学习路线'/);
 });
 
 test('view routing accepts human-readable Sound Lab hash aliases', () => {
@@ -2427,7 +2435,7 @@ test('reference aether flow layer adds subtle streaming motion without drag flas
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17/);
   assert.match(css, /Reference aether flow hero current v9\.8/);
   assert.match(css, /\.dashboard-hero::after\s*\{[\s\S]*animation:\s*ref9-hero-scan/);
   assert.match(css, /\.hero-sound-visual::after\s*\{[\s\S]*animation:\s*ref9-core-current/);
@@ -2448,7 +2456,7 @@ test('aether flow prompt adds orbital currents while preserving drag-safe motion
   const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
 
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17/);
   assert.match(css, /Reference aether orbital flow v9\.9/);
   assert.match(css, /\.dashboard-hero\s+\.hero-copy::after\s*\{[\s\S]*animation:\s*ref9-orbital-copy-current/);
   assert.match(css, /\.signal-atlas-console::after\s*\{[\s\S]*animation:\s*ref9-orbital-console-current/);
@@ -2602,7 +2610,7 @@ test('pasted aether flow prompt adds an adaptive particle mesh without React dep
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17"/);
 });
 
 test('pasted aether flow prompt adds slow energy rivers and card-edge currents', () => {
@@ -2678,7 +2686,7 @@ test('pasted aether flow prompt adds a viscous stream lattice without React depe
   assert.match(css, /body\.is-direct-manipulating[\s\S]*ref9-viscous-edge-current/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-viscous-edge-current/);
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17"/);
 });
 
 test('pasted aether flow prompt adds component relay packets without dragging flashes', () => {
@@ -2759,7 +2767,7 @@ test('aether flow prompt adds a native flow-field particle layer without viewpor
   assert.match(css, /body\.is-direct-manipulating #particle-canvas[\s\S]*transition:\s*none !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#particle-canvas/);
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17"/);
 });
 
 test('pasted aether flow prompt adds silk current ribbons without React dependencies', () => {
@@ -2787,7 +2795,7 @@ test('pasted aether flow prompt adds silk current ribbons without React dependen
   assert.match(css, /body\.is-direct-manipulating \.audio-space\.is-flow-field-ready::before[\s\S]*animation-play-state:\s*paused !important/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*ref9-silk-current-drift/);
   assert.match(html, /styles-reference\.css\?v=20260709-quality-audition/);
-  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260709-quality-audition"/);
+  assert.match(html, /src="\.\/src\/visual-space\.js\?v=20260710-route-shell-v17"/);
 });
 
 test('pasted aether flow prompt adds a focus lens field without React dependencies', () => {
@@ -2918,6 +2926,31 @@ test('direct Sound Lab routes use a lean aether visual budget for smoother works
   assert.match(shellJs, /addEventListener\('hashchange',\s*markRouteMode/);
 });
 
+test('only Sound Lab uses the direct workstation shell', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const shellJs = readFileSync(new URL('../src/shell-visuals.js', import.meta.url), 'utf8');
+  const visualSpaceJs = readFileSync(new URL('../src/visual-space.js', import.meta.url), 'utf8');
+  const appDirectViews = appJs.match(/const DIRECT_WORKSTATION_VIEWS = new Set\([\s\S]*?\]\);/)?.[0] ?? '';
+  const shellRouteMode = shellJs.match(/function markRouteMode\([\s\S]*?\r?\n}\r?\n/)?.[0] ?? '';
+  const visualRouteMode = visualSpaceJs.match(/function isDirectWorkstationRoute\([\s\S]*?\r?\n}\r?\n/)?.[0] ?? '';
+
+  for (const block of [appDirectViews, shellRouteMode, visualRouteMode]) {
+    assert.match(block, /soundlab/);
+    assert.doesNotMatch(block, /interactive|challenges|deep|community/);
+  }
+});
+
+test('programmatic view switching keeps the outer route shell in sync', () => {
+  const appJs = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const switchViewBlock = appJs.match(/function switchView\([\s\S]*?\r?\n}\r?\n\r?\nfunction rangePercentFromInput/)?.[0] ?? '';
+
+  assert.match(appJs, /const DIRECT_WORKSTATION_VIEWS = new Set\(\[/);
+  assert.match(appJs, /function syncShellRouteMode\(viewId = state\.view\)/);
+  assert.match(appJs, /body\.classList\.toggle\('is-direct-workstation-route', DIRECT_WORKSTATION_VIEWS\.has\(viewId\)\)/);
+  assert.match(appJs, /document\.documentElement\.classList\.toggle\('ls-boot-route', viewId === 'soundlab'\)/);
+  assert.match(switchViewBlock, /syncShellRouteMode\(nextView\);/);
+});
+
 test('pages workflow publishes the static site to gh-pages without failing deploy-pages mode', () => {
   const pagesWorkflow = readFileSync(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
 
@@ -2947,8 +2980,12 @@ test('Sound Lab now mounts a Learning Synths style lesson shell as the visible w
   const soundLabViewBlock = appJs.match(/function renderSoundLabView\([\s\S]*?\r?\n}\r?\n\r?\nfunction renderMicroView/)?.[0] ?? '';
 
   assert.match(renderJs, /function renderLearningSynthsCloneLayout/);
-  assert.match(renderJs, /data-learning-synths-clone="v12"/);
+  assert.match(renderJs, /data-learning-synths-clone="v14"/);
   assert.match(renderJs, /class="ls-chapter-rail"/);
+  assert.match(renderJs, /class="ls-mission-bar"/);
+  assert.match(renderJs, /class="ls-live-lab-grid"/);
+  assert.match(renderJs, /class="ls-control-stack"/);
+  assert.match(renderJs, /class="ls-learning-deck"/);
   assert.match(renderJs, /class="ls-drag-board"/);
   assert.match(renderJs, /data-xy-pad/);
   assert.match(renderJs, /data-sound-lab-play/);
@@ -2961,9 +2998,9 @@ test('Sound Lab now mounts a Learning Synths style lesson shell as the visible w
   assert.doesNotMatch(soundLabViewBlock, /sound-family-rail/);
 });
 
-test('Learning Synths clone CSS replaces the dark workstation with Ableton-like navy, pink, and white layout', () => {
+test('Learning Synths clone CSS keeps the rebuilt studio hierarchy readable and motion-safe', () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
-  const v12Index = css.indexOf('Learning Synths clone reset v13');
+  const v12Index = css.indexOf('Learning Synths clarity rebuild v14');
   const darkIndex = css.indexOf('Stitch dark pro audio redesign v11.11');
 
   assert.ok(v12Index > darkIndex, 'Learning Synths clone reset must win the final cascade');
@@ -2977,6 +3014,9 @@ test('Learning Synths clone CSS replaces the dark workstation with Ableton-like 
   assert.match(css, /\.ls-drag-board\s*\{[\s\S]*border:\s*5px solid var\(--ls-navy\)/);
   assert.match(css, /\.ls-drag-handle\s*\{[\s\S]*background:\s*var\(--ls-pink\) !important/);
   assert.match(css, /body\.is-direct-manipulating \.learning-synths-clone/);
+  assert.match(css, /\.ls-live-lab-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1\.25fr\) minmax\(320px,\s*0\.75fr\)/);
+  assert.match(css, /\.ls-mission-bar\s*\{[\s\S]*border-bottom:\s*3px solid var\(--ls-navy\)/);
+  assert.match(css, /\.ls-learning-deck\s*\{[\s\S]*background:\s*var\(--ls-gray\)/);
   assert.match(css, /\.ls-legacy-fixture\s*\{[\s\S]*display:\s*none !important/);
 });
 

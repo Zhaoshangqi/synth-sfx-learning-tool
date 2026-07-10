@@ -141,6 +141,10 @@ const VIEW_HASH_ALIASES = new Map([
   ['lab', 'soundlab'],
 ]);
 
+const DIRECT_WORKSTATION_VIEWS = new Set([
+  'soundlab',
+]);
+
 const DASHBOARD_LEARNING_PATH = [
   {
     id: 'listen-source',
@@ -402,6 +406,13 @@ const state = {
   lastMidiMessage: '',
 };
 
+function syncShellRouteMode(viewId = state.view) {
+  const body = document.body;
+  if (!body) return;
+  body.classList.toggle('is-direct-workstation-route', DIRECT_WORKSTATION_VIEWS.has(viewId));
+  document.documentElement.classList.toggle('ls-boot-route', viewId === 'soundlab');
+}
+
 const savedSoundLabLibrary = loadSoundLabLibrary();
 state.soundLabFavorites = Array.isArray(savedSoundLabLibrary.favorites) ? savedSoundLabLibrary.favorites : state.soundLabFavorites;
 state.soundLabProjects = Array.isArray(savedSoundLabLibrary.projects) ? savedSoundLabLibrary.projects : state.soundLabProjects;
@@ -561,10 +572,11 @@ function renderDashboard() {
       note: '把零基础知识拆成短任务',
       priority: 'secondary',
       modules: [
-        { view: 'micro', index: '04', title: '微课路线', body: '按天推进，从波形、ADSR、滤波到 FM 和分层。', meta: '路线' },
-        { view: 'interactive', index: '05', title: '互动课程', body: '每页只练一个概念，拖参数就能听到结果。', meta: '练手感' },
-        { view: 'cards', index: '06', title: '知识卡片', body: '把英文资料翻成中文知识点，保留来源。', meta: '记忆' },
-        { view: 'diagrams', index: '07', title: '原理图', body: '用信号图解释波形、包络、滤波、FM、分层。', meta: '理解' },
+        { view: 'roadmap', index: '04', title: '学习路线', body: '先看完整能力地图，再决定今天从波形、包络还是频谱开始。', meta: '全局导航' },
+        { view: 'micro', index: '05', title: '微课路线', body: '按天推进，从波形、ADSR、滤波到 FM 和分层。', meta: '路线' },
+        { view: 'interactive', index: '06', title: '互动课程', body: '每页只练一个概念，拖参数就能听到结果。', meta: '练手感' },
+        { view: 'cards', index: '07', title: '知识卡片', body: '把英文资料翻成中文知识点，保留来源。', meta: '记忆' },
+        { view: 'diagrams', index: '08', title: '原理图', body: '用信号图解释波形、包络、滤波、FM、分层。', meta: '理解' },
       ],
     },
     {
@@ -572,13 +584,13 @@ function renderDashboard() {
       note: '从技巧、挑战到 REAPER 输出',
       priority: 'secondary',
       modules: [
-        { view: 'challenges', index: '08', title: '声音挑战', body: 'A/B 听辨、参数反推、材质实验。', meta: '训练' },
-        { view: 'techniques', index: '09', title: '技巧库', body: '金属、whoosh、空间、失真等技法拆解。', meta: '方法' },
-        { view: 'community', index: '10', title: '博主技巧', body: '把 YouTube/B 站创作者技巧转成可操作步骤。', meta: '案例' },
-        { view: 'deep', index: '11', title: '深度解析', body: '按 transient / body / tail 拆复杂声音。', meta: '分析' },
-        { view: 'recipes', index: '12', title: '音效配方', body: '可复用制作链和验收清单。', meta: '配方' },
-        { view: 'practice', index: '13', title: 'REAPER 练习', body: '渲染、响度、A/B、交付模板。', meta: '交付' },
-        { view: 'integrations', index: '14', title: '外部集成', body: 'MIDI、导出命名、浏览器音质路线。', meta: '扩展' },
+        { view: 'challenges', index: '09', title: '声音挑战', body: 'A/B 听辨、参数反推、材质实验。', meta: '训练' },
+        { view: 'techniques', index: '10', title: '技巧库', body: '金属、whoosh、空间、失真等技法拆解。', meta: '方法' },
+        { view: 'community', index: '11', title: '博主技巧', body: '把 YouTube/B 站创作者技巧转成可操作步骤。', meta: '案例' },
+        { view: 'deep', index: '12', title: '深度解析', body: '按 transient / body / tail 拆复杂声音。', meta: '分析' },
+        { view: 'recipes', index: '13', title: '音效配方', body: '可复用制作链和验收清单。', meta: '配方' },
+        { view: 'practice', index: '14', title: 'REAPER 练习', body: '渲染、响度、A/B、交付模板。', meta: '交付' },
+        { view: 'integrations', index: '15', title: '外部集成', body: 'MIDI、导出命名、浏览器音质路线。', meta: '扩展' },
       ],
     },
   ];
@@ -1726,6 +1738,7 @@ function releaseSameViewRender() {
 function render(options = {}) {
   const quiet = options.quiet === true;
   if (quiet) stabilizeSameViewRender();
+  syncShellRouteMode();
 
   tabs.forEach((tab) => {
     const isActive = tab.dataset.view === state.view;
@@ -1779,6 +1792,7 @@ function switchView(nextView, options = {}) {
   app.classList.add('is-view-switching');
   globalThis.setTimeout(() => app.classList.remove('is-view-switching'), 460);
   state.view = nextView;
+  syncShellRouteMode(nextView);
   if (options.updateHash !== false) {
     const nextHash = nextView === 'dashboard' ? '' : `#${nextView}`;
     if (globalThis.location.hash !== nextHash) {
