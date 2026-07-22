@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T05:31:38.836Z",
+  "updatedAt": "2026-07-22T05:30:51.614Z",
   "items": [
     {
       "id": "daily-youtube-wzt-nok-ipk",
@@ -10,7 +10,7 @@
       "url": "https://www.youtube.com/watch?v=WZt_nok-ipk",
       "publishedAt": "",
       "discoveredAt": "2026-07-19T05:33:13.768Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 509,
       "durationLabel": "8:29",
       "difficulty": "intermediate",
@@ -27,7 +27,7 @@
       "sync": {
         "query": "Vital metallic friction sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 3
+        "seenCount": 4
       },
       "score": 44
     },
@@ -40,7 +40,7 @@
       "url": "https://www.youtube.com/watch?v=xbmxncjfqn0",
       "publishedAt": "",
       "discoveredAt": "2026-07-18T05:06:38.468Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 1145,
       "durationLabel": "19:05",
       "difficulty": "intermediate",
@@ -60,7 +60,7 @@
       "sync": {
         "query": "Serum metallic sound design FM comb filter tutorial",
         "source": "yt-dlp",
-        "seenCount": 4
+        "seenCount": 5
       },
       "score": 56
     },
@@ -105,7 +105,7 @@
       "url": "https://www.youtube.com/watch?v=geNjveOtdBQ",
       "publishedAt": "",
       "discoveredAt": "2026-07-18T05:06:38.468Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 57,
       "durationLabel": "57",
       "difficulty": "beginner",
@@ -121,7 +121,7 @@
       "sync": {
         "query": "Vital synth beginner sound design tutorial SFX",
         "source": "yt-dlp",
-        "seenCount": 4
+        "seenCount": 5
       },
       "score": 38
     },
@@ -134,7 +134,7 @@
       "url": "https://www.youtube.com/watch?v=uH2aU8pJx08",
       "publishedAt": "",
       "discoveredAt": "2026-07-18T05:06:38.468Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 303,
       "durationLabel": "5:03",
       "difficulty": "creative",
@@ -150,7 +150,7 @@
       "sync": {
         "query": "Vital metallic friction sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 3
+        "seenCount": 4
       },
       "score": 37
     },
@@ -163,7 +163,7 @@
       "url": "https://www.youtube.com/watch?v=3QQXTn-GDdw",
       "publishedAt": "",
       "discoveredAt": "2026-07-18T05:06:38.468Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 358,
       "durationLabel": "5:58",
       "difficulty": "beginner",
@@ -178,7 +178,7 @@
       "sync": {
         "query": "Vital synth beginner sound design tutorial SFX",
         "source": "yt-dlp",
-        "seenCount": 4
+        "seenCount": 5
       },
       "score": 30
     },
@@ -191,7 +191,7 @@
       "url": "https://www.youtube.com/watch?v=LrKqTtmdM7I",
       "publishedAt": "",
       "discoveredAt": "2026-07-18T05:06:38.468Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 659,
       "durationLabel": "10:59",
       "difficulty": "beginner",
@@ -206,7 +206,7 @@
       "sync": {
         "query": "Vital synth beginner sound design tutorial SFX",
         "source": "yt-dlp",
-        "seenCount": 4
+        "seenCount": 5
       },
       "score": 30
     },
@@ -333,7 +333,7 @@
       "url": "https://www.youtube.com/watch?v=dNt8RGf05xI",
       "publishedAt": "",
       "discoveredAt": "2026-07-11T05:23:49.897Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 643,
       "durationLabel": "10:43",
       "difficulty": "intermediate",
@@ -349,7 +349,7 @@
       "sync": {
         "query": "Serum UI click game audio sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 35
     },
@@ -419,7 +419,7 @@
       "url": "https://www.youtube.com/watch?v=z6r7BhWq-Io",
       "publishedAt": "",
       "discoveredAt": "2026-07-07T06:27:02.406Z",
-      "lastSeenAt": "2026-07-20T05:51:09.049Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 627,
       "durationLabel": "10:27",
       "difficulty": "advanced",
@@ -435,7 +435,7 @@
       "sync": {
         "query": "synth sound design resampling impact whoosh game audio tutorial",
         "source": "yt-dlp",
-        "seenCount": 11
+        "seenCount": 12
       },
       "score": 27
     },
@@ -448,7 +448,7 @@
       "url": "https://www.youtube.com/watch?v=5ijasrYMz3U",
       "publishedAt": "",
       "discoveredAt": "2026-07-06T06:49:25.599Z",
-      "lastSeenAt": "2026-07-19T05:33:13.768Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 2140,
       "durationLabel": "35:40",
       "difficulty": "intermediate",
@@ -465,7 +465,7 @@
       "sync": {
         "query": "Phase Plant game audio SFX sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 3
+        "seenCount": 4
       },
       "score": 40
     },
@@ -478,7 +478,7 @@
       "url": "https://www.youtube.com/watch?v=NJLIS2MkFe4",
       "publishedAt": "",
       "discoveredAt": "2026-07-04T05:56:40.960Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 882,
       "durationLabel": "14:42",
       "difficulty": "beginner",
@@ -493,7 +493,7 @@
       "sync": {
         "query": "Vital synth beginner sound design tutorial SFX",
         "source": "yt-dlp",
-        "seenCount": 2
+        "seenCount": 3
       },
       "score": 30
     },
@@ -534,7 +534,7 @@
       "url": "https://www.youtube.com/watch?v=d140gJ8dFSE",
       "publishedAt": "",
       "discoveredAt": "2026-07-02T06:12:48.092Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 56,
       "durationLabel": "56",
       "difficulty": "intermediate",
@@ -553,7 +553,7 @@
       "sync": {
         "query": "Serum metallic sound design FM comb filter tutorial",
         "source": "yt-dlp",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 48
     },
@@ -566,7 +566,7 @@
       "url": "https://www.youtube.com/watch?v=acZPLjnha9o",
       "publishedAt": "",
       "discoveredAt": "2026-07-02T06:12:48.092Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 246,
       "durationLabel": "4:06",
       "difficulty": "advanced",
@@ -583,7 +583,7 @@
       "sync": {
         "query": "synth sound design resampling impact whoosh game audio tutorial",
         "source": "yt-dlp",
-        "seenCount": 4
+        "seenCount": 5
       },
       "score": 43
     },
@@ -718,7 +718,7 @@
       "url": "https://www.youtube.com/watch?v=KE6Lz5j0DDU",
       "publishedAt": "",
       "discoveredAt": "2026-06-30T06:35:18.357Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 507,
       "durationLabel": "8:27",
       "difficulty": "intermediate",
@@ -733,7 +733,7 @@
       "sync": {
         "query": "Phase Plant game audio SFX sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 30
     },
@@ -863,7 +863,7 @@
       "url": "https://www.youtube.com/watch?v=EaB6SZEQM5w",
       "publishedAt": "",
       "discoveredAt": "2026-06-24T06:26:52.415Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 516,
       "durationLabel": "8:36",
       "difficulty": "intermediate",
@@ -879,7 +879,7 @@
       "sync": {
         "query": "Vital metallic friction sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 37
     },
@@ -892,7 +892,7 @@
       "url": "https://www.youtube.com/watch?v=5SkGwcnyRQY",
       "publishedAt": "",
       "discoveredAt": "2026-06-23T06:30:19.437Z",
-      "lastSeenAt": "2026-07-19T05:33:13.768Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 1100,
       "durationLabel": "18:20",
       "difficulty": "intermediate",
@@ -911,7 +911,7 @@
       "sync": {
         "query": "Serum metallic sound design FM comb filter tutorial",
         "source": "yt-dlp",
-        "seenCount": 7
+        "seenCount": 8
       },
       "score": 48
     },
@@ -924,7 +924,7 @@
       "url": "https://www.youtube.com/watch?v=E1OBcf4ZsYQ",
       "publishedAt": "",
       "discoveredAt": "2026-06-21T07:12:54.289Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 2831,
       "durationLabel": "47:11",
       "difficulty": "beginner",
@@ -944,7 +944,7 @@
       "sync": {
         "query": "Serum UI click game audio sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 13
+        "seenCount": 14
       },
       "score": 61
     },
@@ -957,7 +957,7 @@
       "url": "https://www.youtube.com/watch?v=gMo4bO7QO98",
       "publishedAt": "",
       "discoveredAt": "2026-06-20T06:43:27.887Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 250,
       "durationLabel": "4:10",
       "difficulty": "intermediate",
@@ -973,7 +973,7 @@
       "sync": {
         "query": "Phase Plant whoosh riser synth sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 15
+        "seenCount": 16
       },
       "score": 37
     },
@@ -1018,7 +1018,7 @@
       "url": "https://www.youtube.com/watch?v=0mdjPyeFY2Y",
       "publishedAt": "",
       "discoveredAt": "2026-06-19T07:33:23.647Z",
-      "lastSeenAt": "2026-07-19T05:33:13.768Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 310,
       "durationLabel": "5:10",
       "difficulty": "intermediate",
@@ -1035,7 +1035,7 @@
       "sync": {
         "query": "Phase Plant whoosh riser synth sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 42
     },
@@ -1227,7 +1227,7 @@
       "url": "https://www.youtube.com/watch?v=TZw52bXDIAM",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T07:46:29.794Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 12,
       "durationLabel": "12",
       "difficulty": "intermediate",
@@ -1242,7 +1242,7 @@
       "sync": {
         "query": "Phase Plant game audio SFX sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 30
+        "seenCount": 31
       },
       "score": 30
     },
@@ -1283,7 +1283,7 @@
       "url": "https://www.youtube.com/watch?v=xHbSUf1aKB4",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T07:46:29.794Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 668,
       "durationLabel": "11:08",
       "difficulty": "advanced",
@@ -1300,7 +1300,7 @@
       "sync": {
         "query": "synth sound design resampling impact whoosh game audio tutorial",
         "source": "yt-dlp",
-        "seenCount": 14
+        "seenCount": 15
       },
       "score": 30
     },
@@ -1313,7 +1313,7 @@
       "url": "https://www.youtube.com/watch?v=u3KnqpDgxGg",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 306,
       "durationLabel": "5:06",
       "difficulty": "intermediate",
@@ -1332,7 +1332,7 @@
       "sync": {
         "query": "synth sound design resampling impact whoosh game audio tutorial",
         "source": "yt-dlp",
-        "seenCount": 66
+        "seenCount": 68
       },
       "score": 53
     },
@@ -1376,7 +1376,7 @@
       "url": "https://www.youtube.com/watch?v=NDQVaYBoDEc",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 142,
       "durationLabel": "2:22",
       "difficulty": "intermediate",
@@ -1395,7 +1395,7 @@
       "sync": {
         "query": "Serum metallic sound design FM comb filter tutorial",
         "source": "yt-dlp",
-        "seenCount": 36
+        "seenCount": 37
       },
       "score": 48
     },
@@ -1623,7 +1623,7 @@
       "url": "https://www.youtube.com/watch?v=vSQoK7JuEO0",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 22,
       "durationLabel": "22",
       "difficulty": "intermediate",
@@ -1640,7 +1640,7 @@
       "sync": {
         "query": "Phase Plant whoosh riser synth sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 61
+        "seenCount": 62
       },
       "score": 40
     },
@@ -1682,7 +1682,7 @@
       "url": "https://www.youtube.com/watch?v=9iNSjoORavY",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 639,
       "durationLabel": "10:39",
       "difficulty": "intermediate",
@@ -1698,7 +1698,7 @@
       "sync": {
         "query": "Phase Plant whoosh riser synth sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 36
+        "seenCount": 37
       },
       "score": 37
     },
@@ -1740,7 +1740,7 @@
       "url": "https://www.youtube.com/watch?v=b4edTjKVPig",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-18T05:06:38.468Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 358,
       "durationLabel": "5:58",
       "difficulty": "intermediate",
@@ -1756,7 +1756,7 @@
       "sync": {
         "query": "Serum UI click game audio sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 33
+        "seenCount": 34
       },
       "score": 35
     },
@@ -1914,7 +1914,7 @@
       "url": "https://www.youtube.com/watch?v=77vn6E-VlV8",
       "publishedAt": "",
       "discoveredAt": "2026-06-16T02:28:02.033Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 1303,
       "durationLabel": "21:43",
       "difficulty": "beginner",
@@ -1929,7 +1929,7 @@
       "sync": {
         "query": "Phase Plant game audio SFX sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 35
+        "seenCount": 36
       },
       "score": 30
     },
@@ -2153,7 +2153,7 @@
       "url": "https://www.youtube.com/watch?v=EvTcHTCLRg0",
       "publishedAt": "2026-05-24",
       "discoveredAt": "2026-06-15T00:00:00.000Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 0,
       "durationLabel": "",
       "difficulty": "intermediate",
@@ -2173,7 +2173,7 @@
       "sync": {
         "query": "Vital metallic friction sound design tutorial",
         "source": "yt-dlp",
-        "seenCount": 37
+        "seenCount": 38
       },
       "score": 40
     },
@@ -2283,7 +2283,7 @@
       "url": "https://www.bilibili.com/video/BV1jZhtzKE8J",
       "publishedAt": "2025-08-02",
       "discoveredAt": "2026-06-16T02:24:34.481Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 5762,
       "durationLabel": "96:2",
       "difficulty": "intermediate",
@@ -2298,7 +2298,7 @@
       "sync": {
         "query": "Vital 合成器 音效 设计 教程 B站",
         "source": "bilibili-search",
-        "seenCount": 24
+        "seenCount": 25
       },
       "score": 30
     },
@@ -2434,7 +2434,7 @@
       "url": "https://www.bilibili.com/video/BV1GE3qe1EAg",
       "publishedAt": "2024-06-26",
       "discoveredAt": "2026-07-03T06:05:44.755Z",
-      "lastSeenAt": "2026-07-16T05:22:20.557Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 110,
       "durationLabel": "1:50",
       "difficulty": "intermediate",
@@ -2449,7 +2449,7 @@
       "sync": {
         "query": "Vital 合成器 音效 设计 教程 B站",
         "source": "bilibili-search",
-        "seenCount": 5
+        "seenCount": 6
       },
       "score": 30
     },
@@ -2522,7 +2522,7 @@
       "url": "https://www.bilibili.com/video/BV1614y127d7",
       "publishedAt": "2023-06-26",
       "discoveredAt": "2026-07-16T05:22:20.557Z",
-      "lastSeenAt": "2026-07-21T05:31:38.836Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 11,
       "durationLabel": "0:11",
       "difficulty": "intermediate",
@@ -2537,7 +2537,7 @@
       "sync": {
         "query": "Vital 合成器 音效 设计 教程 B站",
         "source": "bilibili-search",
-        "seenCount": 3
+        "seenCount": 4
       },
       "score": 30
     },
@@ -2550,7 +2550,7 @@
       "url": "https://www.bilibili.com/video/BV1CG4y1D7Go",
       "publishedAt": "2023-01-23",
       "discoveredAt": "2026-06-16T02:24:34.481Z",
-      "lastSeenAt": "2026-07-20T05:51:09.049Z",
+      "lastSeenAt": "2026-07-22T05:30:51.614Z",
       "durationSeconds": 351,
       "durationLabel": "5:51",
       "difficulty": "intermediate",
@@ -2565,7 +2565,7 @@
       "sync": {
         "query": "Vital 合成器 音效 设计 教程 B站",
         "source": "bilibili-search",
-        "seenCount": 12
+        "seenCount": 13
       },
       "score": 30
     },
